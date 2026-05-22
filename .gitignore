@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.env.*
+venv/
+.venv/
+env/
+ENV/
+
+# Node modules
+node_modules/
+
+# OS/System files
+.DS_Store
+Thumbs.db
+
+# Audio / Temp files
+*.wav
+*.mp3
+*.txt~
+*~
