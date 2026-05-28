@@ -6,6 +6,7 @@ from app.services.llm import (
     generate_chat_response,
     check_for_tool_intent,
     conversation_history,
+    _save_session,
 )
 from app.services.embeddings import get_embedding
 from app.services.vector_store import search_similar_chunks
@@ -13,6 +14,7 @@ from app.services.tools import TOOL_REGISTRY
 from app.services.dynamic_skill import run_dynamic_skill
 from app.services.planner import run_agentic_plan, is_complex_task
 from app.services.ui_inspector import get_screen_text_summary
+from app.services.screen_reader import describe_screen_for_llm
 from app.memory import find_skill, format_preferences_for_prompt
 
 router = APIRouter()
@@ -75,7 +77,30 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         song = _clean_yt_query(yt_play_m.group(1).strip(' ,.'))
         return {"tool_name": "youtube_search", "arguments": {"query": song, "autoplay": True}}
 
+    # ── Play video in browser (context-based: "play that", "play it", "play the video") ──
+    # These are reference-based play commands — user means the video currently visible
+    # on screen, NOT a Spotify song. Must be caught BEFORE the bare Spotify matcher.
+    browser_video_play_kw = [
+        'play that video', 'play it', 'play this video', 'play the video',
+        'play that one', 'play this one', 'play the first', 'play the top',
+        'play it now', 'play it please', 'click on it', 'open that video',
+        'open it', 'click the video', 'click that',
+    ]
+    # Also catch "play the 52 minutes one", "play the 10 minute video", etc.
+    _is_browser_video_play = (
+        any(kw in lower for kw in browser_video_play_kw)
+        or bool(re.search(r'play\s+the\s+\d+\s*(?:minute|min|hour|hr|second)s?\s+(?:one|video)', lower))
+        or (re.match(r'^(?:jarvis\s+)?play\s+(?:that|it|this|the)\b', lower) and 'spotify' not in lower)
+    )
+    if _is_browser_video_play:
+        return {"tool_name": "play_video_in_browser", "arguments": {}}
+
     # ── Bare "play X" (no platform) → default Spotify ─────────────────────────
+    # Exclusions: don't route reference-based play to Spotify
+    _spotify_exclusions = [
+        'that', 'it', 'this', 'the video', 'the one', 'minutes', 'minute',
+        'hour', 'top video', 'first video', 'second video',
+    ]
     play_match = re.match(
         r'^(?:jarvis\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+)',
         lower
@@ -83,7 +108,8 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if play_match and not is_question:
         song = play_match.group(1).strip(' ,.')
         song = re.sub(r'\s+(for me|please)$', '', song).strip()
-        if song and len(song) > 1:
+        # Skip if it looks like a context reference, not a song name
+        if song and len(song) > 1 and not any(excl == song or song.startswith(excl + ' ') for excl in _spotify_exclusions):
             return {"tool_name": "play_music", "arguments": {"song": song}}
 
     # ── YouTube SEARCH (show results, no autoplay) ────────────────────────────
@@ -146,10 +172,94 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if re.search(r'\bprevious (song|track)\b|\bprev\b', lower):
         return {"tool_name": "media_previous", "arguments": {}}
 
-    # ── WhatsApp desktop app ─────────────────────────────────────────────
-    if re.search(r'\bopen\s+whatsapp\b|\blaunch\s+whatsapp\b|\bstart\s+whatsapp\b', lower):
-        if not any(w in lower for w in ['send', 'message', 'msg', 'text']):
-            return {"tool_name": "open_whatsapp", "arguments": {}}
+    # ── WhatsApp (Smart — fuzzy, two-phase, confirmation) ────────────────────
+    if 'whatsapp' in lower or ('send' in lower and ('message' in lower or 'msg' in lower or 'text' in lower) and re.search(r'\bto\b', lower)):
+        # — Read messages
+        read_wa = re.search(
+            r'(?:read|show|check|open|what(?:\'s| are| did| has)|any)\s+(?:my\s+)?(?:whatsapp\s+)?(?:messages?|chats?|msgs?)\s+(?:from|with|of)\s+(.+?)(?:\s*\?|$)',
+            lower
+        )
+        if read_wa:
+            contact = read_wa.group(1).strip().strip('.,!?')
+            return {"tool_name": "read_whatsapp_messages", "arguments": {"contact_name": contact}}
+
+        # — Just open WhatsApp
+        if re.search(r'\bopen\s+whatsapp\b|\blaunch\s+whatsapp\b|\bstart\s+whatsapp\b', lower):
+            if not any(w in lower for w in ['send', 'message', 'msg', 'text']):
+                return {"tool_name": "open_whatsapp", "arguments": {}}
+
+        # — Confirmed send: user said 'yes send it' / 'yes go ahead' after confirmation
+        confirm_wa = re.search(
+            r'(?:yes|yeah|yep|confirm|go ahead|send it|do it|ok|okay|haan|kar do)',
+            lower
+        )
+        # We detect confirmed send via pending state stored in conversation — look for last assistant msg
+        history_list_wa = list(conversation_history)
+        last_assistant = next(
+            (m['content'] for m in reversed(history_list_wa) if m['role'] == 'assistant'), ''
+        )
+        if confirm_wa and 'Should I go ahead and send this?' in last_assistant:
+            # Extract To/Message from the previous confirmation block
+            to_match = re.search(r'To:\s*(.+)', last_assistant)
+            msg_match = re.search(r'Message:\s*"(.+?)"', last_assistant)
+            if to_match and msg_match:
+                confirmed_contact = to_match.group(1).strip()
+                confirmed_msg = msg_match.group(1).strip()
+                return {"tool_name": "confirm_whatsapp_send", "arguments": {
+                    "contact_name": confirmed_contact, "message": confirmed_msg
+                }}
+
+        # — User picks a contact by number after disambiguation
+        pick_wa = re.search(r'^(?:jarvis\s+)?(?:send it to\s+)?(?:number\s+)?(\d+)(?:\s+.+)?$', lower)
+        if pick_wa and 'Which one should I send' in last_assistant:
+            choice_num = int(pick_wa.group(1)) - 1
+            # Extract names from numbered list in last assistant message
+            listed_names = re.findall(r'\d+\.\s+(.+)', last_assistant)
+            if 0 <= choice_num < len(listed_names):
+                # Get the message from conversation context
+                last_user_with_msg = next(
+                    (m['content'] for m in reversed(history_list_wa) if m['role'] == 'user' and ('send' in m['content'].lower() or 'message' in m['content'].lower())), ''
+                )
+                msg_from_ctx = re.search(r'(?:message|saying|say|tell(?:ing)?\s+(?:him|her|them)?)[:\s]+["\']?(.+?)["\']?\s*$', last_user_with_msg, re.I)
+                picked_name = listed_names[choice_num].strip()
+                picked_msg = msg_from_ctx.group(1).strip() if msg_from_ctx else ""
+                if picked_msg:
+                    return {"tool_name": "initiate_whatsapp_send", "arguments": {
+                        "contact_name": picked_name, "message": picked_msg
+                    }}
+
+        # — Send message: extract contact and message from sentence
+        send_wa = re.search(
+            r'(?:send|text|message|msg)\s+(?:a\s+)?(?:message\s+)?(?:to\s+)?(.+?)\s+(?:saying|saying that|that|:)[\s"\'](.+?)["\']?$',
+            lower
+        )
+        if not send_wa:
+            send_wa = re.search(
+                r'(?:send|text|message|msg)\s+(.+?)\s+(?:on|via|using)?\s*(?:whatsapp)?[:\s]+["\']?(.+?)["\']?$',
+                lower
+            )
+        if send_wa:
+            contact = send_wa.group(1).strip().strip('.,!?')
+            msg = send_wa.group(2).strip().strip('.,!?"\'')
+            # Phase 1: always ask to search first if name is short/ambiguous (could be multiple people)
+            if len(contact.split()) <= 2:
+                return {"tool_name": "initiate_whatsapp_send", "arguments": {
+                    "contact_name": contact, "message": msg
+                }}
+            return {"tool_name": "initiate_whatsapp_send", "arguments": {
+                "contact_name": contact, "message": msg
+            }}
+
+        # — Just search/find contact
+        search_wa = re.search(
+            r'(?:find|search|look\s+up|who\s+is)\s+(.+?)\s+(?:on|in)?\s*whatsapp',
+            lower
+        )
+        if search_wa:
+            return {"tool_name": "search_whatsapp_contact", "arguments": {
+                "name": search_wa.group(1).strip()
+            }}
+
 
     # ── Sticky note ────────────────────────────────────────────────────────
     note_m = re.search(r'(?:add|create|write|make|put|save)\s+(?:a\s+)?(?:short\s+)?(?:note|sticky|reminder)\b', lower)
@@ -180,13 +290,17 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     )
     if open_match:
         site = open_match.group(1).strip().strip('.,!?;:\'"')
-        non_web = ['notepad', 'calculator', 'settings', 'file explorer', 'task manager',
-                   'camera', 'calendar', 'photos', 'paint', 'terminal', 'cmd', 'powershell']
-        context_words = ['channel', 'video', 'playlist', 'on youtube', 'search', 'and', 'for me']
-        if site not in non_web and not any(w in site for w in context_words):
-            if len(site.split()) <= 3:
-                return {"tool_name": "open_website", "arguments": {"url": site}}
-            return {"tool_name": "open_google_search_in_browser", "arguments": {"query": site}}
+        
+        # Bypasses for context references: let the LLM handle "open that" since it has memory
+        context_refs = ['that', 'it', 'this', 'that site', 'this site', 'the site', 'the page', 'that page']
+        if site not in context_refs:
+            non_web = ['notepad', 'calculator', 'settings', 'file explorer', 'task manager',
+                       'camera', 'calendar', 'photos', 'paint', 'terminal', 'cmd', 'powershell']
+            context_words = ['channel', 'video', 'playlist', 'on youtube', 'search', 'and', 'for me', 'email', 'emails']
+            if site not in non_web and not any(w in site for w in context_words):
+                if len(site.split()) <= 3:
+                    return {"tool_name": "open_website", "arguments": {"url": site}}
+                return {"tool_name": "open_google_search_in_browser", "arguments": {"query": site}}
 
     # ── Close / Minimize / Maximize specific app ──────────────────────────
     close_m = re.match(r'^(?:jarvis\s+)?close\s+(.+?)(?:\s+(?:window|app))?\s*$', lower)
@@ -209,6 +323,163 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if maximize_m:
         return {"tool_name": "maximize_window", "arguments": {"app_name": maximize_m.group(1).strip().strip('.,!?')}}
 
+    # ── Read my screen / what am I looking at ──────────────────────────────
+    screen_kw = [
+        'what\'s on my screen', 'whats on my screen', 'what is on my screen',
+        'what am i looking at', 'what am i looking', 'describe my screen',
+        'read my screen', 'read the screen', 'what\'s on screen',
+        'what can you see', 'what\'s open', 'whats open on my screen',
+        'read what\'s on', 'tell me what\'s on', 'tell me what is on my screen',
+    ]
+    if any(kw in lower for kw in screen_kw):
+        return {"tool_name": "read_my_screen", "arguments": {}}
+
+    # ── Search on a specific site ────────────────────────────────────────────
+    # "search on Stack Overflow for Python error"
+    # "find Python projects on GitHub"
+    # "look up asyncio on Reddit"
+    # Pattern 1: search <query> on <site>
+    search_on_site_m1 = re.search(
+        r'(?:search|find|look\s+up|look\s+for)\s+(.+?)\s+(?:on|in)\s+([\w\s\.\-]+(?:\.com|\.in|\.org|\.net|\.io)?)\s*$',
+        lower
+    )
+    # Pattern 2: search on <site> for <query>
+    search_on_site_m2 = re.search(
+        r'(?:search|find|look\s+up|look\s+for)\s+(?:on|in)\s+([\w\s\.\-]+(?:\.com|\.in|\.org|\.net|\.io)?)\s+for\s+(.+)$',
+        lower
+    )
+    
+    match = search_on_site_m1 or search_on_site_m2
+    if match:
+        if match == search_on_site_m1:
+            q, site = match.group(1).strip(), match.group(2).strip()
+        else:
+            site, q = match.group(1).strip(), match.group(2).strip()
+            
+        # Exclude YouTube (handled by youtube_search) and Google
+        if site not in ('youtube', 'yt', 'google'):
+            return {"tool_name": "search_site", "arguments": {"query": q, "site_url": site}}
+
+    # ── Scrape / read a URL ──────────────────────────────────────────────────
+    # "read the page https://example.com"  /  "open example.com and tell me what it says"
+    url_in_prompt = re.search(
+        r'https?://[^\s]+|(?:www\.)?[\w\-]+\.(?:com|in|org|net|io|co)\b[^\s]*',
+        lower
+    )
+    scrape_trigger_kw = [
+        'read the page', 'read this page', 'read this url', 'read this link',
+        'what does this page say', 'what does this site say',
+        'scrape this', 'extract from this url', 'tell me what this page says',
+        'open this link and read', 'read the content of',
+    ]
+    if url_in_prompt and any(kw in lower for kw in scrape_trigger_kw):
+        url = url_in_prompt.group(0)
+        return {"tool_name": "scrape_url", "arguments": {"url": url}}
+
+    # ── File System Operations (Step 4) ──────────────────────────────────────
+
+    # READ FILE: "read my todo.txt", "what's in notes.txt", "open and read report.pdf"
+    read_file_m = re.search(
+        r'(?:read|open and read|show|what(?:\'s| is) in|contents? of|show me)\s+(?:the\s+|my\s+)?(?:file\s+)?["\']?([\w\s\-\.\/\\]+\.[\w]+)["\']?',
+        lower
+    )
+    if read_file_m and 'page' not in lower and 'url' not in lower:
+        fpath = read_file_m.group(1).strip()
+        return {"tool_name": "read_file", "arguments": {"path": fpath}}
+
+    # LIST DIRECTORY: "list files on my desktop", "what's in my downloads folder"
+    list_dir_kw = [
+        'list files', 'list the files', 'show files', 'what files', "what's in my",
+        'whats in my', 'show me my', 'what is in my', 'list my', 'list folder',
+        'show folder', 'list directory',
+    ]
+    if any(kw in lower for kw in list_dir_kw):
+        # Extract which folder
+        folder_m = re.search(
+            r'\b(desktop|downloads|documents|pictures|music|videos|onedrive)\b', lower
+        )
+        folder = folder_m.group(1) if folder_m else "Desktop"
+        return {"tool_name": "list_directory", "arguments": {"path": folder}}
+
+    # DELETE FILE: "delete todo.txt", "remove the file notes.txt", "trash my report"
+    delete_m = re.search(
+        r'(?:delete|remove|trash|get rid of)\s+(?:the\s+|my\s+|file\s+)?["\']?([\w\s\-\.\/\\]+\.[\w]+)["\']?',
+        lower
+    )
+    if delete_m:
+        fpath = delete_m.group(1).strip()
+        return {"tool_name": "delete_file", "arguments": {"path": fpath}}
+
+    # SEARCH FILES: "find my resume.pdf", "where is notes.txt", "search for *.pdf"
+    search_file_m = re.search(
+        r'(?:find|search for|where is|locate|look for)\s+(?:the\s+|my\s+|file\s+)?["\']?([\w\s\-\.\*]+\.[\w\*]+)["\']?',
+        lower
+    )
+    if search_file_m and 'email' not in lower and 'web' not in lower:
+        return {"tool_name": "search_files", "arguments": {"name": search_file_m.group(1).strip()}}
+
+    # ── Google Calendar (Step 8) ──────────────────────────────────────────────
+    
+    calendar_today_kw = [
+        "what's on my schedule today", "what do i have today", "my agenda today",
+        "what is on my calendar today", "today's schedule"
+    ]
+    if any(kw in lower for kw in calendar_today_kw):
+        return {"tool_name": "check_today_schedule", "arguments": {}}
+        
+    calendar_week_kw = [
+        "upcoming events", "what's on my calendar", "my schedule this week",
+        "events this week"
+    ]
+    if any(kw in lower for kw in calendar_week_kw):
+        return {"tool_name": "get_upcoming_events", "arguments": {"days": 7}}
+
+    # ── Morning Brief (Step 10) ───────────────────────────────────────────────
+    brief_kw = [
+        "morning brief", "good morning", "morning summary"
+    ]
+    if any(kw in lower for kw in brief_kw):
+        return {"tool_name": "get_morning_brief", "arguments": {}}
+
+    # ── Gmail / Email (Step 5) ────────────────────────────────────────────────
+
+    # UNREAD: "do I have any unread emails", "show unread", "any new emails"
+    if re.search(r'\bunread\b.*\bemail', lower) or re.search(r'\bemail.*\bunread\b', lower) or \
+       re.search(r'\bnew\s+emails?\b', lower) or lower.strip() in ('any new emails', 'show unread emails'):
+        return {"tool_name": "list_unread", "arguments": {"max_results": 5}}
+
+    # SUMMARIZE: "summarize my inbox", "what emails do I have", "check my inbox"
+    summarize_kw = [
+        'summarize my inbox', 'summarize inbox', 'email summary',
+        'what emails do i have', 'check my inbox', 'morning emails',
+        'what is in my inbox', "what's in my inbox",
+    ]
+    if any(kw in lower for kw in summarize_kw):
+        return {"tool_name": "summarize_inbox", "arguments": {"max_results": 10}}
+
+    # CHECK EMAILS by topic/sender: "check my emails", "any emails about X", "emails from Y"
+    email_check_kw = [
+        'check my email', 'check email', 'check emails',
+        'any emails', 'do i have emails', 'any email',
+        'emails about', 'emails from', 'email from',
+        'internship email', 'college email', 'interview email',
+        'competition email', 'job email', 'offer letter',
+    ]
+    if any(kw in lower for kw in email_check_kw):
+        # Extract topic if mentioned: "check emails about internship" -> query="internship"
+        topic_m = re.search(
+            r'(?:about|regarding|for|on|related to)\s+([a-z][\w\s]{2,30}?)(?:\s+email|\s*$)',
+            lower
+        )
+        sender_m = re.search(r'from\s+([\w@\.\-]+)', lower)
+        if topic_m:
+            query = topic_m.group(1).strip()
+        elif sender_m:
+            query = f"from:{sender_m.group(1).strip()}"
+        else:
+            query = "is:unread"
+        return {"tool_name": "check_emails", "arguments": {"query": query, "max_results": 5}}
+
     return None  # Fall through to LLM router
 
 
@@ -219,6 +490,7 @@ async def chat_endpoint(request: ChatRequest):
     # ── PATH A: Agentic Planner for complex multi-step tasks ──────────────
     if is_complex_task(request.prompt):
         conversation_history.append({"role": "user", "content": request.prompt})
+        _save_session()
 
         async def agentic_stream():
             full_narrative = []
@@ -237,6 +509,7 @@ async def chat_endpoint(request: ChatRequest):
                 "role": "assistant",
                 "content": "\n".join(full_narrative)
             })
+            _save_session()
 
         return StreamingResponse(agentic_stream(), media_type="text/event-stream")
 
@@ -256,6 +529,7 @@ async def chat_endpoint(request: ChatRequest):
         question = tool_intent["arguments"].get("question", "Could you clarify that?")
         conversation_history.append({"role": "user", "content": request.prompt})
         conversation_history.append({"role": "assistant", "content": question})
+        _save_session()
 
         async def clarification_stream():
             for char in question:
@@ -318,9 +592,12 @@ async def chat_endpoint(request: ChatRequest):
     # Only call screen inspector if no tool result (avoids double-call)
     if not tool_output_str:
         try:
-            current_screen = get_screen_text_summary()
+            current_screen = describe_screen_for_llm()
         except Exception:
-            current_screen = ""
+            try:
+                current_screen = get_screen_text_summary()
+            except Exception:
+                current_screen = ""
 
     context_parts = []
     if tool_output_str:
@@ -333,14 +610,20 @@ async def chat_endpoint(request: ChatRequest):
 
     # 7. Save user turn to history
     conversation_history.append({"role": "user", "content": request.prompt})
+    _save_session()
 
-    # 8. Stream LLM response
+    # 8. Stream LLM response — pass context as tool_result
     async def response_stream_with_history():
         full_response = ""
-        async for chunk in generate_chat_response(request.prompt, context=context, history=history_list):
+        async for chunk in generate_chat_response(
+            user_message=request.prompt,
+            tool_name="context" if context else None,
+            tool_result=context if context else None
+        ):
             full_response += chunk
             yield chunk
         conversation_history.append({"role": "assistant", "content": full_response})
+        _save_session()
 
     return StreamingResponse(
         response_stream_with_history(),

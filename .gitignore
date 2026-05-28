@@ -23,3 +23,8 @@ Thumbs.db
 *.mp3
 *.txt~
 *~
+
+# Sensitive credentials
+credentials.json
+token.json
+

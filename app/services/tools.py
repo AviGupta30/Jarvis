@@ -20,6 +20,75 @@ from app.services.whatsapp import open_whatsapp, send_whatsapp_message
 pyautogui.FAILSAFE = False
 
 
+# ── Screen Reading (via screen_reader.py) ─────────────────────────────────
+
+def read_my_screen() -> str:
+    """Read and describe all visible text on the current screen using OCR + accessibility tree."""
+    try:
+        from app.services.screen_reader import read_screen_as_tool
+        return read_screen_as_tool()
+    except Exception as e:
+        return f"Could not read screen: {e}"
+
+
+def play_video_in_browser() -> str:
+    """
+    Play a video currently visible in the active browser tab.
+    Used when user says 'play that video', 'play it', 'play the 52 minute one', etc.
+    Tries multiple strategies in order:
+      1. Focus browser window
+      2. Press Space (plays video if player is focused)
+      3. Press 'k' (YouTube keyboard shortcut for play/pause)
+      4. Tab to first video result and press Enter
+    """
+    import time
+    try:
+        import pygetwindow as gw
+        # Find and focus browser window
+        browser_names = ['chrome', 'edge', 'firefox', 'browser', 'youtube']
+        browser_win = None
+        for win in gw.getAllWindows():
+            if win.title and any(b in win.title.lower() for b in browser_names):
+                browser_win = win
+                break
+
+        if browser_win:
+            if browser_win.isMinimized:
+                browser_win.restore()
+            browser_win.activate()
+            time.sleep(0.5)
+    except Exception:
+        pass
+
+    time.sleep(0.3)
+
+    # Strategy 1: If YouTube is open and video player is visible, 'k' toggles play/pause
+    # Strategy 2: Space plays/pauses most video players
+    # Try clicking the center of screen first (often lands on video player)
+    try:
+        screen_w, screen_h = pyautogui.size()
+        # Click upper-center — where the first YouTube search result typically is
+        pyautogui.click(screen_w // 2, int(screen_h * 0.30))
+        time.sleep(0.3)
+        # Press 'k' — YouTube play/pause shortcut
+        pyautogui.press('k')
+        time.sleep(0.5)
+        return "Pressed play on the video."
+    except Exception:
+        pass
+
+    # Strategy 3: Tab to first video thumbnail and press Enter
+    try:
+        # Press Tab several times to reach the first video result
+        for _ in range(3):
+            pyautogui.press('tab')
+            time.sleep(0.15)
+        pyautogui.press('enter')
+        return "Navigated to and opened the video."
+    except Exception as e:
+        return f"Could not play video: {e}"
+
+
 # ─── Web & Information ──────────────────────────────────────────────────────
 
 def _extract_location(query: str) -> str:
@@ -65,44 +134,24 @@ def get_weather(location: str) -> str:
 
 def get_info(query: str) -> str:
     """
-    Smart information lookup:
-    - Weather queries → wttr.in (reliable, real-time)
-    - Everything else → DuckDuckGo text search
-    Does NOT open any browser.
+    Smart information lookup (Step 3 upgrade):
+    - Weather queries  -> wttr.in (real-time, reliable)
+    - Everything else  -> web_search.smart_search() (DuckDuckGo + Wikipedia fallback)
+    Does NOT open any browser window.
     """
     lower = query.lower()
 
     # Route weather queries to the dedicated weather API
-    weather_kw = ['weather', 'temperature', 'temp', 'rain', 'forecast', 'humidity', 'mausam', 'barish']
+    weather_kw = ['weather', 'temperature', 'temp', 'rain', 'forecast',
+                  'humidity', 'mausam', 'barish']
     if any(kw in lower for kw in weather_kw):
         location = _extract_location(query)
         return get_weather(location)
 
-    # General knowledge — Google Search (via googlesearch-python)
+    # All other queries -> web_search module (DuckDuckGo primary, Wikipedia fallback)
     try:
-        from googlesearch import search
-        import requests
-        from bs4 import BeautifulSoup
-        
-        urls = list(search(query, num_results=3, lang="en"))
-        if not urls:
-            return f"No results found for: {query}"
-        
-        snippets = []
-        for url in urls[:2]:
-            try:
-                resp = requests.get(url, timeout=3, headers={"User-Agent": "Mozilla/5.0"})
-                if resp.status_code == 200:
-                    soup = BeautifulSoup(resp.text, 'html.parser')
-                    text = " ".join(p.text for p in soup.find_all('p'))
-                    snippets.append(text[:300])
-            except Exception:
-                continue
-                
-        if not snippets:
-            return f"Found results but couldn't extract text. URLs: {', '.join(urls)}"
-            
-        return " | ".join(snippets)[:1000]
+        from app.services.web_search import smart_search
+        return smart_search(query)
     except Exception as e:
         return f"Search failed: {e}"
 
@@ -156,12 +205,18 @@ SITE_SHORTCUTS = {
 def open_safe_website(url: str, browser: str = None) -> str:
     """Opens a specific website in the browser."""
     url_lower = url.lower().strip()
-    if url_lower in SITE_SHORTCUTS:
-        final_url = SITE_SHORTCUTS[url_lower]
+    
+    # Strip accidental www. prefix for shortcut matching
+    clean_url = re.sub(r'^www\.', '', url_lower)
+    
+    if clean_url in SITE_SHORTCUTS:
+        final_url = SITE_SHORTCUTS[clean_url]
     elif url.startswith("http"):
         final_url = url
+    elif "." in clean_url and not any(space in clean_url for space in [' ', '\n', '\t']):
+        final_url = f"https://{clean_url}"
     else:
-        final_url = f"https://www.{url_lower.replace(' ', '')}.com"
+        final_url = f"https://www.{clean_url.replace(' ', '')}.com"
         
     if browser and "chrome" in browser.lower():
         subprocess.Popen(f'start chrome "{final_url}"', shell=True)
@@ -440,10 +495,13 @@ def play_music(song: str) -> str:
                 win.restore()
                 win.activate()
                 time.sleep(1.0)
-                # Fallback: Tab from search bar to Best Result, then Enter
-                pyautogui.press('tab')
-                time.sleep(0.3)
+                # Fallback: Tab from search bar to Top Result Play button, then Enter
+                for _ in range(3):
+                    pyautogui.press('tab')
+                    time.sleep(0.2)
                 pyautogui.press('enter')
+                time.sleep(0.5)
+                pyautogui.press('enter')  # Sometimes needs a second enter to play
         except Exception as e:
             pass
 
@@ -864,9 +922,30 @@ def send_to_copilot(question: str, wait_seconds: float = 8.0) -> str:
     return response[:3000] if response else "(Could not retrieve Copilot response)"
 
 
+# ── Web Search Tools (Step 3) ─────────────────────────────────────────────────
+
+def search_site_tool(query: str, site_url: str) -> str:
+    """Search for a query within a specific website using DuckDuckGo site: operator."""
+    try:
+        from app.services.web_search import search_site
+        return search_site(query, site_url)
+    except Exception as e:
+        return f"Site search failed: {e}"
+
+
+def scrape_url_tool(url: str) -> str:
+    """Read and extract readable text content from a specific URL."""
+    try:
+        from app.services.web_search import scrape_url
+        return scrape_url(url)
+    except Exception as e:
+        return f"Could not read URL: {e}"
+
+
 TOOL_REGISTRY = {
     # Information & Web
     "get_info": get_info,
+
     "get_system_time": get_system_time,
     "get_system_info": get_system_info,
     "open_website": open_safe_website,
@@ -906,9 +985,13 @@ TOOL_REGISTRY = {
     "set_reminder": set_reminder,
     # Math
     "calculate": calculate,
-    # WhatsApp
-    "open_whatsapp": open_whatsapp,
-    "send_whatsapp_message": send_whatsapp_message,
+    # WhatsApp (Smart — Step 11)
+    "open_whatsapp":            lambda: __import__('app.services.whatsapp_smart', fromlist=['open_whatsapp']).open_whatsapp(),
+    "search_whatsapp_contact":  lambda name: __import__('app.services.whatsapp_smart', fromlist=['search_whatsapp_contact']).search_whatsapp_contact(name),
+    "initiate_whatsapp_send":   lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),
+    "confirm_whatsapp_send":    lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['confirm_whatsapp_send']).confirm_whatsapp_send(contact_name, message),
+    "read_whatsapp_messages":   lambda contact_name, count=5: __import__('app.services.whatsapp_smart', fromlist=['read_whatsapp_messages']).read_whatsapp_messages(contact_name, count),
+    "send_whatsapp_message":    lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),  # routes to confirm flow
     # Memory
     "remember_preference": remember_preference,
     "list_learned_skills": list_learned_skills,
@@ -924,4 +1007,45 @@ TOOL_REGISTRY = {
     "read_active_window_text": read_active_window_text,
     "open_windows_copilot": open_windows_copilot,
     "send_to_copilot": send_to_copilot,
+    # Screen vision (Step 1)
+    "read_my_screen": read_my_screen,
+    # Browser video playback (bug fix)
+    "play_video_in_browser": play_video_in_browser,
+    # Web search (Step 3)
+    "search_site": search_site_tool,
+    "scrape_url": scrape_url_tool,
+    # Full file system ops (Step 4)
+    "read_file":        lambda path: __import__('app.services.file_ops', fromlist=['read_file']).read_file(path),
+    "write_file":       lambda path, content: __import__('app.services.file_ops', fromlist=['write_file']).write_file(path, content),
+    "append_file":      lambda path, content: __import__('app.services.file_ops', fromlist=['append_file']).append_file(path, content),
+    "list_directory":   lambda path='Desktop': __import__('app.services.file_ops', fromlist=['list_directory']).list_directory(path),
+    "move_file":        lambda src, dst: __import__('app.services.file_ops', fromlist=['move_file']).move_file(src, dst),
+    "delete_file":      lambda path: __import__('app.services.file_ops', fromlist=['delete_file']).delete_file(path),
+    "search_files":     lambda name, root_dir='home': __import__('app.services.file_ops', fromlist=['search_files']).search_files(name, root_dir),
+    "create_folder":    lambda path: __import__('app.services.file_ops', fromlist=['create_folder']).create_folder(path),
+    "bulk_rename":      lambda directory, find, replace: __import__('app.services.file_ops', fromlist=['bulk_rename']).bulk_rename(directory, find, replace),
+    "diff_files":       lambda path1, path2: __import__('app.services.file_ops', fromlist=['diff_files']).diff_files(path1, path2),
+    # Gmail integration (Step 5)
+    "check_emails":     lambda query='is:unread', max_results=5: __import__('app.services.gmail_tool', fromlist=['check_emails']).check_emails(query, max_results),
+    "list_unread":      lambda max_results=5: __import__('app.services.gmail_tool', fromlist=['list_unread']).list_unread(max_results),
+    "get_email_body":   lambda email_id: __import__('app.services.gmail_tool', fromlist=['get_email_body']).get_email_body(email_id),
+    "summarize_inbox":  lambda max_results=10: __import__('app.services.gmail_tool', fromlist=['summarize_inbox']).summarize_inbox(max_results),
+    # Browser automation (Step 6)
+    "browse_and_read":  lambda url: __import__('app.services.browser_tool', fromlist=['browse_and_read']).browse_and_read(url),
+    "search_on_site":   lambda site_url, query: __import__('app.services.browser_tool', fromlist=['search_on_site']).search_on_site(site_url, query),
+    "click_element":    lambda page_url, text: __import__('app.services.browser_tool', fromlist=['click_element']).click_element(page_url, text),
+    "scroll_and_read":  lambda url, px=1000: __import__('app.services.browser_tool', fromlist=['scroll_and_read']).scroll_and_read(url, px),
+    # Google Calendar (Step 8)
+    "get_upcoming_events": lambda days=7: __import__('app.services.calendar_tool', fromlist=['get_upcoming_events']).get_upcoming_events(days),
+    "check_today_schedule": lambda: __import__('app.services.calendar_tool', fromlist=['check_today_schedule']).check_today_schedule(),
+    "add_event":        lambda title, date, time=None, notes="": __import__('app.services.calendar_tool', fromlist=['add_event']).add_event(title, date, time, notes),
+    # Persistent Memory (Step 10)
+    "save_fact":        lambda topic, fact: __import__('app.services.memory_tool', fromlist=['save_fact']).save_fact(topic, fact),
+    "recall_facts":     lambda topic=None: __import__('app.services.memory_tool', fromlist=['recall_facts']).recall_facts(topic),
+    "get_morning_brief": lambda: __import__('app.services.memory_tool', fromlist=['get_morning_brief']).get_morning_brief(),
+    "update_fact":      lambda topic, old_fact, new_fact: __import__('app.services.memory_tool', fromlist=['update_fact']).update_fact(topic, old_fact, new_fact),
+    "forget_fact":      lambda topic: __import__('app.services.memory_tool', fromlist=['forget_fact']).forget_fact(topic),
+    # Extended browser tools (Step 6 enhanced)
+    "fill_form":        lambda url, fields: __import__('app.services.browser_tool', fromlist=['fill_form']).fill_form(url, fields),
+    "browse_and_paginate": lambda url, pages=3: __import__('app.services.browser_tool', fromlist=['browse_and_paginate']).browse_and_paginate(url, pages),
 }

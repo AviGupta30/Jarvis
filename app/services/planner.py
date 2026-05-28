@@ -52,9 +52,31 @@ AVAILABLE TOOLS (call by exact name with arguments as JSON):
   open_website(url)                         — open a URL in browser
   take_screenshot()                         — screenshot to Desktop
   create_folder(folder_name)               — create folder on Desktop
-  create_file(filepath, content)           — create text file
+  read_file(path)                           — read contents of any text file or PDF
+  write_file(path, content)                 — create or overwrite a file with content
+  append_file(path, content)                — add content to existing file
+  list_directory(path)                      — list files/folders with sizes and dates
+  move_file(src, dst)                       — move or rename a file
+  delete_file(path)                         — move to Recycle Bin safely
+  search_files(name, root_dir)              — find files by name or pattern (supports *)
+  create_folder(path)                       — create folder anywhere
+  create_word_doc(filename, content)        — create .docx on Desktop
   get_info(query)                           — search the web for information
   calculate(expression)                     — evaluate math
+  check_emails(query, max_results)          — search Gmail inbox by keyword/sender/topic
+  list_unread(max_results)                  — list unread emails with preview
+  get_email_body(email_id)                  — read full body of a specific email by ID
+  summarize_inbox(max_results)              — summarize recent emails in inbox
+  browse_and_read(url)                      — open URL and extract all visible text
+  search_on_site(site_url, query)           — find search box on site, type query, get results
+  click_element(page_url, text)             — click a button/link by its visible text
+  scroll_and_read(url, px=1000)             — scroll down to load dynamic content
+  get_upcoming_events(days)                 — get calendar events for next N days
+  check_today_schedule()                    — get calendar events for today
+  add_event(title, date, time, notes)       — add an event to Google Calendar
+  save_fact(topic, fact)                    — remember a fact about a topic
+  recall_facts(topic)                       — read saved facts about a topic
+  get_morning_brief()                       — summarize calendar and emails for the morning
   DYNAMIC(description)                      — for anything not in the above list, write a description and Jarvis will generate code
 
 OUTPUT FORMAT — return ONLY valid JSON, exactly this structure:
@@ -201,26 +223,27 @@ async def run_agentic_plan(task: str) -> AsyncGenerator[str, None]:
     """
     # ── Phase 1: Plan ─────────────────────────────────────────────────────────
     context = get_screen_text_summary()
-    yield f"[PLAN] Analyzing your request — breaking it into steps..."
+    yield "I am analyzing your request and breaking it down into steps."
 
     plan = await _call_planner(task, context)
     steps = plan.get("steps", [])
     summary = plan.get("plan_summary", "Working on it...")
 
     if not steps:
-        yield f"[DONE] I couldn't break this task into steps. Let me try directly.\n"
+        yield "I couldn't break this into steps, so I'll try to handle it directly."
         # Fall back to dynamic skill
         result = await run_dynamic_skill(task, ui_context=context)
-        yield f"[RESULT] {result}"
+        yield f"Result: {result}"
         return
 
-    yield f"[PLAN] {summary} — {len(steps)} step(s) identified."
+    yield f"Plan ready: {summary}. I have identified {len(steps)} steps to complete this."
 
     # ── Phase 2: Execute steps ────────────────────────────────────────────────
     results: dict = {}       # stored results from steps
     completed: list = []     # log of completed steps
     current_steps = steps
     step_index = 0
+    replan_attempts = 0      # Guard against infinite loops
 
     while step_index < len(current_steps):
         step = current_steps[step_index]
@@ -228,7 +251,7 @@ async def run_agentic_plan(task: str) -> AsyncGenerator[str, None]:
         desc = step.get("description", f"Step {step_num}")
         store_as = step.get("store_result_as")
 
-        yield f"[STEP {step_num}] {desc}"
+        yield f"Starting Step {step_num}: {desc}."
 
         success, output = await _execute_step(step, results)
 
@@ -239,11 +262,18 @@ async def run_agentic_plan(task: str) -> AsyncGenerator[str, None]:
 
         if success:
             completed.append(step)
-            yield f"[STEP {step_num} ✓] {output[:150]}"
+            # Remove long output text from speech, just say it succeeded
+            yield f"Step {step_num} completed successfully."
             step_index += 1
+            replan_attempts = 0  # reset on success
         else:
+            if replan_attempts >= 2:
+                yield f"I've failed to recover after multiple attempts. Stopping here. The error was: {output[:150]}"
+                return
+
+            replan_attempts += 1
             # Step failed — try to replan
-            yield f"[STEP {step_num} ✗] Failed: {output[:120]}. Replanning..."
+            yield f"Step {step_num} failed. I am adjusting my plan and trying again."
 
             context = get_screen_text_summary()
             next_num = step_num + 1
@@ -258,57 +288,58 @@ async def run_agentic_plan(task: str) -> AsyncGenerator[str, None]:
             new_steps = new_plan.get("steps", [])
 
             if not new_steps or new_plan.get("plan_summary") == "failed":
-                yield f"[DONE] I couldn't recover from that failure. Here's what I completed:\n"
-                for c in completed:
-                    yield f"  ✓ Step {c['step']}: {c['description']}"
-                yield f"\nFailed at Step {step_num}: {desc} — {output[:200]}"
+                yield f"I couldn't figure out a way to recover. I have stopped working."
                 return
 
-            yield f"[REPLAN] Adjusted approach — {len(new_steps)} remaining step(s)."
+            yield f"I've updated my approach. There are {len(new_steps)} steps remaining."
             current_steps = new_steps
             step_index = 0  # restart loop with new steps
             continue
 
     # ── Phase 3: Summary ──────────────────────────────────────────────────────
-    yield f"[DONE] All {len(completed)} step(s) complete."
+    yield f"Task complete. All steps finished."
     # Build a short spoken summary from the results
     key_results = [
-        f"Step {c['step']} ({c['description'][:40]}): {c.get('result', 'done')[:80]}"
+        f"For step {c['step']} ({c['description'][:40]}), the result was: {c.get('result', 'done')[:80]}"
         for c in completed[-3:]  # last 3 steps
     ]
-    yield "[SUMMARY] " + " | ".join(key_results)
+    yield "Summary: " + ". ".join(key_results)
 
 
 def is_complex_task(prompt: str) -> bool:
     """
-    Returns True ONLY for tasks that genuinely need the multi-step agentic planner.
-    Deliberately conservative: simple commands with 'then', 'first', 'and' do NOT trigger.
+    Returns True when a task genuinely needs the multi-step agentic planner.
+    Conservative for simple commands, broad enough to catch real pipelines.
+
+    FIXED: Previous version had dead code — patterns below 'return False' were
+    never reached. All patterns are now live and properly ordered.
     """
     lower = prompt.lower().strip()
 
-    # Must be a substantive request to be a real multi-step pipeline
-    if len(lower.split()) < 7:
+    # Very short commands are never complex
+    if len(lower.split()) < 6:
         return False
 
-    # Pattern 1: File reading + output creation pipeline
-    file_read = [
+    # -- Pattern 1: File reading + output creation pipeline --
+    file_read_kw = [
         "from the pdf", "from my pdf", "read the pdf", "read my pdf",
         "extract from", "questions from", "content of the pdf",
         "from the document", "from the file", "my assignment pdf",
-        "using the pdf", "in the pdf",
+        "using the pdf", "in the pdf", "from the doc",
     ]
-    file_output = [
+    file_output_kw = [
         "create a word", "make a word doc", "save to word", "write to a file",
         "create a document", "make a document", "copy into word",
         "paste into word", "save answers", "save the answers",
-        "create a new file with", "write the answers",
+        "create a new file", "write the answers", "save it to",
+        "write it to", "put it in a file",
     ]
-    has_file_read = any(w in lower for w in file_read)
-    has_file_output = any(w in lower for w in file_output)
+    has_file_read = any(w in lower for w in file_read_kw)
+    has_file_output = any(w in lower for w in file_output_kw)
     if has_file_read and has_file_output:
         return True
 
-    # Pattern 2: Copilot automation with file input
+    # -- Pattern 2: Copilot automation with file input --
     copilot_kw = [
         "ask copilot each", "ask copilot the questions",
         "use copilot to answer", "copilot each question",
@@ -317,61 +348,80 @@ def is_complex_task(prompt: str) -> bool:
     if any(w in lower for w in copilot_kw) and has_file_read:
         return True
 
-    # Pattern 3: Explicit batch operations over many files
+    # -- Pattern 3: Batch file operations --
     batch_kw = [
         "each question", "every question", "all the questions",
         "for each file", "for every file", "rename all files",
         "move all files", "organize all files", "batch rename",
-        "batch convert", "batch compress",
+        "batch convert", "batch compress", "all files in",
+        "every file in",
     ]
     if any(w in lower for w in batch_kw):
         return True
 
-    return False
-
-
-    # Explicit multi-step connectors
-    multi_step_words = [
-        " and then ", " then ", " after that ", " afterwards ", " next ",
-        " followed by ", " after opening ", " once it opens ", " once you open ",
-        " first ", "step by step", "step-by-step",
+    # -- Pattern 4: Email + action chains (NEW) --
+    email_kw = [
+        "check my email", "check my mail", "check my gmail",
+        "look at my email", "emails about", "email from",
+        "any emails", "new emails", "unread emails",
+        "internship email", "internship mail",
+        "competition email", "college email",
     ]
-    if any(w in lower for w in multi_step_words):
+    email_action_kw = [
+        "and", "then", "if yes", "if any", "if there are",
+        "make a note", "create a file", "save them", "list them",
+        "write them", "tell me", "summarize",
+    ]
+    has_email = any(w in lower for w in email_kw)
+    has_email_action = any(w in lower for w in email_action_kw)
+    if has_email and has_email_action:
         return True
 
-    # Requires reading file content
-    file_read_words = [
-        "from the pdf", "from my pdf", "the questions in", "based on the",
-        "read the pdf", "extract from", "questions from", "content of",
-        "from the file", "from the document",
+    # -- Pattern 5: Browser + action chains (NEW) --
+    browser_nav_kw = [
+        "go to ", "browse ", "open the site", "navigate to",
+        "on internshala", "on linkedin", "on naukri", "on github",
+        "on the website", "on the site", "on the page",
+        ".com and", ".in and",
     ]
-    if any(w in lower for w in file_read_words):
+    browser_action_kw = [
+        "and find", "and read", "and get", "and list", "and save",
+        "and tell me", "and create", "and download", "and note",
+        "and summarize", "and write",
+    ]
+    has_browser_nav = any(w in lower for w in browser_nav_kw)
+    has_browser_action = any(w in lower for w in browser_action_kw)
+    if has_browser_nav and has_browser_action:
         return True
 
-    # Requires looping over multiple items
-    loop_words = [
-        "each question", "every question", "all the questions",
-        "for each", "for every", "all of them", "all files",
-        "batch", "multiple",
+    # -- Pattern 6: Explicit multi-step connectors (length-gated) --
+    multi_step_kw = [
+        " and then ", " after that ", " afterwards ",
+        " followed by ", " after opening ", " once it opens ",
+        " once you open ", "step by step", "step-by-step",
     ]
-    if any(w in lower for w in loop_words):
+    if any(w in lower for w in multi_step_kw) and len(lower.split()) >= 10:
         return True
 
-    # Requires waiting for apps / UI interaction
-    wait_words = [
-        "open copilot", "open word", "ask copilot", "type in copilot",
-        "ask it", "paste into", "copy into", "save as",
-        "wait for", "once it", "when it opens",
+    # -- Pattern 7: Multi-verb pipelines (3+ distinct action verbs) --
+    action_verbs = [
+        "open", "copy", "paste", "create", "save", "download",
+        "read", "write", "send", "ask", "type", "click", "find",
+        "rename", "move", "convert", "compress", "organize",
+        "search", "browse", "check", "extract", "summarize",
     ]
-    if any(w in lower for w in wait_words):
-        return True
-
-    # Multiple distinct action verbs (open + copy + save, etc.)
-    action_verbs = ["open", "copy", "paste", "create", "save", "download",
-                    "read", "write", "send", "ask", "type", "click", "find",
-                    "rename", "move", "convert", "compress", "organize"]
     found_verbs = [v for v in action_verbs if f" {v} " in f" {lower} "]
-    if len(found_verbs) >= 3:
+    if len(found_verbs) >= 3 and len(lower.split()) >= 12:
+        return True
+
+    # -- Pattern 8: Waiting on apps / UI interaction --
+    wait_kw = [
+        "open copilot", "open word", "ask copilot", "type in copilot",
+        "paste into", "copy into", "wait for", "once it opens",
+        "when it opens",
+    ]
+    if any(w in lower for w in wait_kw) and len(lower.split()) >= 8:
         return True
 
     return False
+
