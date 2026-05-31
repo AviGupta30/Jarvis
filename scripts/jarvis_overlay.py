@@ -84,7 +84,7 @@ def generate_arc_reactor(size: int = 220) -> Image.Image:
 
 # ── Overlay window ──────────────────────────────────────────────────────────
 class JarvisOverlay:
-    W = H = 220  # canvas size
+    W = H = 160  # canvas size
 
     def __init__(self):
         self.root = tk.Tk()

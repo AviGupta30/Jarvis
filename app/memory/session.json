@@ -1,50 +1,46 @@
 [
   {
-    "role": "user",
-    "content": "Summarize what's currently on my screen."
-  },
-  {
-    "role": "assistant",
-    "content": "You're looking at a Python code editor with a file named 'main.py' open, it's a FastAPI application with various imports and routes defined, and there's a warning about a missing closing bracket, along with a debug console output at the bottom."
+    "role": "system",
+    "content": "[Conversation Summary]: A user interacted with Jarvis to adjust the layout of their screens, specifically VS Code and Microsoft Edge. The user successfully adjusted the positions of the screens, with VS Code initially being placed at the upper left position and later moved to the left and right sides. Microsoft Edge was also adjusted to the upper right and right sides of the screen, with the assistant noting that it was already at these positions in some cases."
   },
   {
     "role": "user",
-    "content": "Tell me what's currently on my screen at the moment."
+    "content": "Adjust my current screen to upper left. Upper left?"
   },
   {
     "role": "assistant",
-    "content": "You're currently viewing the Google Antigravity page in Microsoft Edge, it says authentication was successful and there's a link to click if the redirect isn't working automatically."
+    "content": "Current screen is now at the upper left. Yes, upper left."
   },
   {
     "role": "user",
-    "content": "Tune in next week for a new episode of the END OF THE WORLD."
+    "content": "Tanscribe in Microsoft Edge tab to bottom right."
   },
   {
     "role": "assistant",
-    "content": "You're looking at the Visual Studio Code editor with your Jarvis project open, specifically the main.py file, and there's a terminal output showing a Uvicorn server running on http://127.0.0.1:8000."
+    "content": "Microsoft Edge tab is now at the bottom right."
   },
   {
     "role": "user",
-    "content": "Open a file named avi underscore resume which is located on desktop."
+    "content": "Adjust the current screen to bottom right."
   },
   {
     "role": "assistant",
-    "content": "I couldn't find a file named avi_resume on your desktop, 2025."
+    "content": "Current screen is now at the bottom right."
   },
   {
     "role": "user",
-    "content": "Mom, you have to ask her four times. She keeps it so much. What? What did I say four times? You sent the OTP. Jundit."
+    "content": "Adjust the current screen to upper left."
   },
   {
     "role": "assistant",
-    "content": "It seems like you're having a conversation, possibly about someone who needs to be asked multiple times to share something, and there's a mention of an OTP being sent, but I'm not sure what Jundit refers to. You're still looking at the Visual Studio Code editor with your Jarvis project open."
+    "content": "Current screen is now at the upper left position."
   },
   {
     "role": "user",
-    "content": "Do me a favour and search for DSA questions means go through site striver."
+    "content": "Adjust the current screen to upper right."
   },
   {
     "role": "assistant",
-    "content": "I tried accessing the striver website to search for DSA questions, but it seems the site is unreachable, I'm getting a connection error, it's unable to resolve the host 'striver'."
+    "content": "Current screen is now at the upper right."
   }
 ]

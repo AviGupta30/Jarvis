@@ -261,46 +261,143 @@ def keyword_detect_tool(prompt: str) -> dict | None:
             }}
 
 
-    # ── Sticky note ────────────────────────────────────────────────────────
-    note_m = re.search(r'(?:add|create|write|make|put|save)\s+(?:a\s+)?(?:short\s+)?(?:note|sticky|reminder)\b', lower)
-    if note_m:
-        content_m = re.search(r'(?:note|sticky|reminder)\s+(?:saying|that says|:)\s*["\']?(.+?)["\']?\s*$', lower)
-        content = content_m.group(1).strip() if content_m else ""
-        if not content:
-            return {"tool_name": "ask_for_clarification", "arguments": {"question": "What should I write in the note?"}}
-        return {"tool_name": "create_sticky_note", "arguments": {"content": content}}
+    # ── Smart Web Action (Isolated Navigator) ──────────────────────────────
+    smart_nav_1 = re.search(r'(?:go to|open)\s+(?:the\s+)?(?:site of\s+)?(.+?)\s+and\s+(search for.+|find.+|do.+)$', lower)
+    if smart_nav_1:
+        site = smart_nav_1.group(1).strip()
+        task = smart_nav_1.group(2).strip()
+        return {"tool_name": "smart_web_action", "arguments": {"site_name": site, "task": task}}
 
-    if re.search(r'(?:delete|remove|close|clear)\s+(?:the\s+)?(?:sticky\s+)?note', lower):
-        return {"tool_name": "close_sticky_notes", "arguments": {}}
+    smart_nav_2 = re.search(r'(?:search for|find)\s+(.+?)\s+(?:in|on|at)\s+(.+?)(?:\s+site|\s+website)?$', lower)
+    if smart_nav_2 and not "whatsapp" in smart_nav_2.group(2).lower() and not "youtube" in smart_nav_2.group(2).lower():
+        task = "search for " + smart_nav_2.group(1).strip()
+    # ── Adjust window layout ───────────────────────────────────────────────
+    # Semantic approach: works for ANY phrasing the user might say, e.g.:
+    #   "tune in screen of VS Code to upper left"
+    #   "set the Microsoft Edge tab to upper right"
+    #   "snap Chrome to left"
+    #   "adjust my window to 60% horizontally"
+    #   "move it to bottom right"
+    #   "put VS Code in the upper left"
 
-    # ── Open in specific browser ───────────────────────────────────────────────
-    browser_m = re.search(
-        r'(?:open|launch|go to)\s+(.+?)\s+(?:using|in|with|via|on)\s+(chrome|edge|firefox)',
-        lower
-    )
-    if browser_m:
-        site = browser_m.group(1).strip().strip('.,!?')
-        browser = browser_m.group(2).strip()
-        return {"tool_name": "open_website", "arguments": {"url": site, "browser": browser}}
+    def _semantic_window_adjust(text: str):
+        """
+        Semantic window layout parser.
+        Returns {"position":..., "width_percent":..., "height_percent":..., "app_name":...} or None.
+        Works by:
+          1. Checking the text contains a layout trigger verb
+          2. Finding position keyword OR percentage anywhere in the text
+          3. Extracting app name by subtracting all known filler from the text
+        """
+        # ── Step 1: Must contain a layout trigger verb ────────────────────
+        _LAYOUT_VERBS = r'\b(adjust|move|set|resize|snap|put|place|pin|tile|shift|tune|bring|send|dock|push|slide|position)\b'
+        if not re.search(_LAYOUT_VERBS, text):
+            return None
 
-    # ── Open a website / app ─────────────────────────────────────────────
-    open_match = re.match(
-        r'^(?:jarvis\s+)?(?:open|launch|go to|take me to|show me|start|tune in to|focus)\s+(.+?)(?:\s+(?:website|site|page|app|browser))?\s*$',
-        lower
-    )
-    if open_match:
-        site = open_match.group(1).strip().strip('.,!?;:\'"')
-        
-        # Bypasses for context references: let the LLM handle "open that" since it has memory
-        context_refs = ['that', 'it', 'this', 'that site', 'this site', 'the site', 'the page', 'that page']
-        if site not in context_refs:
-            non_web = ['notepad', 'calculator', 'settings', 'file explorer', 'task manager',
-                       'camera', 'calendar', 'photos', 'paint', 'terminal', 'cmd', 'powershell']
-            context_words = ['channel', 'video', 'playlist', 'on youtube', 'search', 'and', 'for me', 'email', 'emails']
-            if site not in non_web and not any(w in site for w in context_words):
-                if len(site.split()) <= 3:
-                    return {"tool_name": "open_website", "arguments": {"url": site}}
-                return {"tool_name": "open_google_search_in_browser", "arguments": {"query": site}}
+        # ── Step 2: Resolve spoken numbers → digits ───────────────────────
+        spoken_map = {
+            'ten': '10', 'twenty': '20', 'thirty': '30', 'forty': '40', 'fifty': '50',
+            'sixty': '60', 'seventy': '70', 'eighty': '80', 'ninety': '90', 'hundred': '100',
+            'twenty five': '25', 'seventy five': '75', 'thirty three': '33', 'sixty six': '66',
+            'half': '50', 'quarter': '25', 'three quarters': '75', 'three quarter': '75',
+        }
+        t = text
+        for word, digit in spoken_map.items():
+            t = re.sub(r'\b' + word + r'\b(\s*percent)?', digit + '%', t)
+
+        # ── Step 3: Find position ─────────────────────────────────────────
+        pos = None
+        pos_checks = [
+            ('top_left',     r'\b(upper\s+left|top\s+left)\b'),
+            ('top_right',    r'\b(upper\s+right|top\s+right)\b'),
+            ('bottom_left',  r'\b(bottom\s+left|lower\s+left)\b'),
+            ('bottom_right', r'\b(bottom\s+right|lower\s+right)\b'),
+            ('left',         r'\bleft\b'),
+            ('right',        r'\bright\b'),
+            ('top',          r'\b(top|upper)\b'),
+            ('bottom',       r'\b(bottom|lower)\b'),
+            ('center',       r'\b(center|centre|middle)\b'),
+        ]
+        for pos_name, pat in pos_checks:
+            if re.search(pat, t):
+                pos = pos_name
+                break
+
+        # ── Step 4: Find percentage ───────────────────────────────────────
+        w_pct = h_pct = None
+        pct_m = re.findall(r'(\d+)\s*%', t)
+        if pct_m:
+            if re.search(r'\b(horizontally|horizontal|width)\b', t):
+                w_pct = int(pct_m[0])
+            elif re.search(r'\b(vertically|vertical|height)\b', t):
+                h_pct = int(pct_m[0])
+            elif len(pct_m) >= 2:
+                w_pct = int(pct_m[0])
+                h_pct = int(pct_m[1])
+            else:
+                # Single unlabelled percentage → treat as width
+                w_pct = int(pct_m[0])
+
+        # Must have found EITHER a position or a percentage
+        if not pos and not (w_pct or h_pct):
+            return None
+
+        # ── Step 5: Extract app name ──────────────────────────────────────
+        # Remove all words that are NOT the app name
+        _STRIP_WORDS = {
+            # Layout verbs
+            'adjust', 'move', 'set', 'resize', 'snap', 'put', 'place', 'pin',
+            'tile', 'shift', 'tune', 'bring', 'send', 'dock', 'push', 'slide',
+            'position', 'in', 'into',
+            # Articles / pronouns
+            'the', 'my', 'a', 'an', 'this', 'that', 'it', 'its', 'i', 'will',
+            'you', 'me', 'we', 'us', 'going', 'want', 'can', 'could', 'should',
+            'would', 'let', 'make',
+            # Layout nouns
+            'screen', 'tab', 'window', 'current', 'active', 'section', 'part',
+            'side', 'area', 'half', 'quarter', 'portion',
+            # Connectors
+            'of', 'to', 'at', 'for', 'from', 'on', 'with', 'and', 'or', 'is', 'be',
+            # Direction words
+            'upper', 'lower', 'top', 'bottom', 'left', 'right',
+            'center', 'centre', 'middle',
+            # Filler
+            'please', 'jarvis', 'ok', 'okay', 'now', 'just', 'hey', 'hi',
+            # Orientation helpers
+            'horizontally', 'horizontal', 'vertically', 'vertical',
+            'width', 'height', 'percent', 'percentage',
+        }
+
+        # Remove percentage tokens from text first
+        clean = re.sub(r'\d+\s*%', '', t)
+        # Tokenise and filter
+        tokens = re.split(r'[\s,\.!?]+', clean)
+        app_tokens = []
+        for tok in tokens:
+            tok_clean = tok.strip().lower()
+            if not tok_clean:
+                continue
+            # Skip pure position phrases already captured
+            if tok_clean in _STRIP_WORDS:
+                continue
+            # Skip numeric-only tokens
+            if re.match(r'^\d+$', tok_clean):
+                continue
+            app_tokens.append(tok)
+
+        app_name = ' '.join(app_tokens).strip()
+        # Reject very short or clearly non-app leftovers
+        if len(app_name) <= 1 or app_name.lower() in ('', 'it', 'i', 'up', 'out'):
+            app_name = None
+
+        result = {"position": pos, "width_percent": w_pct, "height_percent": h_pct}
+        if app_name:
+            result["app_name"] = app_name
+        return result
+
+    _adj = _semantic_window_adjust(lower)
+    if _adj is not None:
+        return {"tool_name": "adjust_active_window", "arguments": _adj}
 
     # ── Close / Minimize / Maximize specific app ──────────────────────────
     close_m = re.match(r'^(?:jarvis\s+)?close\s+(.+?)(?:\s+(?:window|app))?\s*$', lower)
@@ -315,13 +412,14 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     minimize_m = re.match(r'^(?:jarvis\s+)?(?:minimize|minimise|hide)\s+(.+?)(?:\s+(?:window|app|tab))?\s*$', lower)
     if minimize_m:
         app = minimize_m.group(1).strip().strip('.,!?')
-        if app in ('the current', 'current', 'this', 'active', 'the current window', 'current window', 'this window', 'active window', 'all windows', 'everything'):
+        if app in ('the current', 'current', 'this', 'active', 'the current window', 'current window', 'this window', 'active window', 'all windows', 'everything', 'all', 'every window'):
             return {"tool_name": "minimize_all_windows", "arguments": {}}
         return {"tool_name": "minimize_window", "arguments": {"app_name": app}}
 
-    maximize_m = re.match(r'^(?:jarvis\s+)?(?:maximize|maximise|fullscreen|full screen|enlarge)\s+(.+?)(?:\s+(?:window|app|tab))?\s*$', lower)
+    maximize_m = re.match(r'^(?:jarvis\s+)?(?:maximize|maximise|fullscreen|full screen|enlarge|expand)\s+(.+?)(?:\s+(?:window|app|tab))?\s*$', lower)
     if maximize_m:
         return {"tool_name": "maximize_window", "arguments": {"app_name": maximize_m.group(1).strip().strip('.,!?')}}
+
 
     # ── Read my screen / what am I looking at ──────────────────────────────
     screen_kw = [
@@ -482,10 +580,66 @@ def keyword_detect_tool(prompt: str) -> dict | None:
 
     return None  # Fall through to LLM router
 
+# Global state for frontend API flows (mimics voice_agent local state)
+api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": None}
+api_note_flow = {"active": False}
 
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
+    global api_whatsapp_flow, api_note_flow
     history_list = list(conversation_history)
+    prompt_lower = request.prompt.lower().strip()
+
+    # ── Frontend Note Flow Intercept ──
+    if api_note_flow["active"]:
+        api_note_flow["active"] = False
+        from app.services.tools import create_sticky_note
+        res = create_sticky_note(request.prompt.strip())
+        async def flow_stream(): yield res
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    # ── Frontend WhatsApp Flow Intercept ──
+    if api_whatsapp_flow["active"]:
+        step = api_whatsapp_flow["step"]
+        if step == "ask_message":
+            api_whatsapp_flow["message"] = request.prompt.strip()
+            api_whatsapp_flow["step"] = "confirm"
+            reply = f"Got it. Before I send, confirming: To {api_whatsapp_flow['contact']} — {api_whatsapp_flow['message']}. Should I go ahead and send this?"
+            async def flow_stream(): yield reply
+            return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            
+        elif step == "confirm":
+            yes_kw = ['yes', 'yeah', 'yep', 'go ahead', 'do it', 'ok', 'okay', 'confirm', 'haan', 'kar do', 'correct', 'sure']
+            no_kw  = ['no', 'nope', 'cancel', 'stop', 'abort', 'nahi', 'mat bhejo', 'nevermind', 'never mind', "don't", "dont", 'not', 'wait']
+            is_no  = any(w in prompt_lower for w in no_kw)
+            is_yes = (not is_no) and any(w in prompt_lower for w in yes_kw)
+
+            if is_yes:
+                from app.services.whatsapp_smart import confirm_whatsapp_send
+                contact = api_whatsapp_flow["contact"]
+                msg = api_whatsapp_flow["message"]
+                api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": None}
+                async def flow_stream(): yield confirm_whatsapp_send(contact, msg)
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            elif is_no:
+                api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": None}
+                async def flow_stream(): yield "Okay, message cancelled."
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            else:
+                async def flow_stream(): yield "Should I send it? Please say yes or no."
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+                
+        elif step == "ask_contact":
+            api_whatsapp_flow["contact"] = request.prompt.strip()
+            stored_msg = api_whatsapp_flow.get("message")
+            if stored_msg:
+                api_whatsapp_flow["step"] = "confirm"
+                reply = f"Okay. To {api_whatsapp_flow['contact']}: {stored_msg}. Should I send?"
+            else:
+                api_whatsapp_flow["step"] = "ask_message"
+                reply = f"Got it. What message should I send to {api_whatsapp_flow['contact']}?"
+            async def flow_stream(): yield reply
+            return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
     # ── PATH A: Agentic Planner for complex multi-step tasks ──────────────
     if is_complex_task(request.prompt):
@@ -527,6 +681,9 @@ async def chat_endpoint(request: ChatRequest):
     # 3. Handle clarification requests
     if tool_name == "ask_for_clarification":
         question = tool_intent["arguments"].get("question", "Could you clarify that?")
+        if "What should I write in the note" in question:
+            api_note_flow["active"] = True
+            
         conversation_history.append({"role": "user", "content": request.prompt})
         conversation_history.append({"role": "assistant", "content": question})
         _save_session()
@@ -544,6 +701,23 @@ async def chat_endpoint(request: ChatRequest):
         try:
             result = TOOL_REGISTRY[tool_name](**args)
             tool_output_str = f"[Tool result: {result}]\n\n"
+            
+            # Check for state machine triggers to activate flow for frontend
+            if tool_name == "initiate_whatsapp_send":
+                if "What message should I send" in result:
+                    api_whatsapp_flow.update({"active": True, "step": "ask_message", "contact": args.get("contact_name"), "message": None})
+                elif "Before I send, let me confirm" in result:
+                    api_whatsapp_flow.update({"active": True, "step": "confirm", "contact": args.get("contact_name"), "message": args.get("message")})
+                # Return immediately without LLM paraphrasing
+                async def flow_stream(): yield result
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            
+            elif tool_name == "search_whatsapp_contact" and "__ASK_CONTACT__" in str(result):
+                api_whatsapp_flow.update({"active": True, "step": "ask_contact", "contact": None, "message": None})
+                result_clean = str(result).replace("__ASK_CONTACT__", "").strip()
+                async def flow_stream(): yield result_clean
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+                
         except Exception as e:
             tool_output_str = f"[Tool failed: {tool_name} — {str(e)}]\n\n"
 

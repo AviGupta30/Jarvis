@@ -291,56 +291,9 @@ def take_screenshot(filename: str = None) -> str:
     return "Screenshot saved to Desktop."
 
 def snap_windows(left_app: str, right_app: str) -> str:
-    """Snaps left_app to left half and right_app to right half with fuzzy name matching."""
-    import pygetwindow as gw
-    import re
-
-    screen_width, screen_height = pyautogui.size()
-    half_width = screen_width // 2
-
-    def _normalize(s: str) -> str:
-        return re.sub(r'[^a-z0-9]', '', s.lower())
-
-    def _find_win(app_name):
-        target = _normalize(app_name)
-        all_wins = [w for w in gw.getAllWindows() if w.title]
-        # Exact contains
-        for w in all_wins:
-            if target in _normalize(w.title):
-                return w
-        # Partial word overlap fallback
-        target_words = [t for t in target.split() if len(t) > 3]
-        for w in all_wins:
-            norm = _normalize(w.title)
-            if any(word in norm for word in target_words):
-                return w
-        return None
-
-    l_win = _find_win(left_app)
-    r_win = _find_win(right_app)
-
-    if not l_win:
-        return f"Could not find a window for '{left_app}'. Make sure the app is open."
-    if not r_win:
-        return f"Could not find a window for '{right_app}'. Make sure the app is open."
-
-    try:
-        import time
-        # Snap Left
-        if l_win.isMinimized: l_win.restore()
-        l_win.activate()
-        time.sleep(0.3)
-        pyautogui.hotkey('win', 'left')
-        
-        # Snap Right
-        if r_win.isMinimized: r_win.restore()
-        r_win.activate()
-        time.sleep(0.3)
-        pyautogui.hotkey('win', 'right')
-        
-        return f"Done! '{l_win.title[:25]}' on the left and '{r_win.title[:25]}' on the right."
-    except Exception as e:
-        return f"Error arranging windows: {e}"
+    """Snaps left_app to left half and right_app to right half using Win32 API (no keyboard shortcuts)."""
+    from app.services.window_layout import win32_snap_two_windows
+    return win32_snap_two_windows(left_app, right_app)
 
 
 # ─── File Operations ────────────────────────────────────────────────────────
@@ -373,66 +326,34 @@ def append_to_file(filepath: str, content: str) -> str:
         return f"Failed to edit file: {str(e)}"
 
 def close_tab() -> str:
-    """Closes the current browser tab using Ctrl+W."""
-    pyautogui.hotkey('ctrl', 'w')
-    return "Closed the current tab."
+    """Closes the current browser tab using Ctrl+W, targeting the real foreground app."""
+    from app.services.window_layout import win32_close_active_tab
+    return win32_close_active_tab()
 
 def close_window() -> str:
-    """Closes the current active window using Alt+F4."""
-    pyautogui.hotkey('alt', 'f4')
-    return "Closed the active window."
+    """Closes the current active real app window (skips the Jarvis overlay)."""
+    from app.services.window_layout import win32_close_active_window
+    return win32_close_active_window()
 
 def _find_window_fuzzy(app_name: str):
-    """Find a window by fuzzy name matching — strips hyphens/spaces for comparison."""
-    import pygetwindow as gw
-    import re
-    def _norm(s): return re.sub(r'[^a-z0-9]', '', s.lower())
-    target = _norm(app_name)
-    all_wins = [w for w in gw.getAllWindows() if w.title]
-    for w in all_wins:
-        if target in _norm(w.title): return w
-    # Word overlap fallback
-    words = [t for t in target.split() if len(t) > 2]
-    for w in all_wins:
-        norm = _norm(w.title)
-        if any(word in norm for word in words): return w
-    return None
+    """Find a window HWND by fuzzy name matching using Win32 API (no pygetwindow)."""
+    from app.services.window_layout import win32_find_window
+    return win32_find_window(app_name)  # returns int HWND or None
 
 def close_specific_window(app_name: str) -> str:
-    """Closes a specific window/app by name."""
-    import time
-    win = _find_window_fuzzy(app_name)
-    if not win:
-        return f"Could not find an open window for '{app_name}'."
-    try:
-        win.activate()
-        time.sleep(0.3)
-        pyautogui.hotkey('alt', 'f4')
-        return f"Closed '{win.title[:40]}'."
-    except Exception as e:
-        return f"Failed to close '{app_name}': {e}"
+    """Closes a specific window/app by name using Win32 PostMessage WM_CLOSE."""
+    from app.services.window_layout import win32_close_window
+    return win32_close_window(app_name)
 
 def minimize_window(app_name: str) -> str:
-    """Minimizes a specific window by name."""
-    win = _find_window_fuzzy(app_name)
-    if not win:
-        return f"Could not find an open window for '{app_name}'."
-    try:
-        win.minimize()
-        return f"Minimized '{win.title[:40]}'."
-    except Exception as e:
-        return f"Failed to minimize '{app_name}': {e}"
+    """Minimizes a specific window by name using Win32 ShowWindow."""
+    from app.services.window_layout import win32_minimize_window
+    return win32_minimize_window(app_name)
 
 def maximize_window(app_name: str) -> str:
-    """Maximizes/restores a specific window by name."""
-    win = _find_window_fuzzy(app_name)
-    if not win:
-        return f"Could not find an open window for '{app_name}'."
-    try:
-        win.maximize()
-        return f"Maximized '{win.title[:40]}'."
-    except Exception as e:
-        return f"Failed to maximize '{app_name}': {e}"
+    """Maximizes a specific window by name using Win32 ShowWindow."""
+    from app.services.window_layout import win32_maximize_window
+    return win32_maximize_window(app_name)
 
 
 
@@ -759,43 +680,29 @@ def open_file(path: str) -> str:
 
 
 def focus_window(name: str, timeout: float = 5.0) -> str:
-    """Bring a window to the foreground by partial name match."""
+    """Bring a window to the foreground by partial name match (Win32 API, no pygetwindow)."""
     import time
-    try:
-        import pygetwindow as gw
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            for w in gw.getAllWindows():
-                if w.title and name.lower() in w.title.lower():
-                    if w.isMinimized:
-                        w.restore()
-                    w.activate()
-                    time.sleep(0.4)
-                    return f"Focused window: {w.title[:50]}"
-            time.sleep(0.3)
-        return f"Window '{name}' not found after {timeout}s."
-    except Exception as e:
-        return f"focus_window error: {e}"
+    from app.services.window_layout import win32_focus_window, win32_find_window
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        result = win32_focus_window(name)
+        if result.startswith('✅'):
+            return result
+        time.sleep(0.4)
+    return f"Window '{name}' not found after {timeout}s."
 
 
 def wait_for_window(name: str, timeout: float = 15.0) -> str:
     """Block until a window with the given name appears, then focus it."""
     import time
-    try:
-        import pygetwindow as gw
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            for w in gw.getAllWindows():
-                if w.title and name.lower() in w.title.lower():
-                    if w.isMinimized:
-                        w.restore()
-                    w.activate()
-                    time.sleep(0.4)
-                    return f"Window appeared and focused: {w.title[:50]}"
-            time.sleep(0.5)
-        return f"Timed out waiting for window '{name}' after {timeout}s."
-    except Exception as e:
-        return f"wait_for_window error: {e}"
+    from app.services.window_layout import win32_focus_window
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        result = win32_focus_window(name)
+        if result.startswith('✅'):
+            return f"Window appeared and focused: {result}"
+        time.sleep(0.5)
+    return f"Timed out waiting for window '{name}' after {timeout}s."
 
 
 def type_and_submit(text: str, delay: float = 0.3) -> str:
@@ -1001,6 +908,7 @@ TOOL_REGISTRY = {
     "open_file": open_file,
     "focus_window": focus_window,
     "wait_for_window": wait_for_window,
+    "adjust_active_window": lambda position=None, width_percent=None, height_percent=None, app_name=None: __import__('app.services.window_layout', fromlist=['adjust_active_window']).adjust_active_window(position, width_percent, height_percent, app_name),
     "type_and_submit": type_and_submit,
     "copy_selected_text": copy_selected_text,
     "create_word_doc": create_word_doc,
@@ -1048,4 +956,5 @@ TOOL_REGISTRY = {
     # Extended browser tools (Step 6 enhanced)
     "fill_form":        lambda url, fields: __import__('app.services.browser_tool', fromlist=['fill_form']).fill_form(url, fields),
     "browse_and_paginate": lambda url, pages=3: __import__('app.services.browser_tool', fromlist=['browse_and_paginate']).browse_and_paginate(url, pages),
+    "smart_web_action": lambda site_name, task: __import__('app.services.smart_navigator', fromlist=['smart_web_action']).smart_web_action(site_name, task),
 }

@@ -664,6 +664,16 @@ def _flush_mic(audio_stream):
 
 
 if __name__ == '__main__':
+    # Kill any existing orphaned overlays first
+    import psutil
+    for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+        try:
+            cmdline = proc.info.get('cmdline')
+            if cmdline and 'jarvis_overlay.py' in ' '.join(cmdline):
+                proc.terminate()
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, TypeError):
+            pass
+
     # Launch the arc reactor overlay as a background process
     _overlay_path = os.path.join(os.path.dirname(__file__), 'jarvis_overlay.py')
     _overlay_proc = None
