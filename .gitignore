@@ -34,3 +34,6 @@ models/
 *.bin
 *.png
 *.jpg
+
+data/
+

@@ -31,38 +31,11 @@ async def _gemma_generate(messages: list, max_tokens: int = 800, temperature: fl
     Falls back to Groq Llama on any error.
     """
     try:
-        import google.generativeai as genai
-        api_key = settings.GEMINI_API_KEY
-        if not api_key or api_key == "YOUR_FREE_GEMINI_KEY_HERE":
-            raise ValueError("No Gemini key")
-
-        genai.configure(api_key=api_key, transport="rest")
-        model = genai.GenerativeModel(
-            "gemini-1.5-flash",  # reliable highly capable fallback
-            system_instruction=messages[0]["content"] if messages and messages[0]["role"] == "system" else None,
-        )
-        # Build history for Gemma (skip system messages already passed above)
-        chat_msgs = [
-            {"role": m["role"], "parts": [m["content"]]}
-            for m in messages
-            if m["role"] in ("user", "assistant")
-        ]
-        # Stream response
-        response = model.generate_content(
-            chat_msgs[-1]["parts"] if chat_msgs else "",
-            stream=True,
-            generation_config={"max_output_tokens": max_tokens, "temperature": temperature},
-        )
-        for chunk in response:
-            if chunk.text:
-                yield chunk.text
-        return
-    except Exception as e:
-        # Fallback: Groq Llama
-        import logging
-        logging.getLogger(__name__).warning(f"[llm] Gemma fallback to Groq: {e}")
         async for token in _groq_generate(messages, max_tokens, temperature):
             yield token
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"[llm] Gemma fallback to Groq: {e}")
 
 
 async def _groq_generate(messages: list, max_tokens: int = 800, temperature: float = 0.7) -> AsyncGenerator[str, None]:

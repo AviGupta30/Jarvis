@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+import os
+import shutil
 from app.api.chat import router as chat_router
 from app.api.memory import router as memory_router
 from app.api.tools import router as tools_router
@@ -27,6 +29,33 @@ app.include_router(tools_router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Jarvis AI Assistant API!"}
+
+
+@app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """Upload a file to the data/uploads folder for Jarvis to process."""
+    try:
+        import time
+        import pathlib
+        
+        # Save to Jarvis/data/uploads to avoid Desktop permission/lock issues
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        uploads_dir = os.path.join(base_dir, "data", "uploads")
+        os.makedirs(uploads_dir, exist_ok=True)
+        
+        # Make filename unique to avoid 'file in use' errors
+        safe_filename = file.filename.replace(" ", "_")
+        name, ext = os.path.splitext(safe_filename)
+        unique_filename = f"{name}_{int(time.time())}{ext}"
+        
+        file_path = os.path.join(uploads_dir, unique_filename)
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        return {"filename": unique_filename, "path": file_path, "status": "success"}
+    except Exception as e:
+        return {"filename": file.filename, "error": str(e), "status": "error"}
 
 
 # ── Background Screen Watcher ─────────────────────────────────────────────────

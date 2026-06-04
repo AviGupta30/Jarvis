@@ -338,16 +338,31 @@ def keyword_detect_tool(prompt: str) -> dict | None:
             }}
 
 
-    # ── Smart Web Action (Isolated Navigator) ──────────────────────────────
-    smart_nav_1 = re.search(r'(?:go to|open)\s+(?:the\s+)?(?:site of\s+)?(.+?)\s+and\s+(search for.+|find.+|do.+)$', lower)
+    # ── Smart Web Action (Search → Fetch → Synthesize) ─────────────────────
+    # Pattern 1: "go to <site> and find/search <task>"
+    smart_nav_1 = re.search(r'(?:go to|open|browse)\s+(?:the\s+)?(?:site of\s+)?(.+?)\s+and\s+(search for.+|find.+|get.+|show.+|list.+)$', lower)
     if smart_nav_1:
         site = smart_nav_1.group(1).strip()
         task = smart_nav_1.group(2).strip()
-        return {"tool_name": "smart_web_action", "arguments": {"site_name": site, "task": task}}
+        return {"tool_name": "agentic_web_action", "arguments": {"site_or_task": site, "specific_task": task}}
 
-    smart_nav_2 = re.search(r'(?:search for|find)\s+(.+?)\s+(?:in|on|at)\s+(.+?)(?:\s+site|\s+website)?$', lower)
+    # Pattern 2: "find/search <task> on/in <site>"
+    smart_nav_2 = re.search(r'(?:search for|find|list|show me)\s+(.+?)\s+(?:on|in|at|from)\s+([a-zA-Z0-9]+)(?:\s+site|\s+website)?$', lower)
     if smart_nav_2 and not "whatsapp" in smart_nav_2.group(2).lower() and not "youtube" in smart_nav_2.group(2).lower():
-        task = "search for " + smart_nav_2.group(1).strip()
+        task = smart_nav_2.group(1).strip()
+        site = smart_nav_2.group(2).strip()
+        return {"tool_name": "agentic_web_action", "arguments": {"site_or_task": site, "specific_task": task}}
+
+    # Pattern 3: General research / browse questions that need live web data
+    web_research_kw = [
+        "find me", "search for", "look up", "what are", "list of",
+        "upcoming hackathons", "upcoming contests", "latest", "recent",
+        "browse", "check online", "search online", "search the web",
+        "find online", "look online", "find hackathons", "find internships",
+        "find jobs", "find competitions", "search web",
+    ]
+    if any(kw in lower for kw in web_research_kw) and len(lower.split()) >= 3:
+        return {"tool_name": "agentic_web_action", "arguments": {"site_or_task": lower}}
     # ── Adjust window layout ───────────────────────────────────────────────
     # Semantic approach: works for ANY phrasing the user might say, e.g.:
     #   "tune in screen of VS Code to upper left"
@@ -711,7 +726,126 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         # Otherwise try as app first, then website
         return {"tool_name": "open_app", "arguments": {"app_name": target}}
 
+    # ── Assignment Automation (Phase 1) ───────────────────────────────────────
+    # "extract questions from assignment.pdf" / "read my assignment" / "parse pdf"
+    assignment_extract_kw = [
+        "extract questions", "extract the questions", "get questions from",
+        "read assignment", "parse assignment", "read my assignment",
+        "questions from pdf", "questions from my pdf", "questions from the pdf",
+        "assignment questions", "find questions in",
+    ]
+    if any(kw in lower for kw in assignment_extract_kw):
+        # Try to extract filename from the prompt
+        pdf_m = re.search(r'[\w\s\-]+\.pdf', lower)
+        pdf_path = pdf_m.group(0).strip() if pdf_m else pdf_m
+        # If no filename found, try to grab what comes after "from"
+        if not pdf_path:
+            from_m = re.search(r'from\s+(?:my\s+)?(?:the\s+)?(.+?)(?:\s*$)', lower)
+            pdf_path = from_m.group(1).strip() if from_m else "assignment"
+        return {"tool_name": "extract_questions", "arguments": {"pdf_path": pdf_path}}
+
+    # "list my assignments" / "show my pdfs" / "what pdfs do I have"
+    list_assign_kw = [
+        "list assignments", "list my assignments", "show assignments",
+        "list my pdfs", "show my pdfs", "what pdfs", "find my pdf",
+        "my assignment files", "assignment pdf",
+    ]
+    if any(kw in lower for kw in list_assign_kw):
+        return {"tool_name": "list_assignments", "arguments": {}}
+
+    # -- Assignment Automation (Phase 2) --------------------------------------
+    # -- Assignment Automation (Phase 5 Pipeline) ------------------------------
+    do_assign_kw = [
+        'do my assignment', 'complete my assignment', 'solve my assignment',
+        'answer my assignment', 'finish my assignment'
+    ]
+    if any(kw in lower for kw in do_assign_kw):
+        pdf_m = re.search(r'[\w\-\.]+\.(?:pdf|docx|doc|txt)', lower)
+        pdf_path = pdf_m.group(0).strip() if pdf_m else ''
+        out_fmt = 'ppt' if 'ppt' in lower or 'powerpoint' in lower else 'word'
+        return {
+            'tool_name': 'do_assignment',
+            'arguments': {'pdf_path': pdf_path, 'output_format': out_fmt, 'humanize': False}
+        }
+
+    # -- Assignment Automation (Phase 2 Generate Answers) ----------------------
+    gen_answers_kw = [
+        'generate answers', 'generate the answers',
+        'answer the assignment', 'answer these questions',
+    ]
+    if any(kw in lower for kw in gen_answers_kw):
+        pdf_m = re.search(r'[\w\-\.]+\.(?:pdf|docx|doc|txt)', lower)
+        pdf_path = pdf_m.group(0).strip() if pdf_m else ''
+        return {
+            'tool_name': 'generate_answers',
+            'arguments': {'questions_json': request.prompt, 'pdf_path': pdf_path}
+        }
+
+    # 'answer this question: <text>' / 'answer question 3'
+    gen_one_kw = [
+        'answer this question', 'answer the question',
+        'answer question', 'solve this question', 'solve question',
+    ]
+    if any(kw in lower for kw in gen_one_kw):
+        for kw in gen_one_kw:
+            if kw in lower:
+                idx = lower.index(kw) + len(kw)
+                q_text = request.prompt[idx:].strip().lstrip(':').strip()
+                if not q_text:
+                    q_text = request.prompt
+                return {
+                    'tool_name': 'generate_answer',
+                    'arguments': {'question': q_text, 'question_type': 'long_answer'}
+                }
+
+    # -- Assignment Automation (Phase 3) --------------------------------------
+    # 'humanize answers' / 'humanize my assignment'
+    humanize_batch_kw = [
+        'humanize answers', 'humanize the answers', 'humanize my assignment',
+        'paraphrase answers', 'paraphrase the answers', 'make it human',
+        'rewrite answers', 'humanize qa'
+    ]
+    if any(kw in lower for kw in humanize_batch_kw):
+        return {
+            'tool_name': 'humanize_all_answers',
+            'arguments': {'qa_json': request.prompt}
+        }
+
+    # 'humanize this text: <text>'
+    humanize_single_kw = [
+        'humanize this text', 'humanize text', 'paraphrase this',
+        'paraphrase text', 'humanize this', 'rewrite this to sound human'
+    ]
+    if any(kw in lower for kw in humanize_single_kw):
+        for kw in humanize_single_kw:
+            if kw in lower:
+                idx = lower.index(kw) + len(kw)
+                txt = request.prompt[idx:].strip().lstrip(':').strip()
+                if not txt:
+                    txt = request.prompt
+                return {
+                    'tool_name': 'humanize_text',
+                    'arguments': {'text': txt}
+                }
+
+    # -- Assignment Automation (Phase 4) --------------------------------------
+    # 'assemble assignment' / 'create assignment doc'
+    assemble_kw = [
+        'assemble assignment', 'create assignment doc', 'create assignment word',
+        'create assignment ppt', 'generate assignment doc', 'save assignment to'
+    ]
+    if any(kw in lower for kw in assemble_kw):
+        return {
+            'tool_name': 'assemble_assignment',
+            'arguments': {
+                'qa_json': request.prompt, 
+                'filename': 'Assignment', 
+                'format_type': 'ppt' if 'ppt' in lower or 'powerpoint' in lower else 'word'
+            }
+        }
+
     return None  # Fall through to LLM router
+
 
 # Global state for frontend API flows (mimics voice_agent local state)
 api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": None}
@@ -818,42 +952,6 @@ async def chat_endpoint(request: ChatRequest):
             r'(?:saying|say(?:ing)?|that\s+says)[:\s]+["\']?(.+?)["\']?\s*$',
             request.prompt, re.I
         )
-        if msg_inline:
-            inline_msg = msg_inline.group(1).strip()
-            api_whatsapp_flow.update({"active": True, "step": "confirm", "contact": wa_contact, "message": inline_msg})
-            reply = f"Before I send, confirming: To {wa_contact} — {inline_msg}. Should I go ahead and send this?"
-        else:
-            api_whatsapp_flow.update({"active": True, "step": "ask_message", "contact": wa_contact, "message": None})
-            reply = f"Sure. What message should I send to {wa_contact}?"
-        async def flow_stream(): yield reply
-        return StreamingResponse(flow_stream(), media_type="text/event-stream")
-
-    # ── PATH A: Agentic Planner for complex multi-step tasks ──────────────
-    if is_complex_task(request.prompt):
-        conversation_history.append({"role": "user", "content": request.prompt})
-        _save_session()
-
-        async def agentic_stream():
-            full_narrative = []
-            try:
-                async for update in run_agentic_plan(request.prompt):
-                    full_narrative.append(update)
-                    # Stream each update line to the voice agent
-                    yield update + "\n"
-            except Exception as e:
-                err_msg = f"Agentic task failed: {e}"
-                full_narrative.append(err_msg)
-                yield err_msg
-
-            # Save the full execution narrative as assistant turn
-            conversation_history.append({
-                "role": "assistant",
-                "content": "\n".join(full_narrative)
-            })
-            _save_session()
-
-        return StreamingResponse(agentic_stream(), media_type="text/event-stream")
-
     # ── PATH B: Fast single-action path (keyword → tool → LLM response) ──
 
     # 1. Fast keyword detection (reliable, instant)
@@ -887,6 +985,20 @@ async def chat_endpoint(request: ChatRequest):
         args = tool_intent.get("arguments", {})
         try:
             result = TOOL_REGISTRY[tool_name](**args)
+            import inspect
+            if inspect.isgenerator(result):
+                async def tool_stream():
+                    full_log = []
+                    for chunk in result:
+                        full_log.append(chunk)
+                        yield chunk + "\n\n"
+                    
+                    conversation_history.append({"role": "user", "content": request.prompt})
+                    conversation_history.append({"role": "assistant", "content": "\n".join(full_log)})
+                    _save_session()
+                    
+                return StreamingResponse(tool_stream(), media_type="text/event-stream")
+                
             tool_output_str = f"[Tool result: {result}]\n\n"
             
             # Check for state machine triggers to activate flow for frontend

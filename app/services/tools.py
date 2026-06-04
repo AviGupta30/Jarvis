@@ -971,11 +971,12 @@ TOOL_REGISTRY = {
     "create_folder":    lambda path: __import__('app.services.file_ops', fromlist=['create_folder']).create_folder(path),
     "bulk_rename":     lambda directory, find, replace: __import__('app.services.file_ops', fromlist=['bulk_rename']).bulk_rename(directory, find, replace),
     "diff_files":       lambda path1, path2: __import__('app.services.file_ops', fromlist=['diff_files']).diff_files(path1, path2),
-    # Gmail integration (Step 5)
-    "check_emails":     lambda query='is:unread', max_results=5: __import__('app.services.gmail_tool', fromlist=['check_emails']).check_emails(query, max_results),
-    "list_unread":     lambda max_results=5: __import__('app.services.gmail_tool', fromlist=['list_unread']).list_unread(max_results),
-    "get_email_body":   lambda email_id: __import__('app.services.gmail_tool', fromlist=['get_email_body']).get_email_body(email_id),
-    "summarize_inbox":  lambda max_results=10: __import__('app.services.gmail_tool', fromlist=['summarize_inbox']).summarize_inbox(max_results),
+    # Gmail integration (Step 5 - Browser based)
+    "check_emails":     lambda query='is:unread', max_results=5: __import__('app.services.browser_mail', fromlist=['check_emails']).check_emails(query, max_results),
+    "list_unread":     lambda max_results=5: __import__('app.services.browser_mail', fromlist=['list_unread']).list_unread(max_results),
+    "get_email_body":   lambda email_id: __import__('app.services.browser_mail', fromlist=['get_email_body']).get_email_body(email_id),
+    "summarize_inbox":  lambda max_results=10: __import__('app.services.browser_mail', fromlist=['summarize_inbox']).summarize_inbox(max_results),
+    "smart_mail_action": lambda task: __import__('app.services.browser_mail', fromlist=['smart_mail_action']).smart_mail_action(task),
     # Browser automation (Step 6)
     "browse_and_read":  lambda url: __import__('app.services.browser_tool', fromlist=['browse_and_read']).browse_and_read(url),
     "search_on_site":   lambda site_url, query: __import__('app.services.browser_tool', fromlist=['search_on_site']).search_on_site(site_url, query),
@@ -994,7 +995,8 @@ TOOL_REGISTRY = {
     # Extended browser tools (Step 6 enhanced)
     "fill_form":       lambda url, fields: __import__('app.services.browser_tool', fromlist=['fill_form']).fill_form(url, fields),
     "browse_and_paginate": lambda url, pages=3: __import__('app.services.browser_tool', fromlist=['browse_and_paginate']).browse_and_paginate(url, pages),
-    "smart_web_action": lambda site_name, task: __import__('app.services.smart_navigator', fromlist=['smart_web_action']).smart_web_action(site_name, task),
+    "smart_web_action": lambda site_name, task: __import__('app.services.agentic_web', fromlist=['agentic_web_action']).agentic_web_action(site_name, task),
+    "agentic_web_action": lambda site_or_task, specific_task=None: __import__('app.services.agentic_web', fromlist=['agentic_web_action']).agentic_web_action(site_or_task, specific_task),
     # ── UIA-powered Windows UI Automation tools ──────────────────────────────
     # These operate WITHOUT moving the mouse cursor.
     # They use the same API as Windows Narrator / screen readers.
@@ -1002,4 +1004,20 @@ TOOL_REGISTRY = {
     "type_into_ui_element":  type_into_ui_element,
     "read_ui_element_text":  read_ui_element_text,
     "dump_app_ui_tree":      dump_app_ui_tree,
+    # ── Assignment Automation Tools ──────────────────────────────────────────
+    # Isolated in app/services/assignment_tool.py + assignment_answers.py
+    # Accessible via both frontend UI and voice through unified /chat route.
+    # Phase 1: Extraction
+    "extract_questions":   lambda pdf_path: __import__('app.services.assignment_tool', fromlist=['extract_questions']).extract_questions(pdf_path),
+    "list_assignments":    lambda: __import__('app.services.assignment_tool', fromlist=['list_assignments']).list_assignments(),
+    # Phase 2: Answer Generation (browser: Gemini→ChatGPT→DeepSeek, fallback: Groq API)
+    "generate_answers":    lambda questions_json, pdf_path='': __import__('app.services.assignment_answers', fromlist=['generate_answers']).generate_answers(questions_json, pdf_path),
+    "generate_answer":     lambda question, question_type='long_answer', has_figure=False: __import__('app.services.assignment_answers', fromlist=['generate_answer']).generate_answer(question, question_type, has_figure),
+    # Phase 3: Answer Humanization (browser: Paraphraser/Scribbr/QuillBot, fallback: Groq API)
+    "humanize_all_answers": lambda qa_json: __import__('app.services.assignment_humanizer', fromlist=['humanize_all_answers']).humanize_all_answers(qa_json),
+    "humanize_text":       lambda text, force_site='': __import__('app.services.assignment_humanizer', fromlist=['humanize_text']).humanize_text(text, force_site),
+    # Phase 4: Document Assembly (Word / PPTX)
+    "assemble_assignment": lambda qa_json, filename, format_type='word': __import__('app.services.assignment_assembler', fromlist=['assemble_assignment']).assemble_assignment(qa_json, filename, format_type),
+    # Phase 5: Master Orchestrator Pipeline
+    "do_assignment":       lambda pdf_path, output_format='word', humanize=True: __import__('app.services.assignment_pipeline', fromlist=['do_assignment']).do_assignment(pdf_path, output_format, humanize),
 }

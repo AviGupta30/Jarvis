@@ -162,55 +162,50 @@ def _build_history_context() -> str:
 
 def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> str:
     """
-    Send screenshot + context to Gemini 2.0 Flash (vision model).
-    Returns the model’s response text, or empty string on failure.
-    Best for: screen capture analysis, image understanding, "describe" mode.
+    Send screenshot + context to Groq Vision API (llama-3.2-11b-vision-preview).
     """
     try:
-        import google.generativeai as genai
-        api_key = settings.GEMINI_API_KEY
-        if not api_key or api_key == "YOUR_FREE_GEMINI_KEY_HERE":
-            logger.warning("GEMINI_API_KEY not set — VLM vision unavailable.")
+        from groq import Groq
+        api_key = settings.GROQ_API_KEY
+        if not api_key:
+            logger.warning("GROQ_API_KEY not set — VLM vision unavailable.")
             return ""
 
-        genai.configure(api_key=api_key, transport="rest")
-        model = genai.GenerativeModel(VISION_MODEL)
-
-        response = model.generate_content([
-            system_prompt,
-            {"mime_type": "image/jpeg", "data": b64_image},
-            f"User asked: {user_query}" if user_query else "Describe what you see.",
-        ])
-        return response.text.strip()
+        client = Groq(api_key=api_key)
+        
+        prompt_text = f"{system_prompt}\n\nUser asked: {user_query}" if user_query else system_prompt
+        
+        response = client.chat.completions.create(
+            model="llama-3.2-11b-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt_text},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{b64_image}"}}
+                    ]
+                }
+            ],
+            temperature=0.2,
+            max_tokens=800
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        err_str = str(e).lower()
-        if "429" in err_str or "quota" in err_str:
-            logger.warning(f"[screen_vision] Gemini quota exceeded (429). EXACT ERROR: {e}")
-        else:
-            logger.error(f"[screen_vision] Gemini vision call failed: {e}")
+        logger.error(f"[screen_vision] Groq vision call failed: {e}")
         return ""
 
 
 def _call_gemma_reasoning(scene_description: str, task_prompt: str) -> str:
     """
-    Send a scene description (already extracted by Gemini vision) to Gemma 4
-    for deep text reasoning. Used for suggest + execute intent modes.
-
-    Why two-stage?
-      • Gemini Flash sees the image → extracts what’s on screen as text
-      • Gemma 4 reasons over that text → gives smart suggestions / action plans
-      This gives you the best of both: fast vision + powerful reasoning, all free.
-
-    Returns the model’s response text, or falls back to the scene description on failure.
+    Send a scene description to Groq (llama-3.1-8b-instant) for reasoning.
     """
     try:
-        import google.generativeai as genai
-        api_key = settings.GEMINI_API_KEY
-        if not api_key or api_key == "YOUR_FREE_GEMINI_KEY_HERE":
+        from groq import Groq
+        api_key = settings.GROQ_API_KEY
+        if not api_key:
             return scene_description  # graceful fallback
 
-        genai.configure(api_key=api_key, transport="rest")
-        model = genai.GenerativeModel(REASON_MODEL)
+        client = Groq(api_key=api_key)
 
         full_prompt = (
             f"You are JARVIS, a highly intelligent AI assistant.\n\n"
@@ -221,14 +216,15 @@ def _call_gemma_reasoning(scene_description: str, task_prompt: str) -> str:
             f"{task_prompt}"
         )
 
-        response = model.generate_content(full_prompt)
-        return response.text.strip()
+        response = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": full_prompt}],
+            temperature=0.7,
+            max_tokens=800
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        err_str = str(e).lower()
-        if "429" in err_str or "quota" in err_str:
-            logger.warning("[screen_vision] Gemma quota exceeded (429). Falling back to scene desc.")
-        else:
-            logger.error(f"[screen_vision] Gemma reasoning call failed: {e}")
+        logger.error(f"[screen_vision] Groq reasoning call failed: {e}")
         return scene_description  # graceful fallback
 
 

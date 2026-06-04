@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Loader2, Mic } from 'lucide-react';
+import { Send, Bot, Loader2, Mic, Paperclip } from 'lucide-react';
 import MemorySidebar from './MemorySidebar';
 import ChatMessage from './ChatMessage';
 
@@ -7,7 +7,42 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('http://127.0.0.1:8000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        const type = fileInputRef.current.dataset.uploadType;
+        if (type === 'general') {
+          setInputValue(`read this file: ${data.filename}`);
+        } else {
+          setInputValue(`do my assignment from ${data.filename}`);
+        }
+      } else {
+        alert("Upload failed: " + data.error);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload file");
+    } finally {
+      setIsUploading(false);
+      e.target.value = null; // reset
+    }
+  };
 
   // Auto-scroll whenever messages update
   useEffect(() => {
@@ -50,14 +85,14 @@ function App() {
 
         const raw = decoder.decode(value, { stream: true });
 
-        // Strip SSE "data: " prefix that FastAPI StreamingResponse may add
-        const cleanChunk = raw
-          .split('\n')
+        // Strip SSE "data: " prefix; preserve \n\n paragraph separators
+        const lines = raw.split('\n');
+        const cleanLines = lines
           .map((line) => line.replace(/^data:\s*/, ''))
-          .filter((line) => line !== '[DONE]')
-          .join('\n');
+          .filter((line) => line !== '[DONE]');
+        const cleanChunk = cleanLines.join('\n');
 
-        if (!cleanChunk) continue;
+        if (!cleanChunk.trim()) continue;
 
         // Always update the LAST message (which is always the assistant placeholder)
         setMessages((prev) => {
@@ -167,9 +202,53 @@ function App() {
             <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-full blur group-focus-within:opacity-100 opacity-50 transition-opacity" />
 
             <div className="relative flex w-full bg-[#030a16] border border-cyan-500/40 rounded-full shadow-[0_0_15px_rgba(0,243,255,0.1)] focus-within:border-cyan-400 focus-within:shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all overflow-hidden items-center pl-6 pr-2 py-2">
-
               {/* Accent dot */}
-              <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_5px_#00f3ff] animate-pulse shrink-0" />
+              <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_5px_#00f3ff] animate-pulse shrink-0 ml-2" />
+
+              {/* Upload Dropdown */}
+              <div className="relative ml-2 flex items-center justify-center shrink-0 group">
+                <button
+                  type="button"
+                  disabled={isLoading || isUploading}
+                  className="p-2 rounded-full text-cyan-500 hover:text-white hover:bg-cyan-600 transition-all disabled:opacity-40"
+                  title="Upload Document"
+                >
+                  {isUploading ? <Loader2 size={18} className="animate-spin text-cyan-400" /> : <Paperclip size={18} />}
+                </button>
+                
+                {/* Hover Menu */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-[#020611] border border-cyan-800/80 rounded-lg shadow-[0_0_15px_rgba(0,243,255,0.2)] overflow-hidden">
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      fileInputRef.current.dataset.uploadType = 'assignment';
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-900/50 hover:text-white transition-colors border-b border-cyan-900/30 font-mono"
+                  >
+                    Assignment PDF
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      fileInputRef.current.dataset.uploadType = 'general';
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-900/50 hover:text-white transition-colors font-mono"
+                  >
+                    General File
+                  </button>
+                </div>
+              </div>
+
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                style={{ display: 'none' }} 
+                data-upload-type="assignment"
+                onChange={handleFileUpload} 
+                accept=".pdf,.txt,.docx"
+              />
 
               <input
                 id="jarvis-command-input"

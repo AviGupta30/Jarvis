@@ -1,62 +1,66 @@
 [
   {
     "role": "system",
-    "content": "[Conversation Summary]: The user interacted with voice assistant Jarvis to open YouTube and play a video from the Smart Programming channel, while also having Spotify play a song. However, Jarvis initially stated that it was unable to find a match for the song \"Kesariya\" despite it already being played on Spotify. The user also searched for \"dsa\" on YouTube, which led to the video from the Smart Programming channel being played."
-  },
-  {
-    "role": "user",
-    "content": "play song kesariya"
+    "content": "[Conversation Summary]: Here's a summary of the conversation in 2-3 sentences:\n\nThe user asked the assistant to extract questions from a PDF file named \"DcAssignment.pdf\" located on their desktop, and the assistant successfully extracted three questions related to digital communication systems. The user then asked the assistant to complete assignments from multiple files with different names (\"Test_Assignment.docx\", \"Test_Assignment_1780587438.docx\", and \"Test_Assignment_1780587779.docx\"), but the assistant only successfully extracted questions from the second file. The assistant was unable to complete the assignment due to a browser error when trying to access the Gemini AI in Microsoft Edge."
   },
   {
     "role": "assistant",
-    "content": "Kesariya is already playing on Spotify, sir."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u274c **Error:** Cannot find `do my assignment from test_assignment_1780587779.docx`. Make sure it is uploaded or saved on Desktop/Documents/Downloads."
   },
   {
     "role": "user",
-    "content": "play song kesariya"
+    "content": "do my assignment from Test_Assignment_1780587907.docx"
   },
   {
     "role": "assistant",
-    "content": "Still playing Kesariya on Spotify, sir."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **2 questions** in `Test_Assignment_1780587907.docx`\n\ud83c\udf10 **Step 2:** Opening Microsoft Edge \u2192 Gemini AI\u2026\n\ud83d\udcce **Uploading** `Test_Assignment_1780587907.docx` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (3598 chars)\n\ud83d\udcac **Question 2/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (3598 chars)\n\u270d\ufe0f **Step 4:** Humanizing answers (opening Paraphraser tab)\u2026\n   \u21b3 \ud83d\udd04 Humanizing Q1/2\u2026\n   \u21b3 \u26a1 Browser humanizer failed \u2014 using Groq LLM fallback\u2026\n   \u21b3 \u2705 Q1 humanized\n   \u21b3 \ud83d\udd04 Humanizing Q2/2\u2026\n   \u21b3 \u26a1 Browser humanizer failed \u2014 using Groq LLM fallback\u2026\n   \u21b3 \u2705 Q2 humanized\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\Test_Assignment_Completed.docx"
   },
   {
     "role": "user",
-    "content": "play song kesariya on spotify"
+    "content": "do my assignment from Test_Assignment_1780588691.docx"
   },
   {
     "role": "assistant",
-    "content": "Kesariya is already playing on Spotify."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **2 questions** in `Test_Assignment_1780588691.docx`\n\ud83c\udf10 **Step 2:** Opening Microsoft Edge \u2192 Gemini AI\u2026\n\ud83d\udcce **Uploading** `Test_Assignment_1780588691.docx` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (4448 chars)\n\ud83d\udcac **Question 2/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (5931 chars)\n\u270d\ufe0f **Step 4:** Humanizing answers (opening Paraphraser tab)\u2026\n   \u21b3 \ud83d\udd04 Humanizing Q1/2\u2026\n   \u21b3 \u26a1 Browser humanizer failed \u2014 using Groq LLM fallback\u2026\n   \u21b3 \u2705 Q1 humanized\n   \u21b3 \ud83d\udd04 Humanizing Q2/2\u2026\n   \u21b3 \u26a1 Browser humanizer failed \u2014 using Groq LLM fallback\u2026\n   \u21b3 \u2705 Q2 humanized\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\Test_Assignment_Completed.docx"
   },
   {
     "role": "user",
-    "content": "play song kesariya on spotify"
+    "content": "do my assignment from Test_Assignment_1780589370.docx"
   },
   {
     "role": "assistant",
-    "content": "It's still playing Kesariya on Spotify, no need to restart it, sir."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **2 questions** in `Test_Assignment_1780589370.docx`\n\ud83c\udf10 **Step 2:** Opening Browser \u2192 Gemini AI\u2026\n\u26a0\ufe0f **Warning:** Google Chrome is currently open so Jarvis cannot use its profile. Falling back to Jarvis's dedicated browser...\n\ud83d\udcce **Uploading** `Test_Assignment_1780589370.docx` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/2:** Sending to Gemini\u2026\n   \u21b3 \u26a1 Gemini answer empty \u2014 using Groq API fallback\u2026\n   \u21b3 \u2705 Answer received (2932 chars)\n\ud83d\udcac **Question 2/2:** Sending to Gemini\u2026\n   \u21b3 \u26a1 Gemini answer empty \u2014 using Groq API fallback\u2026\n   \u21b3 \u2705 Answer received (69 chars)\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\Test_Assignment_Completed.docx"
   },
   {
     "role": "user",
-    "content": "play kesariya on spotify"
+    "content": "do my assignment from Test_Assignment_1780590868.docx"
   },
   {
     "role": "assistant",
-    "content": "Kesariya is already playing on Spotify."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **2 questions** in `Test_Assignment_1780590868.docx`\n\ud83c\udf10 **Step 2:** Opening Browser \u2192 Gemini AI\u2026\n\u26a0\ufe0f **Warning:** Microsoft Edge is currently open. Please close Edge to use your logged-in profile.\n\ud83d\udcce **Uploading** `Test_Assignment_1780590868.docx` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (676 chars)\n\ud83d\udcac **Question 2/2:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (652 chars)\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\Test_Assignment_Completed.docx"
   },
   {
     "role": "user",
-    "content": "play song jai ho on spotify"
+    "content": "do my assignment from DcAssignment_1780591092.pdf  do only first 5 for now"
   },
   {
     "role": "assistant",
-    "content": "Playing Jai Ho on Spotify now, sir."
+    "content": "I ran into an issue connecting to my brain. Please try again in a moment."
   },
   {
     "role": "user",
-    "content": "play song kesariya on spotify"
+    "content": "do my assignment from DcAssignment_1780591147.pdf"
   },
   {
     "role": "assistant",
-    "content": "Switching back to Kesariya on Spotify, sir."
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **10 questions** in `DcAssignment_1780591147.pdf`\n\ud83c\udf10 **Step 2:** Opening Browser \u2192 Gemini AI\u2026\n\u26a0\ufe0f **Warning:** Microsoft Edge is currently open. Please close Edge to use your logged-in profile.\n\ud83d\udcce **Uploading** `DcAssignment_1780591147.pdf` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (2540 chars)\n\ud83d\udcac **Question 2/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (2292 chars)\n\ud83d\udcac **Question 3/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (2656 chars)\n\ud83d\udcac **Question 4/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (4616 chars)\n\ud83d\udcac **Question 5/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (4616 chars)\n\ud83d\udcac **Question 1/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (2262 chars)\n\ud83d\udcac **Question 2/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (3181 chars)\n\ud83d\udcac **Question 3/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (1979 chars)\n\ud83d\udcac **Question 4/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (2801 chars)\n\ud83d\udcac **Question 5/10:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (1979 chars)\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\DcAssignment_Completed.docx"
+  },
+  {
+    "role": "user",
+    "content": "do my assignment from DcAssignment1_1780592142.docx"
+  },
+  {
+    "role": "assistant",
+    "content": "\ud83d\udccb **Step 1:** Extracting questions from file\u2026\n\u2705 **Step 1 Done:** Found **3 questions** in `DcAssignment1_1780592142.docx`\n\ud83c\udf10 **Step 2:** Opening Browser \u2192 Gemini AI\u2026\n\u26a0\ufe0f **Warning:** Microsoft Edge is currently open. Please close Edge to use your logged-in profile.\n\ud83d\udcce **Uploading** `DcAssignment1_1780592142.docx` to Gemini\u2026\n\u26a0\ufe0f **File upload skipped** \u2014 couldn't find upload button. Will ask as text.\n\ud83d\udcac **Question 1/3:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (1937 chars)\n\ud83d\udcac **Question 2/3:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (3094 chars)\n\ud83d\udcac **Question 3/3:** Sending to Gemini\u2026\n   \u21b3 \u2705 Answer received (4839 chars)\n\ud83d\udcc4 **Step 5:** Assembling **WORD** document\u2026\n\u2705 **Done!** Successfully created Word document: C:\\Users\\avi40\\Desktop\\DcAssignment1_Completed.docx"
   }
 ]

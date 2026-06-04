@@ -87,7 +87,29 @@ AVAILABLE TOOLS (call by exact name with arguments as JSON):
                                             — read text from a specific control (e.g. terminal output pane).
   dump_app_ui_tree(app_title, depth=3)      — dump the accessibility tree of an app to discover AutomationIds.
                                               Run once per new app to map its controls.
+  extract_questions(pdf_path)               — extract ALL questions from an assignment PDF (Phase 1)
+                                               Returns structured JSON with question text, type, marks, has_figure.
+  list_assignments()                        — list all PDF files on Desktop/Documents/Downloads
+  generate_answers(questions_json, pdf_path) — generate answers for ALL questions via Gemini/ChatGPT/DeepSeek browser
+                                               Pass the full output of extract_questions as questions_json.
+                                               pdf_path is the original PDF filename (for uploading to the AI browser).
+                                               Returns QA_JSON with answers for every question.
+  generate_answer(question, question_type)  — generate answer for a SINGLE question via Groq LLM (fast, no browser)
+  humanize_all_answers(qa_json)             — humanize ALL AI answers in QA_JSON via Paraphraser/Scribbr (Phase 3)
+                                               Pass the full output of generate_answers as qa_json.
+                                               Returns HUMANIZED_QA_JSON ready for Word doc creation.
+  humanize_text(text)                       — humanize a single text block
+  assemble_assignment(qa_json, filename, format_type) — assemble QA_JSON into a file (Phase 4)
+                                               format_type can be 'word' or 'ppt'.
+                                               Saves beautifully formatted file to Desktop.
+  create_word_doc(filename, content)        — create a basic plain text .docx Word document on Desktop
   DYNAMIC(description)                      — for anything not in the above list, write a description and Jarvis will generate code
+
+ASSIGNMENT PIPELINE EXAMPLE (for 'do my assignment from DcAssignment.pdf and save to Word'):
+  Step 1: extract_questions(pdf_path='DcAssignment.pdf')  → store as 'questions'
+  Step 2: generate_answers(questions_json=$questions, pdf_path='DcAssignment.pdf')  → store as 'qa_pairs'
+  Step 3: humanize_all_answers(qa_json=$qa_pairs)  → store as 'humanized_qa'
+  Step 4: assemble_assignment(qa_json=$humanized_qa, filename='Assignment_Answers', format_type='word')
 
 OUTPUT FORMAT — return ONLY valid JSON, exactly this structure:
 {
@@ -330,6 +352,16 @@ def is_complex_task(prompt: str) -> bool:
     if len(lower.split()) < 6:
         return False
 
+    # -- Pattern 0: Full assignment pipeline (highest priority) --
+    assignment_full_kw = [
+        "do my assignment", "complete my assignment", "solve my assignment",
+        "do the assignment", "answer my assignment", "finish my assignment",
+        "assignment from pdf", "assignment from the pdf", "my assignment pdf",
+        "do assignment", "solve assignment",
+    ]
+    if any(w in lower for w in assignment_full_kw):
+        return True
+
     # -- Pattern 1: File reading + output creation pipeline --
     file_read_kw = [
         "from the pdf", "from my pdf", "read the pdf", "read my pdf",
@@ -387,22 +419,7 @@ def is_complex_task(prompt: str) -> bool:
     if has_email and has_email_action:
         return True
 
-    # -- Pattern 5: Browser + action chains (NEW) --
-    browser_nav_kw = [
-        "go to ", "browse ", "open the site", "navigate to",
-        "on internshala", "on linkedin", "on naukri", "on github",
-        "on the website", "on the site", "on the page",
-        ".com and", ".in and",
-    ]
-    browser_action_kw = [
-        "and find", "and read", "and get", "and list", "and save",
-        "and tell me", "and create", "and download", "and note",
-        "and summarize", "and write",
-    ]
-    has_browser_nav = any(w in lower for w in browser_nav_kw)
-    has_browser_action = any(w in lower for w in browser_action_kw)
-    if has_browser_nav and has_browser_action:
-        return True
+    # (Pattern 5 removed to allow agentic_web_action to handle browser tasks natively)
 
     # -- Pattern 6: Explicit multi-step connectors (length-gated) --
     multi_step_kw = [
