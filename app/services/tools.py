@@ -398,49 +398,12 @@ def media_previous() -> str:
 
 def play_music(song: str) -> str:
     """Play a song on Spotify by searching and playing the top result."""
-    import time
-    import subprocess
+    from app.services.spotify_service import play_song_dynamic
     import threading
-    import urllib.parse
-    import pyautogui
-
-    # URL-encode so spaces and special chars don't break the URI
-    encoded_song = urllib.parse.quote(song)
 
     def _do_play():
-        # 1. Launch Spotify directly to the search results for the song
-        subprocess.Popen(f'start spotify:search:{encoded_song}', shell=True)
-        time.sleep(4.5)  # Give Spotify time to open and populate results
-
         try:
-            import pygetwindow as gw
-            wins = [w for w in gw.getAllWindows() if w.title and 'spotify' in w.title.lower()]
-            if not wins:
-                # Spotify window not found — try opening it
-                subprocess.Popen('start spotify:', shell=True)
-                time.sleep(3.0)
-                wins = [w for w in gw.getAllWindows() if w.title and 'spotify' in w.title.lower()]
-
-            if wins:
-                win = wins[0]
-                if hasattr(win, 'isMinimized') and win.isMinimized:
-                    win.restore()
-                win.activate()
-                time.sleep(1.0)
-
-                # Navigate from search bar to first result
-                # Spotify UI after spotify:search:X opens with search bar focused
-                # Tab x1 = first filter button row
-                # Tab x1 more = first song/result card
-                # Enter = play it
-                pyautogui.press('tab')   # Move to filter tabs
-                time.sleep(0.3)
-                pyautogui.press('tab')   # Move to first result card
-                time.sleep(0.4)
-                pyautogui.press('enter') # Play / open the top result
-                time.sleep(0.5)
-                pyautogui.press('enter') # Backup press (sometimes first just selects)
-
+            play_song_dynamic(song)
         except Exception as e:
             print(f"[Jarvis] Spotify automation failed: {e}")
 

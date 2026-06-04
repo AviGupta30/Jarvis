@@ -1,54 +1,62 @@
 [
   {
     "role": "system",
-    "content": "[Conversation Summary]: The conversation appears to be a voice assistant interaction where the user is trying to minimize the current screen, but the assistant is unable to find an open window matching the current screen. The user initially tries to open Google Chrome and minimize the current screen, but the assistant is unable to complete the task. The conversation does not seem to be related to adjusting the layout of VS Code and Microsoft Edge as initially mentioned."
+    "content": "[Conversation Summary]: The user interacted with voice assistant Jarvis to open YouTube and play a video from the Smart Programming channel, while also having Spotify play a song. However, Jarvis initially stated that it was unable to find a match for the song \"Kesariya\" despite it already being played on Spotify. The user also searched for \"dsa\" on YouTube, which led to the video from the Smart Programming channel being played."
   },
   {
     "role": "user",
-    "content": "hey jarvis"
+    "content": "play song kesariya"
   },
   {
     "role": "assistant",
-    "content": "I'm here, sir."
+    "content": "Kesariya is already playing on Spotify, sir."
   },
   {
     "role": "user",
-    "content": "open youtube"
+    "content": "play song kesariya"
   },
   {
     "role": "assistant",
-    "content": "YouTube is now open, sir."
+    "content": "Still playing Kesariya on Spotify, sir."
   },
   {
     "role": "user",
-    "content": "open spotify and play song kesariya"
+    "content": "play song kesariya on spotify"
   },
   {
     "role": "assistant",
-    "content": "Spotify is now open and playing the song 'Kesariya'."
+    "content": "Kesariya is already playing on Spotify."
   },
   {
     "role": "user",
-    "content": "can you pls tell whats currently on my screen"
+    "content": "play song kesariya on spotify"
   },
   {
     "role": "assistant",
-    "content": "You currently have the Microsoft Edge browser open, displaying our conversation log, and Spotify is also open, playing the song 'Kesariya' in the background."
+    "content": "It's still playing Kesariya on Spotify, no need to restart it, sir."
   },
   {
     "role": "user",
-    "content": "hey jarvis"
+    "content": "play kesariya on spotify"
   },
   {
     "role": "assistant",
-    "content": "I'm here, sir."
+    "content": "Kesariya is already playing on Spotify."
   },
   {
     "role": "user",
-    "content": "hey jarvis"
+    "content": "play song jai ho on spotify"
   },
   {
     "role": "assistant",
-    "content": "Still here, sir. Is there something I can help you with?"
+    "content": "Playing Jai Ho on Spotify now, sir."
+  },
+  {
+    "role": "user",
+    "content": "play song kesariya on spotify"
+  },
+  {
+    "role": "assistant",
+    "content": "Switching back to Kesariya on Spotify, sir."
   }
 ]
