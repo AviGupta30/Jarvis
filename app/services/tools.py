@@ -19,17 +19,22 @@ from app.services.whatsapp import open_whatsapp, send_whatsapp_message
 
 pyautogui.FAILSAFE = False
 
+# ── Screen Reading (via screen_reader.py + VLM) ───────────────────────────
 
-# ── Screen Reading (via screen_reader.py) ─────────────────────────────────
-
-def read_my_screen() -> str:
-    """Read and describe all visible text on the current screen using OCR + accessibility tree."""
+def read_my_screen(user_query: str = "What am I looking at?", intent_mode: str = None) -> str:
+    """
+    Read and describe the current screen using the VLM pipeline.
+    Routes to the correct mode:
+      intent_mode='describe' → structured scene summary
+      intent_mode='suggest'  → 3 next best actions
+      intent_mode='execute'  → step-by-step action plan
+    Falls back to OCR/accessibility tree if VLM is unavailable.
+    """
     try:
         from app.services.screen_reader import read_screen_as_tool
-        return read_screen_as_tool()
+        return read_screen_as_tool(user_query=user_query)
     except Exception as e:
         return f"Could not read screen: {e}"
-
 
 def play_video_in_browser() -> str:
     """
@@ -88,7 +93,6 @@ def play_video_in_browser() -> str:
     except Exception as e:
         return f"Could not play video: {e}"
 
-
 # ─── Web & Information ──────────────────────────────────────────────────────
 
 def _extract_location(query: str) -> str:
@@ -99,7 +103,6 @@ def _extract_location(query: str) -> str:
                  'in', 'of', 'at', 'right now', 'now', 'india']:
         query = re.sub(rf'\b{re.escape(word)}\b', ' ', query, flags=re.IGNORECASE)
     return query.strip(' ,.-') or "Delhi"
-
 
 def get_weather(location: str) -> str:
     """Get current weather using wttr.in — returns a clean spoken string."""
@@ -131,7 +134,6 @@ def get_weather(location: str) -> str:
         pass
     return f"Couldn't fetch weather for {location}."
 
-
 def get_info(query: str) -> str:
     """
     Smart information lookup (Step 3 upgrade):
@@ -154,7 +156,6 @@ def get_info(query: str) -> str:
         return smart_search(query)
     except Exception as e:
         return f"Search failed: {e}"
-
 
 SITE_SHORTCUTS = {
     # Global
@@ -253,13 +254,11 @@ def youtube_search(query: str, autoplay: bool = False) -> str:
     webbrowser.open(f"https://www.youtube.com/results?search_query={encoded}")
     return f"Searching YouTube for: {query}"
 
-
 # ─── Date & Time ────────────────────────────────────────────────────────────
 
 def get_system_time() -> str:
     """Returns current date and time naturally."""
     return datetime.now().strftime("%I:%M %p on %A, %B %d, %Y")
-
 
 # ─── System Information ─────────────────────────────────────────────────────
 
@@ -279,7 +278,6 @@ def get_system_info() -> str:
         pass
     return info
 
-
 # ─── Screen & Window Control ────────────────────────────────────────────────
 
 def take_screenshot(filename: str = None) -> str:
@@ -294,7 +292,6 @@ def snap_windows(left_app: str, right_app: str) -> str:
     """Snaps left_app to left half and right_app to right half using Win32 API (no keyboard shortcuts)."""
     from app.services.window_layout import win32_snap_two_windows
     return win32_snap_two_windows(left_app, right_app)
-
 
 # ─── File Operations ────────────────────────────────────────────────────────
 def create_folder(folder_name: str) -> str:
@@ -355,8 +352,6 @@ def maximize_window(app_name: str) -> str:
     from app.services.window_layout import win32_maximize_window
     return win32_maximize_window(app_name)
 
-
-
 def minimize_all_windows() -> str:
     """Minimizes all open windows to show the desktop."""
     pyautogui.hotkey('win', 'd')
@@ -366,7 +361,6 @@ def lock_screen() -> str:
     """Locks the Windows screen."""
     pyautogui.hotkey('win', 'l')
     return "Screen locked."
-
 
 # ─── Volume & Media Control ─────────────────────────────────────────────────
 
@@ -403,32 +397,55 @@ def media_previous() -> str:
     return "Went to previous track."
 
 def play_music(song: str) -> str:
-    """Play a song on Spotify by searching and using Tab/Enter."""
+    """Play a song on Spotify by searching and playing the top result."""
     import time
+    import subprocess
+    import threading
+    import urllib.parse
+    import pyautogui
+
+    # URL-encode so spaces and special chars don't break the URI
+    encoded_song = urllib.parse.quote(song)
+
     def _do_play():
-        subprocess.Popen(f'start "" "spotify:search:{song}"', shell=True)
-        time.sleep(3.5)
+        # 1. Launch Spotify directly to the search results for the song
+        subprocess.Popen(f'start spotify:search:{encoded_song}', shell=True)
+        time.sleep(4.5)  # Give Spotify time to open and populate results
+
         try:
             import pygetwindow as gw
             wins = [w for w in gw.getAllWindows() if w.title and 'spotify' in w.title.lower()]
+            if not wins:
+                # Spotify window not found — try opening it
+                subprocess.Popen('start spotify:', shell=True)
+                time.sleep(3.0)
+                wins = [w for w in gw.getAllWindows() if w.title and 'spotify' in w.title.lower()]
+
             if wins:
                 win = wins[0]
-                win.restore()
+                if hasattr(win, 'isMinimized') and win.isMinimized:
+                    win.restore()
                 win.activate()
                 time.sleep(1.0)
-                # Fallback: Tab from search bar to Top Result Play button, then Enter
-                for _ in range(3):
-                    pyautogui.press('tab')
-                    time.sleep(0.2)
-                pyautogui.press('enter')
+
+                # Navigate from search bar to first result
+                # Spotify UI after spotify:search:X opens with search bar focused
+                # Tab x1 = first filter button row
+                # Tab x1 more = first song/result card
+                # Enter = play it
+                pyautogui.press('tab')   # Move to filter tabs
+                time.sleep(0.3)
+                pyautogui.press('tab')   # Move to first result card
+                time.sleep(0.4)
+                pyautogui.press('enter') # Play / open the top result
                 time.sleep(0.5)
-                pyautogui.press('enter')  # Sometimes needs a second enter to play
+                pyautogui.press('enter') # Backup press (sometimes first just selects)
+
         except Exception as e:
-            pass
+            print(f"[Jarvis] Spotify automation failed: {e}")
 
     threading.Thread(target=_do_play, daemon=True).start()
     return f"Playing '{song}' on Spotify."
-
 
 # ─── Clipboard & Typing ─────────────────────────────────────────────────────
 
@@ -449,7 +466,6 @@ def type_text(text: str) -> str:
     pyperclip.copy(text)
     pyautogui.hotkey('ctrl', 'v')
     return f"Typed: '{text}'"
-
 
 # ─── App Launcher ────────────────────────────────────────────────────────────
 
@@ -472,7 +488,6 @@ def open_app(app_name: str) -> str:
         return f"Opened {app_name}."
     except Exception as e:
         return f"Could not open {app_name}: {e}"
-
 
 # ─── Sticky Notes ────────────────────────────────────────────────────────────
 
@@ -514,7 +529,6 @@ def close_sticky_notes() -> str:
     except Exception as e:
         return f"Failed to close sticky notes: {e}"
 
-
 # ─── Math & Calculations ─────────────────────────────────────────────────────
 
 def calculate(expression: str) -> str:
@@ -526,7 +540,6 @@ def calculate(expression: str) -> str:
         return f"{expression} = {result}"
     except Exception as e:
         return f"Could not calculate: {expression} ({e})"
-
 
 # ─── Reminders ───────────────────────────────────────────────────────────────
 
@@ -544,9 +557,6 @@ def set_reminder(message: str, seconds: int = 60) -> str:
     minutes = seconds // 60
     return f"Reminder set for {minutes} minute{'s' if minutes != 1 else ''}: '{message}'"
 
-
-
-
 # ─── Memory Tools ─────────────────────────────────────────────────────────────
 
 def remember_preference(key: str, value: str) -> str:
@@ -557,7 +567,6 @@ def remember_preference(key: str, value: str) -> str:
         return f"Got it! I'll remember that your {key} preference is: {value}."
     except Exception as e:
         return f"Couldn't save preference: {e}"
-
 
 def list_learned_skills() -> str:
     """Return all dynamic skills Jarvis has learned."""
@@ -570,7 +579,6 @@ def list_learned_skills() -> str:
         return f"I've learned {len(skills)} custom skill(s):\n{lines}"
     except Exception as e:
         return f"Couldn't retrieve skills: {e}"
-
 
 # ─── Agentic / Multi-Step Tools ───────────────────────────────────────────────
 
@@ -612,7 +620,7 @@ def read_pdf_text(path: str = None, filename: str = None) -> str:
                     text_pages.append(t)
         text = "\n\n".join(text_pages)
         if text.strip():
-            return text[:8000]  # cap at 8000 chars
+            return text[:8000] # cap at 8000 chars
     except ImportError:
         pass
     except Exception as e:
@@ -637,7 +645,6 @@ def read_pdf_text(path: str = None, filename: str = None) -> str:
         return text[:8000] if text.strip() else "Could not extract text from PDF."
     except Exception as e:
         return f"Failed to read PDF: {e}"
-
 
 def find_file(name: str, location: str = "all") -> str:
     """Find a file by name (or partial name) on Desktop, Documents, Downloads."""
@@ -665,7 +672,6 @@ def find_file(name: str, location: str = "all") -> str:
         return f"No file matching '{name}' found in {location}."
     return "\n".join(found[:5])
 
-
 def open_file(path: str) -> str:
     """Open any file with its default application."""
     try:
@@ -677,7 +683,6 @@ def open_file(path: str) -> str:
             return f"Opened: {os.path.basename(path)}"
         except Exception as e2:
             return f"Failed to open file: {e2}"
-
 
 def focus_window(name: str, timeout: float = 5.0) -> str:
     """Bring a window to the foreground by partial name match (Win32 API, no pygetwindow)."""
@@ -691,7 +696,6 @@ def focus_window(name: str, timeout: float = 5.0) -> str:
         time.sleep(0.4)
     return f"Window '{name}' not found after {timeout}s."
 
-
 def wait_for_window(name: str, timeout: float = 15.0) -> str:
     """Block until a window with the given name appears, then focus it."""
     import time
@@ -704,7 +708,6 @@ def wait_for_window(name: str, timeout: float = 15.0) -> str:
         time.sleep(0.5)
     return f"Timed out waiting for window '{name}' after {timeout}s."
 
-
 def type_and_submit(text: str, delay: float = 0.3) -> str:
     """Type text into the focused field, then press Enter."""
     import time
@@ -715,7 +718,6 @@ def type_and_submit(text: str, delay: float = 0.3) -> str:
     pyautogui.press('enter')
     return f"Typed and submitted: '{text[:60]}'"
 
-
 def copy_selected_text() -> str:
     """Select all text in the focused element and copy to clipboard, then return it."""
     import time
@@ -725,7 +727,6 @@ def copy_selected_text() -> str:
     time.sleep(0.5)
     content = pyperclip.paste()
     return content[:5000] if content else "(clipboard empty after copy)"
-
 
 def create_word_doc(filename: str, content: str, save_path: str = None) -> str:
     """Create a .docx Word document with the given content.
@@ -766,7 +767,6 @@ def create_word_doc(filename: str, content: str, save_path: str = None) -> str:
         except Exception as e2:
             return f"Failed to create document: {e} | txt fallback: {e2}"
 
-
 def read_active_window_text() -> str:
     """Get all readable text from the currently active window."""
     try:
@@ -775,6 +775,83 @@ def read_active_window_text() -> str:
     except Exception as e:
         return f"Could not read active window: {e}"
 
+# ── UIA-powered automation tools ───────────────────────────────────────────────────
+
+def click_ui_element_uia(app_title: str, element_name: str = None,
+                         automation_id: str = None,
+                         control_type: str = None) -> str:
+    """
+    Click a UI element inside an app by AutomationId, name, or control type.
+    Does NOT move the physical mouse cursor — fires via Windows UI Automation.
+    Preferred over coordinate-based clicking for any known app element.
+
+    Args:
+        app_title:     Partial window title of the target app (e.g. 'VS Code')
+        element_name:  Visible label of the element (e.g. 'Run Test')
+        automation_id: UIA AutomationId — most stable identifier (e.g. 'workbench.panel.terminal')
+        control_type:  UIA type: 'Button', 'Edit', 'MenuItem', 'Pane', 'CheckBox', etc.
+    """
+    try:
+        from app.services.ui_inspector import smart_click
+        return smart_click(app_title, element_name=element_name,
+                           automation_id=automation_id, control_type=control_type)
+    except Exception as e:
+        return f"UIA click failed: {e}"
+
+def type_into_ui_element(app_title: str, element_name: str = None,
+                         text: str = "", automation_id: str = None) -> str:
+    """
+    Inject text into a specific input field in an app via UIA Value pattern.
+    No simulated global keystrokes — sets the value directly in the OS control.
+    Works even when the window is behind other windows.
+
+    Args:
+        app_title:     Partial window title
+        element_name:  Label of the text field (e.g. 'Terminal input')
+        text:          Text to enter
+        automation_id: Optional AutomationId for maximum stability
+    """
+    try:
+        from app.services.ui_inspector import type_into_element
+        return type_into_element(app_title, element_name=element_name,
+                                 text=text, automation_id=automation_id)
+    except Exception as e:
+        return f"UIA type failed: {e}"
+
+def read_ui_element_text(app_title: str, element_name: str = None,
+                          automation_id: str = None) -> str:
+    """
+    Read the current text content of a UI element — e.g. a terminal output
+    pane, a label, or a text field. Uses UIA TextPattern.
+
+    Args:
+        app_title:     Partial window title
+        element_name:  Name of the element to read
+        automation_id: Optional AutomationId
+    """
+    try:
+        from app.services.ui_inspector import read_element_text
+        return read_element_text(app_title, element_name=element_name,
+                                 automation_id=automation_id)
+    except Exception as e:
+        return f"UIA read failed: {e}"
+
+def dump_app_ui_tree(app_title: str, depth: int = 3) -> str:
+    """
+    Dump the full Windows UI Automation accessibility tree of an app window.
+    Use this once per app to discover AutomationIds for stable element targeting.
+    Output is a human-readable indented tree showing all buttons, inputs, panes.
+
+    Args:
+        app_title: Partial window title (e.g. 'Visual Studio Code', 'Discord')
+        depth:     How many levels deep to walk (default 3, max 5)
+    """
+    try:
+        from app.services.ui_inspector import debug_ui_tree
+        return debug_ui_tree(app_title, depth=depth)
+    except Exception as e:
+        return f"UIA tree dump failed: {e}"
+
 
 def open_windows_copilot() -> str:
     """Open Windows Copilot sidebar using Win+C hotkey."""
@@ -782,7 +859,6 @@ def open_windows_copilot() -> str:
     pyautogui.hotkey('win', 'c')
     time.sleep(2.5)  # Wait for Copilot panel to animate open
     return "Windows Copilot opened."
-
 
 def send_to_copilot(question: str, wait_seconds: float = 8.0) -> str:
     """Type a question into the Windows Copilot sidebar and retrieve the response.
@@ -828,7 +904,6 @@ def send_to_copilot(question: str, wait_seconds: float = 8.0) -> str:
     response = pyperclip.paste()
     return response[:3000] if response else "(Could not retrieve Copilot response)"
 
-
 # ── Web Search Tools (Step 3) ─────────────────────────────────────────────────
 
 def search_site_tool(query: str, site_url: str) -> str:
@@ -839,7 +914,6 @@ def search_site_tool(query: str, site_url: str) -> str:
     except Exception as e:
         return f"Site search failed: {e}"
 
-
 def scrape_url_tool(url: str) -> str:
     """Read and extract readable text content from a specific URL."""
     try:
@@ -847,7 +921,6 @@ def scrape_url_tool(url: str) -> str:
         return scrape_url(url)
     except Exception as e:
         return f"Could not read URL: {e}"
-
 
 TOOL_REGISTRY = {
     # Information & Web
@@ -893,12 +966,14 @@ TOOL_REGISTRY = {
     # Math
     "calculate": calculate,
     # WhatsApp (Smart — Step 11)
-    "open_whatsapp":            lambda: __import__('app.services.whatsapp_smart', fromlist=['open_whatsapp']).open_whatsapp(),
-    "search_whatsapp_contact":  lambda name: __import__('app.services.whatsapp_smart', fromlist=['search_whatsapp_contact']).search_whatsapp_contact(name),
-    "initiate_whatsapp_send":   lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),
-    "confirm_whatsapp_send":    lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['confirm_whatsapp_send']).confirm_whatsapp_send(contact_name, message),
-    "read_whatsapp_messages":   lambda contact_name, count=5: __import__('app.services.whatsapp_smart', fromlist=['read_whatsapp_messages']).read_whatsapp_messages(contact_name, count),
-    "send_whatsapp_message":    lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),  # routes to confirm flow
+    "open_whatsapp":        lambda: __import__('app.services.whatsapp_smart', fromlist=['open_whatsapp']).open_whatsapp(),
+    "search_whatsapp_contact": lambda name: __import__('app.services.whatsapp_smart', fromlist=['search_whatsapp_contact']).search_whatsapp_contact(name),
+    "initiate_whatsapp_send":  lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),
+    "confirm_whatsapp_send":   lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['confirm_whatsapp_send']).confirm_whatsapp_send(contact_name, message),
+    "read_whatsapp_messages":  lambda contact_name, count=5: __import__('app.services.whatsapp_smart', fromlist=['read_whatsapp_messages']).read_whatsapp_messages(contact_name, count),
+    "send_whatsapp_message":   lambda contact_name, message: __import__('app.services.whatsapp_smart', fromlist=['initiate_whatsapp_send']).initiate_whatsapp_send(contact_name, message),  # routes to confirm flow
+    "initiate_whatsapp_call":  lambda contact_name: __import__('app.services.whatsapp_call', fromlist=['initiate_whatsapp_call']).initiate_whatsapp_call(contact_name),
+    "confirm_whatsapp_call":   lambda contact_name: __import__('app.services.whatsapp_call', fromlist=['confirm_whatsapp_call']).confirm_whatsapp_call(contact_name),
     # Memory
     "remember_preference": remember_preference,
     "list_learned_skills": list_learned_skills,
@@ -923,19 +998,19 @@ TOOL_REGISTRY = {
     "search_site": search_site_tool,
     "scrape_url": scrape_url_tool,
     # Full file system ops (Step 4)
-    "read_file":        lambda path: __import__('app.services.file_ops', fromlist=['read_file']).read_file(path),
-    "write_file":       lambda path, content: __import__('app.services.file_ops', fromlist=['write_file']).write_file(path, content),
-    "append_file":      lambda path, content: __import__('app.services.file_ops', fromlist=['append_file']).append_file(path, content),
+    "read_file":       lambda path: __import__('app.services.file_ops', fromlist=['read_file']).read_file(path),
+    "write_file":      lambda path, content: __import__('app.services.file_ops', fromlist=['write_file']).write_file(path, content),
+    "append_file":     lambda path, content: __import__('app.services.file_ops', fromlist=['append_file']).append_file(path, content),
     "list_directory":   lambda path='Desktop': __import__('app.services.file_ops', fromlist=['list_directory']).list_directory(path),
-    "move_file":        lambda src, dst: __import__('app.services.file_ops', fromlist=['move_file']).move_file(src, dst),
-    "delete_file":      lambda path: __import__('app.services.file_ops', fromlist=['delete_file']).delete_file(path),
+    "move_file":       lambda src, dst: __import__('app.services.file_ops', fromlist=['move_file']).move_file(src, dst),
+    "delete_file":     lambda path: __import__('app.services.file_ops', fromlist=['delete_file']).delete_file(path),
     "search_files":     lambda name, root_dir='home': __import__('app.services.file_ops', fromlist=['search_files']).search_files(name, root_dir),
     "create_folder":    lambda path: __import__('app.services.file_ops', fromlist=['create_folder']).create_folder(path),
-    "bulk_rename":      lambda directory, find, replace: __import__('app.services.file_ops', fromlist=['bulk_rename']).bulk_rename(directory, find, replace),
+    "bulk_rename":     lambda directory, find, replace: __import__('app.services.file_ops', fromlist=['bulk_rename']).bulk_rename(directory, find, replace),
     "diff_files":       lambda path1, path2: __import__('app.services.file_ops', fromlist=['diff_files']).diff_files(path1, path2),
     # Gmail integration (Step 5)
     "check_emails":     lambda query='is:unread', max_results=5: __import__('app.services.gmail_tool', fromlist=['check_emails']).check_emails(query, max_results),
-    "list_unread":      lambda max_results=5: __import__('app.services.gmail_tool', fromlist=['list_unread']).list_unread(max_results),
+    "list_unread":     lambda max_results=5: __import__('app.services.gmail_tool', fromlist=['list_unread']).list_unread(max_results),
     "get_email_body":   lambda email_id: __import__('app.services.gmail_tool', fromlist=['get_email_body']).get_email_body(email_id),
     "summarize_inbox":  lambda max_results=10: __import__('app.services.gmail_tool', fromlist=['summarize_inbox']).summarize_inbox(max_results),
     # Browser automation (Step 6)
@@ -946,15 +1021,22 @@ TOOL_REGISTRY = {
     # Google Calendar (Step 8)
     "get_upcoming_events": lambda days=7: __import__('app.services.calendar_tool', fromlist=['get_upcoming_events']).get_upcoming_events(days),
     "check_today_schedule": lambda: __import__('app.services.calendar_tool', fromlist=['check_today_schedule']).check_today_schedule(),
-    "add_event":        lambda title, date, time=None, notes="": __import__('app.services.calendar_tool', fromlist=['add_event']).add_event(title, date, time, notes),
+    "add_event":       lambda title, date, time=None, notes="": __import__('app.services.calendar_tool', fromlist=['add_event']).add_event(title, date, time, notes),
     # Persistent Memory (Step 10)
-    "save_fact":        lambda topic, fact: __import__('app.services.memory_tool', fromlist=['save_fact']).save_fact(topic, fact),
+    "save_fact":       lambda topic, fact: __import__('app.services.memory_tool', fromlist=['save_fact']).save_fact(topic, fact),
     "recall_facts":     lambda topic=None: __import__('app.services.memory_tool', fromlist=['recall_facts']).recall_facts(topic),
     "get_morning_brief": lambda: __import__('app.services.memory_tool', fromlist=['get_morning_brief']).get_morning_brief(),
-    "update_fact":      lambda topic, old_fact, new_fact: __import__('app.services.memory_tool', fromlist=['update_fact']).update_fact(topic, old_fact, new_fact),
-    "forget_fact":      lambda topic: __import__('app.services.memory_tool', fromlist=['forget_fact']).forget_fact(topic),
+    "update_fact":     lambda topic, old_fact, new_fact: __import__('app.services.memory_tool', fromlist=['update_fact']).update_fact(topic, old_fact, new_fact),
+    "forget_fact":     lambda topic: __import__('app.services.memory_tool', fromlist=['forget_fact']).forget_fact(topic),
     # Extended browser tools (Step 6 enhanced)
-    "fill_form":        lambda url, fields: __import__('app.services.browser_tool', fromlist=['fill_form']).fill_form(url, fields),
+    "fill_form":       lambda url, fields: __import__('app.services.browser_tool', fromlist=['fill_form']).fill_form(url, fields),
     "browse_and_paginate": lambda url, pages=3: __import__('app.services.browser_tool', fromlist=['browse_and_paginate']).browse_and_paginate(url, pages),
     "smart_web_action": lambda site_name, task: __import__('app.services.smart_navigator', fromlist=['smart_web_action']).smart_web_action(site_name, task),
+    # ── UIA-powered Windows UI Automation tools ──────────────────────────────
+    # These operate WITHOUT moving the mouse cursor.
+    # They use the same API as Windows Narrator / screen readers.
+    "click_ui_element_uia":  click_ui_element_uia,
+    "type_into_ui_element":  type_into_ui_element,
+    "read_ui_element_text":  read_ui_element_text,
+    "dump_app_ui_tree":      dump_app_ui_tree,
 }

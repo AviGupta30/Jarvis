@@ -98,6 +98,7 @@ def extract_wake_word_command(text: str) -> str | None:
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.services.voice import transcribe_audio, speak_text, speak_stream
 from app.services.whatsapp import open_whatsapp, send_whatsapp_message
+from app.services.hinglish_normalizer import normalize_for_tts
 
 # Import planner classifier at module level (not inside the hot loop)
 try:
@@ -107,51 +108,13 @@ except Exception:
 
 # (PIN removed — WhatsApp now uses two-phase confirmation instead)
 
-_NON_CONTACTS = {
-    'me', 'a', 'the', 'my', 'him', 'her', 'them', 'someone', 'anybody',
-    'anyone', 'you', 'it', 'that', 'this', 'message', 'msg', 'text'
-}
 
-def detect_whatsapp_send(text: str):
-    normalized = text.strip().rstrip('.,!?।')
-    patterns = [
-        r'send\s+(?:a\s+)?(?:message|msg|text|whatsapp\s+message)\s+to\s+([\w\s\.]+?)(?:\s+on\s+(?:whatsapp|wp)|$)',
-        r'message\s+([\w\s\.]+?)\s+on\s+(?:whatsapp|wp)',
-        r'whatsapp\s+(?:message\s+(?:to\s+)?|text\s+(?:to\s+)?)?([\w\s\.]+?)(?:\s+saying.*)?$',
-        r'send\s+([\w\s\.]+?)\s+a\s+(?:message|msg|text|whatsapp)',
-        r'send\s+(?:a\s+)?(?:message|msg|text)(?:\s+to)?\s+([\w\s\.]+?)(?:\s+on\s+(?:whatsapp|wp)|$)',
-    ]
-    for pattern in patterns:
-        m = re.search(pattern, normalized, re.IGNORECASE)
-        if m:
-            contact = m.group(1).strip().strip('.,!?')
-            words = contact.lower().split()
-            if len(contact) > 1 and not all(w in _NON_CONTACTS for w in words):
-                return contact
-    return None
-
-
-def detect_note_intent(text: str) -> bool:
-    normalized = text.strip().rstrip('.,!?\u0964').lower()
-    patterns = [
-        r'^(?:add|create|write|make|put|save)\s+(?:a\s+)?(?:short\s+)?(?:note|sticky|reminder)(?:\s+(?:on|to|for)\s+\S+)?',
-        r'^take\s+(?:a\s+)?note(?:\s+(?:for|on)\s+\S+)?',
-        r'^(?:note|sticky|reminder)\s+(?:it|this|down)?',
-        r'^remind\s+me\s+to',
-    ]
-    for p in patterns:
-        if re.search(p, normalized):
-            return True
-    return False
 
 
 def clean_markdown(text: str) -> str:
-    text = re.sub(r'```.*?```', ' code block ', text, flags=re.DOTALL)
-    text = re.sub(r'`.*?`', '', text)
-    text = re.sub(r'(\*\*|\*|__|_|~~)', '', text)
-    text = re.sub(r'#+\s*', '', text)
-    text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', r'\1', text)
-    return text.strip()
+    """Strip markdown and Devanagari before text reaches TTS."""
+    # Use the hinglish normalizer — it handles Devanagari + markdown in one pass
+    return normalize_for_tts(text)
 
 
 async def record_audio(audio_stream, pa) -> str | None:
@@ -346,19 +309,7 @@ async def run_voice_agent():
     # Follow-up state
     awaiting_followup = False
 
-    # WhatsApp smart multi-step flow state machine
-    # Steps: "ask_message" | "confirm" | None
-    whatsapp_flow = {
-        "active": False,
-        "step": None,
-        "contact": None,      # final resolved contact name
-        "message": None,      # message to send
-    }
 
-    # Note creation state machine
-    note_flow = {
-        "active": False
-    }
 
     try:
         pa = pyaudio.PyAudio()
@@ -410,100 +361,6 @@ async def run_voice_agent():
 
                 print(f"📝 Heard: '{transcribed_text}'")
 
-                # ── Note Flow State Machine ────────────────────────────────────
-                if note_flow["active"]:
-                    note_flow["active"] = False
-                    note_content = transcribed_text.strip()
-                    print(f"📝 Note content: {note_content}")
-                    command = f"create a sticky note that says: {note_content}"
-                    print("🧠 Sending to Jarvis brain...")
-                    set_ui_state("processing")
-                    try:
-                        await send_command_streaming(http_client, command)
-                    except Exception as e:
-                        print(f"\n[Error: Could not reach backend — {e}]")
-                    print("\n🤖 Ready. Say 'Jarvis' to wake me up.")
-                    _flush_mic(audio_stream)
-                    continue
-
-                # ── WhatsApp Smart State Machine ───────────────────────────────
-                if whatsapp_flow["active"]:
-                    step = whatsapp_flow["step"]
-
-                    # ---- User is saying the message text -----------------------
-                    if step == "ask_message":
-                        message_text = transcribed_text.strip()
-                        contact = whatsapp_flow["contact"]
-                        whatsapp_flow["message"] = message_text
-                        whatsapp_flow["step"] = "confirm"
-                        reply = (
-                            f"Got it. Before I send, confirming: "
-                            f"To {contact} — {message_text}. "
-                            f"Should I go ahead and send this?"
-                        )
-                        print(f"\U0001f4cb {reply}")
-                        await speak_text(reply)
-                        awaiting_followup = True
-                        _flush_mic(audio_stream)
-                        continue
-
-                    # ---- Waiting for yes / no confirmation ---------------------
-                    elif step == "confirm":
-                        # Words that mean YES
-                        yes_kw = ['yes', 'yeah', 'yep', 'go ahead', 'do it',
-                                  'ok', 'okay', 'confirm', 'haan', 'kar do', 'correct', 'sure']
-                        # Words that mean NO
-                        no_kw  = ['no', 'nope', 'cancel', 'stop', 'abort',
-                                  'nahi', 'mat bhejo', 'nevermind', 'never mind',
-                                  "don't", "dont", 'not', 'wait']
-
-                        # Check NO first (higher priority — prevents false sends)
-                        is_no  = any(w in text_lower for w in no_kw)
-                        is_yes = (not is_no) and any(w in text_lower for w in yes_kw)
-
-                        if is_yes:
-                            contact = whatsapp_flow["contact"]
-                            msg     = whatsapp_flow["message"]
-                            whatsapp_flow = {"active": False, "step": None,
-                                             "contact": None, "message": None}
-                            print(f"\U0001f4e4 Sending WhatsApp to {contact}: {msg}")
-                            await speak_text("Sending now, sir.")
-                            try:
-                                from app.services.whatsapp_smart import confirm_whatsapp_send
-                                loop = asyncio.get_event_loop()
-                                result = await loop.run_in_executor(
-                                    None, confirm_whatsapp_send, contact, msg
-                                )
-                                print(f"\u2705 {result}")
-                                await speak_text("Done! Your message has been sent.")
-                            except Exception as send_err:
-                                print(f"\u274c WhatsApp error: {send_err}")
-                                await speak_text("Sorry, I ran into a problem while sending.")
-                        elif any(w in text_lower for w in no_kw):
-                            whatsapp_flow = {"active": False, "step": None,
-                                             "contact": None, "message": None}
-                            await speak_text("Okay, message cancelled.")
-                        else:
-                            await speak_text("Should I send it? Please say yes or no.")
-                            awaiting_followup = True
-                        _flush_mic(audio_stream)
-                        continue
-
-                    # ---- No contact found — waiting for alternate name ----------
-                    elif step == "ask_contact":
-                        new_contact = transcribed_text.strip()
-                        stored_msg  = whatsapp_flow.get("message")
-                        whatsapp_flow["contact"] = new_contact
-                        if stored_msg:
-                            whatsapp_flow["step"] = "confirm"
-                            reply = f"Okay. To {new_contact}: {stored_msg}. Should I send?"
-                        else:
-                            whatsapp_flow["step"] = "ask_message"
-                            reply = f"What message should I send to {new_contact}?"
-                        await speak_text(reply)
-                        awaiting_followup = True
-                        _flush_mic(audio_stream)
-                        continue
 
                 # ── Normal command / Wake-word routing ─────────────────────────
                 if awaiting_followup:
@@ -519,15 +376,27 @@ async def run_voice_agent():
                     print(f"🗣️  Command: '{command}'")
 
                     if not command:
-                        # User only said "Jarvis" — greet locally
+                        # User only said "Jarvis" — greet locally in the same language
                         print("👋 Just a greeting — responding locally.")
-                        greetings = [
-                            "How may I help you?",
-                            "Yes, sir?",
-                            "I'm listening.",
-                            "How can I assist you today?",
-                            "What can I do for you?"
-                        ]
+                        from app.services.context_classifier import detect_language
+                        lang = detect_language(transcribed_text)
+
+                        if lang == "english":
+                            greetings = [
+                                "Yes Sir?",
+                                "How can I help?",
+                                "I'm listening.",
+                                "What can I do for you?",
+                                "Go ahead, Sir.",
+                            ]
+                        else:
+                            # Hindi/Hinglish wake — Hinglish greeting
+                            greetings = [
+                                "Haan Sir, boliye?",
+                                "Ji Sir, kya kaam hai?",
+                                "Bol Sir, sun raha hoon.",
+                                "Batao Sir, kya karna hai?",
+                            ]
                         await speak_text(random.choice(greetings))
                         _flush_mic(audio_stream)
                         await asyncio.sleep(0.5)
@@ -535,42 +404,7 @@ async def run_voice_agent():
                         awaiting_followup = True
                         continue
 
-                # ── WhatsApp send intent (first trigger) ──────────────────────────
-                wa_contact = detect_whatsapp_send(command)
-                if wa_contact:
-                    # Only match inline message if user said "saying X" / "say X" / "that says X"
-                    # NOT "send a message to X" (which would wrongly capture "to X" as the message)
-                    msg_inline = re.search(
-                        r'(?:saying|say(?:ing)?|that\s+says)[:\s]+["\']?(.+?)["\']?\s*$',
-                        command, re.I
-                    )
-                    if msg_inline:
-                        inline_msg = msg_inline.group(1).strip()
-                        whatsapp_flow = {"active": True, "step": "confirm",
-                                         "contact": wa_contact, "message": inline_msg}
-                        reply = (
-                            f"Before I send, confirming: "
-                            f"To {wa_contact} — {inline_msg}. Should I go ahead?"
-                        )
-                    else:
-                        whatsapp_flow = {"active": True, "step": "ask_message",
-                                         "contact": wa_contact, "message": None}
-                        reply = f"Sure. What message should I send to {wa_contact}?"
-                    awaiting_followup = True
-                    print(f"\U0001f4ac {reply}")
-                    await speak_text(reply)
-                    _flush_mic(audio_stream)
-                    continue
 
-                # ── Note intent ───────────────────────────────────────────────
-                if detect_note_intent(command):
-                    note_flow["active"] = True
-                    awaiting_followup = True
-                    reply = "What should I write in the note?"
-                    print(f"📝 {reply}")
-                    await speak_text(reply)
-                    _flush_mic(audio_stream)
-                    continue
 
                 # ── Send to backend ───────────────────────────────────────────
                 print("🧠 Sending to Jarvis brain...")
@@ -600,30 +434,18 @@ async def run_voice_agent():
                 # Detect if Jarvis asked a follow-up question
                 response_stripped = full_response.strip()
 
-                # ── WhatsApp no-contact fallback ──────────────────────────────────────
-                if response_stripped.startswith("__ASK_CONTACT__"):
-                    clean_resp = response_stripped.replace("__ASK_CONTACT__", "").strip()
-                    # Store the pending message (if any) in the flow
-                    if not whatsapp_flow["active"]:
-                        whatsapp_flow = {"active": True, "step": "ask_contact",
-                                         "contact": None, "message": None}
-                    else:
-                        whatsapp_flow["step"] = "ask_contact"
-                    awaiting_followup = True
-                    print(f"\U0001f50d {clean_resp}")
-                    await speak_text(clean_resp)
-                    _flush_mic(audio_stream)
-                    continue
+
 
                 if response_stripped.endswith("?"):
                     print("\n💬 Jarvis is waiting for your answer (no wake word needed)...")
                     awaiting_followup = True
                 else:
                     followups = [
-                        "Can I help you in any other way?",
-                        "Is there anything else I can do for you?",
-                        "Do you need help with anything else?",
-                        "What else can I do for you?"
+                        "Aur kuch chahiye, Sir?",
+                        "Koi aur kaam?",
+                        "Kuch aur kar sakta hoon?",
+                        "Batao Sir, aur kya karna hai?",
+                        "Ho gaya. Kuch aur?",
                     ]
                     followup = random.choice(followups)
                     print(f"\n💬 {followup} (Listening...)")

@@ -1,0 +1,89 @@
+{
+  "_readme": "AutomationId lookup table for Jarvis UIA Engine. Discovered via dump_app_ui_tree(). Used by planner.py to target controls without fuzzy name matching.",
+  "_how_to_update": "Run: dump_app_ui_tree('App Title', depth=4) and copy the auto_id values for the controls you need.",
+
+  "Visual Studio Code": {
+    "terminal_pane":     "workbench.panel.terminal",
+    "terminal_input":    "input",
+    "editor_area":       "workbench.parts.editor",
+    "sidebar":           "workbench.parts.sidebar",
+    "activity_bar":      "workbench.parts.activitybar",
+    "search_box":        "workbench.view.search",
+    "run_button":        "workbench.action.debug.start",
+    "problems_panel":    "workbench.panel.markers",
+    "output_panel":      "workbench.panel.output"
+  },
+
+  "Chrome": {
+    "address_bar":       "omnibox",
+    "new_tab_button":    "New Tab",
+    "back_button":       "Back",
+    "forward_button":    "Forward",
+    "refresh_button":    "Reload"
+  },
+
+  "Microsoft Edge": {
+    "address_bar":       "app_bar_omnibox",
+    "new_tab_button":    "New tab",
+    "back_button":       "Back",
+    "settings_button":   "Settings and more"
+  },
+
+  "Notepad": {
+    "text_area":         "15",
+    "file_menu":         "File",
+    "edit_menu":         "Edit"
+  },
+
+  "Discord": {
+    "message_input":     "Message",
+    "search_box":        "Search",
+    "servers_list":      "Servers"
+  },
+
+  "Spotify": {
+    "search_input":      "Search",
+    "play_button":       "Play",
+    "next_button":       "Next",
+    "volume_slider":     "Volume"
+  },
+
+  "File Explorer": {
+    "address_bar":       "1001",
+    "search_box":        "SearchEditBox",
+    "file_list":         "DirectUIHWND"
+  },
+
+  "Windows Terminal": {
+    "terminal_input":    "TermControl",
+    "new_tab_button":    "New tab"
+  },
+
+  "Task Manager": {
+    "processes_tab":     "Processes",
+    "performance_tab":   "Performance",
+    "end_task_button":   "End task"
+  },
+
+  "Microsoft Word": {
+    "document_area":     "Document",
+    "ribbon":            "Ribbon",
+    "file_tab":          "File Tab"
+  },
+
+  "Microsoft Excel": {
+    "formula_bar":       "Formula Bar",
+    "name_box":          "Name Box",
+    "sheet_tabs":        "Sheet Tab Bar"
+  },
+
+  "PowerShell": {
+    "terminal_input":    "ConsoleWindowClass"
+  },
+
+  "Windows Copilot": {
+    "message_input":     "Ask me anything",
+    "send_button":       "Send",
+    "copy_button":       "Copy"
+  }
+}

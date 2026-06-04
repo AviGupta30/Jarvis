@@ -28,3 +28,9 @@ Thumbs.db
 credentials.json
 token.json
 
+# Large AI Models and media
+models/
+*.onnx
+*.bin
+*.png
+*.jpg

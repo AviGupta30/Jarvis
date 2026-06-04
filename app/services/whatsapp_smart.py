@@ -173,10 +173,11 @@ def search_whatsapp_contact(name: str) -> str:
     time.sleep(1.5)
 
     try:
-        # Open search
-        pyautogui.hotkey('ctrl', 'f')
+        # Open search (using New Chat for reliable focus)
+        pyautogui.press('escape')
+        time.sleep(0.3)
+        pyautogui.hotkey('ctrl', 'n')
         time.sleep(0.8)
-        _clear_search()
 
         # Type keyword (just the first word — broadest search)
         keyword = name.strip().split()[0]
@@ -259,16 +260,23 @@ def confirm_whatsapp_send(contact_name: str, message: str) -> str:
     time.sleep(1.5)
 
     try:
-        pyautogui.press('escape')  # Close search box if still open
+        pyautogui.press('escape')  # Close any open panels
         time.sleep(0.3)
-        pyautogui.hotkey('ctrl', 'f')
-        time.sleep(0.5)
-        _clear_search()
+        pyautogui.hotkey('ctrl', 'n')
+        time.sleep(0.8)
         _type_via_clipboard(contact_name, delay=2.0)
-        pyautogui.press('down')
-        time.sleep(0.4)
         pyautogui.press('enter')
         time.sleep(1.5)
+
+        # Verification: if we are still in the search box, the text will match the contact name
+        pyperclip.copy("")
+        pyautogui.hotkey('ctrl', 'a')
+        time.sleep(0.2)
+        pyautogui.hotkey('ctrl', 'c')
+        time.sleep(0.2)
+        if contact_name.lower() in pyperclip.paste().lower():
+            pyautogui.press('escape')
+            return f"Could not find contact '{contact_name}'. Please try a different name."
 
         # Step 5: Type the message
         _type_via_clipboard(message, delay=0.5)
@@ -299,13 +307,12 @@ def read_whatsapp_messages(contact_name: str, count: int = 5) -> str:
     time.sleep(1.5)
 
     try:
-        # Search for contact
-        pyautogui.hotkey('ctrl', 'f')
+        # Search for contact using New Chat
+        pyautogui.press('escape')
+        time.sleep(0.3)
+        pyautogui.hotkey('ctrl', 'n')
         time.sleep(0.8)
-        _clear_search()
         _type_via_clipboard(contact_name, delay=2.0)
-        pyautogui.press('down')
-        time.sleep(0.4)
         pyautogui.press('enter')
         time.sleep(1.5)
 

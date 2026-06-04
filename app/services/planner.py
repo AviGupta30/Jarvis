@@ -77,6 +77,16 @@ AVAILABLE TOOLS (call by exact name with arguments as JSON):
   save_fact(topic, fact)                    — remember a fact about a topic
   recall_facts(topic)                       — read saved facts about a topic
   get_morning_brief()                       — summarize calendar and emails for the morning
+  click_ui_element_uia(app_title, element_name=None, automation_id=None, control_type=None)
+                                            — click a button/control inside any app WITHOUT moving the mouse.
+                                              Preferred over coordinate clicks. Use automation_id when known.
+  type_into_ui_element(app_title, element_name=None, text="", automation_id=None)
+                                            — inject text into an input field in any app via UIA Value pattern.
+                                              No simulated keystrokes. Works on background windows.
+  read_ui_element_text(app_title, element_name=None, automation_id=None)
+                                            — read text from a specific control (e.g. terminal output pane).
+  dump_app_ui_tree(app_title, depth=3)      — dump the accessibility tree of an app to discover AutomationIds.
+                                              Run once per new app to map its controls.
   DYNAMIC(description)                      — for anything not in the above list, write a description and Jarvis will generate code
 
 OUTPUT FORMAT — return ONLY valid JSON, exactly this structure:

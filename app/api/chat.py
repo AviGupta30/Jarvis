@@ -14,7 +14,7 @@ from app.services.tools import TOOL_REGISTRY
 from app.services.dynamic_skill import run_dynamic_skill
 from app.services.planner import run_agentic_plan, is_complex_task
 from app.services.ui_inspector import get_screen_text_summary
-from app.services.screen_reader import describe_screen_for_llm
+from app.services.screen_reader import describe_screen_for_llm, read_screen_as_tool
 from app.memory import find_skill, format_preferences_for_prompt
 
 router = APIRouter()
@@ -33,6 +33,73 @@ def _clean_yt_query(q: str) -> str:
     """Remove trailing action phrases from a YouTube search query."""
     q = _YT_STOP_PHRASES.sub('', q).strip().strip('.,!?')
     return q
+
+_NON_CONTACTS = {
+    'me', 'a', 'the', 'my', 'him', 'her', 'them', 'someone', 'anybody',
+    'anyone', 'you', 'it', 'that', 'this', 'message', 'msg', 'text'
+}
+
+def detect_whatsapp_call(text: str):
+    """Returns contact name if user wants to make a WhatsApp call, else None."""
+    normalized = text.strip().rstrip('.,!?।')
+    # Only match if user used a call-related word
+    call_kw = re.search(r'\b(call|audio call|voice call|ring|phone)\b', normalized, re.IGNORECASE)
+    if not call_kw:
+        return None
+    call_patterns = [
+        # "make a/an (whatsapp) call to X" or "make a/an (whatsapp) call X"
+        r'(?:make|place|give|do)\s+(?:an?\s+)?(?:whatsapp\s+)?(?:call|audio\s+call|voice\s+call)\s+(?:to\s+)?([\w\s\.]+?)(?:\s+on\s+(?:whatsapp|wp))?\s*$',
+        # "call/ring/phone X on/via whatsapp"
+        r'(?:call|ring|phone)\s+([\w\s\.]+?)\s+(?:on|via|using|through|over)\s+(?:whatsapp|wa|wp)',
+        # "whatsapp call X" or "call X on whatsapp"
+        r'(?:whatsapp\s+call|call)\s+([\w\s\.]+?)\s+(?:on|via|over)\s+whatsapp',
+        # Broad fallback: any 'call' keyword combined with 'whatsapp' in same sentence
+        r'(?:whatsapp\s+)?call\s+(?:to\s+)?([\w\s\.]{2,40})$',
+    ]
+    for pattern in call_patterns:
+        m = re.search(pattern, normalized, re.IGNORECASE)
+        if m:
+            contact = m.group(1).strip().strip('.,!?')
+            words = contact.lower().split()
+            # Reject if contact looks like a non-contact word
+            if len(contact) > 1 and not all(w in _NON_CONTACTS for w in words):
+                return contact
+    return None
+
+
+def detect_whatsapp_send(text: str):
+    # If it's a call intent, don't treat as send
+    if detect_whatsapp_call(text):
+        return None
+    normalized = text.strip().rstrip('.,!?।')
+    patterns = [
+        r'send\s+(?:a\s+)?(?:message|msg|text|whatsapp\s+message)\s+to\s+([\w\s\.]+?)(?:\s+on\s+(?:whatsapp|wp)|$)',
+        r'message\s+([\w\s\.]+?)\s+on\s+(?:whatsapp|wp)',
+        r'whatsapp\s+(?:message\s+(?:to\s+)?|text\s+(?:to\s+)?)?([\w\s\.]+?)(?:\s+saying.*)?$',
+        r'send\s+([\w\s\.]+?)\s+a\s+(?:message|msg|text|whatsapp)',
+        r'send\s+(?:a\s+)?(?:message|msg|text)(?:\s+to)?\s+([\w\s\.]+?)(?:\s+on\s+(?:whatsapp|wp)|$)',
+    ]
+    for pattern in patterns:
+        m = re.search(pattern, normalized, re.IGNORECASE)
+        if m:
+            contact = m.group(1).strip().strip('.,!?')
+            words = contact.lower().split()
+            if len(contact) > 1 and not all(w in _NON_CONTACTS for w in words):
+                return contact
+    return None
+
+def detect_note_intent(text: str) -> bool:
+    normalized = text.strip().rstrip('.,!?\u0964').lower()
+    patterns = [
+        r'^(?:add|create|write|make|put|save)\s+(?:a\s+)?(?:short\s+)?(?:note|sticky|reminder)(?:\s+(?:on|to|for)\s+\S+)?',
+        r'^take\s+(?:a\s+)?note(?:\s+(?:for|on)\s+\S+)?',
+        r'^(?:note|sticky|reminder)\s+(?:it|this|down)?',
+        r'^remind\s+me\s+to',
+    ]
+    for p in patterns:
+        if re.search(p, normalized):
+            return True
+    return False
 
 
 def keyword_detect_tool(prompt: str) -> dict | None:
@@ -59,9 +126,9 @@ def keyword_detect_tool(prompt: str) -> dict | None:
                       'match', 'teams', 'cricket', 'news', 'score']
     is_question = any(w in lower for w in question_words)
 
-    # ── Play on Spotify explicitly: "play X on spotify" ──────────────────────
-    spotify_play_m = re.match(
-        r'^(?:jarvis\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+?)\s+on\s+spotify\s*$',
+    # ── Play on Spotify explicitly ──────────────────────
+    spotify_play_m = re.search(
+        r'(?:open\s+spotify\s+and\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+?)(?:\s+on\s+spotify)\s*$',
         lower
     )
     if spotify_play_m and not is_question:
@@ -95,14 +162,20 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if _is_browser_video_play:
         return {"tool_name": "play_video_in_browser", "arguments": {}}
 
+    # ── Media (Exact matches for play/pause/resume) ───────────────────────
+    if re.fullmatch(r'^(?:jarvis\s+)?(?:play|resume)(?:\s+(?:music|spotify|media|the song|it))?', lower):
+        return {"tool_name": "media_play_pause", "arguments": {}}
+    if re.fullmatch(r'^(?:jarvis\s+)?(?:pause|stop)(?:\s+(?:music|spotify|media|the song|it))?', lower):
+        return {"tool_name": "media_play_pause", "arguments": {}}
+
     # ── Bare "play X" (no platform) → default Spotify ─────────────────────────
     # Exclusions: don't route reference-based play to Spotify
     _spotify_exclusions = [
         'that', 'it', 'this', 'the video', 'the one', 'minutes', 'minute',
         'hour', 'top video', 'first video', 'second video',
     ]
-    play_match = re.match(
-        r'^(?:jarvis\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+)',
+    play_match = re.search(
+        r'(?:open\s+spotify\s+and\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+)',
         lower
     )
     if play_match and not is_question:
@@ -164,9 +237,7 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if re.search(r'\bmute\b', lower):
         return {"tool_name": "mute_volume", "arguments": {}}
 
-    # ── Media ─────────────────────────────────────────────────────────────
-    if re.search(r'\bpause\b|\bplay\b', lower) and any(w in lower for w in ['music', 'song', 'spotify', 'media']):
-        return {"tool_name": "media_play_pause", "arguments": {}}
+    # ── Media (Next/Prev) ──────────────────────────────────────────────────
     if re.search(r'\bnext (song|track)\b', lower):
         return {"tool_name": "media_next", "arguments": {}}
     if re.search(r'\bprevious (song|track)\b|\bprev\b', lower):
@@ -174,6 +245,11 @@ def keyword_detect_tool(prompt: str) -> dict | None:
 
     # ── WhatsApp (Smart — fuzzy, two-phase, confirmation) ────────────────────
     if 'whatsapp' in lower or ('send' in lower and ('message' in lower or 'msg' in lower or 'text' in lower) and re.search(r'\bto\b', lower)):
+        # — WhatsApp CALL: always check FIRST before any send logic
+        call_contact = detect_whatsapp_call(prompt)
+        if call_contact:
+            return {"tool_name": "initiate_whatsapp_call", "arguments": {"contact_name": call_contact}}
+
         # — Read messages
         read_wa = re.search(
             r'(?:read|show|check|open|what(?:\'s| are| did| has)|any)\s+(?:my\s+)?(?:whatsapp\s+)?(?:messages?|chats?|msgs?)\s+(?:from|with|of)\s+(.+?)(?:\s*\?|$)',
@@ -187,6 +263,7 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         if re.search(r'\bopen\s+whatsapp\b|\blaunch\s+whatsapp\b|\bstart\s+whatsapp\b', lower):
             if not any(w in lower for w in ['send', 'message', 'msg', 'text']):
                 return {"tool_name": "open_whatsapp", "arguments": {}}
+
 
         # — Confirmed send: user said 'yes send it' / 'yes go ahead' after confirmation
         confirm_wa = re.search(
@@ -421,16 +498,39 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         return {"tool_name": "maximize_window", "arguments": {"app_name": maximize_m.group(1).strip().strip('.,!?')}}
 
 
-    # ── Read my screen / what am I looking at ──────────────────────────────
-    screen_kw = [
-        'what\'s on my screen', 'whats on my screen', 'what is on my screen',
-        'what am i looking at', 'what am i looking', 'describe my screen',
-        'read my screen', 'read the screen', 'what\'s on screen',
-        'what can you see', 'what\'s open', 'whats open on my screen',
-        'read what\'s on', 'tell me what\'s on', 'tell me what is on my screen',
+    # ── Layer 3 Intent Router: Screen reading with describe / suggest / execute modes ──
+    # DESCRIBE mode: "What am I looking at?", "What's on my screen?"
+    describe_screen_kw = [
+        "what's on my screen", "whats on my screen", "what is on my screen",
+        "what am i looking at", "what am i looking", "describe my screen",
+        "read my screen", "read the screen", "what's on screen",
+        "what can you see", "what's open", "whats open on my screen",
+        "read what's on", "tell me what's on", "tell me what is on my screen",
+        "what is this", "what app is open", "describe what you see",
+        "what's happening on my screen", "what page am i on",
     ]
-    if any(kw in lower for kw in screen_kw):
-        return {"tool_name": "read_my_screen", "arguments": {}}
+    if any(kw in lower for kw in describe_screen_kw):
+        return {"tool_name": "read_my_screen", "arguments": {"intent_mode": "describe", "user_query": prompt}}
+
+    # SUGGEST mode: "Help me", "What should I do?", "What's next?"
+    suggest_screen_kw = [
+        "what should i do", "help me with my screen", "what's next",
+        "whats next", "what do i do here", "any suggestions",
+        "what would you recommend", "what are my options",
+        "how should i proceed", "what should i do here",
+        "what can i do next", "suggest something", "give me suggestions",
+    ]
+    if any(kw in lower for kw in suggest_screen_kw):
+        return {"tool_name": "read_my_screen", "arguments": {"intent_mode": "suggest", "user_query": prompt}}
+
+    # EXECUTE mode: "Fix this", "Do that", "Fix the error"
+    execute_screen_kw = [
+        "fix this", "fix the error", "fix it", "do that",
+        "resolve this", "handle this", "take care of this",
+        "apply the fix", "correct this", "debug this",
+    ]
+    if any(kw in lower for kw in execute_screen_kw):
+        return {"tool_name": "read_my_screen", "arguments": {"intent_mode": "execute", "user_query": prompt}}
 
     # ── Search on a specific site ────────────────────────────────────────────
     # "search on Stack Overflow for Python error"
@@ -578,15 +678,49 @@ def keyword_detect_tool(prompt: str) -> dict | None:
             query = "is:unread"
         return {"tool_name": "check_emails", "arguments": {"query": query, "max_results": 5}}
 
+    # ── Universal "open X" / "launch X" handler (fallback for anything not caught above) ──
+    # Handles: "open google", "open chrome", "open calculator", "open vs code", etc.
+    open_m = re.match(
+        r'^(?:jarvis\s+)?(?:open|launch|start|run|start up)\s+(.+?)(?:\s+(?:app|application|browser|window|site|website|page))?\s*$',
+        lower
+    )
+    if open_m:
+        target = open_m.group(1).strip().strip('.,!?')
+        # List of known desktop apps
+        _KNOWN_APPS = {
+            'notepad', 'calculator', 'calc', 'paint', 'explorer', 'file explorer',
+            'task manager', 'cmd', 'command prompt', 'terminal', 'vs code', 'vscode',
+            'word', 'excel', 'powerpoint', 'chrome', 'edge', 'firefox',
+            'spotify', 'discord', 'zoom', 'settings', 'control panel', 'snipping tool',
+        }
+        # List of known websites
+        _KNOWN_SITES = {
+            'google', 'youtube', 'github', 'gmail', 'twitter', 'x', 'instagram',
+            'linkedin', 'netflix', 'amazon', 'whatsapp', 'chatgpt', 'gemini',
+            'reddit', 'wikipedia', 'hotstar', 'facebook', 'telegram', 'notion',
+            'figma', 'canva', 'flipkart', 'swiggy', 'zomato', 'maps', 'stackoverflow',
+            'spotify web', 'prime', 'prime video',
+        }
+        if target in _KNOWN_APPS:
+            return {"tool_name": "open_app", "arguments": {"app_name": target}}
+        if target in _KNOWN_SITES:
+            return {"tool_name": "open_website", "arguments": {"url": target}}
+        # If ends with .com/.in/.org etc or contains a dot, treat as website
+        if re.search(r'\.(com|in|org|net|io|co|dev|app)$', target) or ('.' in target and ' ' not in target):
+            return {"tool_name": "open_website", "arguments": {"url": target}}
+        # Otherwise try as app first, then website
+        return {"tool_name": "open_app", "arguments": {"app_name": target}}
+
     return None  # Fall through to LLM router
 
 # Global state for frontend API flows (mimics voice_agent local state)
 api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": None}
+api_whatsapp_call_flow = {"active": False, "step": None, "contact": None}
 api_note_flow = {"active": False}
 
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    global api_whatsapp_flow, api_note_flow
+    global api_whatsapp_flow, api_whatsapp_call_flow, api_note_flow
     history_list = list(conversation_history)
     prompt_lower = request.prompt.lower().strip()
 
@@ -598,7 +732,30 @@ async def chat_endpoint(request: ChatRequest):
         async def flow_stream(): yield res
         return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
-    # ── Frontend WhatsApp Flow Intercept ──
+    # ── Frontend WhatsApp CALL Flow Intercept ──
+    if api_whatsapp_call_flow["active"]:
+        step = api_whatsapp_call_flow["step"]
+        if step == "confirm":
+            yes_kw = ['yes', 'yeah', 'yep', 'go ahead', 'do it', 'ok', 'okay', 'confirm', 'haan', 'kar do', 'correct', 'sure', 'call']
+            no_kw  = ['no', 'nope', 'cancel', 'stop', 'abort', 'nahi', 'mat karo', 'nevermind', 'never mind', "don't", "dont", 'not', 'wait']
+            is_no  = any(w in prompt_lower for w in no_kw)
+            is_yes = (not is_no) and any(w in prompt_lower for w in yes_kw)
+
+            if is_yes:
+                from app.services.whatsapp_call import confirm_whatsapp_call
+                contact = api_whatsapp_call_flow["contact"]
+                api_whatsapp_call_flow = {"active": False, "step": None, "contact": None}
+                async def flow_stream(): yield confirm_whatsapp_call(contact)
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            elif is_no:
+                api_whatsapp_call_flow = {"active": False, "step": None, "contact": None}
+                async def flow_stream(): yield "Okay, call cancelled."
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+            else:
+                async def flow_stream(): yield "Should I go ahead and call? Please say yes or no."
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    # ── Frontend WhatsApp MESSAGE Flow Intercept ──
     if api_whatsapp_flow["active"]:
         step = api_whatsapp_flow["step"]
         if step == "ask_message":
@@ -640,6 +797,36 @@ async def chat_endpoint(request: ChatRequest):
                 reply = f"Got it. What message should I send to {api_whatsapp_flow['contact']}?"
             async def flow_stream(): yield reply
             return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    # ── Universal Note / WhatsApp Intent Check (moved from voice_agent) ──
+    if detect_note_intent(request.prompt):
+        api_note_flow["active"] = True
+        async def flow_stream(): yield "What should I write in the note?"
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    # ── Check for WhatsApp CALL intent FIRST (before send check) ──
+    wa_call_contact = detect_whatsapp_call(request.prompt)
+    if wa_call_contact:
+        api_whatsapp_call_flow.update({"active": True, "step": "confirm", "contact": wa_call_contact})
+        reply = f"Shall I go ahead and make a WhatsApp call to {wa_call_contact}?"
+        async def flow_stream(): yield reply
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    wa_contact = detect_whatsapp_send(request.prompt)
+    if wa_contact:
+        msg_inline = re.search(
+            r'(?:saying|say(?:ing)?|that\s+says)[:\s]+["\']?(.+?)["\']?\s*$',
+            request.prompt, re.I
+        )
+        if msg_inline:
+            inline_msg = msg_inline.group(1).strip()
+            api_whatsapp_flow.update({"active": True, "step": "confirm", "contact": wa_contact, "message": inline_msg})
+            reply = f"Before I send, confirming: To {wa_contact} — {inline_msg}. Should I go ahead and send this?"
+        else:
+            api_whatsapp_flow.update({"active": True, "step": "ask_message", "contact": wa_contact, "message": None})
+            reply = f"Sure. What message should I send to {wa_contact}?"
+        async def flow_stream(): yield reply
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
     # ── PATH A: Agentic Planner for complex multi-step tasks ──────────────
     if is_complex_task(request.prompt):
@@ -711,6 +898,15 @@ async def chat_endpoint(request: ChatRequest):
                 # Return immediately without LLM paraphrasing
                 async def flow_stream(): yield result
                 return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+            elif tool_name == "initiate_whatsapp_call":
+                # Activate the call flow so the next 'yes' triggers confirm_whatsapp_call
+                contact = args.get("contact_name", "")
+                api_whatsapp_call_flow.update({"active": True, "step": "confirm", "contact": contact})
+                reply = f"Shall I go ahead and make a WhatsApp call to {contact}?"
+                async def flow_stream(): yield reply
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
             
             elif tool_name == "search_whatsapp_contact" and "__ASK_CONTACT__" in str(result):
                 api_whatsapp_flow.update({"active": True, "step": "ask_contact", "contact": None, "message": None})

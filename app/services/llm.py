@@ -1,10 +1,12 @@
 """
-llm.py — Jarvis LLM Brain (Step 2 upgrade)
--------------------------------------------
-- Upgraded TOOL_ROUTER_PROMPT: includes read_my_screen + file ops + web search
-- Upgraded JARVIS_SYSTEM_PROMPT: richer, more capable persona
-- max_tokens: 500 → 800
-- Groq retry: auto-retries once on HTTP 429 (rate limit) with 2s backoff
+llm.py — Jarvis LLM Brain
+---------------------------
+Model routing:
+  Groq llama-3.3-70b-versatile  → tool routing + simple fast responses
+  Gemma 4 (Google AI Studio)    → complex reasoning, planner narration, deep Q&A
+  Groq llama-3.1-8b-instant     → history compression (cheap + fast)
+
+All models are 100% free on their respective free tiers.
 """
 
 import json
@@ -15,8 +17,93 @@ from collections import deque
 from typing import AsyncGenerator
 from groq import AsyncGroq
 from app.core.config import settings
+from app.services.personality import TOOL_ROUTER_PROMPT, get_context_aware_prompt
+from app.services.context_classifier import classify_context
 
 client = AsyncGroq(api_key=settings.GROQ_API_KEY)
+
+# ── Gemma 4 client (Google AI Studio — same free key as screen_vision) ────────
+
+async def _gemma_generate(messages: list, max_tokens: int = 800, temperature: float = 0.7) -> AsyncGenerator[str, None]:
+    """
+    Stream a response from Gemma 4 (gemma-3-27b-it) via Google AI Studio.
+    Same GEMINI_API_KEY used by the screen vision module.
+    Falls back to Groq Llama on any error.
+    """
+    try:
+        import google.generativeai as genai
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or api_key == "YOUR_FREE_GEMINI_KEY_HERE":
+            raise ValueError("No Gemini key")
+
+        genai.configure(api_key=api_key, transport="rest")
+        model = genai.GenerativeModel(
+            "gemini-1.5-flash",  # reliable highly capable fallback
+            system_instruction=messages[0]["content"] if messages and messages[0]["role"] == "system" else None,
+        )
+        # Build history for Gemma (skip system messages already passed above)
+        chat_msgs = [
+            {"role": m["role"], "parts": [m["content"]]}
+            for m in messages
+            if m["role"] in ("user", "assistant")
+        ]
+        # Stream response
+        response = model.generate_content(
+            chat_msgs[-1]["parts"] if chat_msgs else "",
+            stream=True,
+            generation_config={"max_output_tokens": max_tokens, "temperature": temperature},
+        )
+        for chunk in response:
+            if chunk.text:
+                yield chunk.text
+        return
+    except Exception as e:
+        # Fallback: Groq Llama
+        import logging
+        logging.getLogger(__name__).warning(f"[llm] Gemma fallback to Groq: {e}")
+        async for token in _groq_generate(messages, max_tokens, temperature):
+            yield token
+
+
+async def _groq_generate(messages: list, max_tokens: int = 800, temperature: float = 0.7) -> AsyncGenerator[str, None]:
+    """Stream a response from Groq Llama 3.3 70B."""
+    for attempt in range(2):
+        try:
+            completion = await client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=messages,
+                stream=True,
+                max_tokens=max_tokens,
+                temperature=temperature,
+            )
+            async for chunk in completion:
+                if chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+            return
+        except Exception as e:
+            err = str(e).lower()
+            if ("429" in err or "rate" in err) and attempt == 0:
+                await asyncio.sleep(2.0)
+                continue
+            yield "I ran into an issue connecting to my brain. Please try again in a moment."
+            return
+
+
+def _is_complex_response(tool_result: str, user_message: str) -> bool:
+    """
+    Decide whether to use Gemma 4 (complex reasoning) vs Groq Llama (fast).
+    Complex = agentic plan narration, code explanation, deep analysis, long tool results.
+    """
+    if tool_result and len(tool_result) > 500:
+        return True  # Long tool result → Gemma reasons over it better
+    complex_kw = [
+        "explain", "why", "how does", "analyse", "analyze", "debug",
+        "write", "summarize", "plan", "suggest", "compare", "fix",
+        "what went wrong", "what should i", "help me understand",
+    ]
+    lower = user_message.lower()
+    return any(kw in lower for kw in complex_kw)
+
 
 # ── Session Memory (Step 10) ──────────────────────────────────────────────────
 _SESSION_FILE = Path(__file__).resolve().parent.parent / "memory" / "session.json"
@@ -41,131 +128,8 @@ def _save_session():
         pass
 
 
-TOOL_ROUTER_PROMPT = """You are a function router for Jarvis AI. Pick the BEST single tool for the user's request.
-
-INFORMATION & WEB:
-- get_system_time() — current date/time
-- get_info(query) — REQUIRED for: weather, temperature, forecast, news, match scores, stock prices, live results, factual lookups, general knowledge questions
-- search_site(query, site_url) — search within a SPECIFIC website. Use when user says "search on [site]", "find X on GitHub/Stack Overflow/Reddit/etc."
-- scrape_url(url) — read and extract text from a SPECIFIC URL. Use when user says "read this page", "open [url] and tell me what it says", "what does [url] say"
-- open_website(url, browser?) — open a site in browser. browser: "chrome", "edge", "firefox"
-- open_google_search_in_browser(query) — ONLY when user explicitly says "open Google and search"
-- youtube_search(query, autoplay?) — YouTube. autoplay=true plays first video immediately
-- get_system_info() — CPU usage, RAM usage, battery level
-
-SCREEN READING:
-- read_my_screen() — REQUIRED for ANY of: "what's on my screen", "what am I looking at", "describe my screen", "read the screen", "what's open", "what do you see", "read what's on my screen"
-
-SCREEN & LAYOUT:
-- take_screenshot() — save screenshot to Desktop
-- snap_windows(left_app, right_app) — snap two windows side by side
-- minimize_all_windows() — show desktop
-- lock_screen() — lock Windows
-
-FILE OPERATIONS:
-- read_file(path) — REQUIRED for: "read the file", "what's in", "open and read", "show contents of"
-- write_file(path, content) — create or overwrite a file with specific content
-- append_file(path, content) — add content to an existing file without overwriting
-- list_directory(path) — "list files in", "what's in my downloads", "show files on desktop"
-- move_file(src, dst) — "move this file", "rename this file"
-- delete_file(path) — "delete", "remove", "trash" a file (goes to Recycle Bin safely)
-- search_files(name, root_dir) — "find file named X", "search for *.pdf", "where is my file"
-- create_folder(path) — create a new folder anywhere (not just Desktop)
-- create_word_doc(filename, content) — create a .docx Word document on Desktop
-
-VOLUME & MEDIA:
-- volume_up(steps), volume_down(steps), mute_volume()
-- media_play_pause(), media_next(), media_previous()
-- play_music(song) — play on Spotify
-
-APPS:
-- open_app(app_name) — notepad, chrome, spotify, calculator, discord, vs code, etc.
-- open_whatsapp()
-
-CLIPBOARD & TYPING:
-- read_clipboard(), write_clipboard(text), type_text(text)
-
-NOTES & REMINDERS:
-- create_sticky_note(content) — floating sticky note on screen
-- set_reminder(message, seconds) — timed reminder
-
-GMAIL & EMAIL:
-- check_emails(query, max_results) — REQUIRED for: "check my emails", "any emails about X", "emails from Y", "internship emails", "unread emails", "check inbox"
-- list_unread(max_results) — REQUIRED for: "do I have unread emails", "show unread", "any new emails"
-- get_email_body(email_id) — when user asks to read or open a specific email by ID
-- summarize_inbox(max_results) — "summarize my inbox", "what emails do I have", "morning email summary"
-
-GOOGLE CALENDAR:
-- check_today_schedule() — "what's on my schedule today", "what do I have today", "my agenda today"
-- get_upcoming_events(days) — "what's on my calendar this week", "upcoming events"
-- add_event(title, date, time, notes) — "add a meeting", "schedule an event", "remind me on calendar"
-
-MEMORY & LEARNING:
-- save_fact(topic, fact) — "remember that I'm applying for internships", "save this fact"
-- recall_facts(topic) — "what do you know about me", "recall what I said about X"
-- get_morning_brief() — "give me my morning brief", "good morning jarvis"
-
-ROUTING NOTE FOR EMAILS: If the user mentions a topic to search for (e.g. "check internship emails"), pass it as the query argument. Supported query formats: 'is:unread', 'from:name@email.com', 'subject:topic', or just a keyword.
-
-WINDOW MANAGEMENT:
-- close_specific_window(app_name), minimize_window(app_name), maximize_window(app_name)
-- close_tab(), close_window()
-
-MATH:
-- calculate(expression) — evaluate any math expression
-
-MEMORY:
-- remember_preference(key, value) — when user says "always X" or "remember I prefer X"
-- list_learned_skills() — when user asks what Jarvis can do / has learned
-
-ROUTING RULES:
-- Screen reading request → ALWAYS use read_my_screen()
-- Weather/news/live data → ALWAYS use get_info()
-- Missing required arg → {"tool_name": "ask_for_clarification", "arguments": {"question": "..."}}
-- Greeting/chitchat → {"tool_name": null, "arguments": {}}
-- Pure factual question (capitals, history, definitions) → {"tool_name": null, "arguments": {}}
-- Complex multi-step task (email + action, browse + save, PDF + Word) → {"tool_name": null, "arguments": {}} — the agentic planner handles these
-- WhatsApp sending → {"tool_name": null, "arguments": {}} — handled by voice agent PIN flow
-
-Return ONLY valid JSON. No extra text. No explanation."""
-
-JARVIS_SYSTEM_PROMPT = """\
-You are Jarvis — a highly intelligent, proactive, autonomous AI assistant modelled after Iron Man's J.A.R.V.I.S. \
-You have real-time access to the user's Windows laptop. You can perform virtually any non-harmful task through \
-built-in tools, dynamic code generation, and a multi-step agentic planner.
-
-LANGUAGE RULE:
-Match the user's language EXACTLY. If they speak Hindi, reply in Romanized Hinglish ONLY \
-(e.g. "Haan sir, kar deta hoon"). NEVER output Devanagari or any native script — the TTS engine will crash.
-
-RESPONSE STYLE RULES:
-1. SHARP & DIRECT: No filler words ("Sure!", "Of course!", "Great question!"). Get to the point immediately.
-2. NATURAL ACKNOWLEDGEMENT: If a tool result is in context, acknowledge the action smoothly in 1 sentence.
-3. AGENTIC NARRATION: When context has [STEP N] / [PLAN] prefixes, narrate each step naturally \
-   ("Step 2 done — I've opened the PDF, now extracting questions...").
-4. SCREEN CONTEXT: You are always given the user's active screen content. Use it when they say \
-   "this", "the screen", "what I'm looking at", or ask about visible content.
-5. RESPONSE LENGTH:
-   - Simple command → 1-2 sentences max.
-   - Complex task completion → 3-4 sentences summarising what was done.
-   - Pure question → Answer directly, no fluff. No markdown/bullets/bold in spoken responses.
-6. CONFIDENT CAPABILITY: You can read emails, browse websites, manage files, control apps, \
-   read screens, and automate multi-step workflows. Say yes when asked if you can do something.
-7. SCREEN READING RESULTS: When context has OCR/screen text, describe what the user is looking at \
-   naturally — name the app, mention key visible content, note anything important like errors or notifications.
-
-ANTI-HALLUCINATION RULES:
-- NEVER claim to have sent a WhatsApp message unless context explicitly confirms it.
-- NEVER invent URLs, file contents, or search results. Use only what tools returned.
-- If a tool ran and returned a result, reference that result — do not guess.
-
-EXAMPLES:
-User: "What is the capital of France?" → "Paris."
-User: "What time is it?" → "It's 6:42 PM, sir."
-User: "What's on my screen?" → Use the screen context provided to describe it accurately.
-User: "Open YouTube" → "Opening YouTube now."
-User: "Read my assignment PDF and answer questions using Copilot" → "On it — breaking this into steps now."
-"""
+# JARVIS_SYSTEM_PROMPT and TOOL_ROUTER_PROMPT now live in personality.py —
+# imported above. This ensures a single source of truth.
 
 
 async def check_for_tool_intent(user_prompt: str, history: list) -> dict | None:
@@ -212,16 +176,31 @@ async def generate_chat_response(
     except Exception:
         user_facts = ""
 
-    personalized_system = JARVIS_SYSTEM_PROMPT
+    # ── Build dynamic, context-aware system prompt ──────────────────────────────
+    # Classify context so Jarvis adjusts tone for time-of-day and mood
+    ctx = classify_context(user_message)
+    personalized_system = get_context_aware_prompt(
+        hour=ctx["hour"],
+        user_mood=ctx["mood"],
+        language=ctx["language"],
+    )
+
+    # Urgency injection (one-sentence max when user is in a rush)
+    if ctx["urgency"] == "high":
+        personalized_system += "\n[URGENCY] User is in a hurry. Be extremely brief. One sentence max. No humor."
+    if ctx["topic"] == "casual_chat":
+        personalized_system += "\n[TOPIC] This is small talk. Be warm and conversational."
+
+    # Inject user memory facts for personalization
     if user_facts:
-        personalized_system = f"{JARVIS_SYSTEM_PROMPT}\n\n{user_facts}"
+        personalized_system += f"\n\n{user_facts}"
+
+    messages = [{"role": "system", "content": personalized_system}]
 
     # ── Compress history if it's getting long ──────────────────────────────────
     await _maybe_compress_history()
 
     history_list = list(conversation_history)
-
-    messages = [{"role": "system", "content": personalized_system}]
 
     # Inject tool result as system context (better structural framing than user prompt)
     if tool_result and len(tool_result) > 30:
@@ -238,22 +217,24 @@ async def generate_chat_response(
 
     for attempt in range(2):
         try:
-            completion = await client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=messages,
-                stream=True,
-                max_tokens=800,
-                temperature=0.7,
-            )
-            async for chunk in completion:
-                if chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+            # Route to correct model based on complexity
+            if _is_complex_response(tool_result or "", user_message):
+                # Gemma 4 for deep reasoning / long tool result analysis
+                async for token in _gemma_generate(messages, max_tokens=1000, temperature=0.7):
+                    yield token
+            else:
+                # Groq Llama for fast simple responses
+                async for token in _groq_generate(messages, max_tokens=800, temperature=0.7):
+                    yield token
             return
         except Exception as e:
             err = str(e).lower()
-            if ("429" in err or "rate" in err) and attempt == 0:
+            if ("429" in err or "rate" in err or "quota" in err) and attempt == 0:
                 await asyncio.sleep(2.0)
                 continue
+            if "429" not in err and "quota" not in err:
+                import logging
+                logging.getLogger(__name__).error(f"[llm] Chat generation failed: {e}")
             yield "I ran into an issue connecting to my brain. Please try again in a moment."
             return
 

@@ -4,7 +4,6 @@ uvicorn[standard]
 httpx
 pyaudio
 SpeechRecognition
-openai-whisper
 pygame
 Pillow
 pyperclip
@@ -24,3 +23,16 @@ googlesearch-python
 beautifulsoup4
 pytesseract
 send2trash
+# VLM screen vision (Layer 1 upgrade)
+mss
+numpy
+google-generativeai
+# Local STT engine — zero-latency, offline, CPU-optimized
+faster-whisper
+# TTS engines
+edge-tts
+# Kokoro ONNX — local TTS (PRIMARY, free, unlimited, ~85MB model)
+kokoro-onnx
+# Audio playback for Kokoro
+sounddevice
+soundfile
