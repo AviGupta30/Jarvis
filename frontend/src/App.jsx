@@ -8,40 +8,48 @@ function App() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
     
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
     
-    try {
-      const res = await fetch('http://127.0.0.1:8000/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.status === 'success') {
-        const type = fileInputRef.current.dataset.uploadType;
-        if (type === 'general') {
-          setInputValue(`read this file: ${data.filename}`);
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        const res = await fetch('http://127.0.0.1:8000/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          const type = fileInputRef.current.dataset.uploadType;
+          if (type === 'assignment') {
+            setInputValue(prev => prev ? `${prev} | do my assignment from ${data.filename}` : `do my assignment from ${data.filename}`);
+          }
+          
+          setUploadedFiles(prev => [...prev, {
+            name: file.name,
+            path: data.path,
+            url: URL.createObjectURL(file)
+          }]);
         } else {
-          setInputValue(`do my assignment from ${data.filename}`);
+          alert("Upload failed: " + data.error);
         }
-      } else {
-        alert("Upload failed: " + data.error);
+      } catch (err) {
+        console.error(err);
+        alert(`Failed to upload file ${file.name}`);
       }
-    } catch (err) {
-      console.error(err);
-      alert("Failed to upload file");
-    } finally {
-      setIsUploading(false);
-      e.target.value = null; // reset
     }
+    
+    setIsUploading(false);
+    e.target.value = ''; // Reset input
   };
 
   // Auto-scroll whenever messages update
@@ -59,7 +67,13 @@ function App() {
     'create presentation','make presentation',
     'ppt on ','ppt about ','presentation on ','presentation about ','slide deck on ',
   ];
-  const isPPTRequest = (text) => PPT_KW.some(kw => text.toLowerCase().includes(kw));
+  const isPPTRequest = (text) => {
+    const lower = text.toLowerCase();
+    const exactMatch = PPT_KW.some(kw => lower.includes(kw));
+    // Powerful regex to catch variations like "make me a 10 slide presentation", "give me a cool ppt", "use light color theme on this ppt", "change the presentation"
+    const regexMatch = /(?:create|make|build|generate|design|prepare|give|need|want|use|change|update|modify|edit|convert|theme).*(?:ppt|presentation|slide|deck|powerpoint|theme|color)/i.test(lower);
+    return exactMatch || regexMatch;
+  };
 
   const STYLE_MAP = {
     'cyber dark':'cyber_dark','cyber_dark':'cyber_dark',
@@ -70,6 +84,9 @@ function App() {
     'ocean gradient':'ocean_gradient','ocean_gradient':'ocean_gradient',
     'velvet noir':'velvet_noir','velvet_noir':'velvet_noir',
     'charcoal minimal':'charcoal_minimal','charcoal_minimal':'charcoal_minimal',
+    'synthwave':'synthwave',
+    'aurora':'aurora',
+    'hacker terminal':'hacker_terminal','hacker_terminal':'hacker_terminal',
   };
   const detectStyle = (text) => {
     const lower = text.toLowerCase();
@@ -88,12 +105,19 @@ function App() {
     ocean_gradient:'Deep ocean + cerulean + white. AI, data science, ML, research.',
     velvet_noir:'Deep plum + rose gold + cream. Luxury, fashion, design portfolios.',
     charcoal_minimal:'True black + off-white + gold. Architecture, design, premium brands.',
+    synthwave:'Neon pink + purple. Retro cyber, 80s aesthetic.',
+    aurora:'Deep teal + bright green. Nature tech, biological systems.',
+    hacker_terminal:'Pitch black + lime green. Matrix style, raw code.'
   };
 
   const autoPersonality = (text) => {
     const t = text.toLowerCase();
-    if (/hack|cyber|security|blockchain|ctf|sih/.test(t)) return 'cyber_dark';
-    if (/luxury|fashion|portfolio|brand|premium|aesthetic/.test(t)) return 'velvet_noir';
+    if (/synthwave|retro|neon|80s/.test(t)) return 'synthwave';
+    if (/aurora|bio|clean energy|nature tech/.test(t)) return 'aurora';
+    if (/hacker|matrix|terminal|cybersecurity/.test(t)) return 'hacker_terminal';
+    if (/cyber|dark|hacker|neon|matrix|tech/.test(t)) return 'cyber_dark';
+    if (/light|white|clean|minimal|snow|arctic/.test(t)) return 'arctic_clean';
+    if (/midnight|exec|corporate|professional|business/.test(t)) return 'midnight_exec';
     if (/startup|pitch|investor|funding|vc|seed|product launch/.test(t)) return 'solar_flare';
     if (/corporate|consulting|enterprise|quarterly|board|strategy/.test(t)) return 'midnight_exec';
     if (/health|nature|education|environment|green|sustainability/.test(t)) return 'forest_calm';
@@ -112,26 +136,27 @@ function App() {
     });
   };
 
-  const handlePPTWithPuter = async (prompt) => {
+  const handlePPTWithPuter = async (prompt, context = "", attachedFiles = []) => {
     const personality = detectStyle(prompt) || autoPersonality(prompt);
     const desc = PERSONALITY_DESCS[personality] || '';
 
     appendMsg(`🎨 Style: **${personality.replace(/_/g,' ')}** — ${desc}\n`);
-    appendMsg('🤖 Calling Gemini via Puter.js (free, no API key required)...\n');
+    appendMsg('🚀 Calling Gemini via Puter.js (free, no API key required)...\n');
 
     let plan;
     try {
       if (typeof puter === 'undefined') throw new Error('Puter.js not loaded');
 
       const userMsg = `You are an elite aesthetic presentation generator. Create a highly technical, content-dense, aesthetic presentation for:
-TOPIC: ${prompt}
+CURRENT REQUEST: ${prompt}
+PREVIOUS CONTEXT (if modifying an existing request): ${context}
 
 RULES:
-- Exactly 10 slides.
+- Create 8 to 12 slides depending on topic complexity.
 - First slide MUST use "aesthetic_title".
-- Use a mix of "aesthetic_split", "aesthetic_grid", and "aesthetic_flow" for the rest.
+- Use a diverse mix of: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics".
 - TEXT MUST BE EXTREMELY DENSE. Every bullet array must have 3-4 items, and each text property MUST be 25-30 words of deep technical/strategic detail. No short bullets.
-- Every layout requires a "visual_suggestion" detailing exactly what flowchart/diagram goes in the massive placeholder.
+- Every layout requires a "visual_suggestion" detailing exactly what flowchart/diagram goes in the massive placeholder. If the user provided images via [ATTACHED_FILE: <path>], you MUST use the exact path in a new "image_path" field instead of "visual_suggestion".
 - Output ONLY valid JSON, no markdown fences or explanations.
 
 JSON SCHEMA:
@@ -150,11 +175,10 @@ JSON SCHEMA:
       "layout": "aesthetic_split",
       "title": "Problem Statement",
       "bullets": [
-        {"bold": "Key Point 1", "text": "25-30 words of extremely detailed context ensuring vertical space is filled completely."},
-        {"bold": "Key Point 2", "text": "25-30 words explaining consequences, metrics, or current system failures in depth."},
-        {"bold": "Key Point 3", "text": "25-30 words on why previous approaches fall short and what needs to change."}
+        {"bold": "Key Point 1", "text": "25-30 words of extremely detailed context ensuring vertical space is filled completely."}
       ],
-      "visual_suggestion": "[ Diagram: User pain-point flowchart ]"
+      "visual_suggestion": "[ Diagram: User pain-point flowchart ]",
+      "image_path": "c:/path/to/image.png"
     },
     {
       "slide_number": 3,
@@ -164,18 +188,41 @@ JSON SCHEMA:
         {
           "header": "Data Ingestion",
           "bullets": ["20 words detailing the pipeline", "20 words on scaling", "20 words on security"]
-        },
-        {"header":"...","bullets":["...","...","..."]},
-        {"header":"...","bullets":["...","...","..."]},
-        {"header":"...","bullets":["...","...","..."]}
+        }
       ]
     },
     {
       "slide_number": 4,
       "layout": "aesthetic_flow",
       "title": "System Architecture",
-      "description": "A dense 50-word paragraph explaining the exact end-to-end data flow and logical architecture before displaying the huge diagram below.",
+      "description": "A dense 50-word paragraph explaining the exact end-to-end data flow.",
       "visual_suggestion": "[ Massive Flowchart: User -> API -> DB -> LLM ]"
+    },
+    {
+      "slide_number": 5,
+      "layout": "aesthetic_timeline",
+      "title": "Deployment Roadmap",
+      "nodes": [
+        {"header": "Phase 1: Alpha", "text": "30 words detailing the foundational steps and rollout."}
+      ]
+    },
+    {
+      "slide_number": 6,
+      "layout": "aesthetic_comparison",
+      "title": "Old vs New Architecture",
+      "left_header": "Legacy System",
+      "right_header": "Modern Stack",
+      "left_bullets": ["25 words..."],
+      "right_bullets": ["25 words..."]
+    },
+    {
+      "slide_number": 7,
+      "layout": "aesthetic_metrics",
+      "title": "Performance Impact",
+      "metrics": [
+        {"value": "99.9%", "label": "Uptime SLAs guaranteed under high load..."}
+      ],
+      "visual_suggestion": "[ Diagram: Load testing graphs ]"
     }
   ]
 }`;
@@ -191,6 +238,27 @@ JSON SCHEMA:
       }
       plan = JSON.parse(jsonMatch[0]);
       plan.personality = personality;
+
+      if (attachedFiles && attachedFiles.length > 0) {
+        let fIdx = 0;
+        for (let s of plan.slides) {
+          if (s.image_path) {
+             const m = s.image_path.match(/\[ATTACHED_FILE:\s*(.+?)\]/);
+             if (m) {
+                 s.image_path = m[1];
+             }
+             fIdx++;
+          }
+        }
+        for (let i = 0; i < plan.slides.length && fIdx < attachedFiles.length; i++) {
+          const s = plan.slides[i];
+          const supportImg = ["aesthetic_split", "aesthetic_flow", "aesthetic_metrics"];
+          if (supportImg.includes(s.layout) && !s.image_path) {
+             s.image_path = attachedFiles[fIdx].path.replace(/\\/g, '/');
+             fIdx++;
+          }
+        }
+      }
 
       const n = plan.total_slides || plan.slides?.length || '?';
       appendMsg(`📋 Plan ready! **"${plan.presentation_title}"** — ${n} slides\n`);
@@ -225,45 +293,62 @@ JSON SCHEMA:
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const prompt = inputValue.trim();
-    if (!prompt || isLoading) return;
+    if (!prompt && uploadedFiles.length === 0 && !isLoading) return;
 
     setInputValue('');
     setIsLoading(true);
 
+    const recentUserMessages = messages.filter(m => m.role === 'user').map(m => m.content);
+    const recentPrompts = recentUserMessages.slice(-3).join(" | ");
+
+    const attachedTags = uploadedFiles.map(f => `[ATTACHED_FILE: ${f.path.replace(/\\/g, '/')}]`).join("\n");
+    const promptToSend = attachedTags ? `${prompt}\n\n${attachedTags}`.trim() : prompt;
+    const uiDisplayMessage = prompt || (uploadedFiles.length > 0 ? "Uploaded files" : "");
+    const attachedFiles = [...uploadedFiles];
+
     setMessages((prev) => [
       ...prev,
-      { role: 'user', content: prompt },
+      { role: 'user', content: uiDisplayMessage },
       { role: 'assistant', content: '' },
     ]);
+    
+    setUploadedFiles([]);
 
     try {
       if (isPPTRequest(prompt)) {
-        let handled = await handlePPTWithPuter(prompt);
+        let handled = await handlePPTWithPuter(promptToSend, recentPrompts, attachedFiles);
         if (!handled) {
           // Fallback to backend PPT generation
           const res = await fetch('http://127.0.0.1:8000/ppt/create', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt }),
+            body: JSON.stringify({ prompt: promptToSend }),
           });
-          if (!res.ok) throw new Error(`Backend PPT fallback returned ${res.status}`);
-          const reader  = res.body.getReader();
-          const decoder = new TextDecoder('utf-8');
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            if (chunk.trim()) appendMsg(chunk);
+          if (!res.ok) throw new Error("Fallback failed");
+          
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let done = false;
+          while (!done) {
+            const { value, done: doneReading } = await reader.read();
+            done = doneReading;
+            const chunk = decoder.decode(value);
+            setMessages((prev) => {
+              const copy = [...prev];
+              const last = copy[copy.length - 1];
+              if (last && last.role === 'assistant') last.content += chunk;
+              return copy;
+            });
           }
         }
-        return; // success or backend fallback finished — don't call /chat
+        return; // success or backend fallback finished
       }
 
       // ── Standard /chat path (Groq) ──────────────────────────────────────
       const response = await fetch('http://127.0.0.1:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt: promptToSend }),
       });
 
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -294,7 +379,8 @@ JSON SCHEMA:
         const copy = prev.map((m) => ({ ...m }));
         const last = copy[copy.length - 1];
         if (last && last.role === 'assistant') {
-          last.content = '⚠️ Could not reach Jarvis. Make sure the backend is running on port 8000.';
+          // Append the error instead of overwriting, so we don't lose Puter.js logs
+          last.content += `\n\n⚠️ Could not complete request: ${err.message}. Make sure the backend is running on port 8000.`;
         }
         return copy;
       });
@@ -381,10 +467,31 @@ JSON SCHEMA:
         {/* Input + Status Bar */}
         <div className="mt-4 flex flex-col items-center w-full relative z-20 pb-4">
 
-          <form onSubmit={handleSendMessage} className="w-full max-w-4xl relative flex items-center mb-4 group">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-full blur group-focus-within:opacity-100 opacity-50 transition-opacity" />
+          <form onSubmit={handleSendMessage} className="w-full max-w-4xl relative flex flex-col gap-2 mb-4 group">
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-cyan-500/20 rounded-[32px] blur group-focus-within:opacity-100 opacity-50 transition-opacity" />
 
-            <div className="relative flex w-full bg-[#030a16] border border-cyan-500/40 rounded-full shadow-[0_0_15px_rgba(0,243,255,0.1)] focus-within:border-cyan-400 focus-within:shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all overflow-hidden items-center pl-6 pr-2 py-2">
+            {uploadedFiles.length > 0 && (
+              <div className="relative flex gap-3 px-4 py-3 overflow-x-auto w-full bg-[#030a16] border border-cyan-500/40 rounded-[24px] shadow-[0_0_15px_rgba(0,243,255,0.1)] z-10">
+                {uploadedFiles.map((f, i) => (
+                  <div key={i} className="relative group/img shrink-0 rounded-lg overflow-visible h-16 w-16 border border-cyan-700 bg-cyan-950/40 flex items-center justify-center">
+                    {f.name.match(/\.(png|jpg|jpeg|webp)$/i) ? (
+                      <img src={f.url} alt={f.name} className="h-full w-full object-cover rounded-lg" />
+                    ) : (
+                      <div className="text-[10px] text-cyan-200 text-center break-words p-1 leading-tight font-mono">
+                        {f.name.length > 20 ? f.name.substring(0, 18) + '...' : f.name}
+                      </div>
+                    )}
+                    <button 
+                      type="button" 
+                      onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] shadow-lg hover:bg-red-600 transition-colors z-20"
+                    >✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative flex w-full bg-[#030a16] border border-cyan-500/40 rounded-full shadow-[0_0_15px_rgba(0,243,255,0.1)] focus-within:border-cyan-400 focus-within:shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all overflow-hidden items-center pl-6 pr-2 py-2 z-10">
               {/* Accent dot */}
               <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_5px_#00f3ff] animate-pulse shrink-0 ml-2" />
 
@@ -393,6 +500,10 @@ JSON SCHEMA:
                 <button
                   type="button"
                   disabled={isLoading || isUploading}
+                  onClick={() => {
+                    fileInputRef.current.dataset.uploadType = 'general';
+                    fileInputRef.current?.click();
+                  }}
                   className="p-2 rounded-full text-cyan-500 hover:text-white hover:bg-cyan-600 transition-all disabled:opacity-40"
                   title="Upload Document"
                 >
@@ -430,7 +541,8 @@ JSON SCHEMA:
                 style={{ display: 'none' }} 
                 data-upload-type="assignment"
                 onChange={handleFileUpload} 
-                accept=".pdf,.txt,.docx"
+                accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp"
+                multiple
               />
 
               <input

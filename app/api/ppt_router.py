@@ -98,8 +98,11 @@ async def create_ppt_backend(request: PPTCreateRequest):
     from app.services.ppt_tool import ppt_create
     
     def generate():
-        for chunk in ppt_create(request.prompt, request.style, request.output_path):
-            yield chunk + "\n\n"
+        try:
+            for chunk in ppt_create(request.prompt, request.style, request.output_path):
+                yield chunk + "\n\n"
+        except Exception as e:
+            yield f"❌ Backend Fallback Error: {str(e)}\n\n"
             
     return StreamingResponse(generate(), media_type="text/event-stream")
 

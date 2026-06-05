@@ -139,6 +139,24 @@ def read_file(path: str) -> str:
             except ImportError:
                 return "python-docx is not installed. Run: pip install python-docx"
 
+        # Image support via Gemini Vision
+        elif suffix in [".png", ".jpg", ".jpeg", ".webp"]:
+            try:
+                import base64
+                from app.services.screen_vision import _call_gemini_vision
+                with open(resolved, "rb") as img_file:
+                    b64_data = base64.b64encode(img_file.read()).decode("utf-8")
+                
+                system_prompt = "You are an expert image analyzer. Describe this image in immense detail so a text-based AI can fully understand its contents, text, layout, and meaning."
+                user_query = f"Please describe this uploaded image ({resolved.name})."
+                
+                description = _call_gemini_vision(b64_data, system_prompt, user_query)
+                return f"[Image Analysis of '{resolved.name}']\n\n{description}"
+            except ImportError:
+                return f"Cannot analyze image '{resolved.name}': screen_vision module unavailable."
+            except Exception as e:
+                return f"Failed to analyze image '{resolved.name}': {e}"
+
         # All other text-based files
         else:
             with open(resolved, "r", encoding="utf-8", errors="replace") as f:

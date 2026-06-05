@@ -897,6 +897,18 @@ api_note_flow = {"active": False}
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     global api_whatsapp_flow, api_whatsapp_call_flow, api_note_flow
+
+    # ── Handle Attached Files ─────────────────────────────────────────────
+    attached_files = re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', request.prompt)
+    if attached_files:
+        from app.services.file_ops import read_file
+        file_contents = []
+        for fpath in attached_files:
+            file_contents.append(read_file(fpath))
+            
+        request.prompt = re.sub(r'\[ATTACHED_FILE:\s*.+?\]', '', request.prompt).strip()
+        request.prompt += "\n\nAttached Context:\n" + "\n".join(file_contents)
+
     history_list = list(conversation_history)
     prompt_lower = request.prompt.lower().strip()
 
