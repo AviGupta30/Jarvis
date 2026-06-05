@@ -459,7 +459,7 @@ def _extract_via_llm_text(pdf_path: str) -> list[dict]:
             continue
         try:
             response = _groq.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": _LLM_TEXT_PROMPT},
                     {"role": "user", "content": f"Page {page_num} text:\n\n{page_text}"}

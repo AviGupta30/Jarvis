@@ -92,7 +92,7 @@ async def _llm_write_code(task: str, context: str = "") -> str:
     """Ask the LLM to write Python code for a given task."""
     prompt = SKILL_WRITER_PROMPT.format(task=task, context=context or "None")
     resp = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1500,
         temperature=0.2,
@@ -104,7 +104,7 @@ async def _llm_fix_code(task: str, code: str, error: str) -> str:
     """Ask the LLM to fix a broken script."""
     prompt = SKILL_FIXER_PROMPT.format(task=task, code=code, error=error)
     resp = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         max_tokens=1500,
         temperature=0.1,

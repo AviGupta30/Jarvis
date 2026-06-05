@@ -438,7 +438,7 @@ def _groq_answer(question: str, question_type: str, has_figure: bool = False) ->
 
     # Model fallback chain: best quality → fast → alternative
     model_chain = [
-        ("llama-3.3-70b-versatile", 2500),
+        ("llama-3.1-8b-instant", 2500),
         ("llama-3.1-8b-instant",    2000),
         ("gemma2-9b-it",            2000),
     ]

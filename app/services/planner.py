@@ -159,7 +159,7 @@ async def _call_planner(task: str, context: str) -> dict:
     """Ask the LLM to produce a step-by-step plan."""
     prompt = PLANNER_PROMPT.format(task=task, context=context or "Desktop")
     resp = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         max_tokens=2000,
@@ -188,7 +188,7 @@ async def _call_replanner(task: str, completed: list, failed_step: dict,
         next_step_num=next_num,
     )
     resp = await client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         max_tokens=1500,

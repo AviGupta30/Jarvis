@@ -2,7 +2,7 @@
 llm.py — Jarvis LLM Brain
 ---------------------------
 Model routing:
-  Groq llama-3.3-70b-versatile  → tool routing + simple fast responses
+  Groq llama-3.1-8b-instant  → tool routing + simple fast responses
   Gemma 4 (Google AI Studio)    → complex reasoning, planner narration, deep Q&A
   Groq llama-3.1-8b-instant     → history compression (cheap + fast)
 
@@ -43,7 +43,7 @@ async def _groq_generate(messages: list, max_tokens: int = 800, temperature: flo
     for attempt in range(2):
         try:
             completion = await client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=messages,
                 stream=True,
                 max_tokens=max_tokens,
@@ -114,7 +114,7 @@ async def check_for_tool_intent(user_prompt: str, history: list) -> dict | None:
     for attempt in range(2):
         try:
             completion = await client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=messages,
                 response_format={"type": "json_object"},
                 max_tokens=150,

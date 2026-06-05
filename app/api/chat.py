@@ -778,7 +778,7 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         pdf_path = pdf_m.group(0).strip() if pdf_m else ''
         return {
             'tool_name': 'generate_answers',
-            'arguments': {'questions_json': request.prompt, 'pdf_path': pdf_path}
+            'arguments': {'questions_json': prompt, 'pdf_path': pdf_path}
         }
 
     # 'answer this question: <text>' / 'answer question 3'
@@ -790,9 +790,9 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         for kw in gen_one_kw:
             if kw in lower:
                 idx = lower.index(kw) + len(kw)
-                q_text = request.prompt[idx:].strip().lstrip(':').strip()
+                q_text = prompt[idx:].strip().lstrip(':').strip()
                 if not q_text:
-                    q_text = request.prompt
+                    q_text = prompt
                 return {
                     'tool_name': 'generate_answer',
                     'arguments': {'question': q_text, 'question_type': 'long_answer'}
@@ -808,7 +808,7 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if any(kw in lower for kw in humanize_batch_kw):
         return {
             'tool_name': 'humanize_all_answers',
-            'arguments': {'qa_json': request.prompt}
+            'arguments': {'qa_json': prompt}
         }
 
     # 'humanize this text: <text>'
@@ -820,11 +820,11 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         for kw in humanize_single_kw:
             if kw in lower:
                 idx = lower.index(kw) + len(kw)
-                txt = request.prompt[idx:].strip().lstrip(':').strip()
+                txt = prompt[idx:].strip().lstrip(':').strip()
                 if not txt:
-                    txt = request.prompt
+                    txt = prompt
                 return {
-                    'tool_name': 'humanize_text',
+                    'tool_name': 'humanize_ai_content',
                     'arguments': {'text': txt}
                 }
 
@@ -838,11 +838,53 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         return {
             'tool_name': 'assemble_assignment',
             'arguments': {
-                'qa_json': request.prompt, 
+                'qa_json': prompt, 
                 'filename': 'Assignment', 
                 'format_type': 'ppt' if 'ppt' in lower or 'powerpoint' in lower else 'word'
             }
         }
+
+    # ── PowerPoint / Presentation Creation ────────────────────────────────────
+    ppt_create_kw = [
+        'create a presentation', 'make a presentation', 'build a presentation',
+        'generate a presentation', 'design a presentation', 'prepare a presentation',
+        'create slides', 'make slides', 'build slides',
+        'make a ppt', 'create a ppt', 'build a ppt', 'generate a ppt',
+        'create a deck', 'make a deck', 'build a deck',
+        'create a powerpoint', 'make a powerpoint', 'build a powerpoint',
+        'create presentation', 'make presentation', 'ppt on ', 'ppt about ',
+        'presentation on ', 'presentation about ', 'slide deck on ',
+    ]
+    if any(kw in lower for kw in ppt_create_kw):
+        style_m = re.search(
+            r'\b(cyber_dark|midnight_exec|solar_flare|arctic_clean|forest_calm'
+            r'|ocean_gradient|velvet_noir|charcoal_minimal)\b',
+            lower
+        )
+        return {
+            "tool_name": "ppt_create",
+            "arguments": {
+                "user_prompt": prompt,
+                "style": style_m.group(1) if style_m else None,
+            }
+        }
+
+    # ── PowerPoint Edit ────────────────────────────────────────────────────────
+    ppt_edit_kw = [
+        'change slide', 'edit slide', 'update slide', 'modify slide',
+        'redo slide', 'fix slide', 'replace slide',
+    ]
+    if any(kw in lower for kw in ppt_edit_kw):
+        return {"tool_name": "ppt_edit", "arguments": {"edit_prompt": prompt}}
+
+    # ── PowerPoint Styles ──────────────────────────────────────────────────────
+    ppt_styles_kw = [
+        'list ppt styles', 'what ppt styles', 'available ppt styles',
+        'presentation styles', 'ppt personalities', 'show me the styles',
+        'what styles can you make', 'ppt design styles',
+    ]
+    if any(kw in lower for kw in ppt_styles_kw):
+        return {"tool_name": "ppt_styles", "arguments": {}}
 
     return None  # Fall through to LLM router
 

@@ -337,7 +337,7 @@ def _groq_answer(question: str, q_type: str = "long_answer", has_fig: bool = Fal
         "Include all relevant details, show workings for calculations, and use proper formatting."
     )
     note = " [This question may refer to a figure in the PDF]" if has_fig else ""
-    for model in ["llama-3.3-70b-versatile", "llama3-8b-8192", "gemma2-9b-it"]:
+    for model in ["llama-3.1-8b-instant", "llama3-8b-8192", "gemma2-9b-it"]:
         try:
             r = g.chat.completions.create(
                 model=model,
@@ -365,7 +365,7 @@ def _groq_humanize(text: str) -> str:
         "Keep all technical content, facts, formulas, and code EXACTLY the same. "
         "DO NOT summarize or remove content — just rewrite the tone.\n\nAnswer:\n" + text
     )
-    for model in ["llama-3.3-70b-versatile", "llama3-8b-8192"]:
+    for model in ["llama-3.1-8b-instant", "llama3-8b-8192"]:
         try:
             r = g.chat.completions.create(
                 model=model,

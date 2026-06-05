@@ -885,6 +885,47 @@ def scrape_url_tool(url: str) -> str:
     except Exception as e:
         return f"Could not read URL: {e}"
 
+# ── PowerPoint AI Wrappers ──────────────────────────────────────────────────
+# Isolated in ppt_tool.py. These thin wrappers convert the returned dict to a
+# human-readable string so it flows cleanly through the /chat response pipeline.
+
+def _ppt_create(user_prompt: str, style: str = None):
+    """
+    Generator wrapper — streams live progress to the frontend via chat.py's
+    inspect.isgenerator() streaming path. Each yielded string appears as a
+    new line in the Jarvis chat window in real time.
+    """
+    try:
+        from app.services.ppt_tool import ppt_create
+        yield from ppt_create(user_prompt=user_prompt, style=style)
+    except Exception as e:
+        yield f"❌ PPT tool error: {e}"
+
+
+def _ppt_edit(edit_prompt: str):
+    """
+    Generator wrapper — streams live progress for slide edits.
+    """
+    try:
+        from app.services.ppt_tool import ppt_edit
+        yield from ppt_edit(edit_prompt=edit_prompt)
+    except Exception as e:
+        yield f"❌ PPT edit error: {e}"
+
+
+def _ppt_styles() -> str:
+    """List all available presentation design personalities."""
+    try:
+        from app.services.ppt_tool import ppt_styles
+        result = ppt_styles()
+        lines = [f"I have {result['count']} design styles for presentations:"]
+        for k, v in result["styles"].items():
+            lines.append(f"  • {v['name']} ({k}) — {v['desc']}")
+        return "\n".join(lines)
+    except Exception as e:
+        return f"❌ PPT styles error: {e}"
+
+
 TOOL_REGISTRY = {
     # Information & Web
     "get_info": get_info,
@@ -1020,4 +1061,11 @@ TOOL_REGISTRY = {
     "assemble_assignment": lambda qa_json, filename, format_type='word': __import__('app.services.assignment_assembler', fromlist=['assemble_assignment']).assemble_assignment(qa_json, filename, format_type),
     # Phase 5: Master Orchestrator Pipeline
     "do_assignment":       lambda pdf_path, output_format='word', humanize=True: __import__('app.services.assignment_pipeline', fromlist=['do_assignment']).do_assignment(pdf_path, output_format, humanize),
+    # ── AI Content Humanizer (5-Stage Pipeline) ──────────────────────────────
+    "humanize_ai_content": lambda text: __import__('app.services.content_humanizer', fromlist=['humanize_text_sync']).humanize_text_sync(text),
+    # ── PowerPoint AI (ppt_tool.py) ──────────────────────────────────────────
+    # Isolated per Rule #4. Accessible via frontend and voice through /chat.
+    "ppt_create": _ppt_create,
+    "ppt_edit":   _ppt_edit,
+    "ppt_styles": _ppt_styles,
 }

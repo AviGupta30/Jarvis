@@ -36,3 +36,7 @@ kokoro-onnx
 # Audio playback for Kokoro
 sounddevice
 soundfile
+# Content Humanizer
+textstat
+sentence-transformers
+scikit-learn

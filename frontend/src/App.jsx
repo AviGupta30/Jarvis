@@ -49,6 +49,179 @@ function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // ── PPT intent detector ──────────────────────────────────────────────────
+  const PPT_KW = [
+    'create a presentation','make a presentation','build a presentation',
+    'generate a presentation','design a presentation','prepare a presentation',
+    'create slides','make slides','build slides',
+    'make a ppt','create a ppt','build a ppt','generate a ppt',
+    'create a deck','make a deck','create a powerpoint','make a powerpoint',
+    'create presentation','make presentation',
+    'ppt on ','ppt about ','presentation on ','presentation about ','slide deck on ',
+  ];
+  const isPPTRequest = (text) => PPT_KW.some(kw => text.toLowerCase().includes(kw));
+
+  const STYLE_MAP = {
+    'cyber dark':'cyber_dark','cyber_dark':'cyber_dark',
+    'midnight executive':'midnight_exec','midnight_exec':'midnight_exec',
+    'solar flare':'solar_flare','solar_flare':'solar_flare',
+    'arctic clean':'arctic_clean','arctic_clean':'arctic_clean',
+    'forest calm':'forest_calm','forest_calm':'forest_calm',
+    'ocean gradient':'ocean_gradient','ocean_gradient':'ocean_gradient',
+    'velvet noir':'velvet_noir','velvet_noir':'velvet_noir',
+    'charcoal minimal':'charcoal_minimal','charcoal_minimal':'charcoal_minimal',
+  };
+  const detectStyle = (text) => {
+    const lower = text.toLowerCase();
+    for (const [name, key] of Object.entries(STYLE_MAP)) {
+      if (lower.includes(name)) return key;
+    }
+    return null;
+  };
+
+  const PERSONALITY_DESCS = {
+    cyber_dark:'Dark navy + electric teal. Hackathons, SIH, blockchain, security.',
+    midnight_exec:'Deep indigo + platinum. Consulting, boardroom, enterprise strategy.',
+    solar_flare:'Charcoal + amber + coral. Startups, product launches, VC pitches.',
+    arctic_clean:'Ice white + deep teal. SaaS, fintech, medical, professional services.',
+    forest_calm:'Forest green + sage + cream. Education, health, sustainability.',
+    ocean_gradient:'Deep ocean + cerulean + white. AI, data science, ML, research.',
+    velvet_noir:'Deep plum + rose gold + cream. Luxury, fashion, design portfolios.',
+    charcoal_minimal:'True black + off-white + gold. Architecture, design, premium brands.',
+  };
+
+  const autoPersonality = (text) => {
+    const t = text.toLowerCase();
+    if (/hack|cyber|security|blockchain|ctf|sih/.test(t)) return 'cyber_dark';
+    if (/luxury|fashion|portfolio|brand|premium|aesthetic/.test(t)) return 'velvet_noir';
+    if (/startup|pitch|investor|funding|vc|seed|product launch/.test(t)) return 'solar_flare';
+    if (/corporate|consulting|enterprise|quarterly|board|strategy/.test(t)) return 'midnight_exec';
+    if (/health|nature|education|environment|green|sustainability/.test(t)) return 'forest_calm';
+    if (/machine learning|deep learning|\bai\b|data science|neural/.test(t)) return 'ocean_gradient';
+    if (/saas|fintech|finance|app|software|platform|cloud/.test(t)) return 'arctic_clean';
+    if (/design|minimal|architecture|typography/.test(t)) return 'charcoal_minimal';
+    return 'cyber_dark';
+  };
+
+  const appendMsg = (chunk) => {
+    setMessages((prev) => {
+      const copy = prev.map((m) => ({ ...m }));
+      const last = copy[copy.length - 1];
+      if (last && last.role === 'assistant') last.content += chunk;
+      return copy;
+    });
+  };
+
+  const handlePPTWithPuter = async (prompt) => {
+    const personality = detectStyle(prompt) || autoPersonality(prompt);
+    const desc = PERSONALITY_DESCS[personality] || '';
+
+    appendMsg(`🎨 Style: **${personality.replace(/_/g,' ')}** — ${desc}\n`);
+    appendMsg('🤖 Calling Gemini via Puter.js (free, no API key required)...\n');
+
+    let plan;
+    try {
+      if (typeof puter === 'undefined') throw new Error('Puter.js not loaded');
+
+      const userMsg = `You are an elite aesthetic presentation generator. Create a highly technical, content-dense, aesthetic presentation for:
+TOPIC: ${prompt}
+
+RULES:
+- Exactly 10 slides.
+- First slide MUST use "aesthetic_title".
+- Use a mix of "aesthetic_split", "aesthetic_grid", and "aesthetic_flow" for the rest.
+- TEXT MUST BE EXTREMELY DENSE. Every bullet array must have 3-4 items, and each text property MUST be 25-30 words of deep technical/strategic detail. No short bullets.
+- Every layout requires a "visual_suggestion" detailing exactly what flowchart/diagram goes in the massive placeholder.
+- Output ONLY valid JSON, no markdown fences or explanations.
+
+JSON SCHEMA:
+{
+  "presentation_title": "...",
+  "personality": "${personality}",
+  "slides": [
+    {
+      "slide_number": 1,
+      "layout": "aesthetic_title",
+      "title": "Project/Topic Name",
+      "subtitle": "A robust 3-sentence technical abstract explaining the core innovation, stack, and impact."
+    },
+    {
+      "slide_number": 2,
+      "layout": "aesthetic_split",
+      "title": "Problem Statement",
+      "bullets": [
+        {"bold": "Key Point 1", "text": "25-30 words of extremely detailed context ensuring vertical space is filled completely."},
+        {"bold": "Key Point 2", "text": "25-30 words explaining consequences, metrics, or current system failures in depth."},
+        {"bold": "Key Point 3", "text": "25-30 words on why previous approaches fall short and what needs to change."}
+      ],
+      "visual_suggestion": "[ Diagram: User pain-point flowchart ]"
+    },
+    {
+      "slide_number": 3,
+      "layout": "aesthetic_grid",
+      "title": "Technical Approach",
+      "cards": [
+        {
+          "header": "Data Ingestion",
+          "bullets": ["20 words detailing the pipeline", "20 words on scaling", "20 words on security"]
+        },
+        {"header":"...","bullets":["...","...","..."]},
+        {"header":"...","bullets":["...","...","..."]},
+        {"header":"...","bullets":["...","...","..."]}
+      ]
+    },
+    {
+      "slide_number": 4,
+      "layout": "aesthetic_flow",
+      "title": "System Architecture",
+      "description": "A dense 50-word paragraph explaining the exact end-to-end data flow and logical architecture before displaying the huge diagram below.",
+      "visual_suggestion": "[ Massive Flowchart: User -> API -> DB -> LLM ]"
+    }
+  ]
+}`;
+
+      const puterResp = await puter.ai.chat(userMsg);
+      let rawText = typeof puterResp === 'string' ? puterResp : (puterResp?.text || puterResp?.message?.content || puterResp?.content || JSON.stringify(puterResp));
+      if (typeof rawText !== 'string') rawText = String(rawText);
+
+      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+          appendMsg(`⚠️ Puter.js returned invalid JSON. Falling back to backend...\n`);
+          return false;
+      }
+      plan = JSON.parse(jsonMatch[0]);
+      plan.personality = personality;
+
+      const n = plan.total_slides || plan.slides?.length || '?';
+      appendMsg(`📋 Plan ready! **"${plan.presentation_title}"** — ${n} slides\n`);
+      appendMsg('─'.repeat(44) + '\n');
+    } catch (puterErr) {
+      appendMsg(`⚠️ Puter.js unavailable (${puterErr.message}) — switching to Groq...\n`);
+      return false;
+    }
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/ppt/build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan }),
+      });
+      if (!res.ok) throw new Error(`/ppt/build returned ${res.status}`);
+      const reader  = res.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        if (chunk.trim()) appendMsg(chunk);
+      }
+      return true;
+    } catch (buildErr) {
+      appendMsg(`❌ Build error: ${buildErr.message}\n`);
+      return true;
+    }
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const prompt = inputValue.trim();
@@ -57,8 +230,6 @@ function App() {
     setInputValue('');
     setIsLoading(true);
 
-    // Add user message + empty assistant placeholder in a single update
-    // to prevent React batching from creating index race conditions
     setMessages((prev) => [
       ...prev,
       { role: 'user', content: prompt },
@@ -66,41 +237,54 @@ function App() {
     ]);
 
     try {
+      if (isPPTRequest(prompt)) {
+        let handled = await handlePPTWithPuter(prompt);
+        if (!handled) {
+          // Fallback to backend PPT generation
+          const res = await fetch('http://127.0.0.1:8000/ppt/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt }),
+          });
+          if (!res.ok) throw new Error(`Backend PPT fallback returned ${res.status}`);
+          const reader  = res.body.getReader();
+          const decoder = new TextDecoder('utf-8');
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            if (chunk.trim()) appendMsg(chunk);
+          }
+        }
+        return; // success or backend fallback finished — don't call /chat
+      }
+
+      // ── Standard /chat path (Groq) ──────────────────────────────────────
       const response = await fetch('http://127.0.0.1:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
       });
 
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-      const reader = response.body.getReader();
+      const reader  = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-
-        const raw = decoder.decode(value, { stream: true });
-
-        // Strip SSE "data: " prefix; preserve \n\n paragraph separators
+        const raw   = decoder.decode(value, { stream: true });
         const lines = raw.split('\n');
         const cleanLines = lines
           .map((line) => line.replace(/^data:\s*/, ''))
           .filter((line) => line !== '[DONE]');
         const cleanChunk = cleanLines.join('\n');
-
         if (!cleanChunk.trim()) continue;
-
-        // Always update the LAST message (which is always the assistant placeholder)
         setMessages((prev) => {
-          const copy = prev.map((m) => ({ ...m })); // shallow-clone each item
+          const copy = prev.map((m) => ({ ...m }));
           const last = copy[copy.length - 1];
-          if (last && last.role === 'assistant') {
-            last.content += cleanChunk;
-          }
+          if (last && last.role === 'assistant') last.content += cleanChunk;
           return copy;
         });
       }
@@ -110,8 +294,7 @@ function App() {
         const copy = prev.map((m) => ({ ...m }));
         const last = copy[copy.length - 1];
         if (last && last.role === 'assistant') {
-          last.content =
-            '⚠️ Could not reach Jarvis. Make sure the backend server is running on port 8000.';
+          last.content = '⚠️ Could not reach Jarvis. Make sure the backend is running on port 8000.';
         }
         return copy;
       });
