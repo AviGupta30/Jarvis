@@ -223,17 +223,20 @@ Output ONLY valid JSON — no markdown fences, no explanation."""
 
 _USR = """\
 Create a VISUAL-FIRST, content-dense presentation for:
-TOPIC: {prompt}
+TOPIC/REQUEST: {prompt}
+
+CRITICAL INSTRUCTION FOR MODIFICATIONS: If the REQUEST asks to change the theme, style, or colors of a previous presentation, you MUST preserve the EXACT SAME TOPIC AND CONTENT from the previous context. Do NOT make a new presentation about the color/theme itself!
+
 
 CRITICAL RULES:
 - Create 8 to 12 slides based on topic complexity.
 - First slide MUST use "aesthetic_title".
-- Use a mix of: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics". Prefer "aesthetic_split" and "aesthetic_flow" since they have a LARGE visual section.
-- EVERY SLIDE that has a visual zone (aesthetic_split, aesthetic_flow, aesthetic_metrics) MUST include EITHER an "image_path" (if user provided [ATTACHED_FILE: <path>]) OR a "visual_suggestion" describing a specific, detailed diagram/infographic for that slide.
+- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
+- Prefer "aesthetic_split", "aesthetic_flow", and "aesthetic_pitch" — they have LARGE dedicated visual areas.
+- EVERY SLIDE that has a visual zone (aesthetic_split, aesthetic_flow, aesthetic_metrics, aesthetic_pitch) MUST include EITHER an "image_path" (if user provided [ATTACHED_FILE: <path>]) OR a "visual_suggestion" describing a specific, detailed diagram/infographic for that slide.
 - BULLETS/CONTENT: You MUST make the presentation CONTENT HEAVY. Do not output single-line sentences. Each bullet/card MUST contain a bold label (2-5 words) AND highly detailed, multi-sentence text (40-60 words). Fill the cards so they look dense and professional. For timeline layouts, the "text" field MUST be massive and highly descriptive (50-80 words).
-- VISUALS: Every aesthetic_split, aesthetic_flow, aesthetic_metrics slide MUST include "visual_suggestion" with a specific diagram/chart description. If [ATTACHED_FILE: <path>] tags exist, set "image_path" to that exact path.
-- COLORS: If the user requests a specific color/theme, you MUST set "personality" to the closest match: ocean_pro, neon_dark, emerald, clean_light, synthwave, aurora, hacker_terminal, solar_flare, midnight_exec, cyber_dark, arctic_clean, forest_calm, velvet_noir, charcoal_minimal. 
-- CUSTOM COLORS: If the user requests a VERY specific multi-color theme that doesn't match the presets (e.g. "maroon and golden"), you MUST also output a "custom_theme" object with 6-character hex codes (NO hash) for "bg", "bg2", "card", "text", "sub", "ac1", "ac2", "ac3", "border", "hdr_bg", "hdr_text", "bar".
+- VISUALS: Every aesthetic_split, aesthetic_flow, aesthetic_metrics, aesthetic_pitch slide MUST include "visual_suggestion" with a specific diagram/chart description. If [ATTACHED_FILE: <path>] tags exist, set "image_path" to that exact path.
+- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon and golden"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
 - BOLD FIELD must always be set and act as a mini sub-header (2-4 word label).
 - Output ONLY valid JSON. No trailing commas.
 
@@ -337,13 +340,31 @@ class PresentationBuilder:
             secondary = accents[1] if len(accents) > 1 else primary
             tertiary = accents[2] if len(accents) > 2 else secondary
 
-            self.P["bg"] = "0A0A0E"
-            self.P["bg2"] = "121218"
-            self.P["card"] = "1A1A22"
-            self.P["card2"] = "22222C"
-            self.P["text"] = "F5F5F5"
-            self.P["sub"] = "B0B0C0"
-            self.P["hdr_text"] = "000000"
+            bg_hex = custom.get("bg", "0A0A0E")
+            try:
+                r, g, b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
+                lum = (0.299*r + 0.587*g + 0.114*b) / 255
+            except:
+                lum = 0
+                
+            is_light = lum > 0.6
+
+            if is_light:
+                self.P["bg"] = "FFFFFF"
+                self.P["bg2"] = "F0F0F0"
+                self.P["card"] = "F8F8F8"
+                self.P["card2"] = "EAEAEA"
+                self.P["text"] = "111111"
+                self.P["sub"] = "333333"
+                self.P["hdr_text"] = "FFFFFF"
+            else:
+                self.P["bg"] = "0A0A0E"
+                self.P["bg2"] = "121218"
+                self.P["card"] = "1A1A22"
+                self.P["card2"] = "22222C"
+                self.P["text"] = "F5F5F5"
+                self.P["sub"] = "B0B0C0"
+                self.P["hdr_text"] = "000000"
             
             self.P["ac1"] = primary
             self.P["ac2"] = secondary
@@ -369,15 +390,9 @@ class PresentationBuilder:
             Inches(1.1), Inches(0.2), sz=9, bold=True, col=self.P["text"], align=PP_ALIGN.RIGHT)
 
     def _header(self, slide, title: str):
-        """JARVIS chip + centered ROUNDED bordered title box + thin accent rule."""
-        # JARVIS brand chip (already rounded)
-        _round(slide, Inches(0.25), Inches(0.12), Inches(1.7), Inches(0.58),
-               fill=self.P["hdr_bg"], line=None)
-        _tb(slide, "JARVIS", Inches(0.3), Inches(0.18), Inches(1.6), Inches(0.44),
-            sz=14, bold=True, col=self.P["hdr_text"], align=PP_ALIGN.CENTER)
-
+        """Centered ROUNDED bordered title box + thin accent rule."""
         # Center title box — ROUNDED rectangle with thick colored border
-        tx, ty, tw, th = Inches(2.2), Inches(0.08), Inches(10.7), Inches(0.64)
+        tx, ty, tw, th = Inches(0.25), Inches(0.08), W - Inches(0.5), Inches(0.64)
         _round(slide, tx + Inches(0.07), ty + Inches(0.07), tw, th,
                fill=self.P["bg2"], line=None)  # shadow
         _round(slide, tx, ty, tw, th, fill=self.P["card"], line=self.P["border"], lw=2.5)
@@ -402,7 +417,7 @@ class PresentationBuilder:
                fill=None, line=self.P["ac2"], lw=0.9)
 
         # Corner L-brackets (sharp, they're decorative on top of the rounded card)
-        _corner_L(slide, l, t, w, h, col=self.P["ac1"], size=Inches(0.4), th=Inches(0.065))
+        # REMOVED: User explicitly disliked sharp corners falling out of the rounded radius.
 
         # Small status dots in top-right
         for di in range(3):
@@ -422,13 +437,11 @@ class PresentationBuilder:
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
-        # Styled placeholder
-        ph_y = t + h/2 - Inches(0.55)
-        _round(slide, l + Inches(0.4), ph_y, w - Inches(0.8), Inches(1.1),
-               fill=self.P["bg2"], line=self.P["ac2"], lw=0.8)
-        _tb(slide, suggestion or "[ Visual / Diagram ]",
-            l + Inches(0.5), ph_y + Inches(0.2), w - Inches(1.0), Inches(0.7),
-            sz=11.5, italic=True, col=self.P["sub"], align=PP_ALIGN.CENTER)
+                
+        # If no image, render the text largely inside the beautiful frame
+        _tb(slide, suggestion or "[ Detailed Content Block ]",
+            l + Inches(0.5), t + Inches(0.5), w - Inches(1.0), h - Inches(1.0),
+            sz=14.5, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
 
     def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str,
                      tag_col: str, idx: int):
@@ -566,6 +579,18 @@ class PresentationBuilder:
         avail = H - top - Inches(0.3)
         gap   = Inches(0.18)
         cards = d.get("cards", [])
+        
+        # Fallback if LLM generated "bullets" instead of "cards"
+        if not cards and "bullets" in d:
+            for i, b in enumerate(d["bullets"]):
+                header = b.get("bold", b.get("header", f"Section {i+1}")) if isinstance(b, dict) else f"Section {i+1}"
+                text = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
+                cards.append({"header": header, "bullets": [text]})
+                
+        # Fix missing headers dynamically
+        for i, c in enumerate(cards):
+            if not c.get("header", ""):
+                c["header"] = f"Module {i+1}"
 
         # Check if we have an image to show alongside
         img_path = _clean_image_path(d.get("image_path", ""))
@@ -615,6 +640,12 @@ class PresentationBuilder:
 
         # Bullet items with numbered tags
         bullets = card.get("bullets", [])
+        if not bullets and "text" in card:
+            bullets = [card["text"]]
+        elif not bullets and "description" in card:
+            bullets = [card["description"]]
+        elif not bullets:
+            bullets = ["(No detailed content provided)"]
         avail_h = h - hh - Inches(0.12)
         bsh = avail_h / max(len(bullets), 1)
         by = t + hh + Inches(0.08)
@@ -651,7 +682,16 @@ class PresentationBuilder:
                fill=self.P["ac2"], line=None)
         _tb(slide, '"', Inches(0.46), top + Inches(0.09), Inches(0.33), Inches(0.33),
             sz=18, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-        _tb(slide, d.get("description", ""), Inches(0.94), top + Inches(0.12),
+        desc_text = d.get("description", "")
+        # Fallback if LLM generated "text" or "bullets" instead of "description"
+        if not desc_text:
+            desc_text = d.get("text", "")
+        if not desc_text and "bullets" in d:
+            desc_text = " ".join([b.get("text", str(b)) if isinstance(b, dict) else str(b) for b in d["bullets"]])
+        if not desc_text and "nodes" in d:
+            desc_text = " ".join([n.get("text", "") for n in d["nodes"]])
+            
+        _tb(slide, desc_text, Inches(0.94), top + Inches(0.12),
             W - Inches(1.3), desc_h - Inches(0.2), sz=14, col=self.P["text"])
 
         # DOMINANT visual — takes up 70% of slide height
@@ -739,6 +779,10 @@ class PresentationBuilder:
                    fill=self.P["bg2"], line=None)
             # Card — ROUNDED
             _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=2.4)
+            # Inner premium ring
+            pad1 = Inches(0.06)
+            _round(slide, sx + pad1, top + pad1, cw2 - 2*pad1, avail - 2*pad1, fill=None, line=self.P["border"], lw=0.8)
+            
             # Header band — ROUNDED top only (simulate with overlapping round)
             _round(slide, sx, top, cw2, Inches(0.56), fill=color)
             # Ensure bottom of header is square
@@ -749,6 +793,14 @@ class PresentationBuilder:
 
             # Bullets
             blist = d.get(bk, [])
+            if not blist:
+                prefix = "left_" if "left" in bk else "right_"
+                alt = d.get(f"{prefix}text", d.get(f"{prefix}description", ""))
+                if alt:
+                    blist = [alt]
+                else:
+                    blist = ["(No detailed content provided)"]
+                    
             bsh = (avail - Inches(0.65)) / max(len(blist), 1)
             by = top + Inches(0.58)
             for bi, b in enumerate(blist[:5]):
@@ -809,10 +861,70 @@ class PresentationBuilder:
         # Dominant visual below (60%+ of slide)
         vt = top + mh + Inches(0.18)
         vh = H - vt - Inches(0.3)
+        desc_fallback = d.get("description", d.get("text", ""))
+        fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Detailed Metric Analysis ]")
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
-                                   W - Inches(0.43), vh,
-                                   d.get("visual_suggestion", "[ Performance Charts ]"))
+                                   W - Inches(0.43), vh, fallback_text)
 
+    # ── LAYOUT 8: PITCH (DENSE GRID + VISUAL) ───────────────────────────────
+    def _lay_aesthetic_pitch(self, d: dict, cur: int, total: int):
+        slide = self._blank()
+        self._header(slide, d.get("title", ""))
+        self._progress(slide, cur, total)
+
+        top = Inches(0.86)
+        avail = H - top - Inches(0.3)
+        
+        # Top half: 4 dense grid cards
+        top_h = Inches(2.3) # Increased from 1.3 to fit 40-60 words!
+        cards = d.get("cards", [])
+        if not cards and "bullets" in d:
+            for i, b in enumerate(d["bullets"]):
+                header = b.get("bold", b.get("header", f"Step {i+1}")) if isinstance(b, dict) else f"Step {i+1}"
+                text = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
+                cards.append({"header": header, "bullets": [text]})
+        
+        # Fix missing headers dynamically
+        for i, c in enumerate(cards):
+            if not c.get("header", ""):
+                c["header"] = f"Module {i+1}"
+                
+        num_cards = max(len(cards[:4]), 1)
+        total_gap = Inches(0.15) * (num_cards - 1)
+        cw = (W - Inches(0.5) - total_gap) / num_cards
+        
+        for i, c in enumerate(cards[:4]):
+            cx = Inches(0.25) + i*(cw + Inches(0.15))
+            self._colored_card_full(slide, cx, top, cw, top_h, c, self.P["tag_colors"][i % 4])
+
+        # Bottom half: Left image, Right bullets
+        bot_t = top + top_h + Inches(0.2)
+        bot_h = avail - top_h - Inches(0.2)
+        
+        # Left image (55% width)
+        lw = (W - Inches(0.7)) * 0.55
+        desc_fallback = d.get("description", d.get("text", ""))
+        fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Flowchart / Architecture ]")
+        self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), bot_t, lw, bot_h, fallback_text)
+        
+        # Right bullets (45% width)
+        rx = Inches(0.25) + lw + Inches(0.2)
+        rw = (W - Inches(0.7)) * 0.45
+        
+        bullets = d.get("right_bullets", d.get("bottom_bullets", []))
+        if not bullets and "description" in d: bullets = [{"text": d["description"]}]
+        elif not bullets: bullets = [{"text": "(No detailed content provided)"}]
+        
+        # Internal bullets
+        by = bot_t
+        # Cap bullet height so 1 bullet doesn't stretch 3.5 inches tall
+        bh = min(bot_h / max(len(bullets), 1), Inches(0.85))
+        
+        for i, b in enumerate(bullets[:6]):
+            bold = b.get("bold", b.get("header", f"Point {i+1}")) if isinstance(b, dict) else f"Point {i+1}"
+            txt = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
+            self._bullet_card(slide, rx, by, rw, bh - Inches(0.1), bold, txt, self.P["tag_colors"][i%4], i+1)
+            by += bh
 
 # ─── API ───────────────────────────────────────────────────────────────────────
 def ppt_create(prompt: str, style: str = None, output_path: str = None):
