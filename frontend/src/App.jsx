@@ -147,22 +147,24 @@ function App() {
     try {
       if (typeof puter === 'undefined') throw new Error('Puter.js not loaded');
 
-      const userMsg = `You are an elite aesthetic presentation generator. Create a highly technical, content-dense, aesthetic presentation for:
+      const userMsg = `You are an elite presentation generator. Create a VISUAL-FIRST, content-dense presentation for:
 CURRENT REQUEST: ${prompt}
-PREVIOUS CONTEXT (if modifying an existing request): ${context}
+PREVIOUS CONTEXT (if modifying): ${context}
 
-RULES:
-- Create 8 to 12 slides depending on topic complexity.
-- First slide MUST use "aesthetic_title".
-- Use a diverse mix of: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics".
-- TEXT MUST BE EXTREMELY DENSE. Every bullet array must have 3-4 items, and each text property MUST be 25-30 words of deep technical/strategic detail. No short bullets.
-- Every layout requires a "visual_suggestion" detailing exactly what flowchart/diagram goes in the massive placeholder. If the user provided images via [ATTACHED_FILE: <path>], you MUST use the exact path in a new "image_path" field instead of "visual_suggestion".
-- Output ONLY valid JSON, no markdown fences or explanations.
+CRITICAL RULES:
+- Create 8 to 12 slides. First slide MUST use "aesthetic_title".
+- Prefer "aesthetic_split" and "aesthetic_flow" layouts — they have a LARGE dedicated visual area.
+- BULLETS/CONTENT: You MUST make the presentation CONTENT HEAVY. Do not output single-line sentences. Each bullet/card MUST contain a bold label (2-5 words) AND highly detailed, multi-sentence text (40-60 words). Fill the cards so they look dense and professional. For timeline layouts, the "text" field MUST be massive and highly descriptive (50-80 words).
+- VISUALS: Every aesthetic_split, aesthetic_flow, aesthetic_metrics slide MUST include "visual_suggestion" with a specific diagram/chart description. If [ATTACHED_FILE: <path>] tags exist, set "image_path" to that exact path.
+- COLORS: If the user requests a specific color/theme, you MUST set "personality" to the closest match: ocean_pro (blue), neon_dark (purple/pink), emerald (green/gold), clean_light (white/blue), synthwave (retro pink), aurora (teal), hacker_terminal (black/lime), solar_flare (charcoal/amber), midnight_exec (indigo), cyber_dark (navy), arctic_clean (white), forest_calm (dark green), velvet_noir (plum), charcoal_minimal (black/gold). 
+- CUSTOM COLORS: If the user requests a VERY specific multi-color theme that doesn't match the presets (e.g. "maroon and golden"), you MUST also output a "custom_theme" object with 6-character hex codes (NO hash) for "bg", "bg2", "card", "text", "sub", "ac1", "ac2", "ac3", "border", "hdr_bg", "hdr_text", "bar".
+- Output ONLY valid JSON. No markdown fences. No trailing commas.
 
 JSON SCHEMA:
 {
   "presentation_title": "...",
   "personality": "${personality}",
+  "custom_theme": {"bg": "220000", "ac1": "FFD700", "ac2": "FFFFFF", "card": "330000", "text": "FFFFFF", "sub": "DDDDDD", "hdr_bg": "FFD700", "hdr_text": "220000", "border": "FFD700", "bar": "FFD700", "bg2": "2A0000", "card2": "3A0000", "ac3": "FFFF00"},
   "slides": [
     {
       "slide_number": 1,
@@ -243,9 +245,9 @@ JSON SCHEMA:
         let fIdx = 0;
         for (let s of plan.slides) {
           if (s.image_path) {
-             const m = s.image_path.match(/\[ATTACHED_FILE:\s*(.+?)\]/);
+             const m = s.image_path.match(/\[ATTACHED_FILE:\s*(.+?)(?:\s*\|.*)?\]/);
              if (m) {
-                 s.image_path = m[1];
+                 s.image_path = m[1].trim();
              }
              fIdx++;
           }
@@ -301,7 +303,10 @@ JSON SCHEMA:
     const recentUserMessages = messages.filter(m => m.role === 'user').map(m => m.content);
     const recentPrompts = recentUserMessages.slice(-3).join(" | ");
 
-    const attachedTags = uploadedFiles.map(f => `[ATTACHED_FILE: ${f.path.replace(/\\/g, '/')}]`).join("\n");
+    const attachedTags = uploadedFiles.map(f => {
+      const p = f.path.replace(/\\/g, '/');
+      return f.description ? `[ATTACHED_FILE: ${p} | DESCRIPTION: ${f.description}]` : `[ATTACHED_FILE: ${p}]`;
+    }).join("\n");
     const promptToSend = attachedTags ? `${prompt}\n\n${attachedTags}`.trim() : prompt;
     const uiDisplayMessage = prompt || (uploadedFiles.length > 0 ? "Uploaded files" : "");
     const attachedFiles = [...uploadedFiles];
@@ -473,14 +478,25 @@ JSON SCHEMA:
             {uploadedFiles.length > 0 && (
               <div className="relative flex gap-3 px-4 py-3 overflow-x-auto w-full bg-[#030a16] border border-cyan-500/40 rounded-[24px] shadow-[0_0_15px_rgba(0,243,255,0.1)] z-10">
                 {uploadedFiles.map((f, i) => (
-                  <div key={i} className="relative group/img shrink-0 rounded-lg overflow-visible h-16 w-16 border border-cyan-700 bg-cyan-950/40 flex items-center justify-center">
+                  <div key={i} className="relative group/img shrink-0 rounded-lg overflow-visible h-16 border border-cyan-700 bg-cyan-950/40 flex items-center p-1 gap-2">
                     {f.name.match(/\.(png|jpg|jpeg|webp)$/i) ? (
-                      <img src={f.url} alt={f.name} className="h-full w-full object-cover rounded-lg" />
+                      <img src={f.url} alt={f.name} className="h-full w-14 object-cover rounded-md" />
                     ) : (
-                      <div className="text-[10px] text-cyan-200 text-center break-words p-1 leading-tight font-mono">
-                        {f.name.length > 20 ? f.name.substring(0, 18) + '...' : f.name}
+                      <div className="text-[10px] text-cyan-200 text-center break-words p-1 leading-tight font-mono w-14">
+                        {f.name.length > 15 ? f.name.substring(0, 13) + '...' : f.name}
                       </div>
                     )}
+                    <input 
+                      type="text" 
+                      placeholder="Describe image..." 
+                      className="bg-transparent border-none text-xs text-cyan-100 outline-none w-36 placeholder-cyan-800/70 mr-2"
+                      value={f.description || ''}
+                      onChange={(e) => {
+                         const newFiles = [...uploadedFiles];
+                         newFiles[i].description = e.target.value;
+                         setUploadedFiles(newFiles);
+                      }}
+                    />
                     <button 
                       type="button" 
                       onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
