@@ -435,6 +435,22 @@ class PresentationBuilder:
                 _sh(tc[3] if len(tc)>3 else None, "888888"),
             ]
 
+            # FORCE HIGH CONTRAST FOR TEXT
+            # If the LLM generates a light background but also light text (or dark/dark), fix it.
+            def _get_lum(hex_str):
+                try:
+                    rv, gv, bv = int(hex_str[0:2],16), int(hex_str[2:4],16), int(hex_str[4:6],16)
+                    return (0.299*rv + 0.587*gv + 0.114*bv) / 255
+                except:
+                    return 0.5
+            
+            text_lum = _get_lum(self.P["text"])
+            # If contrast between background and text is too low, force safe defaults
+            if abs(text_lum - lum) < 0.4:
+                self.P["text"] = "111111" if is_light else "F5F5F5"
+                self.P["sub"]  = "444444" if is_light else "B0B0C0"
+                self.P["hdr_text"] = "111111" if is_light else "FFFFFF"
+
     def _blank(self):
         s = self.prs.slides.add_slide(self.prs.slide_layouts[6])
         _bg_fill(s, self.P["bg"])
