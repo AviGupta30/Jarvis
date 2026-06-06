@@ -54,5 +54,9 @@
   {
     "role": "assistant",
     "content": "I ran into an issue connecting to my brain. Please try again in a moment."
+  },
+  {
+    "role": "user",
+    "content": "usse sea green , cyan color along wwith white background in the ppt"
   }
 ]

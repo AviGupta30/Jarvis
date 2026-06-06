@@ -136,163 +136,8 @@ function App() {
     });
   };
 
-  const handlePPTWithPuter = async (prompt, context = "", attachedFiles = []) => {
-    const personality = detectStyle(prompt) || autoPersonality(prompt);
-    const desc = PERSONALITY_DESCS[personality] || '';
-
-    appendMsg(`🎨 Style: **${personality.replace(/_/g,' ')}** — ${desc}\n`);
-    appendMsg('🚀 Calling Gemini via Puter.js (free, no API key required)...\n');
-
-    let plan;
-    try {
-      if (typeof puter === 'undefined') throw new Error('Puter.js not loaded');
-
-      const userMsg = `You are an elite presentation generator. 
-
-CRITICAL INSTRUCTION FOR MODIFICATIONS: If the CURRENT REQUEST asks to change the theme, style, or colors of a previous presentation, you MUST preserve the EXACT SAME TOPIC AND CONTENT from the PREVIOUS CONTEXT. Do NOT make a new presentation about the color/theme itself!
-
-CURRENT REQUEST: ${prompt}
-PREVIOUS CONTEXT: ${context}
-
-CRITICAL RULES:
-- Create 8 to 12 slides. First slide MUST use "aesthetic_title".
-- Prefer "aesthetic_split", "aesthetic_flow", and "aesthetic_pitch" — they have a LARGE dedicated visual area.
-- BULLETS/CONTENT: You MUST make the presentation CONTENT HEAVY. Do not output single-line sentences. Each bullet/card MUST contain a bold label (2-5 words) AND highly detailed, multi-sentence text (40-60 words). Fill the cards so they look dense and professional. For timeline layouts, the "text" field MUST be massive and highly descriptive (50-80 words).
-- VISUALS: Every aesthetic_split, aesthetic_flow, aesthetic_metrics, aesthetic_pitch slide MUST include "visual_suggestion" with a specific diagram/chart description. If [ATTACHED_FILE: <path>] tags exist, set "image_path" to that exact path.
-- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon and golden"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
-- Output ONLY valid JSON. No markdown fences. No trailing commas.
-
-JSON SCHEMA:
-{
-  "presentation_title": "...",
-  "personality": "${personality}",
-  "custom_theme": {"bg": "220000", "ac1": "FFD700", "ac2": "FFFFFF", "card": "330000", "text": "FFFFFF", "sub": "DDDDDD", "hdr_bg": "FFD700", "hdr_text": "220000", "border": "FFD700", "bar": "FFD700", "bg2": "2A0000", "card2": "3A0000", "ac3": "FFFF00"},
-  "slides": [
-    {
-      "slide_number": 1,
-      "layout": "aesthetic_title",
-      "title": "Project/Topic Name",
-      "subtitle": "A robust 3-sentence technical abstract explaining the core innovation, stack, and impact."
-    },
-    {
-      "slide_number": 2,
-      "layout": "aesthetic_split",
-      "title": "Problem Statement",
-      "bullets": [
-        {"bold": "Key Point 1", "text": "25-30 words of extremely detailed context ensuring vertical space is filled completely."}
-      ],
-      "visual_suggestion": "[ Diagram: User pain-point flowchart ]",
-      "image_path": "c:/path/to/image.png"
-    },
-    {
-      "slide_number": 3,
-      "layout": "aesthetic_grid",
-      "title": "Technical Approach",
-      "cards": [
-        {
-          "header": "Data Ingestion",
-          "bullets": ["20 words detailing the pipeline", "20 words on scaling", "20 words on security"]
-        }
-      ]
-    },
-    {
-      "slide_number": 4,
-      "layout": "aesthetic_flow",
-      "title": "System Architecture",
-      "description": "A dense 50-word paragraph explaining the exact end-to-end data flow.",
-      "visual_suggestion": "[ Massive Flowchart: User -> API -> DB -> LLM ]"
-    },
-    {
-      "slide_number": 5,
-      "layout": "aesthetic_timeline",
-      "title": "Deployment Roadmap",
-      "nodes": [
-        {"header": "Phase 1: Alpha", "text": "30 words detailing the foundational steps and rollout."}
-      ]
-    },
-    {
-      "slide_number": 6,
-      "layout": "aesthetic_comparison",
-      "title": "Old vs New Architecture",
-      "left_header": "Legacy System",
-      "right_header": "Modern Stack",
-      "left_bullets": ["25 words..."],
-      "right_bullets": ["25 words..."]
-    },
-    {
-      "slide_number": 7,
-      "layout": "aesthetic_metrics",
-      "title": "Performance Impact",
-      "metrics": [
-        {"value": "99.9%", "label": "Uptime SLAs guaranteed under high load..."}
-      ],
-      "visual_suggestion": "[ Diagram: Load testing graphs ]"
-    }
-  ]
-}`;
-
-      const puterResp = await puter.ai.chat(userMsg);
-      let rawText = typeof puterResp === 'string' ? puterResp : (puterResp?.text || puterResp?.message?.content || puterResp?.content || JSON.stringify(puterResp));
-      if (typeof rawText !== 'string') rawText = String(rawText);
-
-      const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-          appendMsg(`⚠️ Puter.js returned invalid JSON. Falling back to backend...\n`);
-          return false;
-      }
-      plan = JSON.parse(jsonMatch[0]);
-      plan.personality = personality;
-
-      if (attachedFiles && attachedFiles.length > 0) {
-        let fIdx = 0;
-        for (let s of plan.slides) {
-          if (s.image_path) {
-             const m = s.image_path.match(/\[ATTACHED_FILE:\s*(.+?)(?:\s*\|.*)?\]/);
-             if (m) {
-                 s.image_path = m[1].trim();
-             }
-             fIdx++;
-          }
-        }
-        for (let i = 0; i < plan.slides.length && fIdx < attachedFiles.length; i++) {
-          const s = plan.slides[i];
-          const supportImg = ["aesthetic_split", "aesthetic_flow", "aesthetic_metrics"];
-          if (supportImg.includes(s.layout) && !s.image_path) {
-             s.image_path = attachedFiles[fIdx].path.replace(/\\/g, '/');
-             fIdx++;
-          }
-        }
-      }
-
-      const n = plan.total_slides || plan.slides?.length || '?';
-      appendMsg(`📋 Plan ready! **"${plan.presentation_title}"** — ${n} slides\n`);
-      appendMsg('─'.repeat(44) + '\n');
-    } catch (puterErr) {
-      appendMsg(`⚠️ Puter.js unavailable (${puterErr.message}) — switching to Groq...\n`);
-      return false;
-    }
-
-    try {
-      const res = await fetch('http://127.0.0.1:8000/ppt/build', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan }),
-      });
-      if (!res.ok) throw new Error(`/ppt/build returned ${res.status}`);
-      const reader  = res.body.getReader();
-      const decoder = new TextDecoder('utf-8');
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        if (chunk.trim()) appendMsg(chunk);
-      }
-      return true;
-    } catch (buildErr) {
-      appendMsg(`❌ Build error: ${buildErr.message}\n`);
-      return true;
-    }
-  };
+  // Puter.js disabled due to quota limits and hallucination issues.
+  // Generation is now perfectly chunked and handled by the robust Python backend.
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -323,22 +168,23 @@ JSON SCHEMA:
 
     try {
       if (isPPTRequest(prompt)) {
-        let handled = await handlePPTWithPuter(promptToSend, recentPrompts, attachedFiles);
-        if (!handled) {
-          // Fallback to backend PPT generation
-          const res = await fetch('http://127.0.0.1:8000/ppt/create', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt: promptToSend }),
-          });
-          if (!res.ok) throw new Error("Fallback failed");
-          
-          const reader = res.body.getReader();
-          const decoder = new TextDecoder();
-          let done = false;
-          while (!done) {
-            const { value, done: doneReading } = await reader.read();
-            done = doneReading;
+        appendMsg('🚀 Initializing Deep Chunked PPT Generation...\n');
+        
+        const res = await fetch('http://127.0.0.1:8000/ppt/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: promptToSend }),
+        });
+        
+        if (!res.ok) throw new Error("Backend PPT creation failed");
+        
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let done = false;
+        while (!done) {
+          const { value, done: doneReading } = await reader.read();
+          done = doneReading;
+          if (value) {
             const chunk = decoder.decode(value);
             setMessages((prev) => {
               const copy = [...prev];
@@ -348,7 +194,7 @@ JSON SCHEMA:
             });
           }
         }
-        return; // success or backend fallback finished
+        return; // success or backend finished
       }
 
       // ── Standard /chat path (Groq) ──────────────────────────────────────

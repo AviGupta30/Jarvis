@@ -205,6 +205,55 @@ def _get_image_aspect_ratio(path: str) -> float:
     except Exception:
         return 1.0
 
+def _parse_bullet(b) -> tuple:
+    """Safely parse any bullet item into (bold_text, body_text).
+    Handles: proper dicts, single-quoted dict strings, plain strings."""
+    if isinstance(b, dict):
+        return b.get("bold", ""), b.get("text", b.get("description", ""))
+    if isinstance(b, str):
+        s = b.strip()
+        # Handle Python-style single-quoted dicts: {'bold': '...', 'text': '...'}
+        if s.startswith("{") and "'bold'" in s:
+            try:
+                # Convert single-quote dict repr to valid JSON
+                import ast
+                d = ast.literal_eval(s)
+                if isinstance(d, dict):
+                    return d.get("bold", ""), d.get("text", d.get("description", ""))
+            except Exception:
+                pass
+        # Try JSON parse in case it has double quotes
+        if s.startswith("{"):
+            try:
+                d = json.loads(s)
+                if isinstance(d, dict):
+                    return d.get("bold", ""), d.get("text", d.get("description", ""))
+            except Exception:
+                pass
+        return "", s
+    return "", str(b)
+
+def _parse_card(c) -> dict:
+    """Safely parse a card item into a dict with 'header' and 'bullets'."""
+    if isinstance(c, dict):
+        return c
+    if isinstance(c, str):
+        s = c.strip()
+        if s.startswith("{"):
+            try:
+                import ast
+                d = ast.literal_eval(s)
+                if isinstance(d, dict): return d
+            except Exception:
+                pass
+            try:
+                d = json.loads(s)
+                if isinstance(d, dict): return d
+            except Exception:
+                pass
+        return {"header": "Note", "bullets": [s]}
+    return {"header": "Note", "bullets": [str(c)]}
+
 def _corner_L(slide, l, t, w, h, col, size=Inches(0.35), th=Inches(0.055)):
     """Draw 4 L-shaped corner brackets."""
     for lx, ly, bw, bh in [
@@ -217,28 +266,21 @@ def _corner_L(slide, l, t, w, h, col, size=Inches(0.35), th=Inches(0.055)):
 
 
 # ─── Groq Prompt ───────────────────────────────────────────────────────────────
-_SYS = """\
-You are an elite presentation generator. Create dense, visually rich slides.
+_SYS_OUTLINE = """\
+You are an elite presentation generator. Create a structural outline.
 Output ONLY valid JSON — no markdown fences, no explanation."""
 
-_USR = """\
-Create a VISUAL-FIRST, content-dense presentation for:
+_USR_OUTLINE = """\
+Create a VISUAL-FIRST presentation outline for:
 TOPIC/REQUEST: {prompt}
 
-CRITICAL INSTRUCTION FOR MODIFICATIONS: If the REQUEST asks to change the theme, style, or colors of a previous presentation, you MUST preserve the EXACT SAME TOPIC AND CONTENT from the previous context. Do NOT make a new presentation about the color/theme itself!
-
-
-CRITICAL RULES:
-- Create 8 to 12 slides based on topic complexity.
-- First slide MUST use "aesthetic_title".
+RULES:
+- Outline 8 to 12 slides. First slide MUST use "aesthetic_title".
 - Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
-- Prefer "aesthetic_split", "aesthetic_flow", and "aesthetic_pitch" — they have LARGE dedicated visual areas.
-- EVERY SLIDE that has a visual zone (aesthetic_split, aesthetic_flow, aesthetic_metrics, aesthetic_pitch) MUST include EITHER an "image_path" (if user provided [ATTACHED_FILE: <path>]) OR a "visual_suggestion" describing a specific, detailed diagram/infographic for that slide.
-- BULLETS/CONTENT: You MUST make the presentation CONTENT HEAVY. Do not output single-line sentences. Each bullet/card MUST contain a bold label (2-5 words) AND highly detailed, multi-sentence text (40-60 words). Fill the cards so they look dense and professional. For timeline layouts, the "text" field MUST be massive and highly descriptive (50-80 words).
-- VISUALS: Every aesthetic_split, aesthetic_flow, aesthetic_metrics, aesthetic_pitch slide MUST include "visual_suggestion" with a specific diagram/chart description. If [ATTACHED_FILE: <path>] tags exist, set "image_path" to that exact path.
-- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon and golden"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
-- BOLD FIELD must always be set and act as a mini sub-header (2-4 word label).
-- Output ONLY valid JSON. No trailing commas.
+- You MUST use AT LEAST 5 different layouts in the presentation.
+- DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
+- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
+- Output ONLY valid JSON.
 
 JSON SCHEMA:
 {{
@@ -249,33 +291,50 @@ JSON SCHEMA:
     {{
       "slide_number": 1,
       "layout": "aesthetic_title",
-      "title": "Topic Name",
-      "subtitle": "Three concise technical sentences covering the core innovation, implementation stack, and measurable business impact."
+      "title": "Topic Name"
     }},
     {{
       "slide_number": 2,
       "layout": "aesthetic_split",
-      "title": "Problem Statement",
-      "bullets": [
-        {{"bold": "Integration Gap", "text": "Existing infrastructure lacks native AI connectors, requiring costly custom middleware that breaks during major platform upgrades and creates vendor lock-in."}},
-        {{"bold": "Data Silos", "text": "Fragmented data across 15+ systems with incompatible schemas prevents unified analytics, forcing analysts to manually reconcile reports for every stakeholder meeting."}},
-        {{"bold": "Scalability", "text": "Legacy batch processing handles only 10K events/hour vs the 2M events/hour required for real-time monitoring of modern distributed microservice architectures."}},
-        {{"bold": "Cost Overrun", "text": "Manual operations consume 40% of engineering bandwidth on toil, driving OpEx 3x above industry benchmarks and delaying feature delivery by an average of 6 weeks."}}
-      ],
-      "visual_suggestion": "[ Detailed flowchart: Current fragmented system with pain-point annotations at each bottleneck ]",
-      "image_path": ""
-    }},
-    {{
-      "slide_number": 3,
-      "layout": "aesthetic_timeline",
-      "title": "Phased Deployment Roadmap",
-      "nodes": [
-        {{"header": "Phase 1", "text": "Extensive text here describing exactly what happens in phase 1 in extreme detail spanning 50-80 words..."}},
-        {{"header": "Phase 2", "text": "Extensive text here describing exactly what happens in phase 2 in extreme detail spanning 50-80 words..."}}
-      ]
+      "title": "Problem Statement"
     }}
   ]
 }}"""
+
+_SYS_CHUNK = """\
+You are an elite presentation generator. Generate highly dense content for specific slides based on the provided outline.
+Output ONLY valid JSON — no markdown fences, no explanation."""
+
+_USR_CHUNK = """TOPIC: {prompt}
+PRESENTATION OUTLINE: {outline}
+
+Generate the FULL, EXTREMELY DENSE CONTENT for slides {start_idx} to {end_idx}.
+Return a JSON object with a "slides" array containing ONLY those slides, fully populated.
+The layout for each slide MUST exactly match what is in the outline.
+
+ABSOLUTE RULES:
+1. bullets/left_bullets/right_bullets/nodes/cards MUST be JSON arrays of OBJECTS with double-quote keys.
+   NEVER output items as plain strings like {{'bold': 'x', 'text': 'y'}} -- always use double quotes.
+2. Each bullet: "bold" = 2-5 word sub-header. "text" = 25-35 words of detailed, informative content.
+3. Every slide MUST include "visual_suggestion" describing a specific chart, diagram, or infographic.
+
+LAYOUT SCHEMAS:
+- aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
+- aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
+- aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
+- aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
+- aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
+
+EXAMPLE OUTPUT for aesthetic_split:
+{{"slides": [{{"slide_number": 2, "layout": "aesthetic_split", "title": "Early Life",
+  "visual_suggestion": "Timeline diagram with key early life milestones",
+  "bullets": [
+    {{"bold": "Born 1947 Varanasi", "text": "Pandit Jagdish Mohan was born in the ancient scholarly city of Varanasi in 1947, immersed from childhood in Sanskrit traditions and Vedic philosophy that shaped his entire career."}},
+    {{"bold": "University Education", "text": "He studied Sanskrit literature at Banaras Hindu University, earning his degree with distinction and receiving the Chancellor Gold Medal for academic excellence."}},
+    {{"bold": "Mentor Influence", "text": "Guided by the legendary Dr. Ramachandra Shukla, he developed rigorous analytical skills in classical Indian philosophy, blending traditional wisdom with modern interdisciplinary methods."}}
+  ]
+}}]}}"""
+
 
 
 def _groq_call(sys_p: str, usr_p: str, tokens: int = 4000) -> str:
@@ -322,58 +381,59 @@ class PresentationBuilder:
         # Dynamic custom theme overrides! If user specified explicit colors not matching presets
         custom = plan.get("custom_theme", {})
         if isinstance(custom, dict) and custom:
-            # ENFORCE PREMIUM DARK MODE AESTHETICS FOR CUSTOM THEMES
-            # Users often get ugly colors if LLM picks them blindly.
-            # We force background to near-black and text to white.
-            # We only adopt the LLM's colors for the accents.
-            
-            # Extract accents from whatever the LLM gave
-            accents = []
-            for k in ["ac1", "ac2", "ac3", "hdr_bg", "border", "bg", "card"]:
-                if k in custom and isinstance(custom[k], str) and len(custom[k]) == 6:
-                    accents.append(custom[k])
-                    
-            if not accents:
-                accents = ["FFD700", "FF5500", "00C8FF"] # Fallback accents
-                
-            primary = accents[0]
-            secondary = accents[1] if len(accents) > 1 else primary
-            tertiary = accents[2] if len(accents) > 2 else secondary
+            # Apply ALL colors directly from the LLM's custom_theme.
+            # Only fall back for fields the LLM did not provide.
+            def _sh(val, fallback):
+                """Safe hex: strip # and validate 6 chars, else return fallback."""
+                if isinstance(val, str):
+                    v = val.lstrip("#")
+                    if len(v) == 6:
+                        return v
+                return fallback
 
-            bg_hex = custom.get("bg", "0A0A0E")
+            bg_hex = _sh(custom.get("bg"), "F5F0E8")
             try:
-                r, g, b = int(bg_hex[0:2], 16), int(bg_hex[2:4], 16), int(bg_hex[4:6], 16)
-                lum = (0.299*r + 0.587*g + 0.114*b) / 255
+                rv, gv, bv = int(bg_hex[0:2],16), int(bg_hex[2:4],16), int(bg_hex[4:6],16)
+                lum = (0.299*rv + 0.587*gv + 0.114*bv) / 255
             except:
-                lum = 0
-                
-            is_light = lum > 0.6
+                lum = 0.5
+            is_light = lum > 0.5
 
-            if is_light:
-                self.P["bg"] = "FFFFFF"
-                self.P["bg2"] = "F0F0F0"
-                self.P["card"] = "F8F8F8"
-                self.P["card2"] = "EAEAEA"
-                self.P["text"] = "111111"
-                self.P["sub"] = "333333"
-                self.P["hdr_text"] = "FFFFFF"
-            else:
-                self.P["bg"] = "0A0A0E"
-                self.P["bg2"] = "121218"
-                self.P["card"] = "1A1A22"
-                self.P["card2"] = "22222C"
-                self.P["text"] = "F5F5F5"
-                self.P["sub"] = "B0B0C0"
-                self.P["hdr_text"] = "000000"
-            
-            self.P["ac1"] = primary
-            self.P["ac2"] = secondary
-            self.P["ac3"] = tertiary
-            self.P["border"] = primary
-            self.P["hdr_bg"] = primary
-            self.P["bar"] = secondary
-            
-            self.P["tag_colors"] = [primary, secondary, tertiary, "FFFFFF"]
+            # Smart defaults based on light/dark detection
+            def_text  = "222222" if is_light else "F5F5F5"
+            def_sub   = "555555" if is_light else "B0B0C0"
+            def_bg2   = "EDE8DC" if is_light else "121218"
+            def_card  = "FAF6EE" if is_light else "1A1A22"
+            def_card2 = "EDE8DC" if is_light else "22222C"
+            def_hdrt  = "222222" if is_light else "FFFFFF"
+            def_ac1   = "C8A96E" if is_light else "FFD700"
+            def_ac2   = "A07840" if is_light else "FF8800"
+            def_ac3   = "8B6530" if is_light else "00C8FF"
+
+            self.P["bg"]       = bg_hex
+            self.P["bg2"]      = _sh(custom.get("bg2"),      def_bg2)
+            self.P["card"]     = _sh(custom.get("card"),     def_card)
+            self.P["card2"]    = _sh(custom.get("card2"),    def_card2)
+            self.P["text"]     = _sh(custom.get("text"),     def_text)
+            self.P["sub"]      = _sh(custom.get("sub"),      def_sub)
+            self.P["hdr_text"] = _sh(custom.get("hdr_text"), def_hdrt)
+
+            ac1 = _sh(custom.get("ac1"), def_ac1)
+            ac2 = _sh(custom.get("ac2"), def_ac2)
+            ac3 = _sh(custom.get("ac3"), def_ac3)
+            self.P["ac1"]    = ac1
+            self.P["ac2"]    = ac2
+            self.P["ac3"]    = ac3
+            self.P["border"] = _sh(custom.get("border"), ac1)
+            self.P["hdr_bg"] = _sh(custom.get("hdr_bg"), ac1)
+            self.P["bar"]    = _sh(custom.get("bar"),    ac2)
+            tc = custom.get("tag_colors", [])
+            self.P["tag_colors"] = [
+                _sh(tc[0] if len(tc)>0 else None, ac1),
+                _sh(tc[1] if len(tc)>1 else None, ac2),
+                _sh(tc[2] if len(tc)>2 else None, ac3),
+                _sh(tc[3] if len(tc)>3 else None, "888888"),
+            ]
 
     def _blank(self):
         s = self.prs.slides.add_slide(self.prs.slide_layouts[6])
@@ -390,83 +450,66 @@ class PresentationBuilder:
             Inches(1.1), Inches(0.2), sz=9, bold=True, col=self.P["text"], align=PP_ALIGN.RIGHT)
 
     def _header(self, slide, title: str):
-        """Centered ROUNDED bordered title box + thin accent rule."""
-        # Center title box — ROUNDED rectangle with thick colored border
-        tx, ty, tw, th = Inches(0.25), Inches(0.08), W - Inches(0.5), Inches(0.64)
-        _round(slide, tx + Inches(0.07), ty + Inches(0.07), tw, th,
-               fill=self.P["bg2"], line=None)  # shadow
-        _round(slide, tx, ty, tw, th, fill=self.P["card"], line=self.P["border"], lw=2.5)
-        # Left accent stripe inside title box
-        _rect(slide, tx, ty + Inches(0.06), Inches(0.1), th - Inches(0.12), fill=self.P["ac1"])
-        _tb(slide, title.upper(), tx + Inches(0.22), ty + Inches(0.08),
-            tw - Inches(0.32), th - Inches(0.12),
+        """Clean, minimalist centered pill title box."""
+        tw, th = W * 0.65, Inches(0.65)
+        tx, ty = (W - tw) / 2, Inches(0.15)
+        
+        # Single ultra-clean pill
+        _round(slide, tx, ty, tw, th, fill=self.P["card"], line=self.P["border"], lw=1.5)
+        
+        # Text centered perfectly
+        _tb(slide, title.upper(), tx, ty + Inches(0.08), tw, th - Inches(0.16),
             sz=22, bold=True, col=self.P["text"], align=PP_ALIGN.CENTER)
 
-        # Accent rule under header
-        _rect(slide, Inches(0.25), Inches(0.76), W - Inches(0.5), Inches(0.04), fill=self.P["ac1"])
-
     def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str = ""):
-        """Multi-layer premium image frame with ROUNDED corners and L-corner accents."""
-        # Layer 1: dark glow shadow behind
-        _round(slide, l + Inches(0.12), t + Inches(0.12), w, h, fill=self.P["bg2"], line=None)
-        # Layer 2: outer ROUNDED border frame
-        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=3.0)
-        # Layer 3: thin inner accent ring
-        pad1 = Inches(0.07)
-        _round(slide, l + pad1, t + pad1, w - 2*pad1, h - 2*pad1,
-               fill=None, line=self.P["ac2"], lw=0.9)
+        """Clean single-border rounded container for images."""
+        # Main outer container
+        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=1.5)
 
-        # Corner L-brackets (sharp, they're decorative on top of the rounded card)
-        # REMOVED: User explicitly disliked sharp corners falling out of the rounded radius.
-
-        # Small status dots in top-right
+        # High-tech top-right dots
         for di in range(3):
-            _rect(slide, l + w - Inches(0.5) + di * Inches(0.14), t + Inches(0.12),
-                  Inches(0.09), Inches(0.09), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di])
+            _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
+                  Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
 
         # Embed image or placeholder
-        pad = Inches(0.13)
+        pad = Inches(0.1)
         clean = _clean_image_path(path) if path else ""
         if clean and Path(clean).exists():
             try:
                 pic = slide.shapes.add_picture(clean, l + pad, t + pad, w - 2*pad, h - 2*pad)
-                # Force the picture geometry to match the rounded frame
                 pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
-                # Remove the sharp line border
                 pic.line.fill.background()
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
                 
-        # If no image, render the text largely inside the beautiful frame
-        _tb(slide, suggestion or "[ Detailed Content Block ]",
-            l + Inches(0.5), t + Inches(0.5), w - Inches(1.0), h - Inches(1.0),
-            sz=14.5, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
+        # Aesthetic placeholder
+        _tb(slide, suggestion or "[ Detailed Visual ]",
+            l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
+            sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
 
     def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str,
                      tag_col: str, idx: int):
-        """Single dense bullet card with ROUNDED corners: number badge + bold header + body."""
-        # Shadow
-        _round(slide, l + Inches(0.06), t + Inches(0.06), w, h, fill=self.P["bg2"], line=None)
-        # Card background — ROUNDED
-        _round(slide, l, t, w, h, fill=self.P["card"], line=tag_col, lw=1.4)
-        # Colored left stripe (rect clips to rounded card edge acceptably)
-        _rect(slide, l, t + Inches(0.02), Inches(0.1), h - Inches(0.04), fill=tag_col)
+        """Clean minimalist bullet card."""
+        # Main curved body
+        _round(slide, l, t, w, h, fill=self.P["card"], line=tag_col, lw=1.5)
+
         # Number badge circle
-        _oval(slide, l + Inches(0.15), t + Inches(0.1), Inches(0.3), Inches(0.3),
+        _oval(slide, l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.25),
               fill=tag_col, line=None)
-        _tb(slide, str(idx), l + Inches(0.14), t + Inches(0.11), Inches(0.32), Inches(0.27),
+        _tb(slide, str(idx), l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.23),
             sz=10, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
 
         # Bold sub-header
         if bold_txt:
-            _tb(slide, bold_txt, l + Inches(0.54), t + Inches(0.1), w - Inches(0.68),
+            _tb(slide, bold_txt, l + Inches(0.5), t + Inches(0.1), w - Inches(0.6),
                 Inches(0.3), sz=12, bold=True, col=tag_col)
-        # Body text
+                
+        # Body text spacing
         body_top = t + Inches(0.35) if bold_txt else t + Inches(0.14)
-        _tb(slide, body_txt, l + Inches(0.54), body_top, w - Inches(0.67),
-            h - (Inches(0.38) if bold_txt else Inches(0.22)),
-            sz=11.5, col=self.P["text"])
+        _tb(slide, body_txt, l + Inches(0.5), body_top, w - Inches(0.6),
+            h - (Inches(0.4) if bold_txt else Inches(0.22)),
+            sz=11, col=self.P["text"])
 
     def build_with_progress(self) -> Generator[str, None, None]:
         slides = self.plan.get("slides", [])
@@ -563,8 +606,7 @@ class PresentationBuilder:
         by = top
 
         for i, b in enumerate(bullets[:4]):
-            bold_txt = b.get("bold", "")
-            body_txt = b.get("text", "")
+            bold_txt, body_txt = _parse_bullet(b)
             self._bullet_card(slide, lx, by, lw, ch2, bold_txt, body_txt,
                               tag_colors[i % len(tag_colors)], i+1)
             by += ch2 + card_gap
@@ -583,9 +625,12 @@ class PresentationBuilder:
         # Fallback if LLM generated "bullets" instead of "cards"
         if not cards and "bullets" in d:
             for i, b in enumerate(d["bullets"]):
-                header = b.get("bold", b.get("header", f"Section {i+1}")) if isinstance(b, dict) else f"Section {i+1}"
-                text = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
-                cards.append({"header": header, "bullets": [text]})
+                bold, text = _parse_bullet(b)
+                header = bold if bold else (f"Section {i+1}")
+                cards.append({"header": header, "bullets": [text] if text else ["(No content)"]})
+        
+        # Parse any string-cards into dicts
+        cards = [_parse_card(c) for c in cards]
                 
         # Fix missing headers dynamically
         for i, c in enumerate(cards):
@@ -623,22 +668,24 @@ class PresentationBuilder:
                                         self.P["tag_colors"][i % 4])
 
     def _colored_card_full(self, slide, l, t, w, h, card: dict, color: str):
-        """Full grid card with ROUNDED corners: colored header band + numbered bullet list."""
-        # Drop shadow
-        _round(slide, l + Inches(0.08), t + Inches(0.08), w, h, fill=self.P["bg2"], line=None)
-        # Card body — ROUNDED
-        _round(slide, l, t, w, h, fill=self.P["card"], line=color, lw=1.8)
-        # Header band
-        hh = Inches(0.46)
-        _round(slide, l, t, w, hh, fill=color, line=None)
-        # Small white dot accent on header right
-        _oval(slide, l + w - Inches(0.45), t + Inches(0.12), Inches(0.22), Inches(0.22),
-              fill=self.P["card"], line=None)
-        _tb(slide, card.get("header", "Module"), l + Inches(0.15), t + Inches(0.1),
-            w - Inches(0.55), hh - Inches(0.14), sz=13, bold=True,
-            col=self.P["bg"], align=PP_ALIGN.LEFT)
+        """Clean full grid card without messy overlapping header bands."""
+        # Card body — single clean border
+        _round(slide, l, t, w, h, fill=self.P["card"], line=color, lw=1.5)
 
-        # Bullet items with numbered tags
+        # Header Text
+        hh = Inches(0.4)
+        _tb(slide, card.get("header", "Module").upper(), l + Inches(0.15), t + Inches(0.1),
+            w - Inches(0.3), hh, sz=12, bold=True,
+            col=color, align=PP_ALIGN.LEFT)
+            
+        # Accent rule under header
+        _rect(slide, l + Inches(0.15), t + Inches(0.42), w - Inches(0.3), Inches(0.02), fill=color)
+
+        # High-tech header accent dot
+        _oval(slide, l + w - Inches(0.3), t + Inches(0.15), Inches(0.15), Inches(0.15),
+              fill=color, line=None)
+
+        # Bullet items with sleek badges
         bullets = card.get("bullets", [])
         if not bullets and "text" in card:
             bullets = [card["text"]]
@@ -646,17 +693,21 @@ class PresentationBuilder:
             bullets = [card["description"]]
         elif not bullets:
             bullets = ["(No detailed content provided)"]
-        avail_h = h - hh - Inches(0.12)
+            
+        avail_h = h - hh - Inches(0.15)
         bsh = avail_h / max(len(bullets), 1)
-        by = t + hh + Inches(0.08)
-        for bi, b in enumerate(bullets[:4]):
+        by = t + hh + Inches(0.1)
+        
+        for bi, b in enumerate(bullets[:5]):
+            bold_part, text_part = _parse_bullet(b)
+            display = text_part if text_part else (bold_part if bold_part else str(b))
             # Colored bullet number
-            _oval(slide, l + Inches(0.12), by + Inches(0.08), Inches(0.22), Inches(0.22),
+            _oval(slide, l + Inches(0.15), by + Inches(0.06), Inches(0.2), Inches(0.2),
                   fill=color, line=None)
-            _tb(slide, str(bi+1), l + Inches(0.12), by + Inches(0.09), Inches(0.22), Inches(0.2),
-                sz=10, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-            _tb(slide, str(b), l + Inches(0.42), by + Inches(0.04), w - Inches(0.56),
-                bsh - Inches(0.06), sz=12.5, col=self.P["text"])
+            _tb(slide, str(bi+1), l + Inches(0.15), by + Inches(0.07), Inches(0.2), Inches(0.18),
+                sz=9, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
+            _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55),
+                bsh - Inches(0.04), sz=11.5, col=self.P["text"])
             by += bsh
 
     # ── LAYOUT 4: FLOW — TOP CALLOUT + DOMINANT FULL-WIDTH IMAGE ─────────────
@@ -687,9 +738,13 @@ class PresentationBuilder:
         if not desc_text:
             desc_text = d.get("text", "")
         if not desc_text and "bullets" in d:
-            desc_text = " ".join([b.get("text", str(b)) if isinstance(b, dict) else str(b) for b in d["bullets"]])
+            parts = []
+            for b in d["bullets"]:
+                _, txt = _parse_bullet(b)
+                parts.append(txt)
+            desc_text = " ".join(parts)
         if not desc_text and "nodes" in d:
-            desc_text = " ".join([n.get("text", "") for n in d["nodes"]])
+            desc_text = " ".join([n.get("text", "") if isinstance(n, dict) else str(n) for n in d["nodes"]])
             
         _tb(slide, desc_text, Inches(0.94), top + Inches(0.12),
             W - Inches(1.3), desc_h - Inches(0.2), sz=14, col=self.P["text"])
@@ -745,14 +800,14 @@ class PresentationBuilder:
             _rect(slide, ncx - Inches(0.03), min(line_t, line_b),
                   Inches(0.06), abs(line_b - line_t), fill=color)
 
-            _round(slide, ncx - cw2/2 + Inches(0.07), cy2 + Inches(0.07), cw2, ch2,
-                   fill=self.P["bg2"], line=None)
+            # Clean Single Card
             _round(slide, ncx - cw2/2, cy2, cw2, ch2,
-                   fill=self.P["card"], line=color, lw=1.8)
-            _round(slide, ncx - cw2/2, cy2, cw2, Inches(0.14), fill=color)
-            _tb(slide, n.get("header", "Phase"), ncx - cw2/2 + Inches(0.12),
-                cy2 + Inches(0.16), cw2 - Inches(0.24), Inches(0.35),
-                sz=12, bold=True, col=self.P["text"], align=PP_ALIGN.CENTER)
+                   fill=self.P["card"], line=color, lw=1.5)
+            
+            # Text formatting
+            _tb(slide, n.get("header", "Phase").upper(), ncx - cw2/2 + Inches(0.12),
+                cy2 + Inches(0.08), cw2 - Inches(0.24), Inches(0.35),
+                sz=12, bold=True, col=color, align=PP_ALIGN.CENTER)
             
             # Use a slightly larger font and top align it to fill out the timeline card better
             _tb(slide, n.get("text", ""), ncx - cw2/2 + Inches(0.12),
@@ -774,22 +829,16 @@ class PresentationBuilder:
             ("right_header", "right_bullets", self.P["ac2"]),
         ]):
             sx = Inches(0.25) + si * (cw2 + Inches(0.2))
-            # Shadow
-            _round(slide, sx + Inches(0.08), top + Inches(0.08), cw2, avail,
-                   fill=self.P["bg2"], line=None)
-            # Card — ROUNDED
-            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=2.4)
-            # Inner premium ring
-            pad1 = Inches(0.06)
-            _round(slide, sx + pad1, top + pad1, cw2 - 2*pad1, avail - 2*pad1, fill=None, line=self.P["border"], lw=0.8)
+            # Card — Clean single curve
+            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=1.5)
             
-            # Header band — ROUNDED top only (simulate with overlapping round)
-            _round(slide, sx, top, cw2, Inches(0.56), fill=color)
-            # Ensure bottom of header is square
-            _rect(slide, sx, top + Inches(0.28), cw2, Inches(0.28), fill=color)
-            _tb(slide, d.get(hk, "Column"), sx + Inches(0.15), top + Inches(0.11),
-                cw2 - Inches(0.3), Inches(0.4), sz=16, bold=True,
-                col=self.P["bg"], align=PP_ALIGN.CENTER)
+            # Header line
+            _tb(slide, d.get(hk, "Column").upper(), sx + Inches(0.15), top + Inches(0.11),
+                cw2 - Inches(0.3), Inches(0.4), sz=14, bold=True,
+                col=color, align=PP_ALIGN.CENTER)
+            
+            # Divider
+            _rect(slide, sx + Inches(0.3), top + Inches(0.48), cw2 - Inches(0.6), Inches(0.02), fill=color)
 
             # Bullets
             blist = d.get(bk, [])
@@ -804,13 +853,19 @@ class PresentationBuilder:
             bsh = (avail - Inches(0.65)) / max(len(blist), 1)
             by = top + Inches(0.58)
             for bi, b in enumerate(blist[:5]):
-                # Subtle row stripe alternating
-                if bi % 2 == 0:
-                    _rect(slide, sx + Inches(0.1), by, cw2 - Inches(0.2), bsh,
-                          fill=self.P["card2"], line=None)
-                _rect(slide, sx + Inches(0.1), by, Inches(0.06), bsh, fill=color)
-                _tb(slide, str(b), sx + Inches(0.25), by + Inches(0.06),
-                    cw2 - Inches(0.4), bsh - Inches(0.1), sz=12.5, col=self.P["text"])
+                bold, txt = _parse_bullet(b)
+                
+                # Accent bar
+                _rect(slide, sx + Inches(0.15), by + Inches(0.1), Inches(0.05), bsh - Inches(0.2), fill=color)
+                # Bold sub-header
+                if bold:
+                    _tb(slide, bold.upper(), sx + Inches(0.3), by + Inches(0.08),
+                        cw2 - Inches(0.45), Inches(0.3), sz=10.5, bold=True, col=color)
+                    _tb(slide, txt, sx + Inches(0.3), by + Inches(0.3),
+                        cw2 - Inches(0.45), bsh - Inches(0.36), sz=11, col=self.P["text"])
+                else:
+                    _tb(slide, txt, sx + Inches(0.3), by + Inches(0.08),
+                        cw2 - Inches(0.45), bsh - Inches(0.16), sz=11.5, col=self.P["text"])
                 by += bsh
 
         # VS badge centre
@@ -838,21 +893,16 @@ class PresentationBuilder:
         for i, m in enumerate(metrics[:4]):
             mx = Inches(0.25) + i*(mw + gap)
             color = self.P["tag_colors"][i % 4]
-            # Shadow
-            _round(slide, mx + Inches(0.07), top + Inches(0.07), mw, mh,
-                   fill=self.P["bg2"], line=None)
-            # Card
-            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=color, lw=2.2)
-            # Top accent bar (rounded on top)
-            _round(slide, mx, top, mw, Inches(0.14), fill=color)
-            _rect(slide, mx, top + Inches(0.07), mw, Inches(0.07), fill=color)
+            # Card - Clean Single Curve
+            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=color, lw=1.5)
+            
             # Value
-            _tb(slide, m.get("value", "—"), mx + Inches(0.1), top + Inches(0.22),
-                mw - Inches(0.2), Inches(0.85), sz=38, bold=True,
+            _tb(slide, m.get("value", "—"), mx + Inches(0.1), top + Inches(0.15),
+                mw - Inches(0.2), Inches(0.85), sz=34, bold=True,
                 col=color, align=PP_ALIGN.CENTER)
             # Divider
-            _rect(slide, mx + Inches(0.25), top + Inches(1.12), mw - Inches(0.5),
-                  Inches(0.04), fill=color)
+            _rect(slide, mx + Inches(0.25), top + Inches(1.0), mw - Inches(0.5),
+                  Inches(0.02), fill=color)
             # Label
             _tb(slide, m.get("label", ""), mx + Inches(0.12), top + Inches(1.2),
                 mw - Inches(0.24), Inches(0.42), sz=9.5, col=self.P["sub"],
@@ -862,6 +912,8 @@ class PresentationBuilder:
         vt = top + mh + Inches(0.18)
         vh = H - vt - Inches(0.3)
         desc_fallback = d.get("description", d.get("text", ""))
+        if not desc_fallback and "metrics" in d:
+            desc_fallback = " ".join([m.get("label", "") if isinstance(m, dict) else str(m) for m in d["metrics"]])
         fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Detailed Metric Analysis ]")
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
                                    W - Inches(0.43), vh, fallback_text)
@@ -880,9 +932,12 @@ class PresentationBuilder:
         cards = d.get("cards", [])
         if not cards and "bullets" in d:
             for i, b in enumerate(d["bullets"]):
-                header = b.get("bold", b.get("header", f"Step {i+1}")) if isinstance(b, dict) else f"Step {i+1}"
-                text = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
-                cards.append({"header": header, "bullets": [text]})
+                bold, text = _parse_bullet(b)
+                header = bold if bold else f"Step {i+1}"
+                cards.append({"header": header, "bullets": [text] if text else ["(No content)"]})
+        
+        # Parse any string-cards into dicts
+        cards = [_parse_card(c) for c in cards]
         
         # Fix missing headers dynamically
         for i, c in enumerate(cards):
@@ -912,8 +967,8 @@ class PresentationBuilder:
         rw = (W - Inches(0.7)) * 0.45
         
         bullets = d.get("right_bullets", d.get("bottom_bullets", []))
-        if not bullets and "description" in d: bullets = [{"text": d["description"]}]
-        elif not bullets: bullets = [{"text": "(No detailed content provided)"}]
+        if not bullets and "description" in d: bullets = [{"bold": "", "text": d["description"]}]
+        elif not bullets: bullets = [{"bold": "", "text": "(No detailed content provided)"}]
         
         # Internal bullets
         by = bot_t
@@ -921,22 +976,105 @@ class PresentationBuilder:
         bh = min(bot_h / max(len(bullets), 1), Inches(0.85))
         
         for i, b in enumerate(bullets[:6]):
-            bold = b.get("bold", b.get("header", f"Point {i+1}")) if isinstance(b, dict) else f"Point {i+1}"
-            txt = b.get("text", b.get("description", str(b))) if isinstance(b, dict) else str(b)
+            bold, txt = _parse_bullet(b)
+            if not bold:
+                bold = f"Point {i+1}"
             self._bullet_card(slide, rx, by, rw, bh - Inches(0.1), bold, txt, self.P["tag_colors"][i%4], i+1)
             by += bh
 
-# ─── API ───────────────────────────────────────────────────────────────────────
+def _normalize_and_recover(chunk_data, outline_chunk):
+    """Silently maps hallucinated content arrays to the expected keys and supplies fallbacks so no slide is ever blank."""
+    if not isinstance(chunk_data, dict): return
+    slides = chunk_data.get("slides", [])
+        
+    for i, s in enumerate(slides):
+        expected_lay = outline_chunk[i].get("layout", "aesthetic_split") if i < len(outline_chunk) else "aesthetic_split"
+        lay = s.get("layout", expected_lay)
+        
+        # 1. Force valid layout (handles Phase 1 Outline hallucinating layout names)
+        if lay not in ["aesthetic_split", "aesthetic_pitch", "aesthetic_flow", "aesthetic_grid", "aesthetic_timeline", "aesthetic_metrics", "aesthetic_comparison", "aesthetic_title"]:
+            lay = "aesthetic_split"
+        s["layout"] = lay
+            
+        # 2. Aggressive Data Recovery
+        alt = s.get("bullets") or s.get("cards") or s.get("nodes") or s.get("points") or s.get("items") or s.get("content") or s.get("metrics") or []
+        if isinstance(alt, str): alt = [{"bold": "Note", "text": alt}]
+        
+        if lay in ["aesthetic_split", "aesthetic_pitch", "aesthetic_flow"]:
+            if not s.get("bullets"): s["bullets"] = alt if alt else [{"bold": "Auto-Recovered", "text": "The generation failed to produce detailed content for this section."}]
+        elif lay == "aesthetic_grid":
+            if not s.get("cards"): s["cards"] = alt if alt else [{"header": "Auto-Recovered", "bullets": ["Content missing"]}]
+        elif lay == "aesthetic_timeline":
+            if not s.get("nodes"): s["nodes"] = alt if alt else [{"header": "Auto-Recovered", "text": "Content missing"}]
+        elif lay == "aesthetic_metrics":
+            if not s.get("metrics"): s["metrics"] = alt if alt else [{"value": "-", "label": "Auto-Recovered"}]
+        elif lay == "aesthetic_comparison":
+            if not s.get("left_bullets"): s["left_bullets"] = alt if alt else [{"bold": "Left", "text": "Auto-Recovered"}]
+            if not s.get("right_bullets"): s["right_bullets"] = [{"bold": "Right", "text": "Auto-Recovered"}]
+
 def ppt_create(prompt: str, style: str = None, output_path: str = None):
-    yield "Groq generating presentation...\n"
-    raw = _groq_call(_SYS, _USR.format(prompt=prompt))
-    plan = _parse(raw)
+    yield "🤖 Generating Presentation Outline...\n"
+    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=prompt))
+    plan = _parse(raw_outline)
+    
     if style and style in PERSONALITIES:
         plan["personality"] = style
+        
+    slides_outline = plan.get("slides", [])
+    total_slides = len(slides_outline)
+    yield f"📋 Outline created: {total_slides} slides planned.\n"
+    
+    full_slides = []
+    
+    # Chunk generation (2 slides at a time to prevent hallucination)
+    chunk_size = 2
+    outline_str = json.dumps([{"slide_number": s.get("slide_number"), "title": s.get("title"), "layout": s.get("layout")} for s in slides_outline])
+
+    for i in range(0, total_slides, chunk_size):
+        chunk = slides_outline[i:i+chunk_size]
+        start_idx = chunk[0].get('slide_number', i+1)
+        end_idx = chunk[-1].get('slide_number', i+len(chunk))
+        
+        yield f"✍️ Generating extremely dense content for Slides {start_idx}-{end_idx}...\n"
+        
+        chunk_slides = []
+        last_err = None
+        for attempt in range(2):  # Try up to 2 times silently
+            try:
+                raw_chunk = _groq_call(
+                    _SYS_CHUNK,
+                    _USR_CHUNK.format(prompt=prompt, outline=outline_str, start_idx=start_idx, end_idx=end_idx)
+                )
+                chunk_data = _parse(raw_chunk)
+                _normalize_and_recover(chunk_data, chunk)
+                chunk_slides = chunk_data.get("slides", [])
+                if chunk_slides:
+                    break  # Success — stop retrying
+                last_err = ValueError("No slides in response.")
+            except Exception as e:
+                last_err = e
+                # Brief pause before retry to avoid rate-limit cascade
+                import time as _t; _t.sleep(1.5)
+
+        if chunk_slides:
+            full_slides.extend(chunk_slides)
+        else:
+            yield f"⚠️ Chunk {start_idx}-{end_idx} failed after 2 attempts ({last_err}). Using fallback.\n"
+            for c in chunk:
+                full_slides.append({
+                    "title": c.get("title", "Slide"),
+                    "layout": "aesthetic_split",
+                    "bullets": [{"bold": c.get("title", "Note"), "text": "Content could not be generated for this slide. Please try regenerating the presentation."}]
+                })
+    yield "🎨 Content generated! Building PPTX with precision curves...\n"
+    
+    # ── CRITICAL: Write the fully-populated slides back into the plan ──
+    plan["slides"] = full_slides
+    
     out = output_path or str(Path.home()/"Desktop"/f"Aesthetic_Deck_{int(time.time())}.pptx")
     b = PresentationBuilder(plan, out)
     for s in b.build_with_progress(): yield s + "\n"
-    yield f"Saved to: `{out}`\n"
+    yield f"✅ Saved to: `{out}`\n"
 
 def ppt_styles():
     return {"styles": {k: {"name": v["name"], "desc": v["desc"]} for k, v in PERSONALITIES.items()},
