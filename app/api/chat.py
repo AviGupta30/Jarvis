@@ -243,6 +243,21 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if re.search(r'\bprevious (song|track)\b|\bprev\b', lower):
         return {"tool_name": "media_previous", "arguments": {}}
 
+    # ── Prompt Enhancer (Bypass LLM Router & Conversational LLM) ───────────
+    if lower.startswith("enhance ") or lower.startswith("refine "):
+        clean_prompt = re.sub(r'^(enhance|refine)\s+(this\s+)?(prompt)?\s*[:\"\'\-]*\s*', '', prompt, flags=re.IGNORECASE).strip(' "\'')
+        from app.services.skill_prompt_enhancer import enhance_prompt
+        res = enhance_prompt(clean_prompt)
+        
+        # If it has the SYSTEM DIRECTIVE wrapper, strip it for direct streaming
+        if "SYSTEM DIRECTIVE TO JARVIS:" in res:
+            res = res.split("**ENHANCED PROMPT", 1)[-1]
+            res = "**ENHANCED PROMPT" + res
+            
+        async def flow_stream(): yield res
+        from fastapi.responses import StreamingResponse
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
     # ── WhatsApp (Smart — fuzzy, two-phase, confirmation) ────────────────────
     if 'whatsapp' in lower or ('send' in lower and ('message' in lower or 'msg' in lower or 'text' in lower) and re.search(r'\bto\b', lower)):
         # — WhatsApp CALL: always check FIRST before any send logic
@@ -1010,6 +1025,10 @@ async def chat_endpoint(request: ChatRequest):
 
     # 1. Fast keyword detection (reliable, instant)
     tool_intent = keyword_detect_tool(request.prompt)
+    
+    from fastapi.responses import StreamingResponse
+    if isinstance(tool_intent, StreamingResponse):
+        return tool_intent
 
     # 2. Fall back to LLM router if keyword detection found nothing
     if tool_intent is None:

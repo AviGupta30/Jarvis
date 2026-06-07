@@ -1068,4 +1068,6 @@ TOOL_REGISTRY = {
     "ppt_create": _ppt_create,
     "ppt_edit":   _ppt_edit,
     "ppt_styles": _ppt_styles,
+    # ── Prompt Enhancer (Step 1) ─────────────────────────────────────────────
+    "enhance_prompt": lambda raw_prompt: __import__('app.services.skill_prompt_enhancer', fromlist=['enhance_prompt']).enhance_prompt(raw_prompt),
 }
