@@ -156,21 +156,30 @@ def _full_enhance(raw: str) -> str:
     else:
         intent_rule = ""
 
-    # Only inject PROJECT_CONTEXT if the prompt is actually about Jarvis
+    # Build system message — PROJECT_CONTEXT goes here (background knowledge)
+    # so the LLM treats it as what it already knows, not content to output
     if _is_jarvis_related(raw):
-        context_block = (
-            f"PROJECT CONTEXT (reference only — do not include "
-            f"in the enhanced prompt):\n{PROJECT_CONTEXT}\n\n"
+        system_with_context = (
+            ENHANCEMENT_SYSTEM_PROMPT.strip()
+            + "\n\n"
+            + "════════════════════════════════════════════════════\n"
+            + "BACKGROUND KNOWLEDGE (INTERNAL USE ONLY — DO NOT OUTPUT)\n"
+            + "════════════════════════════════════════════════════\n"
+            + "You silently know the following about the user's system.\n"
+            + "Use this ONLY to write a better role prime and smarter constraints.\n"
+            + "NEVER list, quote, or paraphrase this in your output.\n\n"
+            + PROJECT_CONTEXT.strip()
         )
     else:
-        context_block = ""
+        system_with_context = ENHANCEMENT_SYSTEM_PROMPT
 
-    user_content = (
-        f"{intent_rule}\n\n" if intent_rule else ""
-    ) + f"{context_block}RAW PROMPT TO ENHANCE:\n{raw}"
+    user_content = ""
+    if intent_rule:
+        user_content += f"{intent_rule}\n\n"
+    user_content += f"RAW PROMPT TO ENHANCE:\n{raw}"
 
     messages = [
-        {"role": "system", "content": ENHANCEMENT_SYSTEM_PROMPT},
+        {"role": "system", "content": system_with_context},
         {"role": "user",   "content": user_content.strip()},
     ]
 
