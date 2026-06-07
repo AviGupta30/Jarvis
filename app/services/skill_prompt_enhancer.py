@@ -26,6 +26,7 @@ from app.services.prompt_enhancement_library import (
     classify_prompt,
     detect_domain,
     strip_leaked_reasoning,
+    strip_chatbot_filler,
     validate_enhancement,
     check_for_hallucination,
 )
@@ -56,9 +57,12 @@ def _light_clean(raw: str) -> str:
         {
             "role": "system",
             "content": (
+                "You are an internal text cleaner. "
                 "Fix spelling and grammar only. "
-                "Do not change the meaning, tone, or structure. "
-                "Do not add anything. Output only the corrected text."
+                "Do NOT change the meaning, tone, or structure. "
+                "Do NOT add anything new. "
+                "Do NOT address the user. Do NOT ask questions. "
+                "Output only the corrected text, nothing else."
             ),
         },
         {"role": "user", "content": raw},
@@ -74,16 +78,26 @@ def _vague_enhance(raw: str) -> str:
         {
             "role": "system",
             "content": (
-                "The user has written a vague or incomplete thought. "
-                "Rewrite it as a clear, direct question or instruction "
-                "they can send to an AI. Keep it conversational. "
-                "Do not add formal structure, sections, or bullet points. "
-                "Maximum 2 sentences. Output only the rewritten prompt."
+                "You are an internal prompt translator. "
+                "The input is a vague or incomplete human thought. "
+                "Your job: rewrite it as a precise, direct instruction that an AI can act on immediately. "
+                "\n\n"
+                "STRICT RULES:\n"
+                "- Output ONLY the rewritten prompt. Nothing else.\n"
+                "- NEVER address the user (no 'you', 'your', 'I see you want')\n"
+                "- NEVER ask a clarifying question back\n"
+                "- NEVER say 'Sure!', 'Great!', 'Of course!' or any filler\n"
+                "- NEVER start with 'I will...' or 'Let me...'\n"
+                "- NEVER end with a question mark directed at a human\n"
+                "- Preserve every specific name, tool, or term the user mentioned\n"
+                "- Output must start with an action verb or expert role\n"
+                "- Maximum 3 sentences. Be precise, not wordy."
             ),
         },
         {"role": "user", "content": raw},
     ]
-    return _call_groq(messages, temperature=0.2, max_tokens=150)
+    result = _call_groq(messages, temperature=0.2, max_tokens=200)
+    return strip_chatbot_filler(result)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -163,6 +177,7 @@ def _full_enhance(raw: str) -> str:
     enhanced = _call_groq(messages, temperature=0.3, max_tokens=600)
 
     # Post-processing pipeline
+    enhanced = strip_chatbot_filler(enhanced)
     enhanced = strip_leaked_reasoning(enhanced)
     enhanced, warnings = validate_enhancement(raw, enhanced)
 

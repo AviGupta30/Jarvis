@@ -47,19 +47,40 @@ or any other external tool or fictional AI.
 # SYSTEM PROMPT  (complete rewrite — job guard FIRST, always)
 # ─────────────────────────────────────────────────────────────────────────────
 ENHANCEMENT_SYSTEM_PROMPT = """
-YOUR ONLY JOB IS TO REWRITE THE USER'S TEXT AS A BETTER PROMPT
-TO SEND TO AN AI SYSTEM.
+════════════════════════════════════════════════════
+IDENTITY: INTERNAL PROMPT OPTIMIZER — NOT A CHATBOT
+════════════════════════════════════════════════════
 
-YOU ARE NOT answering the question.
-YOU ARE NOT providing information on the topic.
-YOU ARE NOT writing a response to the user.
-YOU ARE NOT explaining anything.
+YOU ARE AN INTERNAL TRANSLATION ENGINE.
+Your job: turn a messy human prompt into a precise, constraint-driven
+instruction that an AI can execute perfectly.
 
-OUTPUT: One block of text that is the improved prompt. Nothing else.
-No preamble. No "Here is the enhanced prompt:". No explanation after it.
+YOU ARE NOT:
+- Answering the question
+- Talking TO the user
+- Providing information on the topic
+- Writing a response or explanation
+- A helpful assistant making conversation
 
-IF YOU FIND YOURSELF WRITING "I WILL PROVIDE" OR "HERE IS INFORMATION
-ABOUT" — STOP. DELETE EVERYTHING. START OVER. YOU HAVE FAILED.
+OUTPUT: One block of text — the improved prompt. Nothing else.
+No preamble. No "Here is the enhanced prompt:". No explanation after.
+
+ANTI-CHATBOT RULES (enforced on every output):
+✗ NEVER say "Sure!", "Great!", "Of course!", or any affirmation
+✗ NEVER address the user directly (no "you", "your question", "I see you want")
+✗ NEVER ask a clarifying question back at the user
+✗ NEVER say "Can you tell me more about..." or "What do you mean by..."
+✗ NEVER start with "I will...", "I can...", "Let me..."
+✗ NEVER end with a question mark directed at a human
+
+OUTPUT MUST:
+✓ Be a direct directive an AI can act on immediately
+✓ Preserve every name, path, URL, tool, or parameter from the original
+✓ Start with an action verb or role prime — never a greeting or filler
+✓ Read as a command sent TO an AI, not FROM an AI to a human
+
+IF YOU FIND YOURSELF WRITING "I WILL PROVIDE" OR "CAN YOU TELL ME"
+OR ANY QUESTION TO THE USER — STOP. DELETE EVERYTHING. START OVER.
 
 ════════════════════════════════════════════════════
 STEP 0 — CLASSIFY THE INPUT FIRST
@@ -180,6 +201,10 @@ def classify_prompt(raw: str) -> str:
         "analyze", "compare", "summarize", "refactor", "optimize",
         "calculate", "convert", "translate", "render", "find",
         "search", "list", "give me a list", "show me how",
+        # Request / recommendation verbs (e.g. "add features", "suggest ideas")
+        "add", "suggest", "recommend", "tell me", "give me",
+        "what should i", "what can i", "what features", "what more",
+        "how should i", "how do i", "what are the best",
     ]
     CONVERSATIONAL_SIGNALS = [
         "its working", "it's working", "that's great", "this is great",
@@ -207,6 +232,8 @@ def classify_prompt(raw: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 # HALLUCINATION DETECTOR
 # ─────────────────────────────────────────────────────────────────────────────
+# HALLUCINATION DETECTOR
+# ─────────────────────────────────────────────────────────────────────────────
 FACTUAL_INJECTION_SIGNALS = [
     "is a real-life",
     "was developed by",
@@ -223,12 +250,69 @@ FACTUAL_INJECTION_SIGNALS = [
     "here is information about",
     "here are some",
     "as an ai",
+    # Chatbot-mode signals
+    "sure!",
+    "great!",
+    "of course!",
+    "absolutely!",
+    "can you tell me more",
+    "what do you mean by",
+    "i see you want",
+    "it sounds like you",
+    "it seems like you",
+    "happy to help",
+    "i'd be happy",
+    "i would be happy",
+    "let me know if",
+    "feel free to",
 ]
 
 def check_for_hallucination(enhanced: str) -> bool:
-    """Returns True if hallucination/answer-mode signals are detected."""
+    """Returns True if hallucination or chatbot-mode signals are detected."""
     lower = enhanced.lower()
     return any(sig in lower for sig in FACTUAL_INJECTION_SIGNALS)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# CHATBOT FILLER STRIPPER  (Python-level safety net)
+# ─────────────────────────────────────────────────────────────────────────────
+_CHATBOT_OPENERS = [
+    "sure!", "sure,", "great!", "of course!", "absolutely!",
+    "happy to help", "i'd be happy", "i would be happy",
+    "i can help", "i will help", "let me help",
+    "you're looking", "you are looking", "it sounds like", "it seems like",
+]
+
+def strip_chatbot_filler(text: str) -> str:
+    """
+    If the output starts with a chatbot filler opener, strip the first sentence.
+    If the output ends with a question mark (user-directed question), strip the
+    last sentence.
+    """
+    stripped = text.strip()
+    lower = stripped.lower()
+
+    # Strip chatbot opener sentence
+    for opener in _CHATBOT_OPENERS:
+        if lower.startswith(opener):
+            # Remove everything up to the first sentence break
+            for sep in ['. ', '! ', '\n']:
+                idx = stripped.find(sep)
+                if idx != -1:
+                    stripped = stripped[idx + len(sep):].strip()
+                    lower = stripped.lower()
+                    break
+            break
+
+    # Strip trailing user-directed question
+    if stripped.endswith('?'):
+        lines = [s.strip() for s in stripped.replace('\n', ' ').split('.') if s.strip()]
+        if len(lines) > 1:
+            stripped = '. '.join(lines[:-1]).strip()
+            if not stripped.endswith('.'):
+                stripped += '.'
+
+    return stripped
 
 
 # ─────────────────────────────────────────────────────────────────────────────
