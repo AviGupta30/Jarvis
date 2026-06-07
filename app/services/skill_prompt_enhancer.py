@@ -1,14 +1,21 @@
 """
 skill_prompt_enhancer.py
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Jarvis Prompt Enhancer — complete rewrite (bug report v1.0)
+Jarvis Prompt Enhancer — complete rewrite (bug report v1.0 + intent fix)
 
 Pipeline:
-  STEP 0  classify_prompt()  →  conversational | vague | technical
-  STEP 1  _call_groq()       →  raw enhanced text
+  STEP 0  classify_prompt()           →  conversational | vague | technical
+  STEP 0b _detect_intent_type()       →  how_to | explanation | creation
+  STEP 1  _call_groq()                →  raw enhanced text
   STEP 2  strip_leaked_reasoning() + validate_enhancement()
-  STEP 3  check_for_hallucination() → fallback to _light_clean()
+  STEP 3  check_for_hallucination()   →  fallback to _light_clean()
   STEP 4  return labelled result string
+
+Key rules:
+  - PROJECT_CONTEXT is ONLY injected when the prompt explicitly
+    references Jarvis, the agent, or the user's project.
+  - 'how should I / how do I / how to' prompts are NEVER converted
+    into 'create / build / make' commands. Intent is preserved exactly.
 """
 
 from groq import Groq
@@ -80,22 +87,77 @@ def _vague_enhance(raw: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Intent-type detector — preserves question type
+# ─────────────────────────────────────────────────────────────────────────────
+def _detect_intent_type(raw: str) -> str:
+    """
+    Returns 'how_to' | 'creation' | 'explanation'
+    Used to stop 'how should I...' being rewritten as 'Create a...'
+    """
+    lower = raw.lower().strip()
+    HOW_TO_SIGNALS = [
+        "how should i", "how do i", "how to", "how can i",
+        "what is the best way", "what is a good way",
+        "walk me through", "guide me", "explain how",
+    ]
+    if any(s in lower for s in HOW_TO_SIGNALS):
+        return "how_to"
+    CREATION_SIGNALS = [
+        "write", "create", "build", "make", "generate", "implement",
+        "develop", "code", "produce",
+    ]
+    if any(lower.startswith(s) or f" {s} " in f" {lower} " for s in CREATION_SIGNALS):
+        return "creation"
+    return "explanation"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Project-context relevance check
+# ─────────────────────────────────────────────────────────────────────────────
+JARVIS_KEYWORDS = [
+    "jarvis", "my project", "the agent", "my agent",
+    "my system", "the system", "our project",
+]
+
+def _is_jarvis_related(raw: str) -> bool:
+    """Only inject PROJECT_CONTEXT when the prompt is explicitly about Jarvis."""
+    lower = raw.lower()
+    return any(kw in lower for kw in JARVIS_KEYWORDS)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Full technical enhancement
 # ─────────────────────────────────────────────────────────────────────────────
 def _full_enhance(raw: str) -> str:
+    intent = _detect_intent_type(raw)
+
+    # Build intent-preservation instruction
+    if intent == "how_to":
+        intent_rule = (
+            "CRITICAL: The user's prompt is a HOW-TO question. "
+            "Your enhanced output MUST remain a question or explanation request. "
+            "Do NOT convert it into a 'Create...' or 'Build...' command. "
+            "Preserve the question format exactly."
+        )
+    else:
+        intent_rule = ""
+
+    # Only inject PROJECT_CONTEXT if the prompt is actually about Jarvis
+    if _is_jarvis_related(raw):
+        context_block = (
+            f"PROJECT CONTEXT (reference only — do not include "
+            f"in the enhanced prompt):\n{PROJECT_CONTEXT}\n\n"
+        )
+    else:
+        context_block = ""
+
+    user_content = (
+        f"{intent_rule}\n\n" if intent_rule else ""
+    ) + f"{context_block}RAW PROMPT TO ENHANCE:\n{raw}"
+
     messages = [
-        {
-            "role": "system",
-            "content": ENHANCEMENT_SYSTEM_PROMPT,
-        },
-        {
-            "role": "user",
-            "content": (
-                f"PROJECT CONTEXT (reference only — do not include "
-                f"in the enhanced prompt):\n{PROJECT_CONTEXT}\n\n"
-                f"RAW PROMPT TO ENHANCE:\n{raw}"
-            ),
-        },
+        {"role": "system", "content": ENHANCEMENT_SYSTEM_PROMPT},
+        {"role": "user",   "content": user_content.strip()},
     ]
 
     enhanced = _call_groq(messages, temperature=0.3, max_tokens=600)
@@ -107,8 +169,7 @@ def _full_enhance(raw: str) -> str:
     for w in warnings:
         print(f"[Enhancer Warning] {w}")
 
-    # Hallucination safety net — if the LLM answered instead of enhancing,
-    # fall back to a light spelling/grammar pass on the original.
+    # Hallucination safety net
     if check_for_hallucination(enhanced):
         print("[Enhancer] Hallucination detected — returning cleaned original.")
         enhanced = _light_clean(raw)
