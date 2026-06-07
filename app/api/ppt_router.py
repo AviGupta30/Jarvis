@@ -88,23 +88,47 @@ class PPTCreateRequest(BaseModel):
     prompt: str
     style: Optional[str] = None
     output_path: Optional[str] = None
+    theme_image_path: Optional[str] = None  # Path to a reference PPT screenshot
 
 @router.post("/create")
 async def create_ppt_backend(request: PPTCreateRequest):
     """
     End-to-end PPT generation using Groq on the backend.
-    Used as a fail-safe if the Puter.js frontend LLM fails to output valid JSON.
+    Optionally accepts a theme_image_path to extract and apply colors from a reference screenshot.
     """
     from app.services.ppt_tool import ppt_create
     
     def generate():
         try:
-            for chunk in ppt_create(request.prompt, request.style, request.output_path):
+            for chunk in ppt_create(
+                request.prompt,
+                request.style,
+                request.output_path,
+                request.theme_image_path
+            ):
                 yield chunk + "\n\n"
         except Exception as e:
             yield f"❌ Backend Fallback Error: {str(e)}\n\n"
             
     return StreamingResponse(generate(), media_type="text/event-stream")
+
+
+class PPTExtractThemeRequest(BaseModel):
+    image_path: str
+
+@router.post("/extract-theme")
+async def extract_theme(request: PPTExtractThemeRequest):
+    """
+    Extract color theme from a PPT screenshot image.
+    Returns the custom_theme dict with hex color codes.
+    """
+    from app.services.ppt_tool import extract_theme_from_image
+    try:
+        theme = extract_theme_from_image(request.image_path)
+        return {"status": "success", "theme": theme}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
 
 class PPTStylesResponse(BaseModel):
     styles: dict

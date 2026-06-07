@@ -363,6 +363,84 @@ def _parse(raw: str) -> dict:
     return json.loads(raw[raw.find("{"):raw.rfind("}") + 1])
 
 
+def extract_theme_from_image(image_path: str) -> dict:
+    """
+    Analyze a PPT screenshot using Groq's vision model and extract
+    the exact color palette as a custom_theme dict.
+    Returns a dict with keys: bg, bg2, card, card2, text, sub,
+    ac1, ac2, ac3, border, hdr_bg, hdr_text, bar
+    """
+    import base64, pathlib
+    if _GROQ is None:
+        raise RuntimeError("GROQ_API_KEY not configured")
+
+    img_bytes = pathlib.Path(image_path).read_bytes()
+    b64 = base64.standard_b64encode(img_bytes).decode()
+
+    # Detect mime type
+    suffix = pathlib.Path(image_path).suffix.lower()
+    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+            "webp": "image/webp"}.get(suffix.lstrip("."), "image/png")
+
+    sys_prompt = "You are a color extraction expert. Output ONLY valid JSON — no markdown fences, no explanation."
+    usr_prompt = """\
+Analyze this presentation slide image and extract its exact color palette.
+Identify the following colors from the image:
+- bg: The main background color of the slide
+- bg2: A slightly darker/lighter secondary background shade
+- card: The main card/box background color
+- card2: A secondary card color variant
+- text: The main body text color
+- sub: The subtitle or secondary text color
+- ac1: The primary accent color (most prominent — used for headers, borders, highlights)
+- ac2: The secondary accent color
+- ac3: A tertiary accent color
+- border: The border/outline color of cards or boxes
+- hdr_bg: The header/title box background color
+- hdr_text: The header/title text color
+- bar: The bottom bar or footer bar color
+
+Return ONLY this JSON (all values are 6-character hex codes WITHOUT the # symbol):
+{
+  "bg": "xxxxxx",
+  "bg2": "xxxxxx",
+  "card": "xxxxxx",
+  "card2": "xxxxxx",
+  "text": "xxxxxx",
+  "sub": "xxxxxx",
+  "ac1": "xxxxxx",
+  "ac2": "xxxxxx",
+  "ac3": "xxxxxx",
+  "border": "xxxxxx",
+  "hdr_bg": "xxxxxx",
+  "hdr_text": "xxxxxx",
+  "bar": "xxxxxx"
+}"""
+
+    resp = _GROQ.chat.completions.create(
+        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        messages=[{
+            "role": "user",
+            "content": [
+                {"type": "text", "text": sys_prompt + "\n\n" + usr_prompt},
+                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
+            ]
+        }],
+        max_tokens=512,
+        temperature=0.1,
+    )
+    raw = resp.choices[0].message.content or ""
+    theme = _parse(raw)
+    # Ensure all required keys are present with safe 6-char hex fallbacks
+    required = ["bg","bg2","card","card2","text","sub","ac1","ac2","ac3","border","hdr_bg","hdr_text","bar"]
+    for k in required:
+        v = theme.get(k, "")
+        if not isinstance(v, str) or len(v.lstrip("#")) != 6:
+            theme[k] = "FFFFFF" if k in ("text","hdr_text") else "111111"
+        else:
+            theme[k] = v.lstrip("#")
+    return theme
+
 # ─────────────────────────────────────────────────────────────────────────────
 class PresentationBuilder:
     def __init__(self, plan: dict, out: str):
@@ -1028,14 +1106,23 @@ def _normalize_and_recover(chunk_data, outline_chunk):
             if not s.get("left_bullets"): s["left_bullets"] = alt if alt else [{"bold": "Left", "text": "Auto-Recovered"}]
             if not s.get("right_bullets"): s["right_bullets"] = [{"bold": "Right", "text": "Auto-Recovered"}]
 
-def ppt_create(prompt: str, style: str = None, output_path: str = None):
+def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_image_path: str = None):
     yield "🤖 Generating Presentation Outline...\n"
     raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=prompt))
     plan = _parse(raw_outline)
     
     if style and style in PERSONALITIES:
         plan["personality"] = style
-        
+
+    # If user uploaded a theme reference image, extract its colors and use them
+    if theme_image_path:
+        yield "🎨 Extracting color theme from your reference image...\n"
+        try:
+            extracted = extract_theme_from_image(theme_image_path)
+            plan["custom_theme"] = extracted
+            yield f"✅ Theme extracted! Primary accent: #{extracted.get('ac1','?')}\n"
+        except Exception as e:
+            yield f"⚠️ Could not extract theme from image ({e}). Using auto-theme.\n"
     slides_outline = plan.get("slides", [])
     total_slides = len(slides_outline)
     yield f"📋 Outline created: {total_slides} slides planned.\n"

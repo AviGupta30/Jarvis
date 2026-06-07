@@ -9,14 +9,17 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+  const themeInputRef = useRef(null);
 
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
     
     setIsUploading(true);
+    const uploadType = e.target.dataset.uploadType;
     
     for (const file of files) {
       const formData = new FormData();
@@ -29,16 +32,19 @@ function App() {
         });
         const data = await res.json();
         if (data.status === 'success') {
-          const type = fileInputRef.current.dataset.uploadType;
-          if (type === 'assignment') {
-            setInputValue(prev => prev ? `${prev} | do my assignment from ${data.filename}` : `do my assignment from ${data.filename}`);
+          if (uploadType === 'ppt_theme') {
+            // Store as PPT theme reference — shown separately
+            setPptThemeImage({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
+          } else {
+            if (uploadType === 'assignment') {
+              setInputValue(prev => prev ? `${prev} | do my assignment from ${data.filename}` : `do my assignment from ${data.filename}`);
+            }
+            setUploadedFiles(prev => [...prev, {
+              name: file.name,
+              path: data.path,
+              url: URL.createObjectURL(file)
+            }]);
           }
-          
-          setUploadedFiles(prev => [...prev, {
-            name: file.name,
-            path: data.path,
-            url: URL.createObjectURL(file)
-          }]);
         } else {
           alert("Upload failed: " + data.error);
         }
@@ -49,7 +55,7 @@ function App() {
     }
     
     setIsUploading(false);
-    e.target.value = ''; // Reset input
+    e.target.value = '';
   };
 
   // Auto-scroll whenever messages update
@@ -170,10 +176,25 @@ function App() {
       if (isPPTRequest(prompt)) {
         appendMsg('🚀 Initializing Deep Chunked PPT Generation...\n');
         
+        const body = { prompt: promptToSend };
+        
+        // Smart theme detection: Use explicit theme image, OR any uploaded image
+        if (pptThemeImage) {
+          body.theme_image_path = pptThemeImage.path.replace(/\\/g, '/');
+          appendMsg(`🎨 Using your reference theme: ${pptThemeImage.name}\n`);
+          setPptThemeImage(null);
+        } else if (uploadedFiles.length > 0) {
+          const imgFile = uploadedFiles.find(f => f.name.match(/\.(png|jpg|jpeg|webp)$/i));
+          if (imgFile) {
+            body.theme_image_path = imgFile.path.replace(/\\/g, '/');
+            appendMsg(`🎨 Auto-detected theme reference from uploaded image: ${imgFile.name}\n`);
+          }
+        }
+
         const res = await fetch('http://127.0.0.1:8000/ppt/create', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: promptToSend }),
+          body: JSON.stringify(body),
         });
         
         if (!res.ok) throw new Error("Backend PPT creation failed");
@@ -194,7 +215,7 @@ function App() {
             });
           }
         }
-        return; // success or backend finished
+        return;
       }
 
       // ── Standard /chat path (Groq) ──────────────────────────────────────
@@ -355,6 +376,20 @@ function App() {
               </div>
             )}
 
+            {/* PPT Theme Image Preview Badge */}
+            {pptThemeImage && (
+              <div className="relative flex items-center gap-3 px-4 py-2 mb-2 w-full bg-purple-950/60 border border-purple-500/50 rounded-2xl z-10 shadow-[0_0_12px_rgba(168,85,247,0.2)]">
+                <span className="text-purple-300 text-xs font-mono tracking-wide">🎨 PPT Theme Reference:</span>
+                <img src={pptThemeImage.url} alt="theme" className="h-10 w-16 object-cover rounded-md border border-purple-400/40" />
+                <span className="text-purple-200 text-xs font-mono truncate max-w-[160px]">{pptThemeImage.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setPptThemeImage(null)}
+                  className="ml-auto text-purple-400 hover:text-white text-xs font-mono bg-purple-900/40 px-2 py-1 rounded-full hover:bg-purple-700/60 transition-colors"
+                >✕ Remove</button>
+              </div>
+            )}
+
             <div className="relative flex w-full bg-[#030a16] border border-cyan-500/40 rounded-full shadow-[0_0_15px_rgba(0,243,255,0.1)] focus-within:border-cyan-400 focus-within:shadow-[0_0_20px_rgba(0,243,255,0.3)] transition-all overflow-hidden items-center pl-6 pr-2 py-2 z-10">
               {/* Accent dot */}
               <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_5px_#00f3ff] animate-pulse shrink-0 ml-2" />
@@ -375,7 +410,7 @@ function App() {
                 </button>
                 
                 {/* Hover Menu */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-40 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-[#020611] border border-cyan-800/80 rounded-lg shadow-[0_0_15px_rgba(0,243,255,0.2)] overflow-hidden">
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 bg-[#020611] border border-cyan-800/80 rounded-lg shadow-[0_0_15px_rgba(0,243,255,0.2)] overflow-hidden">
                   <button 
                     type="button"
                     onClick={() => {
@@ -392,9 +427,19 @@ function App() {
                       fileInputRef.current.dataset.uploadType = 'general';
                       fileInputRef.current?.click();
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-900/50 hover:text-white transition-colors font-mono"
+                    className="w-full text-left px-4 py-2 text-sm text-cyan-100 hover:bg-cyan-900/50 hover:text-white transition-colors border-b border-cyan-900/30 font-mono"
                   >
                     General File
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      fileInputRef.current.dataset.uploadType = 'ppt_theme';
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-purple-300 hover:bg-purple-900/30 hover:text-white transition-colors font-mono flex items-center gap-2"
+                  >
+                    <span>🎨</span> PPT Theme Image
                   </button>
                 </div>
               </div>
