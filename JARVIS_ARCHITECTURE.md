@@ -16,6 +16,12 @@ This is the central hub. The LLM router ONLY sees the functions registered here.
 *   **UI Automation (Mouse-free):** `click_ui_element_uia`, `type_into_ui_element`, `read_ui_element_text`, `dump_app_ui_tree`.
 *   **Web & Browsing:** `smart_web_action` (Isolated navigator), `browse_and_read`, `search_on_site`, `scrape_url`, `get_info` (DuckDuckGo + Wikipedia + wttr.in), `youtube_search`.
 *   **File System (`file_ops.py`):** `read_file` (TXT/PDF/DOCX), `write_file`, `list_directory`, `move_file`, `delete_file` (send2trash), `create_word_doc`.
+*   **Content & Document Generation:**
+    *   **PPT Generator:** Can autonomously create PowerPoint presentations from scratch on a given topic (e.g., "create a ppt on X").
+    *   **Assignment Solver:** Can read assignment Word files, use Gemini to generate answers, and output a new completed Word file.
+    *   **Content Humanizer:** Basic text humanizer tool to make AI-generated content sound more natural and partially bypass AI detection.
+*   **Utilities & Enhancements:**
+    *   **Prompt Enhancer:** Triggered globally via `Ctrl+Space`. Opens an interface where the user can type a basic prompt and instantly receive an enhanced, optimized prompt.
 *   **Integrations:** 
     *   **WhatsApp (`whatsapp_smart.py`):** `search_whatsapp_contact`, `initiate_whatsapp_send`, `confirm_whatsapp_send`, `read_whatsapp_messages`.
     *   **Gmail (`gmail_tool.py`):** `check_emails`, `list_unread`, `summarize_inbox`.
