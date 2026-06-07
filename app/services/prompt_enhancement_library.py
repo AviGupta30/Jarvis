@@ -93,33 +93,44 @@ Add a specific expert role relevant to the exact domain.
 Not "expert developer" — "senior Python game developer".
 Not "AI expert" — "ML engineer specializing in NLP pipelines".
 
-DECISION ELIMINATION:
-Ask: "If I gave Groq only the original prompt, what would it invent arbitrarily?"
-Specify ALL of those decisions with concrete values.
+DECISION ELIMINATION — STRICT RULES:
+Your job is to clarify what the user ALREADY left ambiguous — NOT to invent
+new requirements they never mentioned.
 
-FOR CODING TASKS — always specify:
-1. Language + exact version (Python 3.11, not just "Python")
-2. Exact libraries (Pygame 2.x, not "a graphics library")
-3. For visual apps: colors as hex values, window dimensions, entry point
-4. For games: spawn logic type, exact game-over behavior, class names
-5. Code structure: class names and their single responsibility
-6. Entry point: if __name__ == "__main__": main()
+BEFORE ADDING ANY DETAIL, ask:
+  "Did the user mention or clearly imply this — or am I inventing it?"
+  If invented → DO NOT add it.
 
-FOR ANALYSIS TASKS — always specify:
-1. Depth level (overview vs expert deep-dive)
-2. Output structure (prose / numbered sections / table)
-3. Examples requirement ("use concrete real-world examples")
-4. Audience expertise level
+CRITICAL NO-INVENTION LIST (never add these unless the user stated them):
+✗ Specific numbers ("10,000 samples", "80-20 split", "200 words", "5 layers")
+✗ Specific library versions ("Python 3.11", "Pygame 2.x", "XGBoost 2.x")
+✗ Specific model names ("BERT-base-uncased", "GPT-2", "ResNet-50")
+✗ Specific class names ("SentimentAnalysisModel", "DataPreprocessor")
+✗ Specific dataset names unless user mentioned them
+✗ Integration with other projects/tools the user didn't mention
+✗ Evaluation metrics the user didn't ask for
+✗ Output format tables, logs, or reports the user didn't ask for
 
-FOR CREATIVE TASKS — always specify:
-1. Genre, tone, POV, approximate word count
-2. One style instruction only ("show don't tell")
-3. Emotional register or thematic requirement
+WHAT YOU SHOULD ADD (only if genuinely ambiguous in the original):
+✓ Language if completely unspecified and the task clearly implies one
+✓ High-level structure cue ("modular code", "single script") if vague
+✓ Scope clarifier ("a working prototype", "production-ready") if unclear
+✓ Output format if truly underspecified ("return as JSON" only if obvious)
 
-INJECTION RULE:
-Only add requirements OBVIOUSLY implied by the task.
-Test each addition: "Did the user imply this, or did I invent it?"
-If invented → remove it.
+FOR CODING TASKS:
+- Keep library choices open unless the user already named one
+- Never specify exact versions unless the user mentioned a version
+- Never name classes unless the user asked for specific structure
+- Never add guard blocks, logging, tests unless the user asked for them
+
+FOR ANALYSIS / ML TASKS:
+- Never add dataset sizes, train/test splits, or metric choices
+- Never add specific model architectures unless the user named one
+- Preserve the QUESTION form if the user asked "how should I..."
+
+FOR CREATIVE TASKS:
+- Add tone/genre only if completely missing and obviously needed
+- Never add word count unless user gave a length hint
 
 GAME MECHANICS RULE:
 Verify every game mechanic before including it.
@@ -146,8 +157,8 @@ SELF-CHECK before outputting:
 □ Does every sentence give a concrete instruction?
 □ Is there any sentence reflecting my own reasoning? → delete it
 □ Are there nested bullets? → flatten to numbered list
-□ Did I add anything the user didn't ask for? → remove it
-□ Did I specify colors, end-state, code structure for code tasks?
+□ Did I add ANYTHING the user didn't mention or clearly imply? → remove it
+□ Did I invent a number, version, class name, or model? → remove it
 □ Does the output read as a prompt someone would send to an AI?
   (Not as an answer. Not as an article. A prompt.)
 """
@@ -251,6 +262,11 @@ def strip_leaked_reasoning(text: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 # INJECTION / BLOAT VALIDATOR  (kept from v1 + updated)
 # ─────────────────────────────────────────────────────────────────────────────
+import re as _re
+
+_VERSION_RE = _re.compile(r'\bpython\s+3\.\d+\b', _re.IGNORECASE)
+_NUMBER_RE  = _re.compile(r'\b\d[\d,]+\b')
+
 def validate_enhancement(raw: str, enhanced: str) -> tuple[str, list[str]]:
     """
     Validate the enhanced prompt for common failure modes.
@@ -277,6 +293,17 @@ def validate_enhancement(raw: str, enhanced: str) -> tuple[str, list[str]]:
     for term, was_injected in injected_flags:
         if was_injected and term in enhanced.lower():
             warnings.append(f"INJECTED REQUIREMENT: '{term}' not in original.")
+
+    # Injected Python version strings (e.g. "Python 3.11") not in original
+    if _VERSION_RE.search(enhanced) and not _VERSION_RE.search(raw):
+        warnings.append("INJECTED VERSION: explicit Python version not in original.")
+
+    # Injected bare large numbers not in original (e.g. "10,000", "80")
+    enh_nums = set(_NUMBER_RE.findall(enhanced))
+    raw_nums = set(_NUMBER_RE.findall(raw))
+    new_nums = enh_nums - raw_nums
+    if new_nums:
+        warnings.append(f"INJECTED NUMBERS: {new_nums} not in original prompt.")
 
     # Nested bullets
     deep_nests = [
