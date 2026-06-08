@@ -901,6 +901,68 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if any(kw in lower for kw in ppt_styles_kw):
         return {"tool_name": "ppt_styles", "arguments": {}}
 
+    # ── Syllabus Auditor ──────────────────────────────────────────────────────
+    # Triggers on: "audit my playlist", "check playlist coverage",
+    #              "does this playlist cover my syllabus", "gap analysis", etc.
+    audit_kw = [
+        'audit my playlist', 'audit playlist', 'audit this playlist',
+        'check playlist coverage', 'does this playlist cover',
+        'does the playlist cover', 'analyze my playlist', 'analyse my playlist',
+        'playlist vs syllabus', 'syllabus coverage', 'audit syllabus',
+        'what topics are missing', 'missing topics in playlist',
+        'playlist audit', 'coverage report', 'check if playlist covers',
+        'gap analysis', 'audit the playlist', 'check my playlist',
+    ]
+    if any(kw in lower for kw in audit_kw):
+        import os
+        # Extract YouTube playlist URL
+        url_m = re.search(r'https?://[^\s\]]+', prompt)
+        playlist_url = url_m.group(0) if url_m else ''
+
+        # Primary: image path from [ATTACHED_FILE: path] tag (drag-and-drop / frontend upload)
+        attached_imgs = re.findall(
+            r'\[ATTACHED_FILE:\s*(.+?\.(?:jpg|jpeg|png|webp|bmp))\s*\]',
+            prompt, re.IGNORECASE
+        )
+        image_path = attached_imgs[0].strip() if attached_imgs else ''
+
+        # Fallback: filename mentioned in text -> fuzzy search common folders
+        if not image_path:
+            img_name_m = re.search(
+                r'([\w\s\-]+\.(?:jpg|jpeg|png|webp|bmp))',
+                prompt, re.IGNORECASE
+            )
+            if img_name_m:
+                img_filename = img_name_m.group(1).strip()
+                search_dirs = [
+                    os.path.join(os.path.expanduser('~'), 'Desktop'),
+                    os.path.join(os.path.expanduser('~'), 'Pictures'),
+                    os.path.join(os.path.expanduser('~'), 'Downloads'),
+                    os.path.join(os.path.expanduser('~'), 'Documents'),
+                ]
+                for folder in search_dirs:
+                    candidate = os.path.join(folder, img_filename)
+                    if os.path.exists(candidate):
+                        image_path = candidate
+                        break
+
+        if not playlist_url:
+            return {
+                'tool_name': 'audit_playlist_syllabus',
+                'arguments': {
+                    'playlist_url': '',
+                    'image_path': image_path,
+                }
+            }
+
+        return {
+            'tool_name': 'audit_playlist_syllabus',
+            'arguments': {
+                'playlist_url': playlist_url,
+                'image_path': image_path,
+            }
+        }
+
     return None  # Fall through to LLM router
 
 

@@ -163,6 +163,10 @@ ROUTING RULES:
 - Pure factual question (capitals, history, definitions) → {"tool_name": null, "arguments": {}}
 - Complex multi-step task (email + action, browse + save, PDF + Word) → {"tool_name": null, "arguments": {}} — the agentic planner handles these
 
+DSA MODE & LEETCODE:
+- activate_dsa_mode(num_questions) — start Leetcode discipline mode for a specific number of questions.
+- deactivate_dsa_mode() — stop DSA mode manually.
+
 Return ONLY valid JSON. No extra text. No explanation."""
 
 

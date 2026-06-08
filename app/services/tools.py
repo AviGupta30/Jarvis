@@ -1061,6 +1061,8 @@ TOOL_REGISTRY = {
     "assemble_assignment": lambda qa_json, filename, format_type='word': __import__('app.services.assignment_assembler', fromlist=['assemble_assignment']).assemble_assignment(qa_json, filename, format_type),
     # Phase 5: Master Orchestrator Pipeline
     "do_assignment":       lambda pdf_path, output_format='word', humanize=True: __import__('app.services.assignment_pipeline', fromlist=['do_assignment']).do_assignment(pdf_path, output_format, humanize),
+    # ── Syllabus Auditor (Stateless Tool) ────────────────────────────────────
+    "audit_playlist_syllabus": lambda playlist_url, image_path: __import__('app.services.syllabus_auditor', fromlist=['audit_playlist_syllabus']).audit_playlist_syllabus(playlist_url, image_path),
     # ── AI Content Humanizer (5-Stage Pipeline) ──────────────────────────────
     "humanize_ai_content": lambda text: __import__('app.services.content_humanizer', fromlist=['humanize_text_sync']).humanize_text_sync(text),
     # ── PowerPoint AI (ppt_tool.py) ──────────────────────────────────────────
@@ -1070,4 +1072,7 @@ TOOL_REGISTRY = {
     "ppt_styles": _ppt_styles,
     # ── Prompt Enhancer (Step 1) ─────────────────────────────────────────────
     "enhance_prompt": lambda raw_prompt: __import__('app.services.skill_prompt_enhancer', fromlist=['enhance_prompt']).enhance_prompt(raw_prompt),
+    # ── DSA Mode (Leetcode Enforcer) ─────────────────────────────────────────
+    "activate_dsa_mode": lambda num_questions: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().start_mode(int(num_questions)),
+    "deactivate_dsa_mode": lambda: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().stop_mode(),
 }

@@ -40,3 +40,7 @@ soundfile
 textstat
 sentence-transformers
 scikit-learn
+# Syllabus Auditor — YouTube playlist transcript fetching (free, no API key)
+youtube-transcript-api
+selenium
+webdriver-manager
