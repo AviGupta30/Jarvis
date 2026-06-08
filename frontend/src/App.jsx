@@ -241,7 +241,7 @@ function App() {
       </header>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex w-full relative z-10">
+      <div className="flex-1 flex w-full relative z-10 min-h-0">
         {/* Jarvis Core Left Panel */}
         <div className="hidden lg:flex flex-col w-[340px] p-6 space-y-6 shrink-0 h-full overflow-y-auto custom-scrollbar">
           <div className="hud-panel p-6 flex flex-col">
@@ -305,10 +305,10 @@ function App() {
         </div>
 
         {/* Center Chat Area */}
-        <div className="flex-1 flex flex-col relative px-4 lg:pl-0 lg:pr-12 pb-40 w-full max-w-[1600px] mr-auto" style={{ perspective: '1200px' }}>
+        <div className="flex-1 flex flex-col relative px-4 lg:pl-0 lg:pr-12 pb-40 w-full max-w-[1600px] mr-auto min-h-0" style={{ perspective: '1200px' }}>
           
           {/* Holographic Container for Chat */}
-          <div className="flex-1 flex flex-col relative z-10 w-full rounded-[2rem] border border-cyan-400/50 shadow-[20px_20px_50px_rgba(0,243,255,0.15)] overflow-hidden transition-transform duration-500 bg-cyan-950/20 backdrop-blur-[4px]"
+          <div className="flex-1 flex flex-col relative z-10 w-full rounded-[2rem] border border-cyan-400/50 shadow-[20px_20px_50px_rgba(0,243,255,0.15)] overflow-hidden transition-transform duration-500 bg-cyan-950/20 backdrop-blur-[4px] min-h-0"
                style={{ transform: 'rotateY(8deg) rotateX(2deg) translateZ(0)', transformOrigin: 'left center', transformStyle: 'preserve-3d' }}>
             
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-300/10 via-transparent to-transparent pointer-events-none"></div>
