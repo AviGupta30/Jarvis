@@ -110,8 +110,11 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     """
     lower = prompt.lower().strip()
     
+    # Strip out attached files for keyword matching to prevent filename collisions
+    lower = re.sub(r'\[attached_file:.*?\]', '', lower, flags=re.IGNORECASE).strip()
+    
     # If the command is complex (multiple actions), let planner handle it.
-    if is_complex_task(prompt):
+    if is_complex_task(lower):
         return None
 
     # ── Weather / Temperature ─────────────────────────────────────────────
@@ -242,6 +245,14 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         return {"tool_name": "media_next", "arguments": {}}
     if re.search(r'\bprevious (song|track)\b|\bprev\b', lower):
         return {"tool_name": "media_previous", "arguments": {}}
+
+    # ── Media Enhancement (Dark Image/Video) ───────────────────────────────
+    if re.search(r'\b(enhance|fix)\b.*\b(image|video|photo|media|picture|dark)\b', lower):
+        media_path = ""
+        attached_media = re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', prompt)
+        if attached_media:
+            media_path = attached_media[0].strip()
+        return {"tool_name": "enhance_media", "arguments": {"file_path": media_path}}
 
     # ── Prompt Enhancer (Bypass LLM Router & Conversational LLM) ───────────
     if lower.startswith("enhance ") or lower.startswith("refine "):
@@ -981,10 +992,16 @@ async def chat_endpoint(request: ChatRequest):
         from app.services.file_ops import read_file
         file_contents = []
         for fpath in attached_files:
-            file_contents.append(read_file(fpath))
-            
-        request.prompt = re.sub(r'\[ATTACHED_FILE:\s*.+?\]', '', request.prompt).strip()
-        request.prompt += "\n\nAttached Context:\n" + "\n".join(file_contents)
+            # Only read contents if it's a text-based file
+            if re.search(r'\.(pdf|txt|docx|doc|csv|json|md|py|js|html|css|jsx)$', fpath, re.IGNORECASE):
+                try:
+                    file_contents.append(f"Content of {fpath}:\n" + read_file(fpath))
+                except Exception:
+                    pass
+        
+        # We no longer strip the ATTACHED_FILE tags from the prompt so media tools can use the paths
+        if file_contents:
+            request.prompt += "\n\nAttached Context:\n" + "\n".join(file_contents)
 
     history_list = list(conversation_history)
     prompt_lower = request.prompt.lower().strip()
@@ -1136,6 +1153,10 @@ async def chat_endpoint(request: ChatRequest):
                 
             tool_output_str = f"[Tool result: {result}]\n\n"
             
+            if tool_name == "enhance_media":
+                async def flow_stream(): yield result
+                return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
             # Check for state machine triggers to activate flow for frontend
             if tool_name == "initiate_whatsapp_send":
                 if "What message should I send" in result:

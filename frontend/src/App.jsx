@@ -450,7 +450,7 @@ function App() {
                 style={{ display: 'none' }} 
                 data-upload-type="assignment"
                 onChange={handleFileUpload} 
-                accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp"
+                accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp,.mp4,.avi,.mov,.mkv"
                 multiple
               />
 

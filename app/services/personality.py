@@ -151,11 +151,15 @@ MEMORY:
 - remember_preference(key, value) — when user says "always X" or "remember I prefer X"
 - list_learned_skills() — when user asks what Jarvis can do / has learned
 
+MEDIA ENHANCEMENT:
+- enhance_media(file_path) — when user asks to "enhance this image", "enhance this video", or "fix this dark media". The file path is usually attached in the prompt as [ATTACHED_FILE: path].
+
 PROMPT ENHANCER:
 - enhance_prompt(raw_prompt) — when user asks to "enhance this prompt", "refine my prompt", "make this prompt better"
 
 ROUTING RULES:
-- CRITICAL: If the user message starts with "enhance", "refine", or "make this prompt better", YOU MUST ALWAYS return {"tool_name": "enhance_prompt"}. Ignore any other words like "in", "search", or "find" within the prompt. Do NOT use search_site.
+- CRITICAL: If the user asks to enhance an image or video (e.g. "enhance this dark image"), YOU MUST return {"tool_name": "enhance_media", "arguments": {"file_path": "<extracted_path>"}}.
+- CRITICAL: If the user asks to enhance TEXT or a PROMPT (e.g. "enhance this prompt", "refine my prompt"), YOU MUST return {"tool_name": "enhance_prompt"}.
 - Screen reading request → ALWAYS use read_my_screen()
 - Weather/news/live data → ALWAYS use get_info()
 - Missing required arg → {"tool_name": "ask_for_clarification", "arguments": {"question": "..."}}

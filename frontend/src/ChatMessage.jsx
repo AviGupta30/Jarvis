@@ -55,6 +55,30 @@ export default function ChatMessage({ msg }) {
                 </code>
               );
             },
+            img: ({ node, ...props }) => {
+              const isVideo = props.src && props.src.match(/\.(mp4|webm|ogg|avi|mov|mkv)$/i);
+              return (
+                <div className="my-4 flex flex-col items-center border border-cyan-500/40 bg-[#061022]/80 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(0,243,255,0.1)]">
+                  {isVideo ? (
+                    <video controls src={props.src} className="max-w-full max-h-[400px]" />
+                  ) : (
+                    <img src={props.src} alt={props.alt} className="max-w-full max-h-[400px] object-contain" />
+                  )}
+                  <div className="w-full bg-[#050b14] p-3 border-t border-cyan-900/60 flex justify-between items-center">
+                    <span className="text-xs font-mono text-cyan-500">{isVideo ? 'VIDEO RENDERED' : 'IMAGE RENDERED'}</span>
+                    <a
+                      href={props.src}
+                      download
+                      className="px-4 py-1.5 text-xs font-mono bg-cyan-900/40 hover:bg-cyan-600 hover:text-white text-cyan-300 border border-cyan-700/50 rounded transition-colors"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Download
+                    </a>
+                  </div>
+                </div>
+              );
+            },
             p: ({ node, ...props }) => <p className="mb-3 last:mb-0 leading-relaxed text-[15px]" {...props} />,
             ul: ({ node, ...props }) => <ul className="list-disc ml-5 mb-3 space-y-1 text-gray-300" {...props} />,
             ol: ({ node, ...props }) => <ol className="list-decimal ml-5 mb-3 space-y-1 text-gray-300" {...props} />,

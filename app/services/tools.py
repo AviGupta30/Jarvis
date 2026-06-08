@@ -1075,4 +1075,6 @@ TOOL_REGISTRY = {
     # ── DSA Mode (Leetcode Enforcer) ─────────────────────────────────────────
     "activate_dsa_mode": lambda num_questions: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().start_mode(int(num_questions)),
     "deactivate_dsa_mode": lambda: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().stop_mode(),
+    # ── Media Enhancement Tool ───────────────────────────────────────────────
+    "enhance_media": lambda file_path: __import__('app.services.media_enhancement', fromlist=['enhance_media']).enhance_media(file_path),
 }

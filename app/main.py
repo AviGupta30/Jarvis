@@ -27,6 +27,12 @@ app.include_router(memory_router)
 app.include_router(tools_router)
 app.include_router(ppt_router)
 
+from fastapi.staticfiles import StaticFiles
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+uploads_dir = os.path.join(base_dir, "data", "uploads")
+os.makedirs(uploads_dir, exist_ok=True)
+app.mount("/media", StaticFiles(directory=uploads_dir), name="media")
+
 
 @app.get("/")
 def read_root():
