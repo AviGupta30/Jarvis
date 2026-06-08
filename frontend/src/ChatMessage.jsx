@@ -12,8 +12,8 @@ export default function ChatMessage({ msg }) {
       <div
         className={`max-w-[85%] sm:max-w-[75%] px-6 py-4 relative shadow-lg ${
           isUser
-            ? 'bg-[#00f3ff]/10 text-cyan-100 rounded-2xl rounded-br-none border border-[#00f3ff]/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]'
-            : 'glass-panel text-gray-200 rounded-2xl rounded-tl-none border-l-4 border-l-cyan-400'
+            ? 'hud-panel text-cyan-100 rounded-2xl rounded-br-none border border-[#00f3ff]/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]'
+            : 'hud-panel text-gray-200 rounded-2xl rounded-tl-none border-l-4 border-l-cyan-400'
         }`}
       >
         {/* Decorative corner accents for assistant */}
@@ -100,6 +100,27 @@ export default function ChatMessage({ msg }) {
         >
           {msg.content}
         </ReactMarkdown>
+
+        {msg.attachedFiles && msg.attachedFiles.length > 0 && (
+          <div className={`flex flex-wrap gap-3 ${msg.content ? 'mt-4' : ''}`}>
+            {msg.attachedFiles.map((f, i) => (
+              <div key={i} className="relative group rounded-xl overflow-hidden border border-cyan-500/40 bg-[#061022]/80 shadow-[0_0_15px_rgba(0,243,255,0.1)] flex flex-col">
+                {f.name.match(/\.(png|jpg|jpeg|webp)$/i) ? (
+                  <img src={f.url} alt={f.name} className="max-w-[200px] max-h-[200px] object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center w-[150px] h-[100px] bg-cyan-950/40 text-cyan-200 text-sm font-mono p-3 text-center break-words">
+                    📄 {f.name}
+                  </div>
+                )}
+                {f.description && (
+                  <div className="bg-[#030a16]/90 p-2 text-xs text-cyan-300 font-mono truncate max-w-[200px] border-t border-cyan-500/30">
+                    {f.description}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
