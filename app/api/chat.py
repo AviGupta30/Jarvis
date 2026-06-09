@@ -973,6 +973,44 @@ def keyword_detect_tool(prompt: str) -> dict | None:
                 'image_path': image_path,
             }
         }
+    # ── Social Media & Content (Interactive) ──────────────────────────────────
+    social_kw = [
+        'write a caption', 'give me caption', 'give me a caption', 'caption for', 'linkedin post',
+        'tweet about', 'instagram post', 'social media idea', 'social media post', 'post for linkedin'
+    ]
+    
+    # Check if user is replying to the clarification question
+    is_replying_to_clarification = False
+    original_idea = prompt
+    if len(conversation_history) >= 2:
+        last_bot_msg = conversation_history[-1].get("content", "")
+        if "Would you like auto hashtags? Emojis? Should the tone be formal or informal?" in last_bot_msg:
+            is_replying_to_clarification = True
+            original_idea = conversation_history[-2].get("content", "")
+            
+    if any(kw in lower for kw in social_kw) or is_replying_to_clarification:
+        has_params = any(word in lower for word in ['emoji', 'hashtag', 'formal', 'informal', 'creative'])
+        if not has_params and not is_replying_to_clarification:
+            return {"tool_name": "ask_for_clarification", "arguments": {"question": "Would you like auto hashtags? Emojis? Should the tone be formal or informal?"}}
+        
+        # Determine parameters
+        combined_text = (original_idea + " " + prompt).lower()
+        platform = "LinkedIn"
+        if "instagram" in combined_text: platform = "Instagram"
+        elif "tweet" in combined_text or " x " in combined_text: platform = "X"
+        
+        tone = "formal" if "formal" in combined_text and "informal" not in combined_text else ("informal" if "informal" in combined_text else "engaging")
+        emojis = "no emoji" not in combined_text and "without emoji" not in combined_text
+        hashtags = "no hashtag" not in combined_text and "without hashtag" not in combined_text
+        
+        return {"tool_name": "generate_social_content", "arguments": {
+            "idea": original_idea if is_replying_to_clarification else prompt,
+            "platform": platform,
+            "tone": tone,
+            "smart_emojis": emojis,
+            "auto_hashtag": hashtags,
+            "creativity": 50.0
+        }}
 
     return None  # Fall through to LLM router
 
@@ -1153,7 +1191,7 @@ async def chat_endpoint(request: ChatRequest):
                 
             tool_output_str = f"[Tool result: {result}]\n\n"
             
-            if tool_name == "enhance_media":
+            if tool_name in ("enhance_media", "generate_social_content"):
                 async def flow_stream(): yield result
                 return StreamingResponse(flow_stream(), media_type="text/event-stream")
 

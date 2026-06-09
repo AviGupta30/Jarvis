@@ -1077,4 +1077,7 @@ TOOL_REGISTRY = {
     "deactivate_dsa_mode": lambda: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().stop_mode(),
     # ── Media Enhancement Tool ───────────────────────────────────────────────
     "enhance_media": lambda file_path: __import__('app.services.media_enhancement', fromlist=['enhance_media']).enhance_media(file_path),
+    # ── Social Content Manager ───────────────────────────────────────────────
+    "generate_social_content": lambda idea, platform="Instagram", tone="engaging", creativity=50.0, formality=50.0, smart_emojis=True, auto_hashtag=True, contextual_suggestions=True, target_audience="": __import__('app.services.social_content_manager', fromlist=['generate_social_content']).generate_social_content(idea, platform, tone, creativity, formality, smart_emojis, auto_hashtag, contextual_suggestions, target_audience),
+    "refine_social_content": lambda original_content, refinement_instruction, platform="Instagram": __import__('app.services.social_content_manager', fromlist=['refine_social_content']).refine_social_content(original_content, refinement_instruction, platform),
 }

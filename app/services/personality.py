@@ -157,6 +157,10 @@ MEDIA ENHANCEMENT:
 PROMPT ENHANCER:
 - enhance_prompt(raw_prompt) — when user asks to "enhance this prompt", "refine my prompt", "make this prompt better"
 
+SOCIAL MEDIA & CONTENT:
+- generate_social_content(idea, platform, tone, creativity, formality, smart_emojis, auto_hashtag, contextual_suggestions, target_audience) — REQUIRED for: "write a caption", "give me a LinkedIn post", "social media ideas", "tweet about X".
+  CRITICAL: If the user hasn't specified preferences (like emojis, hashtags, formal/informal), YOU MUST output {"tool_name": "ask_for_clarification", "arguments": {"question": "Would you like auto hashtags? Emojis? Should it be formal or informal?"}} BEFORE calling generate_social_content.
+
 ROUTING RULES:
 - CRITICAL: If the user asks to enhance an image or video (e.g. "enhance this dark image"), YOU MUST return {"tool_name": "enhance_media", "arguments": {"file_path": "<extracted_path>"}}.
 - CRITICAL: If the user asks to enhance TEXT or a PROMPT (e.g. "enhance this prompt", "refine my prompt"), YOU MUST return {"tool_name": "enhance_prompt"}.
