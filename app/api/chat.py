@@ -1023,6 +1023,7 @@ api_note_flow = {"active": False}
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     global api_whatsapp_flow, api_whatsapp_call_flow, api_note_flow
+    from fastapi.responses import StreamingResponse
 
     # ── Handle Attached Files ─────────────────────────────────────────────
     attached_files = re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', request.prompt)
@@ -1138,6 +1139,16 @@ async def chat_endpoint(request: ChatRequest):
             r'(?:saying|say(?:ing)?|that\s+says)[:\s]+["\']?(.+?)["\']?\s*$',
             request.prompt, re.I
         )
+        if msg_inline:
+            inline_msg = msg_inline.group(1).strip()
+            api_whatsapp_flow.update({"active": True, "step": "confirm", "contact": wa_contact, "message": inline_msg})
+            reply = f"Before I send, confirming: To {wa_contact} — {inline_msg}. Should I go ahead and send this?"
+        else:
+            api_whatsapp_flow.update({"active": True, "step": "ask_message", "contact": wa_contact, "message": None})
+            reply = f"Sure. What message should I send to {wa_contact}?"
+        async def flow_stream(): yield reply
+        return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
     # ── PATH B: Fast single-action path (keyword → tool → LLM response) ──
 
     # 1. Fast keyword detection (reliable, instant)

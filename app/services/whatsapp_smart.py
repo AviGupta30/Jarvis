@@ -35,13 +35,22 @@ pyautogui.PAUSE = 0.05
 # Internal helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _get_whatsapp_window():
+    import pygetwindow as gw
+    for w in gw.getAllWindows():
+        if w.title in ("WhatsApp", "Whatsapp"):
+            return w
+    for w in gw.getAllWindows():
+        t = w.title.lower()
+        if "whatsapp" in t and not any(x in t for x in ["antigravity", "chrome", "edge", "firefox", "brave", "cursor", "devin", "regression", "jarvis", "issue", "bug"]):
+            return w
+    return None
+
 def _focus_or_open_whatsapp() -> bool:
     """Focus the WhatsApp window or open it if not running. Returns True on success."""
     try:
-        import pygetwindow as gw
-        windows = gw.getWindowsWithTitle("WhatsApp")
-        if windows:
-            win = windows[0]
+        win = _get_whatsapp_window()
+        if win:
             try:
                 win.restore()
             except Exception:
@@ -57,10 +66,9 @@ def _focus_or_open_whatsapp() -> bool:
     time.sleep(6)
 
     try:
-        import pygetwindow as gw
-        windows = gw.getWindowsWithTitle("WhatsApp")
-        if windows:
-            windows[0].activate()
+        win = _get_whatsapp_window()
+        if win:
+            win.activate()
             time.sleep(0.8)
             return True
     except Exception:

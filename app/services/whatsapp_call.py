@@ -25,13 +25,22 @@ import pyperclip
 pyautogui.FAILSAFE = False
 pyautogui.PAUSE = 0.05
 
+def _get_whatsapp_window():
+    import pygetwindow as gw
+    for w in gw.getAllWindows():
+        if w.title in ("WhatsApp", "Whatsapp"):
+            return w
+    for w in gw.getAllWindows():
+        t = w.title.lower()
+        if "whatsapp" in t and not any(x in t for x in ["antigravity", "chrome", "edge", "firefox", "brave", "cursor", "devin", "regression", "jarvis", "issue", "bug"]):
+            return w
+    return None
+
 def _focus_or_open_whatsapp() -> bool:
     """Focus the WhatsApp window or open it if not running. Returns True on success."""
     try:
-        import pygetwindow as gw
-        windows = gw.getWindowsWithTitle("WhatsApp")
-        if windows:
-            win = windows[0]
+        win = _get_whatsapp_window()
+        if win:
             try:
                 win.restore()
             except Exception:
@@ -46,10 +55,9 @@ def _focus_or_open_whatsapp() -> bool:
     time.sleep(6)
 
     try:
-        import pygetwindow as gw
-        windows = gw.getWindowsWithTitle("WhatsApp")
-        if windows:
-            windows[0].activate()
+        win = _get_whatsapp_window()
+        if win:
+            win.activate()
             time.sleep(0.8)
             return True
     except Exception:
@@ -81,11 +89,9 @@ def _click_voice_call_button() -> bool:
       offset_from_right = 180, offset_from_top = 89
     """
     try:
-        import pygetwindow as gw
-        windows = gw.getWindowsWithTitle("Whatsapp") or gw.getWindowsWithTitle("WhatsApp")
-        if not windows:
+        win = _get_whatsapp_window()
+        if not win:
             return False
-        win = windows[0]
 
         shadow = 9
         right_x = win.left + win.width - shadow   # right edge of visible content
