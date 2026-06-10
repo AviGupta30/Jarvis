@@ -29,10 +29,27 @@ def play_song_dynamic(song_name: str) -> str:
         # Spotify is a heavy app; we give it a few seconds to stabilize
         time.sleep(4.0)
         
-        # 4. Use your existing Win32 logic to ensure Spotify is the focused window
-        focus_res = win32_focus_window("spotify")
-        if "❌" in focus_res or "Could not" in focus_res:
-            return f"I opened Spotify for '{song_name}', but I couldn't focus the window to press play."
+        # 4. Custom strict focus for Spotify Desktop App to avoid focusing browser tabs with 'spotify' in the title
+        from app.services.window_layout import _enumerate_app_windows, _get_process_name, SW_RESTORE
+        import ctypes
+        
+        _user32 = ctypes.windll.user32
+        spotify_hwnd = None
+        
+        # Strict process name match (avoids matching "Spotify" in Chrome/Edge tabs)
+        for hwnd, title in _enumerate_app_windows(require_visible=True):
+            if _get_process_name(hwnd) == 'spotify.exe':
+                spotify_hwnd = hwnd
+                break
+                
+        if spotify_hwnd:
+            if _user32.IsIconic(spotify_hwnd):
+                _user32.ShowWindow(spotify_hwnd, SW_RESTORE)
+                time.sleep(0.2)
+            _user32.SetForegroundWindow(spotify_hwnd)
+            time.sleep(0.1)
+        else:
+            return f"I opened Spotify for '{song_name}', but I couldn't find the Spotify Desktop app to focus."
 
         # 5. THE EXECUTION SEQUENCE
         # Keyboard navigation in Spotify is highly variable due to dynamic filters.
