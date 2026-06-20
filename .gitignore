@@ -27,6 +27,7 @@ Thumbs.db
 # Sensitive credentials
 credentials.json
 token.json
+calendar_token.json
 
 # Large AI Models and media
 models/

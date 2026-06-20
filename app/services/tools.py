@@ -19,6 +19,13 @@ from app.services.whatsapp import open_whatsapp, send_whatsapp_message
 
 pyautogui.FAILSAFE = False
 
+# ── Neural Cache client (optional — graceful degradation if server is down) ────
+try:
+    from neural_cache.client import CacheClient as _CacheClient
+    _nc = _CacheClient()   # module-level singleton; auto-reconnects
+except Exception:
+    _nc = None
+
 # ── Screen Reading (via screen_reader.py + VLM) ───────────────────────────
 
 def read_my_screen(user_query: str = "What am I looking at?", intent_mode: str = None) -> str:
@@ -982,6 +989,80 @@ def send_style_reply(contact: str = "", draft_index: int = 1) -> str:
         return f"Could not send style reply: {e}"
 
 
+# ── Neural Cache Tools ─────────────────────────────────────────────────────────────────────
+# Isolated per Rule #1 and Rule #4. Client imported at module level above.
+# Accessible via both frontend and voice through the unified /chat route.
+
+def cache_set(key: str, value: str, ttl: int = None) -> str:
+    """
+    Store a key-value pair in Neural Cache (in-memory, O(1) access).
+    Useful for short-lived state like session flags, counters, and mode indicators.
+
+    Args:
+        key:   Unique identifier for the value (e.g. 'focus_mode', 'current_task').
+        value: The value to store (string).
+        ttl:   Optional time-to-live in seconds (e.g. 1800 for 30 minutes).
+               Omit or set to None for a permanent entry.
+
+    Returns:
+        Confirmation string.
+    """
+    try:
+        if _nc is None:
+            return "Neural Cache server is not running. Value not stored."
+        ok = _nc.set(key, str(value), ttl=ttl)
+        if ok:
+            ttl_msg = f" (expires in {ttl}s)" if ttl else ""
+            return f"Stored '{key}' = '{value}' in Neural Cache{ttl_msg}."
+        return f"Failed to store '{key}' in Neural Cache."
+    except Exception as e:
+        return f"Neural Cache set error: {e}"
+
+
+def cache_get(key: str) -> str:
+    """
+    Retrieve a value from Neural Cache.
+    Returns the value if found, or a 'not found' message if the key
+    doesn't exist or has expired.
+
+    Args:
+        key: The key to look up.
+
+    Returns:
+        The stored value string, or a descriptive 'not found' message.
+    """
+    try:
+        if _nc is None:
+            return "Neural Cache server is not running."
+        value = _nc.get(key)
+        if value is None:
+            return f"No value found for '{key}' in Neural Cache (may have expired or never been set)."
+        return f"Neural Cache '{key}' = '{value}'."
+    except Exception as e:
+        return f"Neural Cache get error: {e}"
+
+
+def get_dsa_cache_status() -> str:
+    """
+    Check the current DSA mode status from Neural Cache.
+    Returns a human-readable summary of active/inactive state and progress.
+    """
+    try:
+        if _nc is None:
+            return "Neural Cache is not available. Check DSA status directly."
+        active    = _nc.get("dsa_mode:active")
+        total     = _nc.get("dsa_mode:num_questions")
+        completed = _nc.get("dsa_mode:completed")
+        if active == "true":
+            return (
+                f"DSA Mode is ACTIVE. "
+                f"Progress: {completed or 0}/{total or '?'} questions completed."
+            )
+        return "DSA Mode is currently INACTIVE."
+    except Exception as e:
+        return f"Could not read DSA status from cache: {e}"
+
+
 TOOL_REGISTRY = {
     # Information & Web
     "get_info": get_info,
@@ -1136,6 +1217,7 @@ TOOL_REGISTRY = {
     # ── DSA Mode (Leetcode Enforcer) ─────────────────────────────────────────
     "activate_dsa_mode": lambda num_questions: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().start_mode(int(num_questions)),
     "deactivate_dsa_mode": lambda: __import__('app.services.dsa_enforcer', fromlist=['get_dsa_enforcer']).get_dsa_enforcer().stop_mode(),
+    "dsa_status": get_dsa_cache_status,
     # ── Media Enhancement Tool ───────────────────────────────────────────────
     "enhance_media": lambda file_path: __import__('app.services.media_enhancement', fromlist=['enhance_media']).enhance_media(file_path),
     # ── Social Content Manager ───────────────────────────────────────────────
@@ -1145,4 +1227,9 @@ TOOL_REGISTRY = {
     # Isolated per Rule #1. Accessible via both frontend and voice through /chat.
     # The LLM router can call this when user asks explicit memory questions.
     "recall_memory": lambda query: __import__('app.services.rag_memory', fromlist=['recall', 'format_recall_for_prompt']).__dict__,  # handled async in chat.py
-}
+    # ── Neural Cache Tools ───────────────────────────────────────────────────
+    # Rule #1: isolated in neural_cache/ package, no cross-tool imports.
+    # Rule #4: accessible via both frontend and voice through unified /chat.
+    "cache_set": cache_set,
+    "cache_get": cache_get,
+}

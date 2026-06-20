@@ -6,6 +6,37 @@ from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.edge.options import Options as EdgeOptions
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
+# ── Neural Cache integration (Rule #4 — optional, graceful degradation) ──────
+# If the Neural Cache server is not running, _cache remains None and all
+# cache calls are silently skipped — existing behaviour is unchanged.
+try:
+    from neural_cache.client import CacheClient as _CacheClient
+    _cache = _CacheClient()          # module-level singleton; reconnects automatically
+except Exception:
+    _cache = None
+
+_CACHE_NS = "dsa_mode"              # namespace prefix for all DSA-related keys
+
+
+def _cache_set(key: str, value: str, ttl: int = None) -> None:
+    """Write to Neural Cache, silently skipping if unavailable."""
+    if _cache is None:
+        return
+    try:
+        _cache.set(f"{_CACHE_NS}:{key}", value, ttl=ttl)
+    except Exception:
+        pass
+
+
+def _cache_del(key: str) -> None:
+    """Delete from Neural Cache, silently skipping if unavailable."""
+    if _cache is None:
+        return
+    try:
+        _cache.delete(f"{_CACHE_NS}:{key}")
+    except Exception:
+        pass
+
 class DSAEnforcer:
     _instance = None
 
@@ -24,6 +55,11 @@ class DSAEnforcer:
         self.num_questions = num_questions
         self.completed_questions = 0
         self.is_active = True
+
+        # Publish state to Neural Cache (TTL=24h, long enough for any session)
+        _cache_set("active", "true", ttl=86400)
+        _cache_set("num_questions", str(num_questions), ttl=86400)
+        _cache_set("completed", "0", ttl=86400)
 
         print(f"Initializing Native DSA Environment for {num_questions} questions, Sir...")
         
@@ -68,6 +104,12 @@ class DSAEnforcer:
             except Exception:
                 pass
             self.driver = None
+
+        # Clear DSA state from Neural Cache
+        _cache_del("active")
+        _cache_del("num_questions")
+        _cache_del("completed")
+
         return "DSA Mode deactivated."
 
     def _get_problem_slug(self, url: str):
@@ -117,7 +159,10 @@ class DSAEnforcer:
                             problem_solved_flag = True
                             self.completed_questions += 1
                             print(f"Question solved! ({self.completed_questions}/{self.num_questions})")
-                            
+
+                            # Update progress in Neural Cache
+                            _cache_set("completed", str(self.completed_questions), ttl=86400)
+
                             if self.completed_questions >= self.num_questions:
                                 print("Target reached! Shutting down DSA mode.")
                                 self.stop_mode()

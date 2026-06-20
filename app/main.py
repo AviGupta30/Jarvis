@@ -89,13 +89,38 @@ def _on_screen_alert(alert_text: str) -> None:
 @app.on_event("startup")
 async def startup_event():
     """Start background screen watcher and RAG memory system when the server boots."""
+    # ── Neural Cache Server (auto-start) ─────────────────────────────────────
+    # Launches cache_server.py as a background subprocess so no manual terminal
+    # is ever needed. If the server is already running (e.g. leftover from a
+    # previous session) the new process will fail to bind and exit silently —
+    # the existing server keeps running, which is exactly what we want.
+    try:
+        import subprocess, sys
+        from pathlib import Path
+        _cache_server_script = Path(__file__).resolve().parent.parent / "neural_cache" / "server.py"
+        if _cache_server_script.exists():
+            subprocess.Popen(
+                [sys.executable, str(_cache_server_script),
+                 "--host", "127.0.0.1", "--port", "9090", "--capacity", "1024"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                # CREATE_NEW_PROCESS_GROUP keeps it alive if JARVIS is Ctrl+C'd
+                creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+            )
+            logger.info("Neural Cache server started on 127.0.0.1:9090.")
+        else:
+            logger.warning("neural_cache/server.py not found — cache server not started.")
+    except Exception as e:
+        logger.error(f"Neural Cache auto-start failed (non-fatal): {e}")
+
     # ── Long-term RAG Memory (MySQL + FAISS) ──────────────────────────────────
     try:
         from app.services.rag_memory import init_rag_memory
         await init_rag_memory()
-        logger.info("✅ Jarvis long-term RAG memory initialized (MySQL + FAISS).")
+        logger.info("Jarvis long-term RAG memory initialized (MySQL + FAISS).")
     except Exception as e:
         logger.error(f"RAG memory init failed (non-fatal): {e}")
+
 
     # ── Background Screen Watcher ─────────────────────────────────────────────
     try:
