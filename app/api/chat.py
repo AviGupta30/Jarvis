@@ -1165,6 +1165,48 @@ async def chat_endpoint(request: ChatRequest):
         async def flow_stream(): yield reply
         return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
+    # ── PATH A-DAG: Multi-branch DAG planner ──────────────────────────────────
+    # Runs BEFORE keyword_detect_tool so multi-intent requests (e.g. "email prof
+    # AND remind me Friday AND check calendar") get decomposed into a parallel
+    # execution graph instead of being routed to a single tool.
+    # Safe: is_dag_task() explicitly excludes assignment, PPT, and single-tool commands.
+    try:
+        from app.services.dag_executor import is_dag_task, run_dag_plan
+        if is_dag_task(request.prompt):
+            async def _dag_stream_with_history():
+                full_narration_parts = []
+                async for event_str in run_dag_plan(request.prompt):
+                    # Collect text content for conversation history
+                    try:
+                        import json as _json
+                        evt = _json.loads(event_str.replace("data: ", "").strip())
+                        text = evt.get("text") or evt.get("result") or ""
+                        if text:
+                            full_narration_parts.append(text)
+                    except Exception:
+                        pass
+                    yield event_str
+
+                # Save to conversation history so memory + RAG work correctly
+                conversation_history.append({"role": "user", "content": request.prompt})
+                full_narration = " ".join(full_narration_parts)
+                conversation_history.append({"role": "assistant", "content": full_narration or "(dag plan executed)"})
+                _save_session()
+                # Store to long-term RAG memory (best-effort)
+                try:
+                    from app.services.rag_memory import store_turn
+                    await store_turn(role="user", content=request.prompt, turn_index=len(conversation_history))
+                    if full_narration:
+                        await store_turn(role="assistant", content=full_narration, turn_index=len(conversation_history))
+                except Exception:
+                    pass
+
+            return StreamingResponse(_dag_stream_with_history(), media_type="text/event-stream")
+    except Exception as _dag_err:
+        import logging as _log
+        _log.getLogger(__name__).warning(f"[DAG] Guard failed, falling through: {_dag_err}")
+        # Fall through to PATH B safely
+
     # ── PATH B: Fast single-action path (keyword → tool → LLM response) ──
 
     # 1. Fast keyword detection (reliable, instant)

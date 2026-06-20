@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, Loader2, Mic, Paperclip } from 'lucide-react';
 import ChatMessage from './ChatMessage';
+import DagPlanPanel from './DagPlanPanel';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -10,6 +11,15 @@ function App() {
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
+
+  // ── DAG state ────────────────────────────────────────────────────────────
+  // dagPlan: { nodes, summary, waveCount } | null
+  // dagNodeStates: { [nodeId]: { status, result, error } }
+  // dagComplete: boolean
+  const [dagPlan, setDagPlan] = useState(null);
+  const [dagNodeStates, setDagNodeStates] = useState({});
+  const [dagComplete, setDagComplete] = useState(false);
+
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const themeInputRef = useRef(null);
@@ -159,6 +169,11 @@ function App() {
         return;
       }
 
+      // Reset DAG state for a fresh request
+      setDagPlan(null);
+      setDagNodeStates({});
+      setDagComplete(false);
+
       const response = await fetch('http://127.0.0.1:8000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -170,22 +185,67 @@ function App() {
       const reader  = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
+      // Detect response type from the first meaningful chunk:
+      //   DAG responses  → start with  'data: {'  (structured SSE events)
+      //   LLM responses  → plain text tokens with no 'data:' prefix
+      let isDagStream = null;   // null = not yet determined
+      let dagBuffer   = '';     // accumulates partial DAG SSE events
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const raw   = decoder.decode(value, { stream: true });
-        const lines = raw.split('\n');
-        const cleanLines = lines
-          .map((line) => line.replace(/^data:\s*/, ''))
-          .filter((line) => line !== '[DONE]');
-        const cleanChunk = cleanLines.join('\n');
-        if (!cleanChunk.trim()) continue;
-        setMessages((prev) => {
-          const copy = prev.map((m) => ({ ...m }));
-          const last = copy[copy.length - 1];
-          if (last && last.role === 'assistant') last.content += cleanChunk;
-          return copy;
-        });
+        const chunk = decoder.decode(value, { stream: true });
+        if (!chunk) continue;
+
+        // ── Determine stream type on first non-empty chunk ──────────────────
+        if (isDagStream === null) {
+          isDagStream = chunk.trimStart().startsWith('data: {');
+        }
+
+        // ── DAG stream: buffer on \n\n and parse JSON events ─────────────────
+        if (isDagStream) {
+          dagBuffer += chunk;
+          // SSE events are delimited by double-newline
+          const parts = dagBuffer.split('\n\n');
+          dagBuffer = parts.pop();           // keep last incomplete fragment
+
+          for (const part of parts) {
+            const line = part.replace(/^data:\s*/, '').trim();
+            if (!line || line === '[DONE]') continue;
+            try {
+              const evt = JSON.parse(line);
+              if (evt && typeof evt.type === 'string') {
+                handleDagEvent(evt);
+              }
+            } catch (_) {
+              // Malformed JSON in a DAG event — ignore
+            }
+          }
+        } else {
+          // ── Plain LLM stream: append raw chunk directly (original behaviour) ──
+          const text = chunk
+            .replace(/^data:\s*/gm, '')   // strip any stray data: prefixes
+            .replace(/\[DONE\]/g, '');    // strip SSE done marker
+          if (text) {
+            setMessages((prev) => {
+              const copy = prev.map((m) => ({ ...m }));
+              const last = copy[copy.length - 1];
+              if (last && last.role === 'assistant') last.content += text;
+              return copy;
+            });
+          }
+        }
+      }
+
+      // Flush any remaining DAG buffer content
+      if (dagBuffer.trim()) {
+        const line = dagBuffer.replace(/^data:\s*/, '').trim();
+        if (line && line !== '[DONE]') {
+          try {
+            const evt = JSON.parse(line);
+            if (evt && typeof evt.type === 'string') handleDagEvent(evt);
+          } catch (_) {}
+        }
       }
     } catch (err) {
       console.error('[Jarvis] fetch error:', err);
@@ -199,6 +259,71 @@ function App() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // ── DAG Event Handler ──────────────────────────────────────────────────────
+  const handleDagEvent = (evt) => {
+    switch (evt.type) {
+      case 'plan':
+        setDagPlan({
+          nodes: evt.nodes || [],
+          summary: evt.summary || '',
+          waveCount: evt.wave_count || 0,
+        });
+        setDagNodeStates(
+          Object.fromEntries((evt.nodes || []).map(n => [n.id, { status: 'pending', result: '', error: '' }]))
+        );
+        break;
+
+      case 'node_start':
+        setDagNodeStates(prev => ({
+          ...prev,
+          [evt.id]: { ...(prev[evt.id] || {}), status: 'running' },
+        }));
+        break;
+
+      case 'node_done':
+        setDagNodeStates(prev => ({
+          ...prev,
+          [evt.id]: { ...(prev[evt.id] || {}), status: 'done', result: evt.result || '' },
+        }));
+        break;
+
+      case 'node_failed':
+        setDagNodeStates(prev => ({
+          ...prev,
+          [evt.id]: { ...(prev[evt.id] || {}), status: 'failed', error: evt.error || '' },
+        }));
+        break;
+
+      case 'aggregate':
+        setMessages(prev => {
+          const copy = prev.map(m => ({ ...m }));
+          const last = copy[copy.length - 1];
+          if (last && last.role === 'assistant') last.content = evt.text || last.content;
+          return copy;
+        });
+        break;
+
+      case 'narration':
+      case 'fallback':
+        setMessages(prev => {
+          const copy = prev.map(m => ({ ...m }));
+          const last = copy[copy.length - 1];
+          if (last && last.role === 'assistant' && evt.text) {
+            last.content += (last.content ? ' ' : '') + evt.text;
+          }
+          return copy;
+        });
+        break;
+
+      case 'done':
+        setDagComplete(true);
+        break;
+
+      default:
+        break;
     }
   };
 
@@ -347,7 +472,19 @@ function App() {
 
             <div className="w-full mx-auto space-y-6 relative">
               {messages.map((msg, idx) => (
-                <ChatMessage key={idx} msg={msg} />
+                <div key={idx}>
+                  {/* Show DAG panel above the last assistant message when a plan exists */}
+                  {msg.role === 'assistant' && idx === messages.length - 1 && dagPlan && (
+                    <DagPlanPanel
+                      nodes={dagPlan.nodes}
+                      nodeStates={dagNodeStates}
+                      summary={dagPlan.summary}
+                      waveCount={dagPlan.waveCount}
+                      isComplete={dagComplete}
+                    />
+                  )}
+                  <ChatMessage msg={msg} />
+                </div>
               ))}
               
               {isLoading && messages[messages.length - 1]?.content === '' && (
