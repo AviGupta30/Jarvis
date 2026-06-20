@@ -680,6 +680,22 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     if any(kw in lower for kw in brief_kw):
         return {"tool_name": "get_morning_brief", "arguments": {}}
 
+    # ── Long-Term Memory Recall (RAG) ─────────────────────────────────────────
+    # Explicit recall queries: Jarvis uses FAISS to search past conversation turns.
+    # This triggers a HIGH-RECALL search (top_k=10, min_score=0.2) for wide coverage.
+    # Note: implicit semantic recall also happens automatically in llm.py for ALL queries.
+    memory_recall_kw = [
+        "what did i say", "what did i tell you", "do you remember",
+        "you told me", "i told you", "i mentioned", "i said",
+        "remind me", "recall", "remember when", "last time i",
+        "you remember", "earlier i said", "previously i",
+        "what was my", "what were my", "from last week", "from yesterday",
+        "from last month", "last session", "past conversation",
+        "memory", "forget about", "what have i told",
+    ]
+    if any(kw in lower for kw in memory_recall_kw):
+        return {"tool_name": "recall_memory", "arguments": {"query": prompt}}
+
     # ── Gmail / Email (Step 5) ────────────────────────────────────────────────
 
     # UNREAD: "do I have any unread emails", "show unread", "any new emails"
@@ -1182,7 +1198,23 @@ async def chat_endpoint(request: ChatRequest):
 
     # 4. Execute tool
     tool_output_str = ""
-    if tool_name and tool_name in TOOL_REGISTRY:
+
+    # ── Special async handling for recall_memory (FAISS search is async) ──────
+    if tool_name == "recall_memory":
+        try:
+            from app.services.rag_memory import recall, format_recall_for_prompt
+            query = tool_intent.get("arguments", {}).get("query", request.prompt)
+            # High-recall mode: more results, lower threshold for explicit memory queries
+            recalled = await recall(query, top_k=10, min_score=0.20)
+            if recalled:
+                formatted = format_recall_for_prompt(recalled, query=query)
+                tool_output_str = f"[MEMORY RECALL RESULTS — {len(recalled)} matches found]\n{formatted}\n\n"
+            else:
+                tool_output_str = "[MEMORY RECALL] No relevant memories found for this query.\n\n"
+        except Exception as e:
+            tool_output_str = f"[MEMORY RECALL] Could not access memory: {e}\n\n"
+
+    elif tool_name and tool_name in TOOL_REGISTRY:
         args = tool_intent.get("arguments", {})
         try:
             result = TOOL_REGISTRY[tool_name](**args)
@@ -1295,9 +1327,21 @@ async def chat_endpoint(request: ChatRequest):
         context_parts.append(f"[Active Screen: {current_screen}]")
     context = "\n\n".join(context_parts)
 
-    # 7. Save user turn to history
+    # 7. Save user turn to history + long-term RAG memory
     conversation_history.append({"role": "user", "content": request.prompt})
     _save_session()
+    # Store user turn to long-term memory (background, non-blocking)
+    try:
+        from app.services.rag_memory import store_turn
+        _bg_task = asyncio.ensure_future(store_turn(
+            role="user",
+            content=request.prompt,
+            turn_index=len(conversation_history),
+        ))
+        # Hold a reference so the task isn't garbage-collected before it completes
+        _bg_task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
+    except Exception:
+        pass
 
     # 8. Stream LLM response — pass context as tool_result
     async def response_stream_with_history():
@@ -1311,6 +1355,16 @@ async def chat_endpoint(request: ChatRequest):
             yield chunk
         conversation_history.append({"role": "assistant", "content": full_response})
         _save_session()
+        # Store assistant turn to long-term memory (best-effort)
+        try:
+            from app.services.rag_memory import store_turn
+            await store_turn(
+                role="assistant",
+                content=full_response,
+                turn_index=len(conversation_history),
+            )
+        except Exception:
+            pass
 
     return StreamingResponse(
         response_stream_with_history(),

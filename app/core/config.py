@@ -11,5 +11,7 @@ class Settings:
     ELEVENLABS_API_KEY:   str = os.getenv("ELEVENLABS_API_KEY", "")
     ELEVENLABS_VOICE_ID:  str = os.getenv("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")  # Default: Adam
     GPTZERO_API_KEY:      str = os.getenv("GPTZERO_API_KEY", "")
+    # Long-term RAG Memory — MySQL backend (local, never pauses unlike Supabase)
+    MYSQL_URL:            str = os.getenv("MYSQL_URL", "mysql+aiomysql://root:@localhost/jarvis_memory")
 
 settings = Settings()

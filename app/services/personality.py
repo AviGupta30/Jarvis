@@ -117,6 +117,12 @@ APPS & WHATSAPP:
 - initiate_whatsapp_send(contact_name, message) — use when user explicitly asks to send a WhatsApp message.
 - initiate_whatsapp_call(contact_name) — use when user explicitly asks to make a WhatsApp audio/video call.
 
+WHATSAPP INTELLIGENCE (reply style cloning):
+- read_whatsapp_thread(contact, n_messages) — REQUIRED for: "read my chat with X", "show messages from X", "what did X say", "check my WhatsApp with X". Opens the chat and returns the structured thread.
+- build_style_profile(chat_export_path, your_name) — REQUIRED for: "train jarvis on my chat style", "build my style profile", "teach jarvis how I reply". chat_export_path is the path to a WhatsApp .txt export file.
+- generate_reply_draft(contact, n_messages) — REQUIRED for: "draft a reply for X", "generate a reply for X", "how should I reply to X", "write a reply for my chat with X". Reads the chat and generates 3 reply options that match the user's personal style.
+- send_style_reply(contact, draft_index) — REQUIRED for: "send reply 1", "send the first draft", "send style reply", "go with option 2". draft_index is 1, 2, or 3.
+
 CLIPBOARD & TYPING:
 - read_clipboard(), write_clipboard(text), type_text(text)
 

@@ -88,7 +88,16 @@ def _on_screen_alert(alert_text: str) -> None:
 
 @app.on_event("startup")
 async def startup_event():
-    """Start background screen watcher when the server boots."""
+    """Start background screen watcher and RAG memory system when the server boots."""
+    # ── Long-term RAG Memory (MySQL + FAISS) ──────────────────────────────────
+    try:
+        from app.services.rag_memory import init_rag_memory
+        await init_rag_memory()
+        logger.info("✅ Jarvis long-term RAG memory initialized (MySQL + FAISS).")
+    except Exception as e:
+        logger.error(f"RAG memory init failed (non-fatal): {e}")
+
+    # ── Background Screen Watcher ─────────────────────────────────────────────
     try:
         from app.services.screen_vision import start_background_watcher
         from app.core.config import settings
@@ -107,10 +116,15 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Stop watcher cleanly on server shutdown."""
+    """Stop watcher and close DB pool cleanly on server shutdown."""
     try:
         from app.services.screen_vision import stop_background_watcher
         stop_background_watcher()
+    except Exception:
+        pass
+    try:
+        from app.core.mysql_db import close_mysql
+        await close_mysql()
     except Exception:
         pass
 

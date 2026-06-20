@@ -170,6 +170,19 @@ async def generate_chat_response(
 
     messages = [{"role": "system", "content": personalized_system}]
 
+    # ── Long-term RAG Memory Recall (MySQL + FAISS) ────────────────────────────
+    # Always-on semantic recall: if past turns are similar to this query, inject them.
+    # No need for explicit "remember" keywords — if it's related, Jarvis recalls it.
+    try:
+        from app.services.rag_memory import recall, format_recall_for_prompt
+        recalled = await recall(user_message, top_k=5, min_score=0.30)
+        if recalled:
+            memory_block = format_recall_for_prompt(recalled, query=user_message)
+            if memory_block:
+                messages.append({"role": "system", "content": memory_block})
+    except Exception:
+        pass  # Memory recall is best-effort — never break the chat flow
+
     # ── Compress history if it's getting long ──────────────────────────────────
     await _maybe_compress_history()
 

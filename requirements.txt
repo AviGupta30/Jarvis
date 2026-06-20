@@ -44,3 +44,10 @@ scikit-learn
 youtube-transcript-api
 selenium
 webdriver-manager
+# ── Long-Term RAG Memory (MySQL + FAISS) ──────────────────────────────────────
+# faiss-cpu: local vector similarity search (no server, no API, offline, ~15MB)
+faiss-cpu
+# aiomysql: async MySQL driver for FastAPI compatibility
+aiomysql
+# PyMySQL: sync MySQL fallback (required by some tools)
+PyMySQL
