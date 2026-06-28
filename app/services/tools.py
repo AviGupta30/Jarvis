@@ -1232,4 +1232,7 @@ TOOL_REGISTRY = {
     # Rule #4: accessible via both frontend and voice through unified /chat.
     "cache_set": cache_set,
     "cache_get": cache_get,
+    
+    # ── Air Drawing Tool ─────────────────────────────────────────────────────
+    "open_air_drawing": lambda: __import__('app.services.air_drawing_tool', fromlist=['open_air_drawing']).open_air_drawing(),
 }

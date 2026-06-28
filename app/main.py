@@ -33,6 +33,10 @@ uploads_dir = os.path.join(base_dir, "data", "uploads")
 os.makedirs(uploads_dir, exist_ok=True)
 app.mount("/media", StaticFiles(directory=uploads_dir), name="media")
 
+airdrawing_dir = os.path.join(base_dir, "3D", "dist")
+os.makedirs(airdrawing_dir, exist_ok=True)
+app.mount("/airdrawing", StaticFiles(directory=airdrawing_dir, html=True), name="airdrawing")
+
 
 @app.get("/")
 def read_root():

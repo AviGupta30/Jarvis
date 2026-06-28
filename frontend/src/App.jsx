@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, Loader2, Mic, Paperclip } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import DagPlanPanel from './DagPlanPanel';
+import AirDrawingApp from './AirDrawing/AirDrawingApp';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -11,6 +12,23 @@ function App() {
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
+  const [isAirDrawingOpen, setIsAirDrawingOpen] = useState(false);
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg.role === 'assistant' && lastMsg.content.includes('[OPEN_AIR_DRAWING]')) {
+        setIsAirDrawingOpen(true);
+        setMessages(prev => {
+          const copy = [...prev];
+          const last = { ...copy[copy.length - 1] };
+          last.content = last.content.replace('[OPEN_AIR_DRAWING]', '').trim();
+          copy[copy.length - 1] = last;
+          return copy;
+        });
+      }
+    }
+  }, [messages]);
 
   // ── DAG state ────────────────────────────────────────────────────────────
   // dagPlan: { nodes, summary, waveCount } | null
@@ -28,14 +46,14 @@ function App() {
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files || files.length === 0) return;
-    
+
     setIsUploading(true);
     const uploadType = e.target.dataset.uploadType;
-    
+
     for (const file of files) {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       try {
         const res = await fetch('http://127.0.0.1:8000/upload', {
           method: 'POST',
@@ -63,7 +81,7 @@ function App() {
         alert(`Failed to upload file ${file.name}`);
       }
     }
-    
+
     setIsUploading(false);
     e.target.value = '';
   };
@@ -73,13 +91,13 @@ function App() {
   }, [messages]);
 
   const PPT_KW = [
-    'create a presentation','make a presentation','build a presentation',
-    'generate a presentation','design a presentation','prepare a presentation',
-    'create slides','make slides','build slides',
-    'make a ppt','create a ppt','build a ppt','generate a ppt',
-    'create a deck','make a deck','create a powerpoint','make a powerpoint',
-    'create presentation','make presentation',
-    'ppt on ','ppt about ','presentation on ','presentation about ','slide deck on ',
+    'create a presentation', 'make a presentation', 'build a presentation',
+    'generate a presentation', 'design a presentation', 'prepare a presentation',
+    'create slides', 'make slides', 'build slides',
+    'make a ppt', 'create a ppt', 'build a ppt', 'generate a ppt',
+    'create a deck', 'make a deck', 'create a powerpoint', 'make a powerpoint',
+    'create presentation', 'make presentation',
+    'ppt on ', 'ppt about ', 'presentation on ', 'presentation about ', 'slide deck on ',
   ];
   const isPPTRequest = (text) => {
     const lower = text.toLowerCase();
@@ -121,15 +139,15 @@ function App() {
       { role: 'user', content: uiDisplayMessage, attachedFiles: attachedFiles },
       { role: 'assistant', content: '' },
     ]);
-    
+
     setUploadedFiles([]);
 
     try {
       if (isPPTRequest(prompt)) {
         appendMsg('🚀 Initializing Deep Chunked PPT Generation...\n');
-        
+
         const body = { prompt: promptToSend };
-        
+
         if (pptThemeImage) {
           body.theme_image_path = pptThemeImage.path.replace(/\\/g, '/');
           appendMsg(`🎨 Using your reference theme: ${pptThemeImage.name}\n`);
@@ -147,9 +165,9 @@ function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        
+
         if (!res.ok) throw new Error("Backend PPT creation failed");
-        
+
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let done = false;
@@ -182,14 +200,14 @@ function App() {
 
       if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-      const reader  = response.body.getReader();
+      const reader = response.body.getReader();
       const decoder = new TextDecoder('utf-8');
 
       // Detect response type from the first meaningful chunk:
       //   DAG responses  → start with  'data: {'  (structured SSE events)
       //   LLM responses  → plain text tokens with no 'data:' prefix
       let isDagStream = null;   // null = not yet determined
-      let dagBuffer   = '';     // accumulates partial DAG SSE events
+      let dagBuffer = '';     // accumulates partial DAG SSE events
 
       while (true) {
         const { done, value } = await reader.read();
@@ -244,7 +262,7 @@ function App() {
           try {
             const evt = JSON.parse(line);
             if (evt && typeof evt.type === 'string') handleDagEvent(evt);
-          } catch (_) {}
+          } catch (_) { }
         }
       }
     } catch (err) {
@@ -329,6 +347,41 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen sci-fi-bg text-white font-sans overflow-hidden relative">
+      {isAirDrawingOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          zIndex: 99999,
+          backgroundColor: '#0f172a',
+          overflow: 'hidden'
+        }}>
+          <AirDrawingApp />
+          <button
+            onClick={() => setIsAirDrawingOpen(false)}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              left: '20px',
+              zIndex: 999999,
+              background: 'rgba(255, 50, 50, 0.8)',
+              color: 'white',
+              border: '1px solid rgba(255, 100, 100, 0.5)',
+              borderRadius: '8px',
+              padding: '10px 20px',
+              cursor: 'pointer',
+              fontFamily: 'monospace',
+              fontWeight: 'bold',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.5)'
+            }}
+          >
+            EXIT AIR DRAWING
+          </button>
+        </div>
+      )}
+
       {/* Arc Reactor Background */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-40 z-0 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full border-[1px] border-cyan-500/30 animate-spin-slow"></div>
@@ -350,6 +403,9 @@ function App() {
             <span className="text-cyan-400">⚡</span>
             <span className="tracking-widest">QUANTUM LINK STABILITY</span>
           </div>
+          <button onClick={() => setIsAirDrawingOpen(true)} className="px-3 py-1 bg-cyan-900/40 border border-cyan-500/50 rounded text-cyan-300 hover:bg-cyan-500/30 transition-colors flex items-center shadow-[0_0_10px_rgba(0,243,255,0.1)]">
+            <span>✨ AIR DRAWING</span>
+          </button>
         </div>
 
         <div className="flex items-center space-x-4 absolute left-1/2 -translate-x-1/2">
@@ -374,7 +430,7 @@ function App() {
               <h2 className="hud-header-text text-xl">Jarvis Core</h2>
               <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse shadow-[0_0_8px_#00f3ff]"></div>
             </div>
-            
+
             <div className="w-full space-y-6">
               <div>
                 <div className="flex justify-between text-[11px] font-mono text-cyan-300 mb-2 uppercase tracking-widest">
@@ -409,7 +465,7 @@ function App() {
                 <span className="tracking-widest">Neural Stability</span>
                 <span className="text-emerald-400 border border-emerald-500/30 bg-emerald-900/20 px-2 py-0.5 rounded">Stable</span>
               </div>
-              
+
               <div className="pt-2 flex justify-between items-center text-[11px] font-mono text-cyan-500 uppercase">
                 <span className="tracking-widest">Core Temperature</span>
                 <span className="text-orange-400 border border-orange-500/30 bg-orange-900/20 px-2 py-0.5 rounded">Optimal</span>
@@ -431,82 +487,82 @@ function App() {
 
         {/* Center Chat Area */}
         <div className="flex-1 flex flex-col relative px-4 lg:pl-0 lg:pr-12 pb-40 w-full max-w-[1600px] mr-auto min-h-0" style={{ perspective: '1200px' }}>
-          
+
           {/* Holographic Container for Chat */}
           <div className="flex-1 flex flex-col relative z-10 w-full rounded-[2rem] border border-cyan-400/50 shadow-[20px_20px_50px_rgba(0,243,255,0.15)] overflow-hidden transition-transform duration-500 bg-cyan-950/20 backdrop-blur-[4px] min-h-0"
-               style={{ transform: 'rotateY(8deg) rotateX(2deg) translateZ(0)', transformOrigin: 'left center', transformStyle: 'preserve-3d' }}>
-            
+            style={{ transform: 'rotateY(8deg) rotateX(2deg) translateZ(0)', transformOrigin: 'left center', transformStyle: 'preserve-3d' }}>
+
             <div className="absolute inset-0 bg-gradient-to-br from-cyan-300/10 via-transparent to-transparent pointer-events-none"></div>
 
             {/* Messages */}
             <main className="flex-1 overflow-y-auto pt-8 px-6 lg:px-12 space-y-8 custom-scrollbar relative z-10 w-full pb-10">
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-full text-cyan-700 space-y-8 opacity-90 mt-10">
-                <div className="hud-panel p-6 border border-cyan-500/30 bg-[#020713]/80 w-full max-w-2xl text-center shadow-[0_0_30px_rgba(0,243,255,0.1)] rounded-2xl relative overflow-hidden">
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70" />
-                  <p className="text-3xl font-bold text-cyan-300 tracking-[0.2em] uppercase font-mono mb-6" style={{ textShadow: '0 0 15px #00f3ff' }}>System Ready</p>
-                  
-                  <div className="grid grid-cols-2 gap-4 text-left">
-                    <div className="border border-cyan-900/50 p-4 rounded bg-cyan-950/20">
-                      <p className="text-cyan-400 mb-2 text-xs font-mono tracking-widest border-b border-cyan-800/50 pb-2">COMMANDS</p>
-                      <ul className="text-[11px] font-mono text-cyan-500 space-y-2">
-                        <li>&gt; open [app name]</li>
-                        <li>&gt; search [query]</li>
-                        <li>&gt; send whatsapp to [name]</li>
-                        <li>&gt; check emails</li>
-                      </ul>
-                    </div>
-                    <div className="border border-cyan-900/50 p-4 rounded bg-cyan-950/20">
-                      <p className="text-cyan-400 mb-2 text-xs font-mono tracking-widest border-b border-cyan-800/50 pb-2">MODULES</p>
-                      <ul className="text-[11px] font-mono text-cyan-500 space-y-2">
-                        <li>&gt; PPT Generator</li>
-                        <li>&gt; Vision Stack</li>
-                        <li>&gt; Desktop Automation</li>
-                        <li>&gt; Voice Synthesis</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-cyan-700 space-y-8 opacity-90 mt-10">
+                  <div className="hud-panel p-6 border border-cyan-500/30 bg-[#020713]/80 w-full max-w-2xl text-center shadow-[0_0_30px_rgba(0,243,255,0.1)] rounded-2xl relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-70" />
+                    <p className="text-3xl font-bold text-cyan-300 tracking-[0.2em] uppercase font-mono mb-6" style={{ textShadow: '0 0 15px #00f3ff' }}>System Ready</p>
 
-            <div className="w-full mx-auto space-y-6 relative">
-              {messages.map((msg, idx) => (
-                <div key={idx}>
-                  {/* Show DAG panel above the last assistant message when a plan exists */}
-                  {msg.role === 'assistant' && idx === messages.length - 1 && dagPlan && (
-                    <DagPlanPanel
-                      nodes={dagPlan.nodes}
-                      nodeStates={dagNodeStates}
-                      summary={dagPlan.summary}
-                      waveCount={dagPlan.waveCount}
-                      isComplete={dagComplete}
-                    />
-                  )}
-                  <ChatMessage msg={msg} />
-                </div>
-              ))}
-              
-              {isLoading && messages[messages.length - 1]?.content === '' && (
-                <div className="flex items-start">
-                  <div className="hud-panel text-gray-200 rounded-2xl rounded-tl-none border-l-4 border-l-cyan-400 px-6 py-4 flex items-center space-x-3 w-[100px] shadow-[0_0_15px_rgba(0,243,255,0.15)]">
-                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '300ms' }} />
+                    <div className="grid grid-cols-2 gap-4 text-left">
+                      <div className="border border-cyan-900/50 p-4 rounded bg-cyan-950/20">
+                        <p className="text-cyan-400 mb-2 text-xs font-mono tracking-widest border-b border-cyan-800/50 pb-2">COMMANDS</p>
+                        <ul className="text-[11px] font-mono text-cyan-500 space-y-2">
+                          <li>&gt; open [app name]</li>
+                          <li>&gt; search [query]</li>
+                          <li>&gt; send whatsapp to [name]</li>
+                          <li>&gt; check emails</li>
+                        </ul>
+                      </div>
+                      <div className="border border-cyan-900/50 p-4 rounded bg-cyan-950/20">
+                        <p className="text-cyan-400 mb-2 text-xs font-mono tracking-widest border-b border-cyan-800/50 pb-2">MODULES</p>
+                        <ul className="text-[11px] font-mono text-cyan-500 space-y-2">
+                          <li>&gt; PPT Generator</li>
+                          <li>&gt; Vision Stack</li>
+                          <li>&gt; Desktop Automation</li>
+                          <li>&gt; Voice Synthesis</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div ref={messagesEndRef} className="h-8" />
-            </div>
-          </main>
+              <div className="w-full mx-auto space-y-6 relative">
+                {messages.map((msg, idx) => (
+                  <div key={idx}>
+                    {/* Show DAG panel above the last assistant message when a plan exists */}
+                    {msg.role === 'assistant' && idx === messages.length - 1 && dagPlan && (
+                      <DagPlanPanel
+                        nodes={dagPlan.nodes}
+                        nodeStates={dagNodeStates}
+                        summary={dagPlan.summary}
+                        waveCount={dagPlan.waveCount}
+                        isComplete={dagComplete}
+                      />
+                    )}
+                    <ChatMessage msg={msg} />
+                  </div>
+                ))}
+
+                {isLoading && messages[messages.length - 1]?.content === '' && (
+                  <div className="flex items-start">
+                    <div className="hud-panel text-gray-200 rounded-2xl rounded-tl-none border-l-4 border-l-cyan-400 px-6 py-4 flex items-center space-x-3 w-[100px] shadow-[0_0_15px_rgba(0,243,255,0.15)]">
+                      <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce shadow-[0_0_5px_#00f3ff]" style={{ animationDelay: '300ms' }} />
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} className="h-8" />
+              </div>
+            </main>
           </div>
         </div>
       </div>
 
       {/* Input Pedestal (Bottom Fixed) */}
       <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center z-30 pointer-events-none">
-        
+
         {/* Status Bar */}
         <div className="mb-4 relative flex items-center justify-center bg-[#010409]/90 backdrop-blur-md border border-cyan-900/80 rounded-full px-8 py-2 shadow-[0_0_20px_rgba(0,243,255,0.1)] gap-6 pointer-events-auto">
           <div className="absolute left-0 top-0 h-full w-12 bg-gradient-to-r from-cyan-500/20 to-transparent rounded-l-full" />
@@ -544,19 +600,19 @@ function App() {
                         {f.name.length > 15 ? f.name.substring(0, 13) + '...' : f.name}
                       </div>
                     )}
-                    <input 
-                      type="text" 
-                      placeholder="Describe image..." 
+                    <input
+                      type="text"
+                      placeholder="Describe image..."
                       className="bg-transparent border-none text-xs text-cyan-100 outline-none w-36 placeholder-cyan-800/70 mr-2"
                       value={f.description || ''}
                       onChange={(e) => {
-                         const newFiles = [...uploadedFiles];
-                         newFiles[i].description = e.target.value;
-                         setUploadedFiles(newFiles);
+                        const newFiles = [...uploadedFiles];
+                        newFiles[i].description = e.target.value;
+                        setUploadedFiles(newFiles);
                       }}
                     />
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={() => setUploadedFiles(prev => prev.filter((_, idx) => idx !== i))}
                       className="absolute -top-2 -right-2 bg-red-500/80 text-white rounded-full p-1 w-5 h-5 flex items-center justify-center text-[10px] shadow-lg hover:bg-red-500 transition-colors z-20 border border-red-400/50"
                     >✕</button>
@@ -591,13 +647,13 @@ function App() {
                 >
                   {isUploading ? <Loader2 size={20} className="animate-spin text-cyan-400" /> : <Paperclip size={20} />}
                 </button>
-                
+
                 {isUploadMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsUploadMenuOpen(false)}></div>
                     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 w-56 transition-all duration-200 z-50 hud-panel border border-cyan-500/50 shadow-[0_0_20px_rgba(0,243,255,0.3)] overflow-hidden">
                       <div className="px-4 py-2 bg-cyan-950/40 border-b border-cyan-900/50 text-[10px] text-cyan-500 font-mono tracking-widest uppercase">Select Input</div>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setIsUploadMenuOpen(false);
@@ -608,7 +664,7 @@ function App() {
                       >
                         Assignment PDF
                       </button>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setIsUploadMenuOpen(false);
@@ -619,7 +675,7 @@ function App() {
                       >
                         General File
                       </button>
-                      <button 
+                      <button
                         type="button"
                         onClick={() => {
                           setIsUploadMenuOpen(false);
@@ -635,12 +691,12 @@ function App() {
                 )}
               </div>
 
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={{ display: 'none' }} 
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
                 data-upload-type="assignment"
-                onChange={handleFileUpload} 
+                onChange={handleFileUpload}
                 accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp,.mp4,.avi,.mov,.mkv"
                 multiple
               />
