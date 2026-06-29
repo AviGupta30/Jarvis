@@ -361,7 +361,7 @@ CRITICAL RULES:
 3. LAYOUT MATCHING & REDUNDANCY:
    - For TALL/SQUARE spaces (layout = "aesthetic_split", "aesthetic_pitch"): Use "bar", "pie", or "metrics".
    - For WIDE/HORIZONTAL spaces (layout = "aesthetic_grid", "aesthetic_timeline", "aesthetic_comparison"): Use "line", "timeline", "comparison", or "horizontal_bar". DO NOT use "pie" or "donut" in wide spaces.
-   - If the layout is "aesthetic_metrics", the slide ALREADY has large metric text cards. Do NOT generate a "metrics" chart of the same numbers! Generate a complementary "line", "horizontal_bar", or "pie" chart instead.
+   - If the layout is "aesthetic_metrics", the slide ALREADY has large metric text cards. Do NOT generate a "metrics" chart of the same numbers! Generate a complementary "line" or "horizontal_bar" chart instead.
    
 4. YOU MUST strictly adhere to the required JSON schemas for your chosen chart type. Failure to do so will result in an empty slide.
 
