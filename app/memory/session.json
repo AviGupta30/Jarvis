@@ -42,5 +42,21 @@
   {
     "role": "assistant",
     "content": "I've opened Spotify, Sir. I'm now playing \"Kesariya\" for you. Enjoy the music."
+  },
+  {
+    "role": "user",
+    "content": "Transcribe in English."
+  },
+  {
+    "role": "assistant",
+    "content": "I've opened Spotify. \"Kesariya\" is now playing."
+  },
+  {
+    "role": "user",
+    "content": "Open YouTube."
+  },
+  {
+    "role": "assistant",
+    "content": "Opening YouTube now, Sir."
   }
 ]

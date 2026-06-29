@@ -100,6 +100,14 @@ from app.services.voice import transcribe_audio, speak_text, speak_stream
 from app.services.whatsapp import open_whatsapp, send_whatsapp_message
 from app.services.hinglish_normalizer import normalize_for_tts
 
+# ── Acoustic Tripwire (double-clap wake) ─────────────────────────────────────
+try:
+    from app.services.acoustic_tripwire import get_engine as _get_tripwire_engine
+    _TRIPWIRE_AVAILABLE = True
+except Exception as _tw_err:
+    print(f"[Tripwire] Could not load acoustic engine (non-fatal): {_tw_err}")
+    _TRIPWIRE_AVAILABLE = False
+
 # Import planner classifier at module level (not inside the hot loop)
 try:
     from app.services.planner import is_complex_task as _is_complex_task
@@ -309,7 +317,20 @@ async def run_voice_agent():
     # Follow-up state
     awaiting_followup = False
 
-
+    # ── Acoustic Tripwire (inline mode — shares voice_agent's mic stream) ────
+    # IMPORTANT: We do NOT call engine.start() here. That would open a second
+    # PyAudio stream at 44100 Hz while voice_agent already owns the mic at
+    # 16000 Hz. On Windows, dual exclusive streams at different sample rates
+    # corrupt each other — causing garbled transcriptions and failed detection.
+    # Instead, process_chunk() is called inline on every audio frame we read.
+    _tripwire = None
+    if _TRIPWIRE_AVAILABLE:
+        try:
+            _tripwire = _get_tripwire_engine()
+            _tripwire.enable()   # arm it (no background thread started)
+        except Exception as _e:
+            print(f"[Tripwire] Engine init failed (non-fatal): {_e}")
+            _tripwire = None
 
     try:
         pa = pyaudio.PyAudio()
@@ -325,14 +346,40 @@ async def run_voice_agent():
         global SILENCE_THRESHOLD
         SILENCE_THRESHOLD = calibrate_noise(audio_stream)
 
-        print("🤖 Jarvis is ready. Say 'Jarvis' to wake me up. (Ctrl+C to exit)")
+        # ── Wire tripwire threshold to calibrated noise floor ──────────────
+        # Claps are ~3× louder than speech, so set a much stricter gate to
+        # avoid speech or ambient noise triggering a false wake.
+        if _tripwire is not None:
+            _tw_thresh = max(SILENCE_THRESHOLD * 3.0, 2000.0)
+            _tripwire.set_volume_threshold(_tw_thresh)
+            print(f"👏 Acoustic tripwire armed. Clap threshold: {_tw_thresh:.0f} RMS")
+
+        print("🤖 Jarvis is ready. Say 'Jarvis' or clap twice to wake me up. (Ctrl+C to exit)")
         set_ui_state("idle")
 
         # Single persistent HTTP client — no per-request overhead
         async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=10.0)) as http_client:
             while True:
+
+                # Read one audio frame (this is the ONLY stream read — shared
+                # by both the wake-word detector and the tripwire)
                 data = audio_stream.read(CHUNK, exception_on_overflow=False)
-                rms = get_rms(data)
+                rms  = get_rms(data)
+
+                # ── Acoustic tripwire (inline, no competing stream) ──────────
+                if _tripwire is not None and _tripwire.process_chunk(data, RATE):
+                    print("\n👏 Double-clap — Jarvis awakened by acoustic tripwire!")
+                    set_ui_state("listening")
+                    await speak_text("Yes sir?")
+                    # Longer flush: TTS takes ~0.8–1s to play; we must let it
+                    # fully finish before re-enabling the mic or the TTS echo
+                    # gets transcribed as a command.
+                    await asyncio.sleep(1.2)
+                    _flush_mic(audio_stream)
+                    await asyncio.sleep(0.4)
+                    _flush_mic(audio_stream)
+                    awaiting_followup = True
+                    continue
 
                 # State 1: Idle — wait for sound above threshold
                 if rms <= SILENCE_THRESHOLD:

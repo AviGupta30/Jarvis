@@ -904,9 +904,34 @@ def _ppt_create(user_prompt: str, style: str = None):
     """
     try:
         from app.services.ppt_tool import ppt_create
-        yield from ppt_create(user_prompt=user_prompt, style=style)
+        yield from ppt_create(prompt=user_prompt, style=style)
     except Exception as e:
         yield f"❌ PPT tool error: {e}"
+
+def _research_and_create_ppt(topic: str, style: str = None):
+    """
+    Phase 3: Autonomous Research Aggregator.
+    Scrapes live facts from the web, extracts them using NLP, and passes them
+    to the PPT engine to create a grounded presentation with real charts.
+    """
+    try:
+        from app.services.research_pipeline import research_topic
+        from app.services.ppt_tool import ppt_create
+        
+        # 1. Run research pipeline (yields progress strings)
+        research_data = None
+        for msg in research_topic(topic):
+            if isinstance(msg, str):
+                yield msg
+            elif isinstance(msg, dict):
+                research_data = msg
+        
+        # 2. Run PPT creation with injected research
+        yield from ppt_create(prompt=topic, style=style, research_data=research_data)
+        
+    except Exception as e:
+        yield f"❌ Research Pipeline Error: {e}"
+
 
 
 def _ppt_edit(edit_prompt: str):
@@ -1207,11 +1232,15 @@ TOOL_REGISTRY = {
     "audit_playlist_syllabus": lambda playlist_url, image_path: __import__('app.services.syllabus_auditor', fromlist=['audit_playlist_syllabus']).audit_playlist_syllabus(playlist_url, image_path),
     # ── AI Content Humanizer (5-Stage Pipeline) ──────────────────────────────
     "humanize_ai_content": lambda text: __import__('app.services.content_humanizer', fromlist=['humanize_text_sync']).humanize_text_sync(text),
-    # ── PowerPoint AI (ppt_tool.py) ──────────────────────────────────────────
-    # Isolated per Rule #4. Accessible via frontend and voice through /chat.
+    # ── PowerPoint AI (ppt_tool.py + research_pipeline.py) ───────────────────
+    
+    # Phase 1: Pure PPT Generation
     "ppt_create": _ppt_create,
     "ppt_edit":   _ppt_edit,
     "ppt_styles": _ppt_styles,
+    
+    # Phase 3: Research-backed PPT Generation
+    "research_and_create_ppt": _research_and_create_ppt,
     # ── Prompt Enhancer (Step 1) ─────────────────────────────────────────────
     "enhance_prompt": lambda raw_prompt: __import__('app.services.skill_prompt_enhancer', fromlist=['enhance_prompt']).enhance_prompt(raw_prompt),
     # ── DSA Mode (Leetcode Enforcer) ─────────────────────────────────────────

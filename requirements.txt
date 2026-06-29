@@ -51,3 +51,6 @@ faiss-cpu
 aiomysql
 # PyMySQL: sync MySQL fallback (required by some tools)
 PyMySQL
+# PPT Chart Engine — programmatic data visualization
+matplotlib
+seaborn

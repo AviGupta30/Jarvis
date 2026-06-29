@@ -126,6 +126,20 @@ async def startup_event():
         logger.error(f"RAG memory init failed (non-fatal): {e}")
 
 
+    # ── Acoustic Tripwire Engine ─────────────────────────────────────────────
+    # Note: The tripwire runs its OWN PyAudio stream in its background thread.
+    # It does NOT conflict with voice_agent.py because voice_agent.py is a
+    # separate process. When running from the frontend only (no voice_agent),
+    # this gives clap-wake capability directly on the server side.
+    try:
+        from app.services.acoustic_tripwire import get_engine as _get_tripwire
+        _tripwire = _get_tripwire()
+        _tripwire.start()
+        logger.info("✅ Acoustic tripwire started (double-clap wake enabled).")
+    except Exception as e:
+        logger.warning(f"⚠️  Acoustic tripwire startup failed (non-fatal): {e}")
+
+
     # ── Background Screen Watcher ─────────────────────────────────────────────
     try:
         from app.services.screen_vision import start_background_watcher
@@ -145,7 +159,12 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    """Stop watcher and close DB pool cleanly on server shutdown."""
+    """Stop watcher, acoustic tripwire, and close DB pool cleanly on server shutdown."""
+    try:
+        from app.services.acoustic_tripwire import get_engine as _get_tripwire
+        _get_tripwire().stop()
+    except Exception:
+        pass
     try:
         from app.services.screen_vision import stop_background_watcher
         stop_background_watcher()
@@ -174,3 +193,59 @@ def get_alerts(clear: bool = True):
     if clear:
         _watcher_alerts.clear()
     return {"alerts": alerts}
+
+
+# ── Acoustic Tripwire API ──────────────────────────────────────────────────
+# These endpoints let the frontend UI toggle and monitor the acoustic engine.
+# This satisfies Architecture Rule #4: the feature must be reachable from
+# BOTH the voice layer (voice_agent.py uses the threading.Event directly)
+# AND the frontend UI (via these REST endpoints).
+
+@app.get("/tripwire/status")
+def tripwire_status():
+    """Return current acoustic tripwire state for the frontend toggle."""
+    try:
+        from app.services.acoustic_tripwire import get_engine
+        return get_engine().get_status()
+    except Exception as e:
+        return {"error": str(e), "enabled": False, "running": False}
+
+
+@app.post("/tripwire/enable")
+def tripwire_enable():
+    """Arm the acoustic tripwire so double-claps wake Jarvis."""
+    try:
+        from app.services.acoustic_tripwire import get_engine
+        engine = get_engine()
+        if not engine._thread or not engine._thread.is_alive():
+            engine.start()
+        msg = engine.enable()
+        return {"status": "ok", "message": msg}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/tripwire/disable")
+def tripwire_disable():
+    """Disarm the acoustic tripwire (engine keeps running, just paused)."""
+    try:
+        from app.services.acoustic_tripwire import get_engine
+        msg = get_engine().disable()
+        return {"status": "ok", "message": msg}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+
+@app.post("/tripwire/calibrate")
+def tripwire_calibrate():
+    """
+    Schedule an ambient-noise recalibration pass.
+    The engine samples the mic for ~2 seconds and updates its clap threshold.
+    Returns immediately; calibration runs asynchronously in the engine thread.
+    """
+    try:
+        from app.services.acoustic_tripwire import get_engine
+        msg = get_engine().recalibrate()
+        return {"status": "ok", "message": msg}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}

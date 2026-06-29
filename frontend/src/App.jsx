@@ -14,6 +14,62 @@ function App() {
   const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
   const [isAirDrawingOpen, setIsAirDrawingOpen] = useState(false);
 
+  // ── Acoustic Tripwire state ────────────────────────────────────────
+  const [tripwireEnabled, setTripwireEnabled] = useState(false);
+  const [tripwireRunning, setTripwireRunning] = useState(false);
+  const [tripwireCalibrating, setTripwireCalibrating] = useState(false);
+  const [tripwireThreshold, setTripwireThreshold] = useState(null);
+
+  // ── Acoustic Tripwire: poll backend status every 5 seconds ───────────────
+  useEffect(() => {
+    const fetchTripwireStatus = async () => {
+      try {
+        const res = await fetch('http://127.0.0.1:8000/tripwire/status');
+        if (res.ok) {
+          const data = await res.json();
+          setTripwireEnabled(data.enabled ?? false);
+          setTripwireRunning(data.running ?? false);
+          if (data.volume_threshold) setTripwireThreshold(data.volume_threshold);
+        }
+      } catch (_) { /* backend not running yet — silent */ }
+    };
+    fetchTripwireStatus();
+    const id = setInterval(fetchTripwireStatus, 5000);
+    return () => clearInterval(id);
+  }, []);
+
+  const handleTripwireToggle = async () => {
+    const endpoint = tripwireEnabled ? '/tripwire/disable' : '/tripwire/enable';
+    try {
+      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'ok') setTripwireEnabled(!tripwireEnabled);
+      }
+    } catch (err) { console.error('[Tripwire] toggle error:', err); }
+  };
+
+  const handleTripwireCalibrate = async () => {
+    setTripwireCalibrating(true);
+    try {
+      await fetch('http://127.0.0.1:8000/tripwire/calibrate', { method: 'POST' });
+      // Wait 2.5s for calibration to complete, then refresh threshold
+      setTimeout(async () => {
+        try {
+          const res = await fetch('http://127.0.0.1:8000/tripwire/status');
+          if (res.ok) {
+            const d = await res.json();
+            if (d.volume_threshold) setTripwireThreshold(d.volume_threshold);
+          }
+        } catch (_) {}
+        setTripwireCalibrating(false);
+      }, 2500);
+    } catch (err) {
+      console.error('[Tripwire] calibrate error:', err);
+      setTripwireCalibrating(false);
+    }
+  };
+
   useEffect(() => {
     if (messages.length > 0) {
       const lastMsg = messages[messages.length - 1];
@@ -469,6 +525,56 @@ function App() {
               <div className="pt-2 flex justify-between items-center text-[11px] font-mono text-cyan-500 uppercase">
                 <span className="tracking-widest">Core Temperature</span>
                 <span className="text-orange-400 border border-orange-500/30 bg-orange-900/20 px-2 py-0.5 rounded">Optimal</span>
+              </div>
+
+              {/* ── Acoustic Tripwire Toggle ── */}
+              <div className="pt-4 border-t border-cyan-800/50">
+                <div className="flex justify-between items-center text-[11px] font-mono uppercase mb-3">
+                  <div className="flex items-center gap-2 text-cyan-500 tracking-widest">
+                    {tripwireEnabled && tripwireRunning && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
+                    )}
+                    <span>Acoustic Wake</span>
+                  </div>
+                  <button
+                    id="tripwire-toggle-btn"
+                    onClick={handleTripwireToggle}
+                    title={tripwireEnabled ? 'Disarm acoustic tripwire' : 'Arm acoustic tripwire'}
+                    className={`relative inline-flex items-center h-5 w-9 rounded-full transition-colors duration-300 focus:outline-none border ${
+                      tripwireEnabled
+                        ? 'bg-emerald-600/70 border-emerald-500/60 shadow-[0_0_8px_rgba(52,211,153,0.4)]'
+                        : 'bg-cyan-950/60 border-cyan-800/60'
+                    }`}
+                  >
+                    <span className={`inline-block w-3.5 h-3.5 rounded-full transition-transform duration-300 ${
+                      tripwireEnabled
+                        ? 'translate-x-[18px] bg-emerald-300 shadow-[0_0_6px_#34d399]'
+                        : 'translate-x-[2px] bg-cyan-600'
+                    }`} />
+                  </button>
+                </div>
+
+                {/* Status / threshold line */}
+                <div className="flex justify-between items-center text-[10px] font-mono text-cyan-700 mb-2">
+                  <span>{tripwireRunning ? (tripwireEnabled ? 'ARMED — clap twice' : 'STANDBY') : 'OFFLINE'}</span>
+                  {tripwireThreshold && (
+                    <span className="text-cyan-600">thr: {tripwireThreshold}</span>
+                  )}
+                </div>
+
+                {/* Calibrate button */}
+                <button
+                  id="tripwire-calibrate-btn"
+                  onClick={handleTripwireCalibrate}
+                  disabled={tripwireCalibrating || !tripwireRunning}
+                  className="w-full py-1.5 text-[10px] font-mono tracking-widest uppercase border border-cyan-800/60 rounded bg-cyan-950/40 text-cyan-600 hover:text-cyan-300 hover:border-cyan-600/60 hover:bg-cyan-900/40 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {tripwireCalibrating ? (
+                    <><span className="animate-spin">&#9696;</span> Calibrating...</>
+                  ) : (
+                    <>⦿ Recalibrate Noise Floor</>
+                  )}
+                </button>
               </div>
             </div>
           </div>

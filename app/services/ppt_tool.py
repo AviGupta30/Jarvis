@@ -10,7 +10,7 @@ Design philosophy:
   • Bottom: full-width bar + slide counter
 """
 from __future__ import annotations
-import json, re, time
+import io, json, re, time
 from pathlib import Path
 from typing import Optional, Generator
 
@@ -276,6 +276,7 @@ TOPIC/REQUEST: {prompt}
 
 RULES:
 - Outline 8 to 12 slides. First slide MUST use "aesthetic_title".
+- The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
 - You MUST use AT LEAST 5 different layouts in the presentation.
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
@@ -334,6 +335,57 @@ EXAMPLE OUTPUT for aesthetic_split:
     {{"bold": "Mentor Influence", "text": "Guided by the legendary Dr. Ramachandra Shukla, he developed rigorous analytical skills in classical Indian philosophy, blending traditional wisdom with modern interdisciplinary methods."}}
   ]
 }}]}}"""
+
+# ─── Chart Data Extraction Prompt ──────────────────────────────────────────────
+_SYS_CHART = """\
+You are a data extraction specialist. Given a visual description from a presentation slide,
+extract structured numerical/categorical data suitable for chart generation.
+Output ONLY valid JSON — no markdown fences, no explanation."""
+
+_USR_CHART = """\
+Slide title: {title}
+Slide layout: {layout}
+Visual suggestion: {visual_suggestion}
+Slide content summary: {content_summary}
+
+Extract chart-ready data from the above. Pick the BEST chart type for this data.
+If the visual suggestion mentions specific numbers, percentages, or comparisons, extract them.
+If there are no clear numerical values, INFER reasonable realistic data from the context.
+
+CRITICAL RULE: NEVER put dates or years (e.g. 1993, 2025) as VALUES in a bar chart (values must be counts, amounts, percentages).
+
+Chart types: "bar", "pie", "line", "comparison", "timeline", "metrics"
+
+RETURN ONLY this JSON:
+{{
+  "type": "bar",
+  "title": "Chart Title",
+  "labels": ["Label1", "Label2", "Label3"],
+  "values": [94, 85, 78]
+}}
+
+For "comparison" type, use:
+{{
+  "type": "comparison",
+  "title": "...",
+  "categories": ["Cat1", "Cat2"],
+  "left_label": "Group A", "right_label": "Group B",
+  "left_values": [90, 80], "right_values": [70, 60]
+}}
+
+For "timeline" type, use:
+{{
+  "type": "timeline",
+  "title": "...",
+  "nodes": [{{"header": "Phase 1", "text": "Description"}}]
+}}
+
+For "metrics" type, use:
+{{
+  "type": "metrics",
+  "title": "...",
+  "metrics": [{{"value": "94%", "label": "Satisfaction"}}]
+}}"""
 
 
 
@@ -555,9 +607,9 @@ class PresentationBuilder:
         _tb(slide, title.upper(), tx, ty + Inches(0.08), tw, th - Inches(0.16),
             sz=22, bold=True, col=self.P["text"], align=PP_ALIGN.CENTER)
 
-    def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str = ""):
-        """Clean single-border rounded container for images."""
-        # Main outer container
+    def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
+        """Draws a premium rounded frame with an inner image, auto-generated chart, or text fallback."""
+        # Clean background card
         _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=1.5)
 
         # High-tech top-right dots
@@ -565,7 +617,6 @@ class PresentationBuilder:
             _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
                   Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
 
-        # Embed image or placeholder
         pad = Inches(0.1)
         clean = _clean_image_path(path) if path else ""
         if clean and Path(clean).exists():
@@ -576,8 +627,23 @@ class PresentationBuilder:
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
-                
-        # Aesthetic placeholder
+
+        # ── AUTO-CHART: Render chart from structured data if available ──
+        if chart_data and isinstance(chart_data, dict):
+            try:
+                from app.services.ppt_chart_engine import ChartEngine
+                png_bytes = ChartEngine.render(chart_data, self.P)
+                if png_bytes and len(png_bytes) > 100:
+                    c_pad = Inches(0.25)  # Extra padding for charts inside rounded borders
+                    pic = slide.shapes.add_picture(
+                        io.BytesIO(png_bytes), l + c_pad, t + c_pad,
+                        w - 2*c_pad, h - 2*c_pad
+                    )
+                    return
+            except Exception as e:
+                print(f"[ppt] chart render error: {e}")
+
+        # Aesthetic placeholder (only if no image AND no chart)
         _tb(slide, suggestion or "[ Detailed Visual ]",
             l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
             sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
@@ -687,9 +753,10 @@ class PresentationBuilder:
         lx = Inches(0.25)
         rx = lx + lw + gap
 
-        # ── RIGHT: Premium image frame ────────────────────────────────────
+        # ── RIGHT: Premium image frame (with auto-chart) ──────────────────
         self._premium_image_frame(slide, d.get("image_path", ""), rx, top, rw, avail,
-                                   d.get("visual_suggestion", "[ Visual ]"))
+                                   d.get("visual_suggestion", "[ Visual ]"),
+                                   chart_data=d.get("chart_data"))
 
         # ── LEFT: Dense bullet cards ──────────────────────────────────────
         bullets = d.get("bullets", [])
@@ -734,14 +801,20 @@ class PresentationBuilder:
         # Check if we have an image to show alongside
         img_path = _clean_image_path(d.get("image_path", ""))
         has_img = bool(img_path and Path(img_path).exists())
+        has_chart = bool(d.get("chart_data"))
 
-        if has_img:
-            # 3 cards left + image right
+        if has_img or has_chart:
+            # Cards left + image/chart right
             grid_w = (W - Inches(0.5)) * 0.55
-            img_w  = (W - Inches(0.5)) * 0.42
-            img_x  = Inches(0.25) + grid_w + gap
-            self._premium_image_frame(slide, img_path, img_x, top, img_w, avail)
-            n_cols, n_rows = 1, min(len(cards), 3)
+            vis_w  = (W - Inches(0.5)) * 0.42
+            vis_x  = Inches(0.25) + grid_w + gap
+            self._premium_image_frame(
+                slide, d.get("image_path", "") if has_img else "",
+                vis_x, top, vis_w, avail,
+                d.get("visual_suggestion", "[ Visual ]"),
+                chart_data=d.get("chart_data")
+            )
+            n_cols, n_rows = 1, min(len(cards), 4)
             col_w = grid_w - Inches(0.04)
             row_h = (avail - gap*(n_rows-1)) / max(n_rows, 1)
             for i, c in enumerate(cards[:n_rows]):
@@ -750,7 +823,7 @@ class PresentationBuilder:
                 self._colored_card_full(slide, cx2, cy2, col_w, row_h, c,
                                         self.P["tag_colors"][i % 4])
         else:
-            # Standard 2×2 grid
+            # Standard 2×2 grid (no chart data, no image)
             n_cols, n_rows = 2, 2
             col_w = (W - Inches(0.5) - gap) / 2
             row_h = (avail - gap) / 2
@@ -847,7 +920,8 @@ class PresentationBuilder:
         vt = top + desc_h + Inches(0.15)
         vh = H - vt - Inches(0.3)
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
-                                   W - Inches(0.43), vh, d.get("visual_suggestion", "[ Architecture ]"))
+                                   W - Inches(0.43), vh, d.get("visual_suggestion", "[ Architecture ]"),
+                                   chart_data=d.get("chart_data"))
 
     # ── LAYOUT 5: TIMELINE ────────────────────────────────────────────────────
     def _lay_aesthetic_timeline(self, d: dict, cur: int, total: int):
@@ -914,8 +988,17 @@ class PresentationBuilder:
         self._header(slide, d.get("title", ""))
         self._progress(slide, cur, total)
 
-        top   = Inches(0.86)
-        avail = H - top - Inches(0.3)
+        top = Inches(0.86)
+        cd = d.get("chart_data")
+        has_chart = False
+        if cd and isinstance(cd, dict):
+            # Check if it has the required data for a comparison chart, or if it's a fallback bar chart with values
+            if (cd.get("left_values") and cd.get("right_values")) or cd.get("values"):
+                has_chart = True
+                
+        # If chart_data available and valid, shrink columns to make room for chart at bottom
+        col_area_h = (H - top - Inches(0.3)) * 0.55 if has_chart else H - top - Inches(0.3)
+        avail = col_area_h
         cw2   = (W - Inches(0.7)) / 2
 
         for si, (hk, bk, color) in enumerate([
@@ -970,6 +1053,17 @@ class PresentationBuilder:
             Inches(0.22), Inches(0.45), sz=9, bold=True,
             col=self.P["text"], align=PP_ALIGN.CENTER)
 
+        # ── Chart panel at bottom (if chart_data available) ────────────────
+        if has_chart:
+            chart_top = top + col_area_h + Inches(0.15)
+            chart_h   = H - chart_top - Inches(0.3)
+            self._premium_image_frame(
+                slide, "", Inches(0.25), chart_top,
+                W - Inches(0.43), chart_h,
+                d.get("visual_suggestion", "[ Comparison Chart ]"),
+                chart_data=d.get("chart_data")
+            )
+
     # ── LAYOUT 7: METRICS — KPI ROW + DOMINANT VISUAL ────────────────────────
     def _lay_aesthetic_metrics(self, d: dict, cur: int, total: int):
         slide = self._blank()
@@ -1002,15 +1096,32 @@ class PresentationBuilder:
                 mw - Inches(0.24), Inches(0.42), sz=9.5, col=self.P["sub"],
                 align=PP_ALIGN.CENTER)
 
-        # Dominant visual below (60%+ of slide)
+        # Dominant visual below (60%+ of slide) — auto-generate dashboard chart
         vt = top + mh + Inches(0.18)
         vh = H - vt - Inches(0.3)
         desc_fallback = d.get("description", d.get("text", ""))
         if not desc_fallback and "metrics" in d:
             desc_fallback = " ".join([m.get("label", "") if isinstance(m, dict) else str(m) for m in d["metrics"]])
         fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Detailed Metric Analysis ]")
+
+        # Auto-generate a bar chart from metrics data if no chart_data exists
+        auto_chart = d.get("chart_data")
+        if not auto_chart and metrics:
+            auto_chart = {
+                "type": "bar",
+                "title": d.get("title", "Key Metrics"),
+                "labels": [m.get("label", f"Metric {j+1}") for j, m in enumerate(metrics[:4])],
+                "values": []
+            }
+            for m in metrics[:4]:
+                val_str = str(m.get("value", "0"))
+                # Extract numeric value from strings like "94%", "$1.2M", "3.5x"
+                num_match = re.search(r'([\d.]+)', val_str)
+                auto_chart["values"].append(float(num_match.group(1)) if num_match else 0)
+
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
-                                   W - Inches(0.43), vh, fallback_text)
+                                   W - Inches(0.43), vh, fallback_text,
+                                   chart_data=auto_chart)
 
     # ── LAYOUT 8: PITCH (DENSE GRID + VISUAL) ───────────────────────────────
     def _lay_aesthetic_pitch(self, d: dict, cur: int, total: int):
@@ -1050,19 +1161,32 @@ class PresentationBuilder:
         bot_t = top + top_h + Inches(0.2)
         bot_h = avail - top_h - Inches(0.2)
         
-        # Left image (55% width)
-        lw = (W - Inches(0.7)) * 0.55
+        bullets = d.get("right_bullets", d.get("bottom_bullets", []))
+        if not bullets and "description" in d: bullets = [{"bold": "", "text": d["description"]}]
+        
+        # Check if we actually have meaningful bullets
+        has_real_bullets = False
+        for b in bullets:
+            _, txt = _parse_bullet(b)
+            if txt and "No detailed content" not in txt and txt.strip():
+                has_real_bullets = True
+                break
+
+        # Left image (Dynamic width based on right content)
+        lw = (W - Inches(0.7)) * 0.55 if has_real_bullets else (W - Inches(0.5))
+        
         desc_fallback = d.get("description", d.get("text", ""))
         fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Flowchart / Architecture ]")
-        self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), bot_t, lw, bot_h, fallback_text)
+        self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), bot_t, lw, bot_h, fallback_text,
+                                   chart_data=d.get("chart_data"))
         
+        # If no meaningful bullets, skip drawing the right side cards
+        if not has_real_bullets:
+            return
+
         # Right bullets (45% width)
         rx = Inches(0.25) + lw + Inches(0.2)
         rw = (W - Inches(0.7)) * 0.45
-        
-        bullets = d.get("right_bullets", d.get("bottom_bullets", []))
-        if not bullets and "description" in d: bullets = [{"bold": "", "text": d["description"]}]
-        elif not bullets: bullets = [{"bold": "", "text": "(No detailed content provided)"}]
         
         # Internal bullets
         by = bot_t
@@ -1106,9 +1230,33 @@ def _normalize_and_recover(chunk_data, outline_chunk):
             if not s.get("left_bullets"): s["left_bullets"] = alt if alt else [{"bold": "Left", "text": "Auto-Recovered"}]
             if not s.get("right_bullets"): s["right_bullets"] = [{"bold": "Right", "text": "Auto-Recovered"}]
 
-def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_image_path: str = None):
+def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_image_path: str = None, research_data: dict = None):
     yield "🤖 Generating Presentation Outline...\n"
-    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=prompt))
+    
+    # ── INJECT RESEARCH DATA (PHASE 3) ──
+    enriched_prompt = prompt
+    if research_data:
+        facts_str = "\n- ".join(research_data.get("verified_facts", []))
+        stats_str = "\n- ".join([f"{s['label']}: {s['value']}" for s in research_data.get("statistics", [])])
+        sources_str = ", ".join(research_data.get("sources", []))
+        
+        enriched_prompt += f"""
+
+==================================================
+VERIFIED RESEARCH DATA (MUST USE THESE FACTS):
+==================================================
+FACTS:
+- {facts_str}
+
+STATISTICS & METRICS:
+- {stats_str}
+
+SOURCES (Cite these if applicable): {sources_str}
+==================================================
+"""
+        yield f"📚 Injected {len(research_data.get('verified_facts', []))} verified facts from live web research.\n"
+
+    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=enriched_prompt))
     plan = _parse(raw_outline)
     
     if style and style in PERSONALITIES:
@@ -1146,7 +1294,7 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_im
             try:
                 raw_chunk = _groq_call(
                     _SYS_CHUNK,
-                    _USR_CHUNK.format(prompt=prompt, outline=outline_str, start_idx=start_idx, end_idx=end_idx)
+                    _USR_CHUNK.format(prompt=enriched_prompt, outline=outline_str, start_idx=start_idx, end_idx=end_idx)
                 )
                 chunk_data = _parse(raw_chunk)
                 _normalize_and_recover(chunk_data, chunk)
@@ -1169,8 +1317,63 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_im
                     "layout": "aesthetic_split",
                     "bullets": [{"bold": c.get("title", "Note"), "text": "Content could not be generated for this slide. Please try regenerating the presentation."}]
                 })
-    yield "🎨 Content generated! Building PPTX with precision curves...\n"
-    
+    yield "🎨 Content generated! Extracting chart data for infographics...\n"
+
+    # ── NEW: Chart Data Extraction Pass ──────────────────────────────────
+    # For each slide with a visual_suggestion, ask the LLM to extract
+    # structured chart data so ChartEngine can render real infographics.
+    chart_ok = 0
+    chart_fail = 0
+    used_chart_types = []
+    for si, sd in enumerate(full_slides):
+        vs = sd.get("visual_suggestion", "")
+        lay = sd.get("layout", "")
+        # Skip title slides — they don't need charts
+        if lay == "aesthetic_title" or not vs:
+            continue
+        # Build a content summary for context
+        content_parts = []
+        for b in sd.get("bullets", []):
+            if isinstance(b, dict):
+                content_parts.append(f"{b.get('bold','')} {b.get('text','')}".strip())
+        for c in sd.get("cards", []):
+            if isinstance(c, dict):
+                content_parts.append(c.get("header", ""))
+        for m in sd.get("metrics", []):
+            if isinstance(m, dict):
+                content_parts.append(f"{m.get('value','')} {m.get('label','')}".strip())
+        for n in sd.get("nodes", []):
+            if isinstance(n, dict):
+                content_parts.append(f"{n.get('header','')} {n.get('text','')}".strip())
+        content_summary = "; ".join(content_parts[:6]) or sd.get("title", "")
+
+        try:
+            raw_chart = _groq_call(
+                _SYS_CHART,
+                _USR_CHART.format(
+                    title=sd.get("title", ""),
+                    layout=lay,
+                    visual_suggestion=vs,
+                    content_summary=content_summary[:500]
+                ),
+                tokens=800
+            )
+            chart_data = _parse(raw_chart)
+            if chart_data and chart_data.get("type"):
+                sd["chart_data"] = chart_data
+                chart_ok += 1
+        except Exception as e:
+            chart_fail += 1
+            # Non-fatal — slide will just show placeholder text
+            print(f"[ppt] chart extraction failed for slide {si+1}: {e}")
+
+    if chart_ok:
+        yield f"📊 Extracted chart data for {chart_ok} slides.\n"
+    if chart_fail:
+        yield f"⚠️ {chart_fail} slides will use text placeholders (chart extraction failed).\n"
+
+    yield "🎨 Building PPTX with precision curves + infographics...\n"
+
     # ── CRITICAL: Write the fully-populated slides back into the plan ──
     plan["slides"] = full_slides
     
