@@ -113,7 +113,7 @@ def _style_ax(ax, palette: dict, title: str = ""):
 
 # ── Chart Renderers ────────────────────────────────────────────────────────────
 
-def _render_bar(data: dict, palette: dict) -> bytes:
+def _render_bar(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Horizontal or vertical bar chart."""
     labels = data.get("labels", [])
     values = data.get("values", [])
@@ -126,16 +126,21 @@ def _render_bar(data: dict, palette: dict) -> bytes:
     colors = _palette_colors(palette, n)
 
     orientation = data.get("orientation", "horizontal")
-    fig, ax = plt.subplots(figsize=(7, max(3.2, n * 0.7)))
+    fig_w = w if w else 7
+    fig_h = h if h else max(3.2, n * 0.7)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     fig.set_facecolor(_bg_color(palette))
 
     if orientation == "vertical":
         bars = ax.bar(range(n), values, color=colors, width=0.55,
                       edgecolor=_bg_color(palette), linewidth=0.8, zorder=3)
+        # Wrap long labels for vertical bars and adjust bottom margin
+        wrapped_labels = [textwrap.fill(lbl, width=12) for lbl in labels]
         ax.set_xticks(range(n))
-        ax.set_xticklabels(labels, rotation=25, ha="right",
+        ax.set_xticklabels(wrapped_labels, rotation=25, ha="right",
                            fontsize=9, color=_sub_color(palette))
         ax.set_ylabel("")
+        fig.subplots_adjust(bottom=0.25)
         # Value labels on top
         for bar, val in zip(bars, values):
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + max(values)*0.02,
@@ -172,7 +177,7 @@ def _render_bar(data: dict, palette: dict) -> bytes:
     return _fig_to_bytes(fig)
 
 
-def _render_pie(data: dict, palette: dict) -> bytes:
+def _render_pie(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Donut/pie chart."""
     labels = data.get("labels", [])
     values = data.get("values", [])
@@ -186,13 +191,17 @@ def _render_pie(data: dict, palette: dict) -> bytes:
     bg = _bg_color(palette)
     txt = _text_color(palette)
 
-    fig, ax = plt.subplots(figsize=(6, 5))
+    fig_w = w if w else 6
+    fig_h = h if h else 5
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     fig.set_facecolor(bg)
 
     wedges, texts, autotexts = ax.pie(
         values, labels=None, autopct="%1.0f%%", startangle=90,
         colors=colors, pctdistance=0.78,
         wedgeprops=dict(width=0.45, edgecolor=bg, linewidth=2))
+
+    ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     for t in autotexts:
         t.set_color(txt)
@@ -210,7 +219,7 @@ def _render_pie(data: dict, palette: dict) -> bytes:
     return _fig_to_bytes(fig)
 
 
-def _render_line(data: dict, palette: dict) -> bytes:
+def _render_line(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Line / trend chart — supports multiple series."""
     title = data.get("title", "")
     bg = _bg_color(palette)
@@ -227,7 +236,9 @@ def _render_line(data: dict, palette: dict) -> bytes:
     if not series_list:
         return b""
 
-    fig, ax = plt.subplots(figsize=(7, 4))
+    fig_w = w if w else 7
+    fig_h = h if h else 4
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     fig.set_facecolor(bg)
 
     n_series = len(series_list)
@@ -249,8 +260,10 @@ def _render_line(data: dict, palette: dict) -> bytes:
                         textcoords="offset points", xytext=(0, 10),
                         ha="center", fontsize=8, color=colors[i], fontweight="bold")
 
+        wrapped_labels = [textwrap.fill(lbl, width=12) for lbl in labels[:n]]
         ax.set_xticks(range(n))
-        ax.set_xticklabels(labels[:n], rotation=20, ha="right", fontsize=9)
+        ax.set_xticklabels(wrapped_labels, rotation=25, ha="right", fontsize=9)
+        fig.subplots_adjust(bottom=0.25)
 
     ax.yaxis.grid(True, alpha=0.15, color=_sub_color(palette), linestyle="--")
     if n_series > 1:
@@ -260,7 +273,7 @@ def _render_line(data: dict, palette: dict) -> bytes:
     return _fig_to_bytes(fig)
 
 
-def _render_comparison(data: dict, palette: dict) -> bytes:
+def _render_comparison(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Grouped bar chart for side-by-side comparison."""
     left_label  = data.get("left_label", data.get("left_header", "Option A"))
     right_label = data.get("right_label", data.get("right_header", "Option B"))
@@ -282,7 +295,9 @@ def _render_comparison(data: dict, palette: dict) -> bytes:
     x = np.arange(n)
     bar_w = 0.35
     # Use a wider aspect ratio (10, 3) because comparison charts span the entire width of the slide bottom
-    fig, ax = plt.subplots(figsize=(11, max(3.0, n * 0.65)))
+    fig_w = w if w else 11
+    fig_h = h if h else max(3.0, n * 0.65)
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     fig.set_facecolor(bg)
 
     b1 = ax.bar(x - bar_w/2, left_vals, bar_w, label=left_label,
@@ -290,9 +305,10 @@ def _render_comparison(data: dict, palette: dict) -> bytes:
     b2 = ax.bar(x + bar_w/2, right_vals, bar_w, label=right_label,
                 color=colors[1], edgecolor=bg, linewidth=0.8, zorder=3)
 
-    wrapped_categories = [textwrap.fill(cat, width=15) for cat in categories]
+    wrapped_categories = [textwrap.fill(cat, width=12) for cat in categories]
     ax.set_xticks(x)
-    ax.set_xticklabels(wrapped_categories, rotation=20, ha="right", fontsize=9)
+    ax.set_xticklabels(wrapped_categories, rotation=25, ha="right", fontsize=9)
+    fig.subplots_adjust(bottom=0.25)
     ax.yaxis.grid(True, alpha=0.15, color=_sub_color(palette), linestyle="--")
 
     # Value labels
@@ -310,7 +326,7 @@ def _render_comparison(data: dict, palette: dict) -> bytes:
     return _fig_to_bytes(fig)
 
 
-def _render_metrics_dashboard(data: dict, palette: dict) -> bytes:
+def _render_metrics_dashboard(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Large KPI numbers with optional mini-bar underneath."""
     metrics = data.get("metrics", [])
     title   = data.get("title", "")
@@ -327,7 +343,9 @@ def _render_metrics_dashboard(data: dict, palette: dict) -> bytes:
     cols = min(n, 4)
     rows = math.ceil(n / cols)
 
-    fig, axes = plt.subplots(rows, cols, figsize=(cols * 2.8, rows * 2.2))
+    fig_w = w if w else (cols * 2.8)
+    fig_h = h if h else (rows * 2.2)
+    fig, axes = plt.subplots(rows, cols, figsize=(fig_w, fig_h))
     fig.set_facecolor(bg)
     if n == 1:
         axes = np.array([axes])
@@ -376,7 +394,7 @@ def _render_metrics_dashboard(data: dict, palette: dict) -> bytes:
     return _fig_to_bytes(fig)
 
 
-def _render_timeline(data: dict, palette: dict) -> bytes:
+def _render_timeline(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
     """Horizontal timeline infographic."""
     nodes = data.get("nodes", [])
     title = data.get("title", "")
@@ -390,7 +408,9 @@ def _render_timeline(data: dict, palette: dict) -> bytes:
     txt = _text_color(palette)
     sub = _sub_color(palette)
 
-    fig, ax = plt.subplots(figsize=(max(8, n * 1.8), 3.5))
+    fig_w = w if w else max(8, n * 1.8)
+    fig_h = h if h else 3.5
+    fig, ax = plt.subplots(figsize=(fig_w, fig_h))
     fig.set_facecolor(bg)
     ax.set_facecolor(bg)
     ax.axis("off")
@@ -433,19 +453,33 @@ def _render_timeline(data: dict, palette: dict) -> bytes:
 
 # ── Dispatcher ─────────────────────────────────────────────────────────────────
 
+def _metrics_to_bar(data: dict, palette: dict, w: float=None, h: float=None) -> bytes:
+    """Convert a metrics dashboard to a horizontal bar chart so it has a real visual."""
+    import re
+    metrics = data.get("metrics", [])
+    labels = [m.get("label", "") for m in metrics]
+    values = []
+    for m in metrics:
+        num_str = re.sub(r'[^\d.]', '', str(m.get("value", "0")))
+        values.append(float(num_str) if num_str else 0.0)
+    data["labels"] = labels
+    data["values"] = values
+    data["orientation"] = "horizontal"
+    return _render_bar(data, palette, w, h)
+
 _RENDERERS = {
     "bar":        _render_bar,
     "horizontal_bar": _render_bar,
-    "vertical_bar":   lambda d, p: _render_bar({**d, "orientation": "vertical"}, p),
+    "vertical_bar":   lambda d, p, w=None, h=None: _render_bar({**d, "orientation": "vertical"}, p, w, h),
     "pie":        _render_pie,
     "donut":      _render_pie,
     "line":       _render_line,
     "trend":      _render_line,
     "comparison": _render_comparison,
     "grouped_bar": _render_comparison,
-    "dashboard":  _render_metrics_dashboard,
-    "metrics":    _render_metrics_dashboard,
-    "kpi":        _render_metrics_dashboard,
+    "dashboard":  _metrics_to_bar,
+    "metrics":    _metrics_to_bar,
+    "kpi":        _metrics_to_bar,
     "timeline":   _render_timeline,
 }
 
@@ -462,7 +496,7 @@ class ChartEngine:
     """
 
     @staticmethod
-    def render(chart_data: dict, palette: dict) -> Optional[bytes]:
+    def render(chart_data: dict, palette: dict, w: float=None, h: float=None) -> Optional[bytes]:
         """
         Render a chart from structured data.
         
@@ -485,7 +519,7 @@ class ChartEngine:
             renderer = _render_bar
 
         try:
-            result = renderer(chart_data, palette)
+            result = renderer(chart_data, palette, w, h)
             return result if result else None
         except Exception as e:
             print(f"[ChartEngine] render error ({chart_type}): {e}")

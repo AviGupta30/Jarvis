@@ -318,6 +318,7 @@ ABSOLUTE RULES:
    NEVER output items as plain strings like {{'bold': 'x', 'text': 'y'}} -- always use double quotes.
 2. Each bullet: "bold" = 2-5 word sub-header. "text" = 25-35 words of detailed, informative content.
 3. Every slide MUST include "visual_suggestion" describing a specific chart, diagram, or infographic.
+4. UNIQUE CONTENT: Ensure EVERY slide has completely unique content. Do NOT repeat the same descriptions or facts across different slides. Every slide must advance the presentation with new information.
 
 LAYOUT SCHEMAS:
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
@@ -352,9 +353,19 @@ Extract chart-ready data from the above. Pick the BEST chart type for this data.
 If the visual suggestion mentions specific numbers, percentages, or comparisons, extract them.
 If there are no clear numerical values, INFER reasonable realistic data from the context.
 
-CRITICAL RULE: NEVER put dates or years (e.g. 1993, 2025) as VALUES in a bar chart (values must be counts, amounts, percentages).
+CRITICAL RULES:
+1. NEVER put dates or years (e.g. 1993, 2025) as VALUES in a bar chart (values must be counts, amounts, percentages).
+2. VARIETY: You MUST choose a chart type that has NOT been heavily used yet. 
+   Already used charts: {used_charts}
+   If you see "bar" in the used list, DO NOT use it again. Pick "pie", "line", "timeline", "metrics", etc.
+3. LAYOUT MATCHING & REDUNDANCY:
+   - For TALL/SQUARE spaces (layout = "aesthetic_split", "aesthetic_pitch"): Use "bar", "pie", or "metrics".
+   - For WIDE/HORIZONTAL spaces (layout = "aesthetic_grid", "aesthetic_timeline", "aesthetic_comparison"): Use "line", "timeline", "comparison", or "horizontal_bar". DO NOT use "pie" or "donut" in wide spaces.
+   - If the layout is "aesthetic_metrics", the slide ALREADY has large metric text cards. Do NOT generate a "metrics" chart of the same numbers! Generate a complementary "line", "horizontal_bar", or "pie" chart instead.
+   
+4. YOU MUST strictly adhere to the required JSON schemas for your chosen chart type. Failure to do so will result in an empty slide.
 
-Chart types: "bar", "pie", "line", "comparison", "timeline", "metrics"
+Chart types: "bar", "horizontal_bar", "pie", "donut", "line", "comparison", "timeline", "metrics"
 
 RETURN ONLY this JSON:
 {{
@@ -632,7 +643,12 @@ class PresentationBuilder:
         if chart_data and isinstance(chart_data, dict):
             try:
                 from app.services.ppt_chart_engine import ChartEngine
-                png_bytes = ChartEngine.render(chart_data, self.P)
+                png_bytes = ChartEngine.render(
+                    chart_data, 
+                    self.P, 
+                    w=(w / 914400.0) - 0.5, 
+                    h=(h / 914400.0) - 0.5
+                )
                 if png_bytes and len(png_bytes) > 100:
                     c_pad = Inches(0.25)  # Extra padding for charts inside rounded borders
                     pic = slide.shapes.add_picture(
@@ -1354,13 +1370,15 @@ SOURCES (Cite these if applicable): {sources_str}
                     title=sd.get("title", ""),
                     layout=lay,
                     visual_suggestion=vs,
-                    content_summary=content_summary[:500]
+                    content_summary=content_summary[:500],
+                    used_charts=", ".join(used_chart_types) if used_chart_types else "None"
                 ),
                 tokens=800
             )
             chart_data = _parse(raw_chart)
             if chart_data and chart_data.get("type"):
                 sd["chart_data"] = chart_data
+                used_chart_types.append(chart_data.get("type"))
                 chart_ok += 1
         except Exception as e:
             chart_fail += 1
