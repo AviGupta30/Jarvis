@@ -1416,9 +1416,9 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None,
     image_rules = ""
     if valid_images:
         num_imgs = len(valid_images)
-        image_rules = f"""CRITICAL IMAGE RULE: The user has uploaded exactly {num_imgs} image(s). 
-You MUST set `"image_slot": true` on EXACTLY {num_imgs} slide(s) in the JSON array (excluding the title/conclusion slides).
-For slides with `"image_slot": true`, you MUST heavily prefer the 'aesthetic_showcase' layout (for a massive, full-screen hero image) or 'aesthetic_split'."""
+        image_rules = f"""IMAGE INTEGRATION: The user has uploaded {num_imgs} image(s). 
+You may flag appropriate slides to receive an image by setting `"image_slot": true` in the slide JSON. 
+For slides flagged with `"image_slot": true`, prefer using the 'aesthetic_showcase' layout (for a massive, full-screen hero image) or 'aesthetic_split'."""
     else:
         image_rules = "No user images were uploaded. Do not set 'image_slot' to true on any slide."
 
@@ -1578,30 +1578,46 @@ SOURCES (Cite these if applicable): {sources_str}
     # ── CRITICAL: Write the fully-populated slides back into the plan ──
     plan["slides"] = full_slides
 
-    # ── Distribute user images across visual slots ────────────────────────────
+    # ── Distribute user images dynamically ────────────────────────────
     if valid_images:
-        # First, try to put images exactly where the LLM requested them
+        # 1. Fill the slots the LLM explicitly requested
         image_slots = [i for i, sd in enumerate(full_slides) if sd.get("image_slot", False)]
         
-        # If the LLM failed to allocate enough slots, force convert some slides to showcase
-        if len(image_slots) < len(valid_images):
-            needed = len(valid_images) - len(image_slots)
-            # Pick slides from the middle/end (excluding title, conclusion, and already used slots)
-            available = [i for i in range(1, len(full_slides)-1) if i not in image_slots]
-            for i in available[-needed:]:
-                full_slides[i]["layout"] = "aesthetic_showcase"
-                full_slides[i]["image_slot"] = True
-                image_slots.append(i)
-        
-        # Assign paths
         assigned = 0
-        for img_idx, slot_idx in enumerate(sorted(image_slots)):
-            if img_idx >= len(valid_images):
+        for slot_idx in image_slots:
+            if assigned >= len(valid_images):
                 break
-            full_slides[slot_idx]["image_path"] = valid_images[img_idx]
+            full_slides[slot_idx]["image_path"] = valid_images[assigned]
             assigned += 1
             
-        yield f"\U0001f5bc\ufe0f Distributed {assigned} image(s) beautifully into dedicated layout slots.\n"
+        # 2. If we have leftover images, dynamically INSERT new showcase slides 
+        # just before the final conclusion slide to accommodate them.
+        unassigned_images = valid_images[assigned:]
+        if unassigned_images:
+            yield f"\U0001f5bc\ufe0f Auto-expanding presentation to showcase {len(unassigned_images)} additional image(s)...\n"
+            
+            # Find insertion point (right before the last slide)
+            insert_idx = len(full_slides) - 1 if len(full_slides) > 1 else len(full_slides)
+            
+            for img_path in unassigned_images:
+                filename = Path(img_path).name
+                new_slide = {
+                    "slide_number": insert_idx + 1,
+                    "layout": "aesthetic_showcase",
+                    "title": "Visual Showcase",
+                    "visual_suggestion": "Full-screen detailed view of the uploaded image",
+                    "image_slot": True,
+                    "image_path": img_path
+                }
+                full_slides.insert(insert_idx, new_slide)
+                insert_idx += 1
+                assigned += 1
+                
+            # Re-number slides to maintain consistency
+            for idx, slide in enumerate(full_slides):
+                slide["slide_number"] = idx + 1
+                
+        yield f"\U0001f5bc\ufe0f Successfully integrated {assigned} image(s) into the presentation flow.\n"
     
     out = output_path or str(Path.home()/"Desktop"/f"Aesthetic_Deck_{int(time.time())}.pptx")
     b = PresentationBuilder(plan, out)
