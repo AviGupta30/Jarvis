@@ -165,6 +165,9 @@ STYLE_PROFILES = {
         "right_edge_panel": True,
         "drop_shadows": True,
         "decorative_circles": True,
+        "colored_borders": True,
+        "heavy_title_card": True,
+        "filled_header": True,
         # Layout geometry
         "image_ratio": 0.57,
         "text_ratio": 0.41,
@@ -195,6 +198,9 @@ STYLE_PROFILES = {
         "right_edge_panel": False,
         "drop_shadows": False,
         "decorative_circles": False,
+        "colored_borders": False,
+        "heavy_title_card": False,
+        "filled_header": False,
         # Layout geometry
         "image_ratio": 0.48,
         "text_ratio": 0.50,
@@ -706,8 +712,13 @@ class PresentationBuilder:
         else:
             bw = getattr(self, "S", {}).get("card_border_width", 0.75)
             sz = getattr(self, "S", {}).get("header_font_size", 20)
-            _rect(slide, Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.55), fill=self.P["hdr_bg"], line=self.P["border"], lw=bw)
-            _tb(slide, title.upper(), Inches(0.45), Inches(0.22), W - Inches(0.9), Inches(0.4), sz=sz, bold=True, col=self.P["hdr_text"], align=PP_ALIGN.LEFT)
+            if getattr(self, "S", {}).get("filled_header", True):
+                _rect(slide, Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.55), fill=self.P["hdr_bg"], line=self.P["border"], lw=bw)
+                _tb(slide, title.upper(), Inches(0.45), Inches(0.22), W - Inches(0.9), Inches(0.4), sz=sz, bold=True, col=self.P["hdr_text"], align=PP_ALIGN.LEFT)
+            else:
+                # Clean minimal underline
+                _rect(slide, Inches(0.25), Inches(0.7), W - Inches(0.5), Inches(0.02), fill=self.P["ac1"])
+                _tb(slide, title.upper(), Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.5), sz=sz, bold=True, col=self.P["text"], align=PP_ALIGN.LEFT)
 
     def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
         """Draws a premium rounded frame with an inner image, auto-generated chart, or text fallback."""
@@ -812,10 +823,14 @@ class PresentationBuilder:
         if getattr(self, "S", {}).get("drop_shadows", True):
             _round(slide, cx + Inches(0.15), cy + Inches(0.15), cw, ch, fill=self.P["bg2"], line=None)
             
-        bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-        _round(slide, cx, cy, cw, ch, fill=self.P["card"], line=self.P["border"], lw=bw)
-        _round(slide, cx, cy, cw, Inches(0.2), fill=self.P["ac1"])
-        _rect(slide, cx, cy + ch - Inches(0.08), cw, Inches(0.08), fill=self.P["ac2"])
+        if getattr(self, "S", {}).get("heavy_title_card", True):
+            bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+            _round(slide, cx, cy, cw, ch, fill=self.P["card"], line=self.P["border"], lw=bw)
+            _round(slide, cx, cy, cw, Inches(0.2), fill=self.P["ac1"])
+            _rect(slide, cx, cy + ch - Inches(0.08), cw, Inches(0.08), fill=self.P["ac2"])
+        else:
+            # Minimal general title
+            _rect(slide, cx + Inches(2.0), cy + ch/2 - Inches(0.4), cw - Inches(4.0), Inches(0.02), fill=self.P["ac1"])
 
         if getattr(self, "S", {}).get("corner_brackets", True):
             _corner_L(slide, cx, cy, cw, ch, col=self.P["ac1"], size=Inches(0.5), th=Inches(0.07))
@@ -934,7 +949,8 @@ class PresentationBuilder:
     def _colored_card_full(self, slide, l, t, w, h, card: dict, color: str):
         """Clean full grid card without messy overlapping header bands."""
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-        _round(slide, l, t, w, h, fill=self.P["card"], line=color, lw=bw)
+        border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
+        _round(slide, l, t, w, h, fill=self.P["card"], line=border_col, lw=bw)
 
         hh = Inches(0.4)
         _tb(slide, card.get("header", "Module").upper(), l + Inches(0.15), t + Inches(0.1),
@@ -1062,7 +1078,8 @@ class PresentationBuilder:
 
             # Clean Single Card
             bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-            _round(slide, ncx - cw2/2, cy2, cw2, ch2, fill=self.P["card"], line=color, lw=bw)
+            border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
+            _round(slide, ncx - cw2/2, cy2, cw2, ch2, fill=self.P["card"], line=border_col, lw=bw)
             
             # Text formatting
             _tb(slide, n.get("header", "Phase").upper(), ncx - cw2/2 + Inches(0.12),
@@ -1099,7 +1116,8 @@ class PresentationBuilder:
         ]):
             sx = Inches(0.25) + si * (cw2 + Inches(0.2))
             bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=bw)
+            border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
+            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=border_col, lw=bw)
             
             # Header line
             _tb(slide, d.get(hk, "Column").upper(), sx + Inches(0.15), top + Inches(0.11),
@@ -1174,7 +1192,8 @@ class PresentationBuilder:
             mx = Inches(0.25) + i*(mw + gap)
             color = self.P["tag_colors"][i % 4]
             bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=color, lw=bw)
+            border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
+            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=border_col, lw=bw)
             
             # Value
             _tb(slide, m.get("value", "—"), mx + Inches(0.1), top + Inches(0.15),
