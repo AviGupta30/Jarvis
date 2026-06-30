@@ -12,7 +12,7 @@ Design philosophy:
 from __future__ import annotations
 import io, json, re, time
 from pathlib import Path
-from typing import Optional, Generator, List
+from typing import Optional, Generator
 
 try:
     from pptx import Presentation
@@ -359,10 +359,11 @@ Create a VISUAL-FIRST presentation outline for:
 TOPIC/REQUEST: {prompt}
 
 RULES:
-- Outline 8 to 12 slides. First slide MUST use "aesthetic_title".
+- SLIDE COUNT: {slide_count_rule}
+- First slide MUST use "aesthetic_title".
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
-- You MUST use AT LEAST 5 different layouts in the presentation.
+- You MUST use AT LEAST 4 different layouts in the presentation.
 - {purpose_rules}
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
 - COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
@@ -720,52 +721,6 @@ class PresentationBuilder:
                 _rect(slide, Inches(0.25), Inches(0.7), W - Inches(0.5), Inches(0.02), fill=self.P["ac1"])
                 _tb(slide, title.upper(), Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.5), sz=sz, bold=True, col=self.P["text"], align=PP_ALIGN.LEFT)
 
-# ─── Aspect-Correct Image Fitting ────────────────────────────────────────────
-def _fit_image_in_slot(slide, img_path: str, l, t, w, h):
-    """
-    Renders an image inside a slot (l, t, w, h) with perfect aspect-correct sizing.
-    The frame ADAPTS to the image — image is never stretched or squashed.
-    Equivalent to CSS `object-fit: contain; object-position: center`.
-    The image fills as much of the slot as possible, centered, with the
-    slide background filling any remaining letterbox space.
-    """
-    try:
-        from PIL import Image as _PIL
-        with _PIL.open(img_path) as im:
-            img_w, img_h = im.size
-    except Exception:
-        # Pillow not available or unreadable — fall back to raw add_picture
-        slide.shapes.add_picture(img_path, l, t, w, h)
-        return
-
-    if img_w <= 0 or img_h <= 0:
-        slide.shapes.add_picture(img_path, l, t, w, h)
-        return
-
-    img_ratio = img_w / img_h      # e.g. 1.78 for 16:9 landscape
-    slot_ratio = w / h              # e.g. 1.33 for 4:3 slot
-
-    if img_ratio >= slot_ratio:
-        # Image is wider than slot → fit by width, letterbox top/bottom
-        fit_w = w
-        fit_h = w / img_ratio
-    else:
-        # Image is taller than slot → fit by height, letterbox left/right
-        fit_h = h
-        fit_w = h * img_ratio
-
-    # Center within the slot
-    offset_x = (w - fit_w) / 2
-    offset_y = (h - fit_h) / 2
-
-    pic = slide.shapes.add_picture(
-        img_path,
-        l + offset_x, t + offset_y,
-        fit_w, fit_h
-    )
-    pic.line.fill.background()  # No border on image
-
-
     def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
         """Draws a premium rounded frame with an inner image, auto-generated chart, or text fallback."""
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
@@ -780,18 +735,28 @@ def _fit_image_in_slot(slide, img_path: str, l, t, w, h):
         clean = _clean_image_path(path) if path else ""
         if clean and Path(clean).exists():
             try:
-                # Draw the rounded background frame first
-                _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
-                if getattr(self, "S", {}).get("tech_dots", True):
-                    for di in range(3):
-                        _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
-                              Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
-                # Render image aspect-correct inside slot with padding
-                inner_l = l + pad
-                inner_t = t + pad
-                inner_w = w - 2 * pad
-                inner_h = h - 2 * pad
-                _fit_image_in_slot(slide, clean, inner_l, inner_t, inner_w, inner_h)
+                # Aspect-correct rendering: frame adapts to image ratio
+                try:
+                    from PIL import Image as _PIL
+                    with _PIL.open(clean) as _im:
+                        img_w, img_h = _im.size
+                    img_ratio = img_w / img_h
+                    inner_w = w - 2 * pad
+                    inner_h = h - 2 * pad
+                    slot_ratio = inner_w / inner_h
+                    if img_ratio >= slot_ratio:
+                        fit_w = inner_w
+                        fit_h = inner_w / img_ratio
+                    else:
+                        fit_h = inner_h
+                        fit_w = inner_h * img_ratio
+                    ox = (inner_w - fit_w) / 2
+                    oy = (inner_h - fit_h) / 2
+                    pic = slide.shapes.add_picture(clean, l + pad + ox, t + pad + oy, fit_w, fit_h)
+                except Exception:
+                    # Pillow unavailable — use raw add_picture (may stretch)
+                    pic = slide.shapes.add_picture(clean, l + pad, t + pad, w - 2*pad, h - 2*pad)
+                pic.line.fill.background()
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
@@ -1398,12 +1363,22 @@ def _normalize_and_recover(chunk_data, outline_chunk):
 
 def ppt_create(prompt: str, style: str = None, output_path: str = None,
                theme_image_path: str = None, research_data: dict = None,
-               purpose: str = None, image_paths: List[str] = None):
+               purpose: str = None, image_paths: list = None):
     yield "🤖 Generating Presentation Outline...\n"
     
     if not purpose:
         purpose = _detect_purpose(prompt)
-        
+
+    # ── Extract explicit slide count from prompt ──────────────────────────────
+    _slide_count_m = re.search(r'(\d+)\s*slides?', prompt, re.IGNORECASE)
+    if _slide_count_m:
+        _n = int(_slide_count_m.group(1))
+        # Clamp between 4 and 20 for sanity
+        _n = max(4, min(20, _n))
+        slide_count_rule = f"Outline EXACTLY {_n} slides. No more, no less. STRICTLY {_n} slides."
+    else:
+        slide_count_rule = "Outline 8 to 12 slides."
+
     purpose_rules = ""
     if purpose == "hackathon":
         purpose_rules = "PURPOSE: This is a hackathon/startup pitch. Favor 'aesthetic_metrics', 'aesthetic_pitch', 'aesthetic_comparison' layouts (data-heavy, visual-dominant)."
@@ -1433,7 +1408,11 @@ SOURCES (Cite these if applicable): {sources_str}
 """
         yield f"📚 Injected {len(research_data.get('verified_facts', []))} verified facts from live web research.\n"
 
-    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=enriched_prompt, purpose_rules=purpose_rules))
+    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(
+        prompt=enriched_prompt,
+        purpose_rules=purpose_rules,
+        slide_count_rule=slide_count_rule,
+    ))
     plan = _parse(raw_outline)
     plan["purpose"] = purpose
     
@@ -1451,17 +1430,17 @@ SOURCES (Cite these if applicable): {sources_str}
             yield f"⚠️ Could not extract theme from image ({e}). Using auto-theme.\n"
     slides_outline = plan.get("slides", [])
     total_slides = len(slides_outline)
-    yield f"📋 Outline created: {total_slides} slides planned.\n"
+    yield f"\U0001f4cb Outline created: {total_slides} slides planned.\n"
 
-    # ── Announce user images ──────────────────────────────────────────────────
-    valid_images: List[str] = []
+    # ── Validate user images ──────────────────────────────────────────────────
+    valid_images = []
     if image_paths:
-        for p in image_paths:
-            cp = _clean_image_path(p) if p else ""
-            if cp and Path(cp).exists():
-                valid_images.append(cp)
+        for p in (image_paths or []):
+            p = (p or "").strip()
+            if p and Path(p).exists():
+                valid_images.append(p)
         if valid_images:
-            yield f"🖼️ {len(valid_images)} user image(s) detected — will be placed on slides.\n"
+            yield f"\U0001f5bc\ufe0f {len(valid_images)} user image(s) detected \u2014 will be placed on slides.\n"
     
     full_slides = []
     
@@ -1569,7 +1548,6 @@ SOURCES (Cite these if applicable): {sources_str}
 
     # ── Distribute user images across visual slots ────────────────────────────
     if valid_images:
-        # Find slides that have an image slot (most layouts except pure title)
         visual_layouts = {
             "aesthetic_split", "aesthetic_grid", "aesthetic_flow",
             "aesthetic_pitch", "aesthetic_metrics", "aesthetic_timeline",
@@ -1578,12 +1556,11 @@ SOURCES (Cite these if applicable): {sources_str}
             i for i, sd in enumerate(full_slides)
             if sd.get("layout", "") in visual_layouts
         ]
-        # Distribute images round-robin across available visual slots
         for img_idx, slot_idx in enumerate(image_slots):
             if img_idx >= len(valid_images):
                 break
             full_slides[slot_idx]["image_path"] = valid_images[img_idx]
-        yield f"🖼️ Distributed {min(len(valid_images), len(image_slots))} image(s) across slides.\n"
+        yield f"\U0001f5bc\ufe0f Distributed {min(len(valid_images), len(image_slots))} image(s) across slides.\n"
     
     out = output_path or str(Path.home()/"Desktop"/f"Aesthetic_Deck_{int(time.time())}.pptx")
     b = PresentationBuilder(plan, out)
