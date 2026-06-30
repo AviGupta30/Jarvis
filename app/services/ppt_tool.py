@@ -363,7 +363,7 @@ RULES:
 - First slide MUST use "aesthetic_title".
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - {image_rules}
-- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch", "aesthetic_showcase".
+- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
 - You MUST use AT LEAST 4 different layouts in the presentation.
 - {purpose_rules}
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
@@ -409,6 +409,7 @@ ABSOLUTE RULES:
 4. UNIQUE CONTENT: Ensure EVERY slide has completely unique content. Do NOT repeat the same descriptions or facts across different slides. Every slide must advance the presentation with new information.
 
 LAYOUT SCHEMAS:
+- aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
 - aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
 - aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
