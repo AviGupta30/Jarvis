@@ -137,6 +137,8 @@ RULES:
 
 TASK: {task}
 SCREEN CONTEXT: {context}
+RECENT TASK HISTORY (use this to continue or extend prior work instead of re-creating):
+{task_history}
 """
 
 REPLANNER_PROMPT = """\
@@ -157,7 +159,17 @@ If recovery is impossible, return: {{ "plan_summary": "failed", "steps": [] }}
 
 async def _call_planner(task: str, context: str) -> dict:
     """Ask the LLM to produce a step-by-step plan."""
-    prompt = PLANNER_PROMPT.format(task=task, context=context or "Desktop")
+    # ── Inject recent task history so planner can build on prior work ──────
+    task_history = "(none)"
+    try:
+        from app.services.task_ledger import get_task_ledger_for_prompt
+        _hist = get_task_ledger_for_prompt()
+        if _hist:
+            task_history = _hist
+    except Exception:
+        pass  # Best-effort — never block planning
+    # ──────────────────────────────────────────────────────────────────────
+    prompt = PLANNER_PROMPT.format(task=task, context=context or "Desktop", task_history=task_history)
     resp = await client.chat.completions.create(
         model="llama-3.1-8b-instant",
         messages=[{"role": "user", "content": prompt}],

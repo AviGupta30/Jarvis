@@ -1264,4 +1264,11 @@ TOOL_REGISTRY = {
     
     # ── Air Drawing Tool ─────────────────────────────────────────────────────
     "open_air_drawing": lambda: __import__('app.services.air_drawing_tool', fromlist=['open_air_drawing']).open_air_drawing(),
+
+    # ── Task Resumption — Task Context Ledger (Rule #4 compliant) ────────────
+    # Isolated in task_ledger.py. Accessible via both frontend and voice through /chat.
+    # Allows Jarvis to recall and resume prior tasks mid-session.
+    "get_recent_tasks":    lambda n=5: __import__('app.services.task_ledger', fromlist=['get_recent_tasks']).get_recent_tasks(n),
+    "find_resumable_task": lambda query='': __import__('app.services.task_ledger', fromlist=['find_resumable_task']).find_resumable_task(query),
+    "get_task_history":    lambda: __import__('app.services.task_ledger', fromlist=['get_task_ledger_for_prompt']).get_task_ledger_for_prompt(),
 }

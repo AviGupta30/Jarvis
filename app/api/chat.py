@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import re
+import json
 from app.services.llm import (
     generate_chat_response,
     check_for_tool_intent,
@@ -1168,6 +1169,24 @@ async def chat_endpoint(request: ChatRequest):
         async def flow_stream(): yield reply
         return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
+    # ── Task Resumption: detect 'continue/extend/update prior task' intent ──────
+    # Runs BEFORE keyword detection and DAG planner so that continuation requests
+    # are correctly routed to the original task's tool with prior context injected.
+    # Fully fail-safe: all errors are caught, normal flow continues unaffected.
+    try:
+        from app.services.task_ledger import get_recent_tasks_raw
+        from app.services.resume_detector import detect_resume_intent, get_resume_context_string
+        _recent_tasks = get_recent_tasks_raw(n=10)
+        _resume_info = detect_resume_intent(request.prompt, _recent_tasks)
+        if _resume_info and _resume_info.get("is_resume"):
+            _resume_ctx = get_resume_context_string(_resume_info)
+            if _resume_ctx:
+                # Prepend the original task context to the user's prompt.
+                # The LLM and planner now know WHICH file/resource to operate on.
+                request.prompt = _resume_ctx + "\n\n[USER INSTRUCTION]: " + request.prompt
+    except Exception:
+        pass  # Best-effort — never block normal chat flow
+
     # ── PATH A-DAG: Multi-branch DAG planner ──────────────────────────────────
     # Runs BEFORE keyword_detect_tool so multi-intent requests (e.g. "email prof
     # AND remind me Friday AND check calendar") get decomposed into a parallel
@@ -1278,7 +1297,31 @@ async def chat_endpoint(request: ChatRequest):
                 return StreamingResponse(tool_stream(), media_type="text/event-stream")
                 
             tool_output_str = f"[Tool result: {result}]\n\n"
-            
+
+            # ── Task Ledger: log this completed tool execution ────────────────
+            # Records what Jarvis just did so it can be resumed/extended later.
+            # Completely fail-safe — never interrupts the chat flow.
+            try:
+                from app.services.task_ledger import log_task
+                _ledger_context = {
+                    "args": {k: str(v)[:200] for k, v in args.items()},
+                    "result_preview": str(result)[:300],
+                }
+                # Enrich context with common resource fields for easy lookup later
+                for _field in ("path", "file_path", "filename", "contact_name", "url", "pdf_path"):
+                    if _field in args:
+                        _ledger_context[_field] = str(args[_field])[:300]
+                log_task(
+                    task_type=tool_name,
+                    description=request.prompt[:400],
+                    context=_ledger_context,
+                    status="completed",
+                    related_tool=tool_name,
+                )
+            except Exception:
+                pass  # Best-effort — never break chat flow
+            # ─────────────────────────────────────────────────────────────────
+
             if tool_name in ("enhance_media", "generate_social_content"):
                 async def flow_stream(): yield result
                 return StreamingResponse(flow_stream(), media_type="text/event-stream")
@@ -1370,6 +1413,19 @@ async def chat_endpoint(request: ChatRequest):
         context_parts.append(rag_context)
     if current_screen:
         context_parts.append(f"[Active Screen: {current_screen}]")
+
+    # ── Task Ledger: inject recent task history so LLM is context-aware ──────
+    # Gives the LLM natural awareness of what Jarvis recently did.
+    # Enables replies like "I've added that section to quantum_computing.docx"
+    # instead of "I have created a new file...".
+    try:
+        from app.services.task_ledger import get_task_ledger_for_prompt
+        _ledger_prompt_ctx = get_task_ledger_for_prompt()
+        if _ledger_prompt_ctx:
+            context_parts.append(_ledger_prompt_ctx)
+    except Exception:
+        pass  # Best-effort — never break chat flow
+
     context = "\n\n".join(context_parts)
 
     # 7. Save user turn to history + long-term RAG memory
