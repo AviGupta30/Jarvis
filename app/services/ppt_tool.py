@@ -362,7 +362,8 @@ RULES:
 - SLIDE COUNT: {slide_count_rule}
 - First slide MUST use "aesthetic_title".
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
-- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
+- {image_rules}
+- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch", "aesthetic_showcase".
 - You MUST use AT LEAST 4 different layouts in the presentation.
 - {purpose_rules}
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
@@ -378,7 +379,8 @@ JSON SCHEMA:
     {{
       "slide_number": 1,
       "layout": "aesthetic_title",
-      "title": "Topic Name"
+      "title": "Topic Name",
+      "image_slot": false
     }},
     {{
       "slide_number": 2,
@@ -868,7 +870,25 @@ class PresentationBuilder:
                 _rect(slide, cx + cw - Inches(0.8) + di * Inches(0.22),
                       cy + ch - Inches(0.38), Inches(0.12), Inches(0.12), fill=self.P["ac1"])
 
-    # ── LAYOUT 2: SPLIT — LEFT DENSE BULLETS + RIGHT DOMINANT IMAGE ──────────
+    # ── LAYOUT 2: SHOWCASE — MASSIVE HERO IMAGE ──────────────────────────────
+    def _lay_aesthetic_showcase(self, d: dict, cur: int, total: int):
+        slide = self._blank()
+        self._header(slide, d.get("title", ""))
+        self._progress(slide, cur, total)
+
+        top = Inches(0.86)
+        avail_h = H - top - Inches(0.3)
+        margin = Inches(0.25)
+
+        # Huge image slot in the center
+        self._premium_image_frame(
+            slide, d.get("image_path", ""), 
+            margin, top, 
+            W - (2 * margin), avail_h,
+            d.get("visual_suggestion", "[ Massive Hero Visual ]")
+        )
+
+    # ── LAYOUT 3: SPLIT — LEFT DENSE BULLETS + RIGHT DOMINANT IMAGE ──────────
     def _lay_aesthetic_split(self, d: dict, cur: int, total: int):
         slide = self._blank()
         self._header(slide, d.get("title", ""))
@@ -1385,6 +1405,24 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None,
     else:
         purpose_rules = "PURPOSE: This is a professional/general presentation. Favor 'aesthetic_split', 'aesthetic_grid', 'aesthetic_flow' layouts (text-balanced, clean)."
 
+    # ── Validate user images and set outline rules ────────────────────────────
+    valid_images = []
+    if image_paths:
+        for p in (image_paths or []):
+            p = (p or "").strip()
+            if p and Path(p).exists():
+                valid_images.append(p)
+    
+    image_rules = ""
+    if valid_images:
+        num_imgs = len(valid_images)
+        image_rules = f"""CRITICAL IMAGE RULE: The user has uploaded exactly {num_imgs} image(s). 
+You MUST set `"image_slot": true` on EXACTLY {num_imgs} slide(s) in the JSON array (excluding the title/conclusion slides).
+For slides with `"image_slot": true`, you MUST heavily prefer the 'aesthetic_showcase' layout (for a massive, full-screen hero image) or 'aesthetic_split'."""
+    else:
+        image_rules = "No user images were uploaded. Do not set 'image_slot' to true on any slide."
+
+
     # ── INJECT RESEARCH DATA (PHASE 3) ──
     enriched_prompt = prompt
     if research_data:
@@ -1412,6 +1450,7 @@ SOURCES (Cite these if applicable): {sources_str}
         prompt=enriched_prompt,
         purpose_rules=purpose_rules,
         slide_count_rule=slide_count_rule,
+        image_rules=image_rules,
     ))
     plan = _parse(raw_outline)
     plan["purpose"] = purpose
@@ -1432,15 +1471,8 @@ SOURCES (Cite these if applicable): {sources_str}
     total_slides = len(slides_outline)
     yield f"\U0001f4cb Outline created: {total_slides} slides planned.\n"
 
-    # ── Validate user images ──────────────────────────────────────────────────
-    valid_images = []
-    if image_paths:
-        for p in (image_paths or []):
-            p = (p or "").strip()
-            if p and Path(p).exists():
-                valid_images.append(p)
-        if valid_images:
-            yield f"\U0001f5bc\ufe0f {len(valid_images)} user image(s) detected \u2014 will be placed on slides.\n"
+    if valid_images:
+        yield f"\U0001f5bc\ufe0f {len(valid_images)} user image(s) detected \u2014 mapping to layout slots.\n"
     
     full_slides = []
     
@@ -1548,19 +1580,28 @@ SOURCES (Cite these if applicable): {sources_str}
 
     # ── Distribute user images across visual slots ────────────────────────────
     if valid_images:
-        visual_layouts = {
-            "aesthetic_split", "aesthetic_grid", "aesthetic_flow",
-            "aesthetic_pitch", "aesthetic_metrics", "aesthetic_timeline",
-        }
-        image_slots = [
-            i for i, sd in enumerate(full_slides)
-            if sd.get("layout", "") in visual_layouts
-        ]
-        for img_idx, slot_idx in enumerate(image_slots):
+        # First, try to put images exactly where the LLM requested them
+        image_slots = [i for i, sd in enumerate(full_slides) if sd.get("image_slot", False)]
+        
+        # If the LLM failed to allocate enough slots, force convert some slides to showcase
+        if len(image_slots) < len(valid_images):
+            needed = len(valid_images) - len(image_slots)
+            # Pick slides from the middle/end (excluding title, conclusion, and already used slots)
+            available = [i for i in range(1, len(full_slides)-1) if i not in image_slots]
+            for i in available[-needed:]:
+                full_slides[i]["layout"] = "aesthetic_showcase"
+                full_slides[i]["image_slot"] = True
+                image_slots.append(i)
+        
+        # Assign paths
+        assigned = 0
+        for img_idx, slot_idx in enumerate(sorted(image_slots)):
             if img_idx >= len(valid_images):
                 break
             full_slides[slot_idx]["image_path"] = valid_images[img_idx]
-        yield f"\U0001f5bc\ufe0f Distributed {min(len(valid_images), len(image_slots))} image(s) across slides.\n"
+            assigned += 1
+            
+        yield f"\U0001f5bc\ufe0f Distributed {assigned} image(s) beautifully into dedicated layout slots.\n"
     
     out = output_path or str(Path.home()/"Desktop"/f"Aesthetic_Deck_{int(time.time())}.pptx")
     b = PresentationBuilder(plan, out)
