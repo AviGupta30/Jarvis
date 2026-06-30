@@ -208,11 +208,15 @@ function App() {
           body.theme_image_path = pptThemeImage.path.replace(/\\/g, '/');
           appendMsg(`🎨 Using your reference theme: ${pptThemeImage.name}\n`);
           setPptThemeImage(null);
-        } else if (uploadedFiles.length > 0) {
-          const imgFile = uploadedFiles.find(f => f.name.match(/\.(png|jpg|jpeg|webp)$/i));
-          if (imgFile) {
-            body.theme_image_path = imgFile.path.replace(/\\/g, '/');
-            appendMsg(`🎨 Auto-detected theme reference from uploaded image: ${imgFile.name}\n`);
+        }
+        
+        const imageFiles = uploadedFiles.filter(f => f.name.match(/\.(png|jpg|jpeg|webp)$/i));
+        if (imageFiles.length > 0) {
+          body.image_paths = imageFiles.map(f => f.path.replace(/\\/g, '/'));
+          
+          if (!body.theme_image_path) {
+            body.theme_image_path = body.image_paths[0];
+            appendMsg(`🎨 Auto-detected theme reference from uploaded image: ${imageFiles[0].name}\n`);
           }
         }
 
