@@ -903,11 +903,14 @@ def keyword_detect_tool(prompt: str) -> dict | None:
             r'|ocean_gradient|velvet_noir|charcoal_minimal)\b',
             lower
         )
+        hackathon_kw = ["hackathon", "pitch", "startup", "demo", "prototype", "mvp", "investor", "product launch"]
+        purpose = "hackathon" if any(kw in lower for kw in hackathon_kw) else "general"
         return {
             "tool_name": "ppt_create",
             "arguments": {
                 "user_prompt": prompt,
                 "style": style_m.group(1) if style_m else None,
+                "purpose": purpose,
             }
         }
 

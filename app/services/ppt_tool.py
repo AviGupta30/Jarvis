@@ -151,6 +151,84 @@ PERSONALITIES = {
     },
 }
 
+# ─── Style Profiles ────────────────────────────────────────────────────────────
+# Controls the entire visual DNA, not just colors.
+STYLE_PROFILES = {
+    "hackathon": {
+        "name": "Hackathon / Tech Pitch",
+        "desc": "Bold, dark, visual-dominant. Numbered badges, corner brackets, gradient strips.",
+        # Decoration flags
+        "corner_brackets": True,
+        "numbered_badges": True,
+        "tech_dots": True,
+        "gradient_strips": True,
+        "right_edge_panel": True,
+        "drop_shadows": True,
+        "decorative_circles": True,
+        # Layout geometry
+        "image_ratio": 0.57,
+        "text_ratio": 0.41,
+        "header_style": "pill",
+        "bullet_style": "card",
+        "card_border_width": 1.5,
+        # Typography
+        "title_font_size": 48,
+        "header_font_size": 22,
+        "body_font_size": 11,
+        "title_font": "Calibri",
+        "body_font": "Calibri",
+        # Palette constraints
+        "default_palette": "ocean_pro",
+        "allowed_palettes": [
+            "ocean_pro", "neon_dark", "emerald", "synthwave", "aurora",
+            "hacker_terminal", "solar_flare", "cyber_dark", "velvet_noir",
+        ],
+    },
+    "general": {
+        "name": "General Purpose / Professional",
+        "desc": "Clean, minimal, professional. No tech decorations, classic formatting.",
+        # Decoration flags — ALL OFF
+        "corner_brackets": False,
+        "numbered_badges": False,
+        "tech_dots": False,
+        "gradient_strips": False,
+        "right_edge_panel": False,
+        "drop_shadows": False,
+        "decorative_circles": False,
+        # Layout geometry
+        "image_ratio": 0.48,
+        "text_ratio": 0.50,
+        "header_style": "bar",
+        "bullet_style": "inline",
+        "card_border_width": 0.75,
+        # Typography
+        "title_font_size": 44,
+        "header_font_size": 20,
+        "body_font_size": 12,
+        "title_font": "Calibri",
+        "body_font": "Calibri",
+        # Palette constraints
+        "default_palette": "clean_light",
+        "allowed_palettes": [
+            "clean_light", "arctic_clean", "charcoal_minimal",
+            "midnight_exec", "forest_calm", "ocean_gradient",
+        ],
+    },
+}
+
+_HACKATHON_KEYWORDS = [
+    "hackathon", "pitch", "startup", "demo", "prototype",
+    "mvp", "product launch", "tech demo", "innovation challenge",
+    "pitch deck", "investor", "shark tank",
+]
+
+def _detect_purpose(prompt: str) -> str:
+    """Auto-detect presentation purpose from the user prompt."""
+    lower = prompt.lower()
+    if any(kw in lower for kw in _HACKATHON_KEYWORDS):
+        return "hackathon"
+    return "general"
+
 
 def _c(h: str) -> RGBColor:
     h = h.lstrip("#")
@@ -279,6 +357,7 @@ RULES:
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
 - You MUST use AT LEAST 5 different layouts in the presentation.
+- {purpose_rules}
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
 - COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
 - Output ONLY valid JSON.
@@ -512,9 +591,17 @@ class PresentationBuilder:
         self.prs = Presentation()
         self.prs.slide_width = W
         self.prs.slide_height = H
-        
-        pk = plan.get("personality", "ocean_pro")
-        base_p = PERSONALITIES.get(pk, PERSONALITIES["ocean_pro"])
+
+        # ── Load Style Profile ──
+        self.purpose = plan.get("purpose", "hackathon")
+        self.S = STYLE_PROFILES.get(self.purpose, STYLE_PROFILES["hackathon"])
+
+        # ── Resolve Palette ──
+        pk = plan.get("personality", self.S["default_palette"])
+        # If chosen palette doesn't match purpose, switch to default for that purpose
+        if pk not in self.S["allowed_palettes"] and not plan.get("custom_theme"):
+            pk = self.S["default_palette"]
+        base_p = PERSONALITIES.get(pk, PERSONALITIES[self.S["default_palette"]])
         
         # Deep copy to allow overrides
         self.P = dict(base_p)
@@ -595,11 +682,14 @@ class PresentationBuilder:
     def _blank(self):
         s = self.prs.slides.add_slide(self.prs.slide_layouts[6])
         _bg_fill(s, self.P["bg"])
-        # Subtle secondary tone strips top and bottom
-        _rect(s, 0, 0, W, Inches(0.06), fill=self.P["ac1"])
-        _rect(s, 0, H - Inches(0.28), W, Inches(0.28), fill=self.P["bar"])
-        # Decorative dark panel on right edge — adds depth
-        _rect(s, W - Inches(0.18), Inches(0.06), Inches(0.18), H - Inches(0.34), fill=self.P["bg2"])
+        if getattr(self, "S", {}).get("gradient_strips", True):
+            _rect(s, 0, 0, W, Inches(0.06), fill=self.P["ac1"])
+            _rect(s, 0, H - Inches(0.28), W, Inches(0.28), fill=self.P["bar"])
+        else:
+            _rect(s, 0, H - Inches(0.04), W, Inches(0.04), fill=self.P["ac1"])
+            
+        if getattr(self, "S", {}).get("right_edge_panel", True):
+            _rect(s, W - Inches(0.18), Inches(0.06), Inches(0.18), H - Inches(0.34), fill=self.P["bg2"])
         return s
 
     def _progress(self, slide, cur, total):
@@ -607,26 +697,27 @@ class PresentationBuilder:
             Inches(1.1), Inches(0.2), sz=9, bold=True, col=self.P["text"], align=PP_ALIGN.RIGHT)
 
     def _header(self, slide, title: str):
-        """Clean, minimalist centered pill title box."""
-        tw, th = W * 0.65, Inches(0.65)
-        tx, ty = (W - tw) / 2, Inches(0.15)
-        
-        # Single ultra-clean pill
-        _round(slide, tx, ty, tw, th, fill=self.P["card"], line=self.P["border"], lw=1.5)
-        
-        # Text centered perfectly
-        _tb(slide, title.upper(), tx, ty + Inches(0.08), tw, th - Inches(0.16),
-            sz=22, bold=True, col=self.P["text"], align=PP_ALIGN.CENTER)
+        if getattr(self, "S", {}).get("header_style", "pill") == "pill":
+            tw, th = W * 0.65, Inches(0.65)
+            tx, ty = (W - tw) / 2, Inches(0.15)
+            _round(slide, tx, ty, tw, th, fill=self.P["card"], line=self.P["border"], lw=1.5)
+            _tb(slide, title.upper(), tx, ty + Inches(0.08), tw, th - Inches(0.16),
+                sz=22, bold=True, col=self.P["text"], align=PP_ALIGN.CENTER)
+        else:
+            bw = getattr(self, "S", {}).get("card_border_width", 0.75)
+            sz = getattr(self, "S", {}).get("header_font_size", 20)
+            _rect(slide, Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.55), fill=self.P["hdr_bg"], line=self.P["border"], lw=bw)
+            _tb(slide, title.upper(), Inches(0.45), Inches(0.22), W - Inches(0.9), Inches(0.4), sz=sz, bold=True, col=self.P["hdr_text"], align=PP_ALIGN.LEFT)
 
     def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
         """Draws a premium rounded frame with an inner image, auto-generated chart, or text fallback."""
-        # Clean background card
-        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=1.5)
+        bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
 
-        # High-tech top-right dots
-        for di in range(3):
-            _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
-                  Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
+        if getattr(self, "S", {}).get("tech_dots", True):
+            for di in range(3):
+                _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
+                      Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
 
         pad = Inches(0.1)
         clean = _clean_image_path(path) if path else ""
@@ -664,28 +755,28 @@ class PresentationBuilder:
             l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
             sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
 
-    def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str,
-                     tag_col: str, idx: int):
-        """Clean minimalist bullet card."""
-        # Main curved body
-        _round(slide, l, t, w, h, fill=self.P["card"], line=tag_col, lw=1.5)
-
-        # Number badge circle
-        _oval(slide, l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.25),
-              fill=tag_col, line=None)
-        _tb(slide, str(idx), l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.23),
-            sz=10, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-
-        # Bold sub-header
-        if bold_txt:
-            _tb(slide, bold_txt, l + Inches(0.5), t + Inches(0.1), w - Inches(0.6),
-                Inches(0.3), sz=12, bold=True, col=tag_col)
-                
-        # Body text spacing
-        body_top = t + Inches(0.35) if bold_txt else t + Inches(0.14)
-        _tb(slide, body_txt, l + Inches(0.5), body_top, w - Inches(0.6),
-            h - (Inches(0.4) if bold_txt else Inches(0.22)),
-            sz=11, col=self.P["text"])
+    def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str, tag_col: str, idx: int):
+        sz_b = getattr(self, "S", {}).get("body_font_size", 11)
+        if getattr(self, "S", {}).get("bullet_style", "card") == "card":
+            _round(slide, l, t, w, h, fill=self.P["card"], line=tag_col, lw=1.5)
+            if getattr(self, "S", {}).get("numbered_badges", True):
+                _oval(slide, l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.25), fill=tag_col, line=None)
+                _tb(slide, str(idx), l + Inches(0.15), t + Inches(0.12), Inches(0.25), Inches(0.23), sz=10, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
+            if bold_txt:
+                _tb(slide, bold_txt, l + Inches(0.5), t + Inches(0.1), w - Inches(0.6), Inches(0.3), sz=12, bold=True, col=tag_col)
+            body_top = t + Inches(0.35) if bold_txt else t + Inches(0.14)
+            _tb(slide, body_txt, l + Inches(0.5), body_top, w - Inches(0.6), h - (Inches(0.4) if bold_txt else Inches(0.22)), sz=sz_b, col=self.P["text"])
+        else:
+            if getattr(self, "S", {}).get("numbered_badges", False):
+                _tb(slide, f"{idx}.", l, t + Inches(0.05), Inches(0.3), Inches(0.25), sz=12, bold=True, col=tag_col, align=PP_ALIGN.RIGHT)
+            else:
+                _oval(slide, l + Inches(0.15), t + Inches(0.1), Inches(0.1), Inches(0.1), fill=tag_col, line=None)
+            tx, tw = l + Inches(0.35), w - Inches(0.4)
+            if bold_txt:
+                _tb(slide, bold_txt, tx, t, tw, Inches(0.25), sz=12, bold=True, col=tag_col)
+                _tb(slide, body_txt, tx, t + Inches(0.25), tw, h - Inches(0.25), sz=sz_b, col=self.P["text"])
+            else:
+                _tb(slide, body_txt, tx, t, tw, h, sz=sz_b, col=self.P["text"])
 
     def build_with_progress(self) -> Generator[str, None, None]:
         slides = self.plan.get("slides", [])
@@ -711,47 +802,36 @@ class PresentationBuilder:
         slide = self._blank()
         self._progress(slide, cur, total)
 
-        # Decorative large circle behind card (depth element)
-        _oval(slide, W*0.55, H*0.1, Inches(5.5), Inches(5.5),
-              fill=self.P["bg2"], line=self.P["border"], lw=0.5)
-        _oval(slide, W*0.58, H*0.18, Inches(4.0), Inches(4.0),
-              fill=self.P["bg"], line=self.P["ac2"], lw=0.4)
+        if getattr(self, "S", {}).get("decorative_circles", True):
+            _oval(slide, W*0.55, H*0.1, Inches(5.5), Inches(5.5), fill=self.P["bg2"], line=self.P["border"], lw=0.5)
+            _oval(slide, W*0.58, H*0.18, Inches(4.0), Inches(4.0), fill=self.P["bg"], line=self.P["ac2"], lw=0.4)
 
-        # Center hero card
         cw, ch = Inches(11.0), Inches(5.4)
         cx, cy = (W - cw)/2, (H - ch)/2 - Inches(0.1)
 
-        # Drop shadow
-        _round(slide, cx + Inches(0.15), cy + Inches(0.15), cw, ch,
-               fill=self.P["bg2"], line=None)
-        # Main card
-        _round(slide, cx, cy, cw, ch, fill=self.P["card"], line=self.P["border"], lw=2.0)
-        # Top accent bar
+        if getattr(self, "S", {}).get("drop_shadows", True):
+            _round(slide, cx + Inches(0.15), cy + Inches(0.15), cw, ch, fill=self.P["bg2"], line=None)
+            
+        bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+        _round(slide, cx, cy, cw, ch, fill=self.P["card"], line=self.P["border"], lw=bw)
         _round(slide, cx, cy, cw, Inches(0.2), fill=self.P["ac1"])
-        # Bottom accent bar
         _rect(slide, cx, cy + ch - Inches(0.08), cw, Inches(0.08), fill=self.P["ac2"])
 
-        # Corner L-brackets
-        _corner_L(slide, cx, cy, cw, ch, col=self.P["ac1"], size=Inches(0.5), th=Inches(0.07))
+        if getattr(self, "S", {}).get("corner_brackets", True):
+            _corner_L(slide, cx, cy, cw, ch, col=self.P["ac1"], size=Inches(0.5), th=Inches(0.07))
 
-        # Title
         _tb(slide, d.get("title", "Presentation"), cx + Inches(0.5), cy + Inches(0.4),
-            cw - Inches(1.0), Inches(2.4), sz=48, bold=True, col=self.P["text"],
-            align=PP_ALIGN.CENTER, font="Calibri")
+            cw - Inches(1.0), Inches(2.4), sz=getattr(self, "S", {}).get("title_font_size", 48), bold=True, col=self.P["text"],
+            align=PP_ALIGN.CENTER, font=getattr(self, "S", {}).get("title_font", "Calibri"))
 
-        # Divider
-        _rect(slide, cx + Inches(2.2), cy + Inches(2.95), cw - Inches(4.4), Inches(0.05),
-              fill=self.P["ac1"])
-
-        # Subtitle
+        _rect(slide, cx + Inches(2.2), cy + Inches(2.95), cw - Inches(4.4), Inches(0.05), fill=self.P["ac1"])
         _tb(slide, d.get("subtitle", ""), cx + Inches(0.7), cy + Inches(3.1),
-            cw - Inches(1.4), Inches(1.95), sz=13.5, col=self.P["sub"],
-            align=PP_ALIGN.CENTER)
+            cw - Inches(1.4), Inches(1.95), sz=13.5, col=self.P["sub"], align=PP_ALIGN.CENTER)
 
-        # Bottom decoration dots
-        for di in range(3):
-            _rect(slide, cx + cw - Inches(0.8) + di * Inches(0.22),
-                  cy + ch - Inches(0.38), Inches(0.12), Inches(0.12), fill=self.P["ac1"])
+        if getattr(self, "S", {}).get("tech_dots", True):
+            for di in range(3):
+                _rect(slide, cx + cw - Inches(0.8) + di * Inches(0.22),
+                      cy + ch - Inches(0.38), Inches(0.12), Inches(0.12), fill=self.P["ac1"])
 
     # ── LAYOUT 2: SPLIT — LEFT DENSE BULLETS + RIGHT DOMINANT IMAGE ──────────
     def _lay_aesthetic_split(self, d: dict, cur: int, total: int):
@@ -763,9 +843,10 @@ class PresentationBuilder:
         avail = H - top - Inches(0.3)
         gap   = Inches(0.2)
 
-        # Image gets 57% of slide width — DOMINANT
-        lw = (W - Inches(0.55)) * 0.41
-        rw = (W - Inches(0.55)) * 0.57
+        ratio = getattr(self, "S", {}).get("image_ratio", 0.57)
+        tratio = getattr(self, "S", {}).get("text_ratio", 0.41)
+        lw = (W - Inches(0.55)) * tratio
+        rw = (W - Inches(0.55)) * ratio
         lx = Inches(0.25)
         rx = lx + lw + gap
 
@@ -852,23 +933,18 @@ class PresentationBuilder:
 
     def _colored_card_full(self, slide, l, t, w, h, card: dict, color: str):
         """Clean full grid card without messy overlapping header bands."""
-        # Card body — single clean border
-        _round(slide, l, t, w, h, fill=self.P["card"], line=color, lw=1.5)
+        bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+        _round(slide, l, t, w, h, fill=self.P["card"], line=color, lw=bw)
 
-        # Header Text
         hh = Inches(0.4)
         _tb(slide, card.get("header", "Module").upper(), l + Inches(0.15), t + Inches(0.1),
-            w - Inches(0.3), hh, sz=12, bold=True,
-            col=color, align=PP_ALIGN.LEFT)
+            w - Inches(0.3), hh, sz=12, bold=True, col=color, align=PP_ALIGN.LEFT)
             
-        # Accent rule under header
         _rect(slide, l + Inches(0.15), t + Inches(0.42), w - Inches(0.3), Inches(0.02), fill=color)
 
-        # High-tech header accent dot
-        _oval(slide, l + w - Inches(0.3), t + Inches(0.15), Inches(0.15), Inches(0.15),
-              fill=color, line=None)
+        if getattr(self, "S", {}).get("tech_dots", True):
+            _oval(slide, l + w - Inches(0.3), t + Inches(0.15), Inches(0.15), Inches(0.15), fill=color, line=None)
 
-        # Bullet items with sleek badges
         bullets = card.get("bullets", [])
         if not bullets and "text" in card:
             bullets = [card["text"]]
@@ -881,16 +957,18 @@ class PresentationBuilder:
         bsh = avail_h / max(len(bullets), 1)
         by = t + hh + Inches(0.1)
         
+        sz_b = getattr(self, "S", {}).get("body_font_size", 11.5)
         for bi, b in enumerate(bullets[:5]):
             bold_part, text_part = _parse_bullet(b)
             display = text_part if text_part else (bold_part if bold_part else str(b))
-            # Colored bullet number
-            _oval(slide, l + Inches(0.15), by + Inches(0.06), Inches(0.2), Inches(0.2),
-                  fill=color, line=None)
-            _tb(slide, str(bi+1), l + Inches(0.15), by + Inches(0.07), Inches(0.2), Inches(0.18),
-                sz=9, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-            _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55),
-                bsh - Inches(0.04), sz=11.5, col=self.P["text"])
+            
+            if getattr(self, "S", {}).get("numbered_badges", True):
+                _oval(slide, l + Inches(0.15), by + Inches(0.06), Inches(0.2), Inches(0.2), fill=color, line=None)
+                _tb(slide, str(bi+1), l + Inches(0.15), by + Inches(0.07), Inches(0.2), Inches(0.18), sz=9, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
+                _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55), bsh - Inches(0.04), sz=sz_b, col=self.P["text"])
+            else:
+                _oval(slide, l + Inches(0.15), by + Inches(0.08), Inches(0.1), Inches(0.1), fill=color, line=None)
+                _tb(slide, display, l + Inches(0.35), by + Inches(0.02), w - Inches(0.45), bsh - Inches(0.04), sz=sz_b, col=self.P["text"])
             by += bsh
 
     # ── LAYOUT 4: FLOW — TOP CALLOUT + DOMINANT FULL-WIDTH IMAGE ─────────────
@@ -902,20 +980,18 @@ class PresentationBuilder:
         top   = Inches(0.86)
         avail = H - top - Inches(0.3)
 
-        # Description callout card — ROUNDED with inner accent
         desc_h = Inches(1.5)
-        _round(slide, Inches(0.25) + Inches(0.07), top + Inches(0.07), W - Inches(0.43), desc_h,
-               fill=self.P["bg2"], line=None)  # shadow
-        _round(slide, Inches(0.25), top, W - Inches(0.43), desc_h,
-               fill=self.P["card"], line=self.P["border"], lw=1.8)
-        # Left colored accent stripe
-        _rect(slide, Inches(0.25), top + Inches(0.06), Inches(0.1), desc_h - Inches(0.12),
-              fill=self.P["ac2"])
-        # Quote icon
-        _round(slide, Inches(0.44), top + Inches(0.1), Inches(0.35), Inches(0.35),
-               fill=self.P["ac2"], line=None)
-        _tb(slide, '"', Inches(0.46), top + Inches(0.09), Inches(0.33), Inches(0.33),
-            sz=18, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
+        if getattr(self, "S", {}).get("drop_shadows", True):
+            _round(slide, Inches(0.25) + Inches(0.07), top + Inches(0.07), W - Inches(0.43), desc_h, fill=self.P["bg2"], line=None)
+            
+        bw = getattr(self, "S", {}).get("card_border_width", 1.8)
+        _round(slide, Inches(0.25), top, W - Inches(0.43), desc_h, fill=self.P["card"], line=self.P["border"], lw=bw)
+        
+        if getattr(self, "S", {}).get("gradient_strips", True):
+            _rect(slide, Inches(0.25), top + Inches(0.06), Inches(0.1), desc_h - Inches(0.12), fill=self.P["ac2"])
+            
+        _round(slide, Inches(0.44), top + Inches(0.1), Inches(0.35), Inches(0.35), fill=self.P["ac2"], line=None)
+        _tb(slide, '"', Inches(0.46), top + Inches(0.09), Inches(0.33), Inches(0.33), sz=18, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
         desc_text = d.get("description", "")
         # Fallback if LLM generated "text" or "bullets" instead of "description"
         if not desc_text:
@@ -985,8 +1061,8 @@ class PresentationBuilder:
                   Inches(0.06), abs(line_b - line_t), fill=color)
 
             # Clean Single Card
-            _round(slide, ncx - cw2/2, cy2, cw2, ch2,
-                   fill=self.P["card"], line=color, lw=1.5)
+            bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+            _round(slide, ncx - cw2/2, cy2, cw2, ch2, fill=self.P["card"], line=color, lw=bw)
             
             # Text formatting
             _tb(slide, n.get("header", "Phase").upper(), ncx - cw2/2 + Inches(0.12),
@@ -1022,8 +1098,8 @@ class PresentationBuilder:
             ("right_header", "right_bullets", self.P["ac2"]),
         ]):
             sx = Inches(0.25) + si * (cw2 + Inches(0.2))
-            # Card — Clean single curve
-            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=1.5)
+            bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+            _round(slide, sx, top, cw2, avail, fill=self.P["card"], line=color, lw=bw)
             
             # Header line
             _tb(slide, d.get(hk, "Column").upper(), sx + Inches(0.15), top + Inches(0.11),
@@ -1097,8 +1173,8 @@ class PresentationBuilder:
         for i, m in enumerate(metrics[:4]):
             mx = Inches(0.25) + i*(mw + gap)
             color = self.P["tag_colors"][i % 4]
-            # Card - Clean Single Curve
-            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=color, lw=1.5)
+            bw = getattr(self, "S", {}).get("card_border_width", 1.5)
+            _round(slide, mx, top, mw, mh, fill=self.P["card"], line=color, lw=bw)
             
             # Value
             _tb(slide, m.get("value", "—"), mx + Inches(0.1), top + Inches(0.15),
@@ -1246,9 +1322,18 @@ def _normalize_and_recover(chunk_data, outline_chunk):
             if not s.get("left_bullets"): s["left_bullets"] = alt if alt else [{"bold": "Left", "text": "Auto-Recovered"}]
             if not s.get("right_bullets"): s["right_bullets"] = [{"bold": "Right", "text": "Auto-Recovered"}]
 
-def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_image_path: str = None, research_data: dict = None):
+def ppt_create(prompt: str, style: str = None, output_path: str = None, theme_image_path: str = None, research_data: dict = None, purpose: str = None):
     yield "🤖 Generating Presentation Outline...\n"
     
+    if not purpose:
+        purpose = _detect_purpose(prompt)
+        
+    purpose_rules = ""
+    if purpose == "hackathon":
+        purpose_rules = "PURPOSE: This is a hackathon/startup pitch. Favor 'aesthetic_metrics', 'aesthetic_pitch', 'aesthetic_comparison' layouts (data-heavy, visual-dominant)."
+    else:
+        purpose_rules = "PURPOSE: This is a professional/general presentation. Favor 'aesthetic_split', 'aesthetic_grid', 'aesthetic_flow' layouts (text-balanced, clean)."
+
     # ── INJECT RESEARCH DATA (PHASE 3) ──
     enriched_prompt = prompt
     if research_data:
@@ -1272,8 +1357,9 @@ SOURCES (Cite these if applicable): {sources_str}
 """
         yield f"📚 Injected {len(research_data.get('verified_facts', []))} verified facts from live web research.\n"
 
-    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=enriched_prompt))
+    raw_outline = _groq_call(_SYS_OUTLINE, _USR_OUTLINE.format(prompt=enriched_prompt, purpose_rules=purpose_rules))
     plan = _parse(raw_outline)
+    plan["purpose"] = purpose
     
     if style and style in PERSONALITIES:
         plan["personality"] = style

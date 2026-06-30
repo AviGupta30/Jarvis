@@ -87,6 +87,7 @@ async def build_ppt(request: PPTBuildRequest):
 class PPTCreateRequest(BaseModel):
     prompt: str
     style: Optional[str] = None
+    purpose: Optional[str] = None
     output_path: Optional[str] = None
     theme_image_path: Optional[str] = None  # Path to a reference PPT screenshot
 
@@ -104,7 +105,9 @@ async def create_ppt_backend(request: PPTCreateRequest):
                 request.prompt,
                 request.style,
                 request.output_path,
-                request.theme_image_path
+                request.theme_image_path,
+                None,  # research_data
+                request.purpose
             ):
                 yield chunk + "\n\n"
         except Exception as e:

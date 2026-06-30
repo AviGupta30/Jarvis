@@ -896,7 +896,7 @@ def scrape_url_tool(url: str) -> str:
 # Isolated in ppt_tool.py. These thin wrappers convert the returned dict to a
 # human-readable string so it flows cleanly through the /chat response pipeline.
 
-def _ppt_create(user_prompt: str, style: str = None):
+def _ppt_create(user_prompt: str, style: str = None, purpose: str = None):
     """
     Generator wrapper — streams live progress to the frontend via chat.py's
     inspect.isgenerator() streaming path. Each yielded string appears as a
@@ -904,7 +904,7 @@ def _ppt_create(user_prompt: str, style: str = None):
     """
     try:
         from app.services.ppt_tool import ppt_create
-        yield from ppt_create(prompt=user_prompt, style=style)
+        yield from ppt_create(prompt=user_prompt, style=style, purpose=purpose)
     except Exception as e:
         yield f"❌ PPT tool error: {e}"
 
