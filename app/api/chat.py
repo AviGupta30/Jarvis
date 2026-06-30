@@ -906,12 +906,22 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         )
         hackathon_kw = ["hackathon", "pitch", "startup", "demo", "prototype", "mvp", "investor", "product launch"]
         purpose = "hackathon" if any(kw in lower for kw in hackathon_kw) else "general"
+
+        # Extract any user-uploaded image paths from [ATTACHED_FILE: ...] tags
+        import os as _os
+        _img_exts = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif')
+        attached_img_paths = [
+            p.strip() for p in re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', prompt, re.IGNORECASE)
+            if p.strip().lower().endswith(_img_exts) and _os.path.exists(p.strip())
+        ]
+
         return {
             "tool_name": "ppt_create",
             "arguments": {
                 "user_prompt": prompt,
                 "style": style_m.group(1) if style_m else None,
                 "purpose": purpose,
+                "image_paths": attached_img_paths if attached_img_paths else None,
             }
         }
 

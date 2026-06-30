@@ -90,6 +90,7 @@ class PPTCreateRequest(BaseModel):
     purpose: Optional[str] = None
     output_path: Optional[str] = None
     theme_image_path: Optional[str] = None  # Path to a reference PPT screenshot
+    image_paths: Optional[list] = None       # User-uploaded images to embed in slides
 
 @router.post("/create")
 async def create_ppt_backend(request: PPTCreateRequest):
@@ -107,7 +108,8 @@ async def create_ppt_backend(request: PPTCreateRequest):
                 request.output_path,
                 request.theme_image_path,
                 None,  # research_data
-                request.purpose
+                request.purpose,
+                request.image_paths,
             ):
                 yield chunk + "\n\n"
         except Exception as e:
