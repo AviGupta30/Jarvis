@@ -426,10 +426,10 @@ EXAMPLE OUTPUT for aesthetic_split:
   ]
 }}]}}"""
 
-# ─── Chart Data Extraction Prompt ──────────────────────────────────────────────
 _SYS_CHART = """\
 You are a data extraction specialist. Given a visual description from a presentation slide,
 extract structured numerical/categorical data suitable for chart generation.
+CRITICAL: If the visual description does not naturally contain quantitative data (e.g., it is a conceptual diagram, screenshot, or qualitative description), you MUST output exactly: {"type": "none"}.
 Output ONLY valid JSON — no markdown fences, no explanation."""
 
 _USR_CHART = """\
@@ -1418,8 +1418,8 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None,
     if valid_images:
         num_imgs = len(valid_images)
         image_rules = f"""IMAGE INTEGRATION: The user has uploaded {num_imgs} image(s). 
-You may flag appropriate slides to receive an image by setting `"image_slot": true` in the slide JSON. 
-For slides flagged with `"image_slot": true`, prefer using the 'aesthetic_showcase' layout (for a massive, full-screen hero image) or 'aesthetic_split'."""
+You may assign these images to specific slides by setting `"image_slot": true` in the slide JSON.
+You have full creative freedom to pick the best layouts for these images (e.g., 'aesthetic_split' for text+image side-by-side, 'aesthetic_showcase' for a full-screen hero image, or 'aesthetic_pitch' for high impact)."""
     else:
         image_rules = "No user images were uploaded. Do not set 'image_slot' to true on any slide."
 
@@ -1560,7 +1560,8 @@ SOURCES (Cite these if applicable): {sources_str}
                 tokens=800
             )
             chart_data = _parse(raw_chart)
-            if chart_data and chart_data.get("type"):
+            chart_type = chart_data.get("type", "").lower() if chart_data else ""
+            if chart_data and chart_type and chart_type != "none":
                 sd["chart_data"] = chart_data
                 used_chart_types.append(chart_data.get("type"))
                 chart_ok += 1
@@ -1591,28 +1592,36 @@ SOURCES (Cite these if applicable): {sources_str}
             full_slides[slot_idx]["image_path"] = valid_images[assigned]
             assigned += 1
             
-        # 2. If we have leftover images, dynamically INSERT new showcase slides 
-        # just before the final conclusion slide to accommodate them.
+        # 2. If we have leftover images, dynamically integrate them into existing slides
         unassigned_images = valid_images[assigned:]
         if unassigned_images:
-            yield f"\U0001f5bc\ufe0f Auto-expanding presentation to showcase {len(unassigned_images)} additional image(s)...\n"
+            yield f"\U0001f5bc\ufe0f Optimizing layouts to natively integrate {len(unassigned_images)} additional image(s)...\n"
             
-            # Find insertion point (right before the last slide)
-            insert_idx = len(full_slides) - 1 if len(full_slides) > 1 else len(full_slides)
+            # Find slides that don't have images yet, excluding title and conclusion
+            modifiable = [i for i in range(1, len(full_slides)-1) if not full_slides[i].get("image_path")]
             
             for img_path in unassigned_images:
-                filename = Path(img_path).name
-                new_slide = {
-                    "slide_number": insert_idx + 1,
-                    "layout": "aesthetic_showcase",
-                    "title": "Visual Showcase",
-                    "visual_suggestion": "Full-screen detailed view of the uploaded image",
-                    "image_slot": True,
-                    "image_path": img_path
-                }
-                full_slides.insert(insert_idx, new_slide)
-                insert_idx += 1
-                assigned += 1
+                if modifiable:
+                    # Re-purpose an existing slide into aesthetic_split to frame the image perfectly
+                    idx = modifiable.pop(0)
+                    full_slides[idx]["layout"] = "aesthetic_split"
+                    full_slides[idx]["image_slot"] = True
+                    full_slides[idx]["image_path"] = img_path
+                    assigned += 1
+                else:
+                    # Fallback if no slides are left to modify: insert a showcase slide
+                    insert_idx = len(full_slides) - 1 if len(full_slides) > 1 else len(full_slides)
+                    new_slide = {
+                        "slide_number": insert_idx + 1,
+                        "layout": "aesthetic_showcase",
+                        "title": "Visual Showcase",
+                        "visual_suggestion": "Full-screen detailed view",
+                        "image_slot": True,
+                        "image_path": img_path
+                    }
+                    full_slides.insert(insert_idx, new_slide)
+                    insert_idx += 1
+                    assigned += 1
                 
             # Re-number slides to maintain consistency
             for idx, slide in enumerate(full_slides):
