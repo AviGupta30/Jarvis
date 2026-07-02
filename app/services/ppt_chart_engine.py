@@ -286,6 +286,10 @@ def _render_comparison(data: dict, palette: dict, w: float=None, h: float=None) 
         return b""
         
     def _to_float(arr):
+        if isinstance(arr, dict):
+            arr = list(arr.values())
+        elif not isinstance(arr, (list, tuple)):
+            arr = [arr]
         res = []
         for x in arr:
             try:

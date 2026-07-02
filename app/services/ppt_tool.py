@@ -514,7 +514,6 @@ EXAMPLE OUTPUT for aesthetic_split:
 _SYS_CHART = """\
 You are a data extraction specialist. Given a visual description from a presentation slide,
 extract structured numerical/categorical data suitable for chart generation.
-CRITICAL: If the visual description does not naturally contain quantitative data (e.g., it is a conceptual diagram, screenshot, or qualitative description), you MUST output exactly: {"type": "none"}.
 Output ONLY valid JSON — no markdown fences, no explanation."""
 
 _USR_CHART = """\
