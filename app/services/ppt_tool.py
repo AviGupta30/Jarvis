@@ -514,6 +514,8 @@ EXAMPLE OUTPUT for aesthetic_split:
 _SYS_CHART = """\
 You are a data extraction specialist. Given a visual description from a presentation slide,
 extract structured numerical/categorical data suitable for chart generation.
+Supported chart types: "bar", "line", "pie", "doughnut", "comparison", "metrics".
+NEVER output unsupported types (e.g. "scatter", "radar", "bubble"). If a scatter plot is requested, generate a "line" or "bar" chart that captures the same trend.
 Output ONLY valid JSON — no markdown fences, no explanation."""
 
 _USR_CHART = """\
