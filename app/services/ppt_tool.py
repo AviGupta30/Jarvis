@@ -10,7 +10,9 @@ Design philosophy:
   • Bottom: full-width bar + slide counter
 """
 from __future__ import annotations
+import math
 import io, json, re, time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Generator
 
@@ -263,15 +265,35 @@ def _oval(slide, l, t, w, h, fill=None, line=None, lw=1.0):
 def _tb(slide, text: str, l, t, w, h, font="Calibri", sz=11, bold=False, italic=False,
         col="FFFFFF", align=PP_ALIGN.LEFT):
     if not text: return
-    tb = slide.shapes.add_textbox(l, t, w, h)
-    tb.word_wrap = True
-    tf = tb.text_frame; tf.word_wrap = True
-    p = tf.paragraphs[0]; p.alignment = align
+    
+    from pptx.enum.shapes import MSO_SHAPE
+    try:
+        from pptx.enum.text import MSO_AUTO_SIZE
+    except ImportError:
+        MSO_AUTO_SIZE = None
+        
+    tb = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, l, t, w, h)
+    tb.fill.background()
+    tb.line.fill.background()
+    
+    tf = tb.text_frame
+    tf.word_wrap = True
+    if MSO_AUTO_SIZE:
+        tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+        
+    tf.margin_left = 0
+    tf.margin_right = 0
+    tf.margin_top = 0
+    tf.margin_bottom = 0
+
+    p = tf.paragraphs[0]
+    p.alignment = align
     r = p.add_run()
     r.text = str(text)
     r.font.name = font; r.font.size = Pt(sz)
     r.font.bold = bold; r.font.italic = italic
     r.font.color.rgb = _c(col)
+    return tb
 
 def _clean_image_path(image_path: str) -> str:
     if not image_path: return ""
@@ -281,13 +303,70 @@ def _clean_image_path(image_path: str) -> str:
     return s.split('|')[0].strip()
 
 def _get_image_aspect_ratio(path: str) -> float:
-    """Returns width / height of image using PIL if available, else 1.0"""
+    """Returns width / height of image using PIL if available, else 1.78 (16:9)"""
     try:
         from PIL import Image
         with Image.open(path) as img:
             return img.width / max(img.height, 1)
     except Exception:
-        return 1.0
+        return 1.78
+
+
+# ─── Fluid Slot Geometry ───────────────────────────────────────────────────────
+@dataclass
+class SlotGeometry:
+    """Computed image + text zone dimensions (in EMU — python-pptx native)."""
+    img_x: float; img_y: float; img_w: float; img_h: float
+    txt_x: float; txt_y: float; txt_w: float; txt_h: float
+
+
+def compute_split_geometry(top: float, avail_h: float, img_aspect: float) -> SlotGeometry:
+    """
+    Dynamically compute left-text / right-image split geometry based on the
+    image's ACTUAL aspect ratio.  The image slot adapts to the image so that:
+      • Landscape images (wide) get a wider right slot.
+      • Portrait images (tall) get a narrower right slot.
+      • Text always gets at least 34% of the usable slide width.
+      • The image is NEVER forced into a shape that would require cropping.
+
+    Args:
+        top:        Top edge of the content zone (EMU).
+        avail_h:    Available height for the content zone (EMU).
+        img_aspect: width / height of the actual image (clamped internally).
+
+    Returns:
+        SlotGeometry with img_* and txt_* fields all in EMU.
+    """
+    # Clamp to sane bounds (0.4 = very tall portrait, 2.8 = very wide panorama)
+    img_aspect = max(0.4, min(2.8, img_aspect))
+
+    # Total usable width: full slide minus left + right margins
+    margin_l = Inches(0.25)
+    margin_r = Inches(0.3)
+    gap      = Inches(0.2)
+    total_w  = W - margin_l - margin_r
+
+    # Natural image width if the slot were exactly avail_h tall
+    natural_img_w = avail_h * img_aspect
+
+    # Constraints:
+    #   • Image can take at most 62% of total_w
+    #   • Text must keep at least 34% of total_w
+    max_img_w = min(total_w * 0.62, total_w - total_w * 0.34 - gap)
+    img_w     = min(natural_img_w, max_img_w)
+
+    # Ensure image is at least 30% of total_w (for very portrait images)
+    img_w = max(img_w, total_w * 0.30)
+
+    txt_w = total_w - img_w - gap
+
+    txt_x = margin_l
+    img_x = txt_x + txt_w + gap
+
+    return SlotGeometry(
+        img_x=img_x, img_y=top, img_w=img_w, img_h=avail_h,
+        txt_x=txt_x, txt_y=top, txt_w=txt_w, txt_h=avail_h,
+    )
 
 def _parse_bullet(b) -> tuple:
     """Safely parse any bullet item into (bold_text, body_text).
@@ -363,8 +442,9 @@ RULES:
 - First slide MUST use "aesthetic_title".
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - {image_rules}
-- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch".
+- Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch", "aesthetic_poster".
 - You MUST use AT LEAST 4 different layouts in the presentation.
+- Use "aesthetic_poster" for high-density slides that combine BOTH cards AND bullet points (e.g., problem statement with 4 issue cards + key detail bullets). It automatically builds a dashboard-style layout.
 - {purpose_rules}
 - DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
 - COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
@@ -392,6 +472,7 @@ JSON SCHEMA:
 
 _SYS_CHUNK = """\
 You are an elite presentation generator. Generate highly dense content for specific slides based on the provided outline.
+CRITICAL: Do NOT generate the entire presentation. ONLY generate the specific slides requested in the user prompt (from start_idx to end_idx). Returning extra slides is a severe error.
 Output ONLY valid JSON — no markdown fences, no explanation."""
 
 _USR_CHUNK = """TOPIC: {prompt}
@@ -412,6 +493,7 @@ LAYOUT SCHEMAS:
 - aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
 - aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
+- aesthetic_poster: "cards": [...] + "bullets": [...] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
 - aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
 - aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
 - aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
@@ -725,46 +807,74 @@ class PresentationBuilder:
                 _tb(slide, title.upper(), Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.5), sz=sz, bold=True, col=self.P["text"], align=PP_ALIGN.LEFT)
 
     def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
-        """Draws a premium rounded frame with an inner image, auto-generated chart, or text fallback."""
+        """
+        Draws a premium rounded frame with an inner image, auto-generated chart, or
+        text fallback. Images are perfectly shrink-wrapped so there is no glaring white 
+        letterbox/pillarbox space, and centered in the provided bounding box.
+        """
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
+        frame_pad = Inches(0.12)      # uniform inner padding around the frame border
 
-        if getattr(self, "S", {}).get("tech_dots", True):
-            for di in range(3):
-                _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
-                      Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
-
-        pad = Inches(0.1)
         clean = _clean_image_path(path) if path else ""
         if clean and Path(clean).exists():
             try:
-                # Aspect-correct rendering: frame adapts to image ratio
+                # ── Step 1: Get real image dimensions ──
                 try:
                     from PIL import Image as _PIL
                     with _PIL.open(clean) as _im:
-                        img_w, img_h = _im.size
-                    img_ratio = img_w / img_h
-                    inner_w = w - 2 * pad
-                    inner_h = h - 2 * pad
-                    slot_ratio = inner_w / inner_h
-                    if img_ratio >= slot_ratio:
-                        fit_w = inner_w
-                        fit_h = inner_w / img_ratio
-                    else:
-                        fit_h = inner_h
-                        fit_w = inner_h * img_ratio
-                    ox = (inner_w - fit_w) / 2
-                    oy = (inner_h - fit_h) / 2
-                    pic = slide.shapes.add_picture(clean, l + pad + ox, t + pad + oy, fit_w, fit_h)
+                        img_px_w, img_px_h = _im.size
                 except Exception:
-                    # Pillow unavailable — use raw add_picture (may stretch)
-                    pic = slide.shapes.add_picture(clean, l + pad, t + pad, w - 2*pad, h - 2*pad)
+                    img_px_w, img_px_h = 16, 9   # safe 16:9 assumption
+
+                img_ratio  = img_px_w / max(img_px_h, 1)
+                inner_w    = w - 2 * frame_pad
+                inner_h    = h - 2 * frame_pad
+                slot_ratio = inner_w / max(inner_h, 1)
+
+                # ── Step 2: Contain fit to find optimal dimensions ──
+                if img_ratio >= slot_ratio:
+                    fit_w = inner_w
+                    fit_h = inner_w / img_ratio
+                else:
+                    fit_h = inner_h
+                    fit_w = inner_h * img_ratio
+
+                # ── Step 3: Shrink-wrap the frame tightly around the image ──
+                final_w = fit_w + 2 * frame_pad
+                final_h = fit_h + 2 * frame_pad
+                
+                # Center the tight frame within the original (l, t, w, h) slot
+                frame_x = l + (w - final_w) / 2
+                frame_y = t + (h - final_h) / 2
+
+                # Draw the tight frame
+                _round(slide, frame_x, frame_y, final_w, final_h, fill=self.P["card"], line=self.P["border"], lw=bw)
+
+                if getattr(self, "S", {}).get("tech_dots", True):
+                    for di in range(3):
+                        _oval(slide, frame_x + final_w - Inches(0.6) + di * Inches(0.16), frame_y + Inches(0.15),
+                              Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
+
+                # Insert the image perfectly filling the inner frame
+                pic = slide.shapes.add_picture(
+                    clean,
+                    frame_x + frame_pad,
+                    frame_y + frame_pad,
+                    fit_w,
+                    fit_h,
+                )
                 pic.line.fill.background()
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
 
-        # ── AUTO-CHART: Render chart from structured data if available ──
+        # ── AUTO-CHART / FALLBACK (Uses full box) ──
+        _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
+        if getattr(self, "S", {}).get("tech_dots", True):
+            for di in range(3):
+                _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
+                      Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
+
         if chart_data and isinstance(chart_data, dict):
             try:
                 from app.services.ppt_chart_engine import ChartEngine
@@ -775,7 +885,7 @@ class PresentationBuilder:
                     h=(h / 914400.0) - 0.5
                 )
                 if png_bytes and len(png_bytes) > 100:
-                    c_pad = Inches(0.25)  # Extra padding for charts inside rounded borders
+                    c_pad = Inches(0.25)
                     pic = slide.shapes.add_picture(
                         io.BytesIO(png_bytes), l + c_pad, t + c_pad,
                         w - 2*c_pad, h - 2*c_pad
@@ -784,13 +894,23 @@ class PresentationBuilder:
             except Exception as e:
                 print(f"[ppt] chart render error: {e}")
 
-        # Aesthetic placeholder (only if no image AND no chart)
+        # Text fallback
         _tb(slide, suggestion or "[ Detailed Visual ]",
             l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
             sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
 
     def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str, tag_col: str, idx: int):
         sz_b = getattr(self, "S", {}).get("body_font_size", 11)
+        
+        # Ensure text is visible against card background
+        def _lum(c):
+            try: return (0.299*int(c[0:2],16) + 0.587*int(c[2:4],16) + 0.114*int(c[4:6],16))/255
+            except: return 0.5
+        card_col = self.P.get("card", "FFFFFF")
+        text_col = self.P.get("text", "000000")
+        if abs(_lum(text_col) - _lum(card_col)) < 0.35:
+            text_col = "111111" if _lum(card_col) > 0.5 else "F5F5F5"
+
         if getattr(self, "S", {}).get("bullet_style", "card") == "card":
             _round(slide, l, t, w, h, fill=self.P["card"], line=tag_col, lw=1.5)
             if getattr(self, "S", {}).get("numbered_badges", True):
@@ -799,7 +919,7 @@ class PresentationBuilder:
             if bold_txt:
                 _tb(slide, bold_txt, l + Inches(0.5), t + Inches(0.1), w - Inches(0.6), Inches(0.3), sz=12, bold=True, col=tag_col)
             body_top = t + Inches(0.35) if bold_txt else t + Inches(0.14)
-            _tb(slide, body_txt, l + Inches(0.5), body_top, w - Inches(0.6), h - (Inches(0.4) if bold_txt else Inches(0.22)), sz=sz_b, col=self.P["text"])
+            _tb(slide, body_txt, l + Inches(0.5), body_top, w - Inches(0.6), h - (Inches(0.4) if bold_txt else Inches(0.22)), sz=sz_b, col=text_col)
         else:
             if getattr(self, "S", {}).get("numbered_badges", False):
                 _tb(slide, f"{idx}.", l, t + Inches(0.05), Inches(0.3), Inches(0.25), sz=12, bold=True, col=tag_col, align=PP_ALIGN.RIGHT)
@@ -836,12 +956,28 @@ class PresentationBuilder:
         slide = self._blank()
         self._progress(slide, cur, total)
 
-        if getattr(self, "S", {}).get("decorative_circles", True):
-            _oval(slide, W*0.55, H*0.1, Inches(5.5), Inches(5.5), fill=self.P["bg2"], line=self.P["border"], lw=0.5)
-            _oval(slide, W*0.58, H*0.18, Inches(4.0), Inches(4.0), fill=self.P["bg"], line=self.P["ac2"], lw=0.4)
+        has_img = bool(d.get("image_path") or d.get("image_slot"))
 
-        cw, ch = Inches(11.0), Inches(5.4)
-        cx, cy = (W - cw)/2, (H - ch)/2 - Inches(0.1)
+        if has_img:
+            # Side-by-side title slide with image
+            img_w = W * 0.45
+            txt_w = W - img_w - Inches(0.8)
+            cw, ch = txt_w, Inches(5.4)
+            cx, cy = Inches(0.4), (H - ch) / 2
+            
+            # Render image on the right
+            self._premium_image_frame(
+                slide, d.get("image_path", ""), W - img_w - Inches(0.4), Inches(0.8),
+                img_w, H - Inches(1.6), d.get("visual_suggestion", "Hero Image")
+            )
+        else:
+            # Centered title slide
+            cw, ch = Inches(11.0), Inches(5.4)
+            cx, cy = (W - cw)/2, (H - ch)/2 - Inches(0.1)
+
+            if getattr(self, "S", {}).get("decorative_circles", True):
+                _oval(slide, W*0.55, H*0.1, Inches(5.5), Inches(5.5), fill=self.P["bg2"], line=self.P["border"], lw=0.5)
+                _oval(slide, W*0.58, H*0.18, Inches(4.0), Inches(4.0), fill=self.P["bg"], line=self.P["ac2"], lw=0.4)
 
         if getattr(self, "S", {}).get("drop_shadows", True):
             _round(slide, cx + Inches(0.15), cy + Inches(0.15), cw, ch, fill=self.P["bg2"], line=None)
@@ -859,71 +995,122 @@ class PresentationBuilder:
             _corner_L(slide, cx, cy, cw, ch, col=self.P["ac1"], size=Inches(0.5), th=Inches(0.07))
 
         _tb(slide, d.get("title", "Presentation"), cx + Inches(0.5), cy + Inches(0.4),
-            cw - Inches(1.0), Inches(2.4), sz=getattr(self, "S", {}).get("title_font_size", 48), bold=True, col=self.P["text"],
-            align=PP_ALIGN.CENTER, font=getattr(self, "S", {}).get("title_font", "Calibri"))
+            cw - Inches(1.0), Inches(2.4), sz=getattr(self, "S", {}).get("title_font_size", 48) if not has_img else 40, bold=True, col=self.P["text"],
+            align=PP_ALIGN.CENTER if not has_img else PP_ALIGN.LEFT, font=getattr(self, "S", {}).get("title_font", "Calibri"))
 
-        _rect(slide, cx + Inches(2.2), cy + Inches(2.95), cw - Inches(4.4), Inches(0.05), fill=self.P["ac1"])
+        if not has_img:
+            _rect(slide, cx + Inches(2.2), cy + Inches(2.95), cw - Inches(4.4), Inches(0.05), fill=self.P["ac1"])
+        
         _tb(slide, d.get("subtitle", ""), cx + Inches(0.7), cy + Inches(3.1),
-            cw - Inches(1.4), Inches(1.95), sz=13.5, col=self.P["sub"], align=PP_ALIGN.CENTER)
+            cw - Inches(1.4), Inches(1.95), sz=13.5, col=self.P["sub"], align=PP_ALIGN.CENTER if not has_img else PP_ALIGN.LEFT)
 
         if getattr(self, "S", {}).get("tech_dots", True):
             for di in range(3):
                 _rect(slide, cx + cw - Inches(0.8) + di * Inches(0.22),
                       cy + ch - Inches(0.38), Inches(0.12), Inches(0.12), fill=self.P["ac1"])
 
-    # ── LAYOUT 2: SHOWCASE — MASSIVE HERO IMAGE ──────────────────────────────
+    # ── LAYOUT 2: SHOWCASE — MASSIVE HERO IMAGE (or side-by-side pair) ───────
     def _lay_aesthetic_showcase(self, d: dict, cur: int, total: int):
         slide = self._blank()
         self._header(slide, d.get("title", ""))
         self._progress(slide, cur, total)
 
-        top = Inches(0.86)
+        top     = Inches(0.86)
         avail_h = H - top - Inches(0.3)
-        margin = Inches(0.25)
+        margin  = Inches(0.25)
+        gap     = Inches(0.18)
+        avail_w = W - 2 * margin
 
-        # Huge image slot in the center
-        self._premium_image_frame(
-            slide, d.get("image_path", ""), 
-            margin, top, 
-            W - (2 * margin), avail_h,
-            d.get("visual_suggestion", "[ Massive Hero Visual ]")
-        )
+        extra_paths = d.get("extra_image_paths", [])
 
-    # ── LAYOUT 3: SPLIT — LEFT DENSE BULLETS + RIGHT DOMINANT IMAGE ──────────
+        if extra_paths:
+            # ── Dual-image side-by-side ────────────────────────────────────────
+            n_imgs  = 1 + len(extra_paths)  # primary + extras (cap at 2)
+            n_imgs  = min(n_imgs, 2)
+            img_w   = (avail_w - gap * (n_imgs - 1)) / n_imgs
+            all_paths = [d.get("image_path", "")] + list(extra_paths)
+            for i, p in enumerate(all_paths[:n_imgs]):
+                ix = margin + i * (img_w + gap)
+                self._premium_image_frame(
+                    slide, p,
+                    ix, top, img_w, avail_h,
+                    d.get("visual_suggestion", ""),
+                )
+        else:
+            # ── Single hero image ──────────────────────────────────────────────
+            self._premium_image_frame(
+                slide, d.get("image_path", ""),
+                margin, top,
+                avail_w, avail_h,
+                d.get("visual_suggestion", "[ Massive Hero Visual ]")
+            )
+
+
+    # ── LAYOUT: SPLIT — INTELLIGENT TEXT + IMAGE ────────────────────────────
     def _lay_aesthetic_split(self, d: dict, cur: int, total: int):
+        """
+        Fluid split layout that adapts natively to image aspect ratio:
+        • Landscape (>1.2): Image spans top, text in 2 columns below.
+        • Portrait/Square (<=1.2): Image on left/right, text beside it.
+        """
+        bullets = d.get("bullets", [])
+        if not bullets or all(not _parse_bullet(b)[1] for b in bullets):
+            self._lay_aesthetic_showcase(d, cur, total)
+            return
+
         slide = self._blank()
         self._header(slide, d.get("title", ""))
         self._progress(slide, cur, total)
 
         top   = Inches(0.86)
         avail = H - top - Inches(0.3)
-        gap   = Inches(0.2)
+        margin = Inches(0.25)
+        avail_w = W - 2 * margin
+        gap = Inches(0.15)
 
-        ratio = getattr(self, "S", {}).get("image_ratio", 0.57)
-        tratio = getattr(self, "S", {}).get("text_ratio", 0.41)
-        lw = (W - Inches(0.55)) * tratio
-        rw = (W - Inches(0.55)) * ratio
-        lx = Inches(0.25)
-        rx = lx + lw + gap
+        img_path   = _clean_image_path(d.get("image_path", ""))
+        has_image  = bool(img_path and Path(img_path).exists())
+        img_aspect = float(d.get("image_aspect", 0.0))
+        if img_aspect <= 0 and has_image:
+            img_aspect = _get_image_aspect_ratio(img_path)
+        if img_aspect <= 0:
+            img_aspect = 1.78
 
-        # ── RIGHT: Premium image frame (with auto-chart) ──────────────────
-        self._premium_image_frame(slide, d.get("image_path", ""), rx, top, rw, avail,
-                                   d.get("visual_suggestion", "[ Visual ]"),
-                                   chart_data=d.get("chart_data"))
-
-        # ── LEFT: Dense bullet cards ──────────────────────────────────────
-        bullets = d.get("bullets", [])
         tag_colors = self.P["tag_colors"]
+
+        # ALWAYS use Left/Right split for standard slides. Vertical mode squishes the cards too much.
+        geo = compute_split_geometry(top, avail, img_aspect)
+        
+        # Alternate sides
+        if cur % 2 == 0:
+            img_x = margin
+            txt_x = margin + geo.img_w + gap
+        else:
+            txt_x = geo.txt_x
+            img_x = geo.img_x
+
+        # Image frame fills full content height — _premium_image_frame handles
+        # letterbox containment internally, so no wasted white space.
+        self._premium_image_frame(
+            slide, d.get("image_path", ""),
+            img_x, top, geo.img_w, avail,
+            d.get("visual_suggestion", ""),
+            chart_data=d.get("chart_data"),
+        )
+
+        # Bullet cards
         n = max(len(bullets[:4]), 1)
-        card_gap = Inches(0.1)
-        ch2 = (avail - card_gap * (n-1)) / n
-        by = top
+        ch2 = (geo.txt_h - gap * (n - 1)) / n
+        by = geo.txt_y
 
         for i, b in enumerate(bullets[:4]):
             bold_txt, body_txt = _parse_bullet(b)
-            self._bullet_card(slide, lx, by, lw, ch2, bold_txt, body_txt,
-                              tag_colors[i % len(tag_colors)], i+1)
-            by += ch2 + card_gap
+            self._bullet_card(
+                slide, txt_x, by, geo.txt_w, ch2,
+                bold_txt, body_txt,
+                tag_colors[i % len(tag_colors)], i + 1,
+            )
+            by += ch2 + gap
 
     # ── LAYOUT 3: GRID — 2×2 COLORED CARDS (+ optional side image) ───────────
     def _lay_aesthetic_grid(self, d: dict, cur: int, total: int):
@@ -933,48 +1120,59 @@ class PresentationBuilder:
 
         top   = Inches(0.86)
         avail = H - top - Inches(0.3)
+        margin = Inches(0.25)
         gap   = Inches(0.18)
         cards = d.get("cards", [])
         
-        # Fallback if LLM generated "bullets" instead of "cards"
         if not cards and "bullets" in d:
             for i, b in enumerate(d["bullets"]):
                 bold, text = _parse_bullet(b)
                 header = bold if bold else (f"Section {i+1}")
                 cards.append({"header": header, "bullets": [text] if text else ["(No content)"]})
         
-        # Parse any string-cards into dicts
         cards = [_parse_card(c) for c in cards]
-                
-        # Fix missing headers dynamically
         for i, c in enumerate(cards):
             if not c.get("header", ""):
                 c["header"] = f"Module {i+1}"
 
         # Check if we have an image to show alongside
-        img_path = _clean_image_path(d.get("image_path", ""))
-        has_img = bool(img_path and Path(img_path).exists())
+        img_path  = _clean_image_path(d.get("image_path", ""))
+        has_img   = bool(img_path and Path(img_path).exists())
         has_chart = bool(d.get("chart_data"))
 
         if has_img or has_chart:
-            # Cards left + image/chart right
-            grid_w = (W - Inches(0.5)) * 0.55
-            vis_w  = (W - Inches(0.5)) * 0.42
-            vis_x  = Inches(0.25) + grid_w + gap
+            img_aspect = float(d.get("image_aspect", 0.0))
+            if img_aspect <= 0 and has_img:
+                img_aspect = _get_image_aspect_ratio(img_path)
+            if img_aspect <= 0:
+                img_aspect = 1.78
+                
+            geo = compute_split_geometry(top, avail, img_aspect)
+            
+            if cur % 2 != 0:
+                img_x = margin
+                txt_x = margin + geo.img_w + gap
+            else:
+                txt_x = geo.txt_x
+                img_x = geo.img_x
+                
+            # Image frame fills full content height — _premium_image_frame handles letterbox
             self._premium_image_frame(
                 slide, d.get("image_path", "") if has_img else "",
-                vis_x, top, vis_w, avail,
-                d.get("visual_suggestion", "[ Visual ]"),
+                img_x, top, geo.img_w, avail,
+                d.get("visual_suggestion", ""),
                 chart_data=d.get("chart_data")
             )
-            n_cols, n_rows = 1, min(len(cards), 4)
-            col_w = grid_w - Inches(0.04)
-            row_h = (avail - gap*(n_rows-1)) / max(n_rows, 1)
-            for i, c in enumerate(cards[:n_rows]):
-                cy2 = top + i*(row_h + gap)
-                cx2 = Inches(0.25)
-                self._colored_card_full(slide, cx2, cy2, col_w, row_h, c,
-                                        self.P["tag_colors"][i % 4])
+            
+            n_cols, n_rows = 2, 2
+            col_w = (geo.txt_w - gap) / 2
+            row_h = (geo.txt_h - gap) / 2
+            
+            for i, c in enumerate(cards[:4]):
+                ci, ri = i % n_cols, i // n_cols
+                cx2 = txt_x + ci * (col_w + gap)
+                cy2 = geo.txt_y + ri * (row_h + gap)
+                self._colored_card_full(slide, cx2, cy2, col_w, row_h, c, self.P["tag_colors"][i % 4])
         else:
             # Standard 2×2 grid (no chart data, no image)
             n_cols, n_rows = 2, 2
@@ -982,13 +1180,197 @@ class PresentationBuilder:
             row_h = (avail - gap) / 2
             for i, c in enumerate(cards[:4]):
                 ci, ri = i % n_cols, i // n_cols
-                cx2 = Inches(0.25) + ci*(col_w + gap)
-                cy2 = top + ri*(row_h + gap)
+                cx2 = Inches(0.25) + ci * (col_w + gap)
+                cy2 = top + ri * (row_h + gap)
                 self._colored_card_full(slide, cx2, cy2, col_w, row_h, c,
                                         self.P["tag_colors"][i % 4])
 
+    # ── LAYOUT: POSTER — Dynamic Dashboard (Cards + Image + Bullets together) ──
+    def _lay_aesthetic_poster(self, d: dict, cur: int, total: int):
+        """
+        Dynamic constraint-based layout engine.
+
+        Analyses the slide content at runtime and divides the canvas into
+        logical regions to fit everything without overlap or wasted space:
+
+          • If cards are present  → horizontal card band (top strip, 1×N)
+          • Remaining space below → dynamic left/right split
+              – Left:  bullet point cards, stacked vertically
+              – Right: image, sized to its REAL aspect ratio
+          • If no image: full-width cards across two rows
+          • If no cards: falls back to aesthetic_split
+
+        All geometry is computed from the actual image aspect ratio and
+        content count — nothing is hardcoded.
+        """
+        slide = self._blank()
+        self._header(slide, d.get("title", ""))
+        self._progress(slide, cur, total)
+
+        MX   = Inches(0.25)       # left margin
+        MXR  = Inches(0.2)        # right margin
+        TOP  = Inches(0.86)       # below header
+        BOT  = Inches(0.3)        # above footer bar
+        GAP  = Inches(0.15)       # gap between elements
+        FULL_W = W - MX - MXR    # usable width
+
+        avail_h = H - TOP - BOT
+
+        bullets = [b for b in d.get("bullets", []) if b]
+        cards   = [_parse_card(c) for c in d.get("cards", []) if c]
+        for i, c in enumerate(cards):
+            if not c.get("header"):
+                c["header"] = f"Module {i+1}"
+
+        img_path  = _clean_image_path(d.get("image_path", ""))
+        has_img   = bool(img_path and Path(img_path).exists())
+        has_chart = bool(d.get("chart_data"))
+        tag_colors = self.P["tag_colors"]
+
+        # ── No cards + no image → fall back to text-only aesthetic_pitch ──────
+        if not cards and not has_img and not has_chart:
+            self._lay_aesthetic_pitch(d, cur, total)
+            return
+
+        # ── No bullets + no cards → full-screen image showcase ───────────────
+        if not bullets and not cards and (has_img or has_chart):
+            self._lay_aesthetic_showcase(d, cur, total)
+            return
+
+        # ─────────────────────────────────────────────────────────────────────
+        # REGION PLANNING
+        # We always work top→bottom. The card band (if cards exist) goes first,
+        # then the remaining space is split left (bullets) / right (image).
+        # ─────────────────────────────────────────────────────────────────────
+
+        # Decide how many cards to show and how many columns to use in the band
+        n_cards = min(len(cards), 4)
+
+        if cards and n_cards > 0:
+            # Height of the card band is 30–38% of avail_h depending on content density
+            card_band_h = avail_h * 0.33 if bullets or has_img else avail_h
+            card_y      = TOP
+            content_y   = TOP + card_band_h + GAP
+            content_h   = avail_h - card_band_h - GAP
+        else:
+            card_band_h = 0
+            card_y      = TOP
+            content_y   = TOP
+            content_h   = avail_h
+
+        # ── Draw card band ────────────────────────────────────────────────────
+        if n_cards > 0:
+            col_gap   = GAP
+            card_cols = n_cards  # 1 card per column in the top band (max 4)
+            card_w    = (FULL_W - col_gap * (card_cols - 1)) / card_cols
+            for i, c in enumerate(cards[:n_cards]):
+                cx = MX + i * (card_w + col_gap)
+                self._colored_card_full(
+                    slide, cx, card_y, card_w, card_band_h,
+                    c, tag_colors[i % len(tag_colors)]
+                )
+
+        # ── Content zone (bullets + image) below the card band ────────────────
+        if has_img or has_chart:
+            # Compute image aspect ratio
+            img_aspect = float(d.get("image_aspect", 0.0))
+            if img_aspect <= 0 and has_img:
+                img_aspect = _get_image_aspect_ratio(img_path)
+            if img_aspect <= 0:
+                img_aspect = 1.78
+
+            # How wide should the image be?
+            # Natural width if the slot were content_h tall.
+            nat_img_w = content_h * img_aspect
+            # Cap at 62% of full width, ensure at least 38% for bullets
+            max_img_w = min(FULL_W * 0.62, FULL_W - FULL_W * 0.34 - GAP)
+            img_w = min(nat_img_w, max_img_w)
+            img_w = max(img_w, FULL_W * 0.35)  # at least 35%
+
+            # Actual image height to preserve aspect ratio (never stretch)
+            actual_img_h = img_w / img_aspect
+            # Centre image vertically in the content zone
+            img_y = content_y + (content_h - actual_img_h) / 2
+
+            txt_w = FULL_W - img_w - GAP
+
+            # Alternate left/right per slide for visual variety
+            if cur % 2 == 0:
+                img_x = MX
+                txt_x = MX + img_w + GAP
+            else:
+                txt_x = MX
+                img_x = MX + txt_w + GAP
+
+            # Image frame fills the full content zone height — letterbox handled internally
+            self._premium_image_frame(
+                slide, d.get("image_path", "") if has_img else "",
+                img_x, content_y, img_w, content_h,
+                d.get("visual_suggestion", ""),
+                chart_data=d.get("chart_data"),
+            )
+
+            # Draw bullet cards in text zone
+            if bullets:
+                n_b  = min(len(bullets), 4)
+                bh   = (content_h - GAP * (n_b - 1)) / max(n_b, 1)
+                by   = content_y
+                for i, b in enumerate(bullets[:n_b]):
+                    bold_txt, body_txt = _parse_bullet(b)
+                    self._bullet_card(
+                        slide, txt_x, by, txt_w, bh,
+                        bold_txt, body_txt,
+                        tag_colors[i % len(tag_colors)], i + 1
+                    )
+                    by += bh + GAP
+            elif not cards:
+                # No bullets → show description in text zone
+                desc = d.get("description", d.get("subtitle", ""))
+                if desc:
+                    _round(slide, txt_x, content_y, txt_w, content_h,
+                           fill=self.P["card"], line=self.P["border"], lw=1.5)
+                    _tb(slide, desc, txt_x + Inches(0.2), content_y + Inches(0.2),
+                        txt_w - Inches(0.4), content_h - Inches(0.4),
+                        sz=11, col=self.P["text"])
+
+        else:
+            # No image → full-width bullet grid below the card band
+            if bullets:
+                n_b   = min(len(bullets), 6)
+                # Use 2 columns if more than 3 bullets for better use of space
+                cols  = 2 if n_b > 3 else 1
+                rows  = math.ceil(n_b / cols)
+                bw    = (FULL_W - GAP * (cols - 1)) / cols
+                bh    = (content_h - GAP * (rows - 1)) / max(rows, 1)
+                for i, b in enumerate(bullets[:n_b]):
+                    col_i = i % cols
+                    row_i = i // cols
+                    bx    = MX + col_i * (bw + GAP)
+                    by    = content_y + row_i * (bh + GAP)
+                    bold_txt, body_txt = _parse_bullet(b)
+                    self._bullet_card(
+                        slide, bx, by, bw, bh,
+                        bold_txt, body_txt,
+                        tag_colors[i % len(tag_colors)], i + 1
+                    )
+
+
     def _colored_card_full(self, slide, l, t, w, h, card: dict, color: str):
         """Clean full grid card without messy overlapping header bands."""
+        
+        # Ensure text is visible against card background
+        def _lum(c):
+            try: return (0.299*int(c[0:2],16) + 0.587*int(c[2:4],16) + 0.114*int(c[4:6],16))/255
+            except: return 0.5
+        card_col = self.P.get("card", "FFFFFF")
+        text_col = self.P.get("text", "000000")
+        if abs(_lum(text_col) - _lum(card_col)) < 0.35:
+            text_col = "111111" if _lum(card_col) > 0.5 else "F5F5F5"
+            
+        # Also ensure header color is visible against card background
+        if abs(_lum(color) - _lum(card_col)) < 0.25:
+            color = "111111" if _lum(card_col) > 0.5 else "FFFFFF"
+
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
         border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
         _round(slide, l, t, w, h, fill=self.P["card"], line=border_col, lw=bw)
@@ -1022,10 +1404,10 @@ class PresentationBuilder:
             if getattr(self, "S", {}).get("numbered_badges", True):
                 _oval(slide, l + Inches(0.15), by + Inches(0.06), Inches(0.2), Inches(0.2), fill=color, line=None)
                 _tb(slide, str(bi+1), l + Inches(0.15), by + Inches(0.07), Inches(0.2), Inches(0.18), sz=9, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-                _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55), bsh - Inches(0.04), sz=sz_b, col=self.P["text"])
+                _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55), bsh - Inches(0.04), sz=sz_b, col=text_col)
             else:
                 _oval(slide, l + Inches(0.15), by + Inches(0.08), Inches(0.1), Inches(0.1), fill=color, line=None)
-                _tb(slide, display, l + Inches(0.35), by + Inches(0.02), w - Inches(0.45), bsh - Inches(0.04), sz=sz_b, col=self.P["text"])
+                _tb(slide, display, l + Inches(0.35), by + Inches(0.02), w - Inches(0.45), bsh - Inches(0.04), sz=sz_b, col=text_col)
             by += bsh
 
     # ── LAYOUT 4: FLOW — TOP CALLOUT + DOMINANT FULL-WIDTH IMAGE ─────────────
@@ -1061,16 +1443,32 @@ class PresentationBuilder:
             desc_text = " ".join(parts)
         if not desc_text and "nodes" in d:
             desc_text = " ".join([n.get("text", "") if isinstance(n, dict) else str(n) for n in d["nodes"]])
-            
-        _tb(slide, desc_text, Inches(0.94), top + Inches(0.12),
-            W - Inches(1.3), desc_h - Inches(0.2), sz=14, col=self.P["text"])
 
-        # DOMINANT visual — takes up 70% of slide height
-        vt = top + desc_h + Inches(0.15)
+        if desc_text:
+            if getattr(self, "S", {}).get("drop_shadows", True):
+                _round(slide, Inches(0.25) + Inches(0.07), top + Inches(0.07), W - Inches(0.43), desc_h, fill=self.P["bg2"], line=None)
+
+            bw = getattr(self, "S", {}).get("card_border_width", 1.8)
+            _round(slide, Inches(0.25), top, W - Inches(0.43), desc_h, fill=self.P["card"], line=self.P["border"], lw=bw)
+
+            if getattr(self, "S", {}).get("gradient_strips", True):
+                _rect(slide, Inches(0.25), top + Inches(0.06), Inches(0.1), desc_h - Inches(0.12), fill=self.P["ac2"])
+
+            _round(slide, Inches(0.44), top + Inches(0.1), Inches(0.35), Inches(0.35), fill=self.P["ac2"], line=None)
+            _tb(slide, '"', Inches(0.46), top + Inches(0.09), Inches(0.33), Inches(0.33), sz=18, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
+            _tb(slide, desc_text, Inches(0.94), top + Inches(0.12),
+                W - Inches(1.3), desc_h - Inches(0.2), sz=14, col=self.P["text"])
+
+            # DOMINANT visual — takes up 70% of slide height
+            vt = top + desc_h + Inches(0.15)
+        else:
+            # No description text — give the full height to the visual
+            vt = top
         vh = H - vt - Inches(0.3)
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
                                    W - Inches(0.43), vh, d.get("visual_suggestion", "[ Architecture ]"),
                                    chart_data=d.get("chart_data"))
+
 
     # ── LAYOUT 5: TIMELINE ────────────────────────────────────────────────────
     def _lay_aesthetic_timeline(self, d: dict, cur: int, total: int):
@@ -1352,39 +1750,237 @@ class PresentationBuilder:
             self._bullet_card(slide, rx, by, rw, bh - Inches(0.1), bold, txt, self.P["tag_colors"][i%4], i+1)
             by += bh
 
+    # ── LAYOUT: GALLERY — 1 to 6 images in an adaptive premium grid ───────────
+    def _lay_aesthetic_gallery(self, d: dict, cur: int, total: int):
+        """
+        Pure visual layout for 1–6 images.
+        
+        Grid patterns:
+          1 image  → full-width hero
+          2 images → side-by-side equal panels
+          3 images → large left + 2 stacked right
+          4 images → 2×2 grid
+          5 images → 2×2 top + 1 wide bottom
+          6 images → 2×3 grid
+        
+        All images use contain-fit (never cropped or stretched).
+        Titles and captions are derived from user hints stored in image_paths_hints.
+        """
+        slide = self._blank()
+        self._header(slide, d.get("title", ""))
+        self._progress(slide, cur, total)
+
+        top     = Inches(0.86)
+        avail_h = H - top - Inches(0.32)
+        avail_w = W - Inches(0.5)
+        lx      = Inches(0.25)
+        gap     = Inches(0.15)
+
+        # Collect all image paths for this gallery slide
+        images: list[str] = []
+        for p in d.get("image_paths", []):
+            clean = _clean_image_path(str(p))
+            if clean and Path(clean).exists():
+                images.append(clean)
+        # Also accept a single image_path
+        if not images:
+            single = _clean_image_path(d.get("image_path", ""))
+            if single and Path(single).exists():
+                images.append(single)
+
+        n = len(images)
+
+        def _frame(img, x, y, w, h):
+            self._premium_image_frame(slide, img, x, y, w, h,
+                                      d.get("visual_suggestion", ""))
+
+        if n == 0:
+            # Placeholder
+            self._premium_image_frame(slide, "", lx, top, avail_w, avail_h,
+                                      d.get("visual_suggestion", "[ Gallery ]"))
+
+        elif n == 1:
+            # Full-width hero
+            _frame(images[0], lx, top, avail_w, avail_h)
+
+        elif n == 2:
+            # Side-by-side equal panels
+            w = (avail_w - gap) / 2
+            _frame(images[0], lx, top, w, avail_h)
+            _frame(images[1], lx + w + gap, top, w, avail_h)
+
+        elif n == 3:
+            # Large left panel + 2 stacked on right
+            main_w = avail_w * 0.58
+            side_w = avail_w - main_w - gap
+            side_h = (avail_h - gap) / 2
+            _frame(images[0], lx,                 top,              main_w, avail_h)
+            _frame(images[1], lx + main_w + gap,  top,              side_w, side_h)
+            _frame(images[2], lx + main_w + gap,  top + side_h + gap, side_w, side_h)
+
+        elif n == 4:
+            # 2×2 perfect grid
+            cw = (avail_w - gap) / 2
+            ch = (avail_h - gap) / 2
+            for idx, img in enumerate(images[:4]):
+                col, row = idx % 2, idx // 2
+                _frame(img, lx + col * (cw + gap), top + row * (ch + gap), cw, ch)
+
+        elif n == 5:
+            # Top 2×2 + bottom wide banner
+            top_h  = avail_h * 0.54
+            bot_h  = avail_h - top_h - gap
+            cw     = (avail_w - gap) / 2
+            for idx, img in enumerate(images[:4]):
+                col, row = idx % 2, idx // 2
+                _frame(img, lx + col * (cw + gap), top + row * (top_h / 2 + gap / 2), cw, top_h / 2 - gap / 2)
+            _frame(images[4], lx, top + top_h + gap, avail_w, bot_h)
+
+        else:  # 6+
+            # 3-column × 2-row grid (shows first 6)
+            cw = (avail_w - 2 * gap) / 3
+            ch = (avail_h - gap) / 2
+            for idx, img in enumerate(images[:6]):
+                col, row = idx % 3, idx // 3
+                _frame(img, lx + col * (cw + gap), top + row * (ch + gap), cw, ch)
+
+def _auto_select_image_layout(slide_dict: dict) -> str:
+    """
+    After an image is assigned to a slide, pick the most aesthetically appropriate
+    rendering layout based on actual content + image characteristics.
+
+    Priority order:
+    1. Gallery / showcase / poster are never overridden if explicitly set.
+    2. Dense content (cards + bullets, or cards + image) → aesthetic_poster.
+    3. Portrait images (tall) + text → aesthetic_flow.
+    4. Rich bullets (3+) + landscape image → aesthetic_split.
+    5. Cards only → aesthetic_grid.
+    6. Sparse text + any image → aesthetic_flow.
+    7. No text at all → aesthetic_showcase (let the image dominate).
+    """
+    layout = slide_dict.get("layout", "aesthetic_split")
+
+    # Locked layouts — never override
+    if layout in ("aesthetic_gallery", "aesthetic_showcase", "aesthetic_poster",
+                  "aesthetic_title"):
+        return layout
+
+    bullets    = [b for b in slide_dict.get("bullets", []) if b]
+    cards      = [c for c in slide_dict.get("cards",   []) if c]
+    metrics    = slide_dict.get("metrics", [])
+    img_aspect = float(slide_dict.get("image_aspect", 1.78))
+
+    has_bullets   = len(bullets) >= 1
+    has_rich_text = len(bullets) >= 3
+    has_cards     = len(cards)   >= 1
+    # Use image_slot flag (set by the pipeline) rather than checking file existence
+    # because this function may run before image_path is applied to the slide dict
+    has_img       = bool(slide_dict.get("image_slot") or slide_dict.get("image_path"))
+    is_portrait   = img_aspect < 0.85
+
+    # ── Dense content: route to poster ────────────────────────────────────────
+    # Any combination of: cards+bullets, cards+image, or all three together
+    if has_cards and (has_bullets or has_img):
+        return "aesthetic_poster"
+
+    # ── Portrait image + text → flow ──────────────────────────────────────────
+    if is_portrait and (has_bullets or has_cards):
+        return "aesthetic_flow"
+
+    # ── Bullets only + landscape image → split ────────────────────────────────
+    if has_rich_text and not has_cards:
+        return "aesthetic_split"
+
+    # ── Metrics layout: keep as-is ────────────────────────────────────────────
+    if metrics and layout == "aesthetic_metrics":
+        return "aesthetic_metrics"
+
+    # ── Cards only (no image) → standard grid ─────────────────────────────────
+    if has_cards:
+        return "aesthetic_grid"
+
+    # ── Some bullets + landscape image ────────────────────────────────────────
+    if has_bullets:
+        return "aesthetic_split"
+
+    # ── Nothing: full-screen showcase ─────────────────────────────────────────
+    return "aesthetic_showcase"
+
+
+
 def _normalize_and_recover(chunk_data, outline_chunk):
-    """Silently maps hallucinated content arrays to the expected keys and supplies fallbacks so no slide is ever blank."""
+    """Maps hallucinated content arrays to expected keys and supplies fallbacks so no slide is ever blank.
+    Image-only slides (no text) are NOT injected with 'Auto-Recovered' — the auto-layout
+    selector will route them to aesthetic_showcase at build time.
+    """
     if not isinstance(chunk_data, dict): return
     slides = chunk_data.get("slides", [])
-        
+
+    _VALID_LAYOUTS = frozenset([
+        "aesthetic_split", "aesthetic_pitch", "aesthetic_flow", "aesthetic_grid",
+        "aesthetic_timeline", "aesthetic_metrics", "aesthetic_comparison",
+        "aesthetic_title", "aesthetic_showcase", "aesthetic_gallery",
+        "aesthetic_poster",  # dynamic dashboard layout
+    ])
+
     for i, s in enumerate(slides):
         expected_lay = outline_chunk[i].get("layout", "aesthetic_split") if i < len(outline_chunk) else "aesthetic_split"
         lay = s.get("layout", expected_lay)
-        
-        # 1. Force valid layout (handles Phase 1 Outline hallucinating layout names)
-        if lay not in ["aesthetic_split", "aesthetic_pitch", "aesthetic_flow", "aesthetic_grid", "aesthetic_timeline", "aesthetic_metrics", "aesthetic_comparison", "aesthetic_title"]:
-            lay = "aesthetic_split"
+
+        # 1. Force valid layout (handles hallucinated layout names)
+        if lay not in _VALID_LAYOUTS:
+            lay = expected_lay if expected_lay in _VALID_LAYOUTS else "aesthetic_split"
         s["layout"] = lay
-            
-        # 2. Aggressive Data Recovery
-        alt = s.get("bullets") or s.get("cards") or s.get("nodes") or s.get("points") or s.get("items") or s.get("content") or s.get("metrics") or []
-        if isinstance(alt, str): alt = [{"bold": "Note", "text": alt}]
-        
-        if lay in ["aesthetic_split", "aesthetic_pitch", "aesthetic_flow"]:
-            if not s.get("bullets"): s["bullets"] = alt if alt else [{"bold": "Auto-Recovered", "text": "The generation failed to produce detailed content for this section."}]
-        elif lay == "aesthetic_grid":
-            if not s.get("cards"): s["cards"] = alt if alt else [{"header": "Auto-Recovered", "bullets": ["Content missing"]}]
+
+        # 2. NEVER skip recovery based on image_slot.
+        #    The AI often sets image_slot:true in chunk JSON but generates zero bullets/cards.
+        #    We MUST always check and recover content regardless of image flags.
+        #    (image_path is the ENGINE-set field; image_slot from AI JSON is just a hint.)
+
+        # 3. Data Recovery for text-dependent layouts
+        alt = (s.get("bullets") or s.get("cards") or s.get("nodes") or
+               s.get("points") or s.get("items") or s.get("content") or s.get("metrics") or [])
+        if isinstance(alt, str):
+            alt = [{"bold": "Note", "text": alt}]
+
+        if lay in ("aesthetic_split", "aesthetic_pitch", "aesthetic_flow"):
+            if not s.get("bullets"):
+                s["bullets"] = alt if alt else [{"bold": "Content", "text": "Content generation produced no detailed text for this section."}]
+        elif lay in ("aesthetic_grid", "aesthetic_poster"):
+            if not s.get("cards"):
+                s["cards"] = alt if alt else [{"header": "Section", "bullets": ["Content missing"]}]
+            # aesthetic_poster also needs bullets
+            if lay == "aesthetic_poster" and not s.get("bullets"):
+                s["bullets"] = [{"bold": "Key Point", "text": "Supporting detail for this section."}]
         elif lay == "aesthetic_timeline":
-            if not s.get("nodes"): s["nodes"] = alt if alt else [{"header": "Auto-Recovered", "text": "Content missing"}]
+            if not s.get("nodes"):
+                fallback_nodes = []
+                for item in (alt or []):
+                    bold, text = _parse_bullet(item) if not isinstance(item, dict) else (item.get("bold",""), item.get("text",""))
+                    fallback_nodes.append({"header": bold or "Phase", "text": text or "Content missing"})
+                s["nodes"] = fallback_nodes if fallback_nodes else [{"header": "Phase", "text": "Content missing"}]
         elif lay == "aesthetic_metrics":
-            if not s.get("metrics"): s["metrics"] = alt if alt else [{"value": "-", "label": "Auto-Recovered"}]
+            if not s.get("metrics"):
+                s["metrics"] = alt if alt else [{"value": "-", "label": "Missing"}]
         elif lay == "aesthetic_comparison":
-            if not s.get("left_bullets"): s["left_bullets"] = alt if alt else [{"bold": "Left", "text": "Auto-Recovered"}]
-            if not s.get("right_bullets"): s["right_bullets"] = [{"bold": "Right", "text": "Auto-Recovered"}]
+            if not s.get("left_bullets"):
+                half = len(alt) // 2
+                s["left_bullets"]  = alt[:half] if alt else [{"bold": "Left",  "text": "Content missing"}]
+                s["right_bullets"] = alt[half:] if alt else [{"bold": "Right", "text": "Content missing"}]
 
 def ppt_create(prompt: str, style: str = None, output_path: str = None,
                theme_image_path: str = None, research_data: dict = None,
-               purpose: str = None, image_paths: list = None):
+               purpose: str = None, image_paths: list = None,
+               image_descriptions: list = None):
+    """
+    End-to-end PPT generation pipeline.
+
+    Args:
+        image_descriptions: Parallel list of user-provided hints for each image in
+                            image_paths (e.g. "product screenshot for the demo slide").
+                            May contain empty strings. Used by ppt_image_engine to
+                            semantically match each image to the best slide.
+    """
     yield "🤖 Generating Presentation Outline...\n"
     
     if not purpose:
@@ -1417,9 +2013,15 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None,
     image_rules = ""
     if valid_images:
         num_imgs = len(valid_images)
-        image_rules = f"""IMAGE INTEGRATION: The user has uploaded {num_imgs} image(s). 
-You may assign these images to specific slides by setting `"image_slot": true` in the slide JSON.
-You have full creative freedom to pick the best layouts for these images (e.g., 'aesthetic_split' for text+image side-by-side, 'aesthetic_showcase' for a full-screen hero image, or 'aesthetic_pitch' for high impact)."""
+        image_rules = (
+            f"IMAGE INTEGRATION: The user has uploaded {num_imgs} image(s). "
+            "Jarvis will automatically match each image to the most relevant slide based on "
+            "the image descriptions the user provided — you do NOT need to assign images yourself. "
+            "However, you MUST include enough slides with image-capable layouts so the images "
+            "have beautiful homes. Use layouts like 'aesthetic_split' (text+image side-by-side), "
+            "'aesthetic_showcase' (full-screen hero), or 'aesthetic_pitch' (impact grid + visual). "
+            f"Include at least {min(num_imgs, 4)} slides with these image-capable layouts."
+        )
     else:
         image_rules = "No user images were uploaded. Do not set 'image_slot' to true on any slide."
 
@@ -1490,7 +2092,7 @@ SOURCES (Cite these if applicable): {sources_str}
         
         chunk_slides = []
         last_err = None
-        for attempt in range(2):  # Try up to 2 times silently
+        for attempt in range(3):  # Up to 3 attempts with exponential backoff
             try:
                 raw_chunk = _groq_call(
                     _SYS_CHUNK,
@@ -1499,23 +2101,51 @@ SOURCES (Cite these if applicable): {sources_str}
                 chunk_data = _parse(raw_chunk)
                 _normalize_and_recover(chunk_data, chunk)
                 chunk_slides = chunk_data.get("slides", [])
-                if chunk_slides:
-                    break  # Success — stop retrying
-                last_err = ValueError("No slides in response.")
+                # After _normalize_and_recover has already fixed empty slides,
+                # just check we got at least as many slides as expected
+                if len(chunk_slides) >= len(chunk):
+                    break  # Success
+                last_err = ValueError(f"Got {len(chunk_slides)} slides, expected {len(chunk)}.")
             except Exception as e:
                 last_err = e
-                # Brief pause before retry to avoid rate-limit cascade
-                import time as _t; _t.sleep(1.5)
+            if attempt < 2:  # Don't sleep after last attempt
+                import time as _t; _t.sleep(1.5 * (2 ** attempt))
 
         if chunk_slides:
-            full_slides.extend(chunk_slides)
+            # Enforce strict mapping to prevent LLM from hallucinating extra slides
+            for i, expected_c in enumerate(chunk):
+                expected_num = expected_c.get('slide_number')
+                # 1. Try finding by exact slide number
+                match_idx = next((idx for idx, s in enumerate(chunk_slides) if s.get('slide_number') == expected_num), None)
+                # 2. Fallback to positional index if not found by number (always pick the first remaining one)
+                if match_idx is None and len(chunk_slides) > 0:
+                    match_idx = 0
+                
+                if match_idx is not None:
+                    # Pop the slide so it cannot be matched again for a later slide in the chunk
+                    match = chunk_slides.pop(match_idx)
+                    # Guarantee slide number and fallback layout matches outline expectation
+                    match['slide_number'] = expected_num
+                    if 'layout' not in match:
+                        match['layout'] = expected_c.get('layout', 'aesthetic_split')
+                    full_slides.append(match)
+                else:
+                    # Fallback for missing slide
+                    full_slides.append({
+                        "slide_number": expected_num,
+                        "title": expected_c.get("title", "Slide"),
+                        "layout": expected_c.get("layout", "aesthetic_split"),
+                        "bullets": [{"bold": expected_c.get("title", "Note"), "text": "Content could not be generated for this slide."}]
+                    })
+
         else:
             yield f"⚠️ Chunk {start_idx}-{end_idx} failed after 2 attempts ({last_err}). Using fallback.\n"
             for c in chunk:
                 full_slides.append({
+                    "slide_number": c.get("slide_number"),
                     "title": c.get("title", "Slide"),
-                    "layout": "aesthetic_split",
-                    "bullets": [{"bold": c.get("title", "Note"), "text": "Content could not be generated for this slide. Please try regenerating the presentation."}]
+                    "layout": c.get("layout", "aesthetic_split"),
+                    "bullets": [{"bold": c.get("title", "Note"), "text": "Content could not be generated for this slide."}]
                 })
     yield "🎨 Content generated! Extracting chart data for infographics...\n"
 
@@ -1580,54 +2210,106 @@ SOURCES (Cite these if applicable): {sources_str}
     # ── CRITICAL: Write the fully-populated slides back into the plan ──
     plan["slides"] = full_slides
 
-    # ── Distribute user images dynamically ────────────────────────────
+    # ── Smart Image Distribution (via ppt_image_engine) ──────────────
     if valid_images:
-        # 1. Fill the slots the LLM explicitly requested
-        image_slots = [i for i, sd in enumerate(full_slides) if sd.get("image_slot", False)]
-        
-        assigned = 0
-        for slot_idx in image_slots:
-            if assigned >= len(valid_images):
-                break
-            full_slides[slot_idx]["image_path"] = valid_images[assigned]
-            assigned += 1
-            
-        # 2. If we have leftover images, dynamically integrate them into existing slides
-        unassigned_images = valid_images[assigned:]
-        if unassigned_images:
-            yield f"\U0001f5bc\ufe0f Optimizing layouts to natively integrate {len(unassigned_images)} additional image(s)...\n"
-            
-            # Find slides that don't have images yet, excluding title and conclusion
-            modifiable = [i for i in range(1, len(full_slides)-1) if not full_slides[i].get("image_path")]
-            
-            for img_path in unassigned_images:
-                if modifiable:
-                    # Re-purpose an existing slide into aesthetic_split to frame the image perfectly
-                    idx = modifiable.pop(0)
-                    full_slides[idx]["layout"] = "aesthetic_split"
-                    full_slides[idx]["image_slot"] = True
-                    full_slides[idx]["image_path"] = img_path
-                    assigned += 1
-                else:
-                    # Fallback if no slides are left to modify: insert a showcase slide
-                    insert_idx = len(full_slides) - 1 if len(full_slides) > 1 else len(full_slides)
+        try:
+            from app.services.ppt_image_engine import build_image_descriptors, match_images_to_slides
+
+            yield f"\U0001f9e0 Analysing {len(valid_images)} image(s) — matching to slides...\n"
+
+            # Build descriptors (user hints + filenames — zero extra API calls)
+            descriptors = build_image_descriptors(valid_images, image_descriptions or [])
+
+            # Semantically match images to slides
+            image_map, overflow_images = match_images_to_slides(descriptors, full_slides)
+
+            # ── Apply matches + auto-select best layout per slide ────────────────
+            assigned = 0
+            for slide_idx, desc in image_map.items():
+                sd = full_slides[slide_idx]
+                sd["image_path"]   = desc.path
+                sd["image_aspect"]  = desc.aspect_ratio
+                sd["image_slot"]    = True
+                # Auto-select the best rendering layout based on content + image
+                sd["layout"] = _auto_select_image_layout(sd)
+                assigned += 1
+                # Count extra images that were co-assigned to the same slide
+                extra = sd.get("extra_image_paths", [])
+                if extra:
+                    assigned += len(extra)
+
+            yield f"\U0001f5bc\ufe0f Matched {assigned} image(s) to best-fit slides with adaptive layouts.\n"
+
+            # ── Overflow: group into gallery slides (up to 4 images each) ─────────
+            if overflow_images:
+                yield f"\U0001f5bc\ufe0f {len(overflow_images)} overflow image(s) → creating gallery slide(s)...\n"
+                insert_pos = max(len(full_slides) - 1, 1)
+                # Group every 4 overflow images into a single gallery slide
+                batch_size = 4
+                for batch_start in range(0, len(overflow_images), batch_size):
+                    batch = overflow_images[batch_start : batch_start + batch_size]
+                    # Build a title from the hints / filenames in this batch
+                    titles = [
+                        (desc.hint.strip() or Path(desc.path).stem.replace("_", " ").replace("-", " ").title())
+                        for desc in batch
+                    ]
+                    gallery_title = " · ".join(t[:20] for t in titles[:3])
+                    if len(titles) > 3:
+                        gallery_title += f" +{len(titles)-3} more"
+
                     new_slide = {
-                        "slide_number": insert_idx + 1,
-                        "layout": "aesthetic_showcase",
-                        "title": "Visual Showcase",
-                        "visual_suggestion": "Full-screen detailed view",
-                        "image_slot": True,
-                        "image_path": img_path
+                        "slide_number":   insert_pos + 1,
+                        "layout":         "aesthetic_gallery",
+                        "title":          gallery_title[:60] or "Visual Gallery",
+                        "image_paths":    [desc.path for desc in batch],
+                        "image_slot":     True,
                     }
-                    full_slides.insert(insert_idx, new_slide)
-                    insert_idx += 1
-                    assigned += 1
-                
-            # Re-number slides to maintain consistency
+                    full_slides.insert(insert_pos, new_slide)
+                    insert_pos += 1
+                    assigned += len(batch)
+
+            # Re-number slides after insertions
             for idx, slide in enumerate(full_slides):
                 slide["slide_number"] = idx + 1
-                
-        yield f"\U0001f5bc\ufe0f Successfully integrated {assigned} image(s) into the presentation flow.\n"
+
+            yield f"\U0001f5bc\ufe0f Successfully integrated {assigned} image(s) into the presentation.\n"
+
+        except Exception as img_err:
+            yield f"\u26a0\ufe0f Image matching failed ({img_err}). Using sequential fallback.\n"
+            # Graceful fallback: sequential without layout-overwriting
+            assigned = 0
+            eligible = [i for i in range(1, len(full_slides) - 1)
+                        if not full_slides[i].get("image_path")]
+            leftover_for_gallery: list = []
+            for img_path in valid_images:
+                if eligible:
+                    idx = eligible.pop(0)
+                    aspect = _get_image_aspect_ratio(img_path)
+                    full_slides[idx]["image_path"]   = img_path
+                    full_slides[idx]["image_slot"]    = True
+                    full_slides[idx]["image_aspect"]  = aspect
+                    full_slides[idx]["layout"] = _auto_select_image_layout(full_slides[idx])
+                    assigned += 1
+                else:
+                    leftover_for_gallery.append(img_path)
+
+            # Group leftover images into gallery slides
+            insert_pos = max(len(full_slides) - 1, 1)
+            for batch_start in range(0, len(leftover_for_gallery), 4):
+                batch_paths = leftover_for_gallery[batch_start : batch_start + 4]
+                full_slides.insert(insert_pos, {
+                    "slide_number": insert_pos + 1,
+                    "layout":       "aesthetic_gallery",
+                    "title":        "Visual Gallery",
+                    "image_paths":  batch_paths,
+                    "image_slot":   True,
+                })
+                insert_pos += 1
+                assigned += len(batch_paths)
+
+            for idx, slide in enumerate(full_slides):
+                slide["slide_number"] = idx + 1
+            yield f"\U0001f5bc\ufe0f Integrated {assigned} image(s) (fallback mode).\n"
     
     out = output_path or str(Path.home()/"Desktop"/f"Aesthetic_Deck_{int(time.time())}.pptx")
     b = PresentationBuilder(plan, out)
