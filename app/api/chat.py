@@ -907,13 +907,24 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         hackathon_kw = ["hackathon", "pitch", "startup", "demo", "prototype", "mvp", "investor", "product launch"]
         purpose = "hackathon" if any(kw in lower for kw in hackathon_kw) else "general"
 
-        # Extract any user-uploaded image paths from [ATTACHED_FILE: ...] tags
+        # Extract user-uploaded image paths + optional descriptions from [ATTACHED_FILE: ...] tags
+        # Frontend format: [ATTACHED_FILE: /path/to/img.jpg | DESCRIPTION: a graph about sales]
         import os as _os
         _img_exts = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif')
-        attached_img_paths = [
-            p.strip() for p in re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', prompt, re.IGNORECASE)
-            if p.strip().lower().endswith(_img_exts) and _os.path.exists(p.strip())
-        ]
+        attached_img_paths = []
+        attached_img_descriptions = []
+        for raw in re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', prompt, re.IGNORECASE):
+            parts = raw.split('|')
+            img_path = parts[0].strip()
+            if img_path.lower().endswith(_img_exts) and _os.path.exists(img_path):
+                attached_img_paths.append(img_path)
+                # Extract DESCRIPTION if present
+                desc = ""
+                for part in parts[1:]:
+                    if part.strip().upper().startswith("DESCRIPTION:"):
+                        desc = part.split(":", 1)[1].strip()
+                        break
+                attached_img_descriptions.append(desc)
 
         return {
             "tool_name": "ppt_create",
@@ -922,6 +933,7 @@ def keyword_detect_tool(prompt: str) -> dict | None:
                 "style": style_m.group(1) if style_m else None,
                 "purpose": purpose,
                 "image_paths": attached_img_paths if attached_img_paths else None,
+                "image_descriptions": attached_img_descriptions if attached_img_descriptions else None,
             }
         }
 

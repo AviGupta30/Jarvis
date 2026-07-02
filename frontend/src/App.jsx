@@ -213,6 +213,8 @@ function App() {
         const imageFiles = uploadedFiles.filter(f => f.name.match(/\.(png|jpg|jpeg|webp)$/i));
         if (imageFiles.length > 0) {
           body.image_paths = imageFiles.map(f => f.path.replace(/\\/g, '/'));
+          // Send user-provided descriptions so Jarvis can match images to the right slides
+          body.image_descriptions = imageFiles.map(f => (f.description || '').trim());
           
           if (!body.theme_image_path) {
             body.theme_image_path = body.image_paths[0];

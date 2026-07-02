@@ -89,8 +89,10 @@ class PPTCreateRequest(BaseModel):
     style: Optional[str] = None
     purpose: Optional[str] = None
     output_path: Optional[str] = None
-    theme_image_path: Optional[str] = None  # Path to a reference PPT screenshot
+    theme_image_path: Optional[str] = None   # Path to a reference PPT screenshot
     image_paths: Optional[list] = None       # User-uploaded images to embed in slides
+    image_descriptions: Optional[list] = None  # Parallel user hints for each image
+                                               # e.g. ["market graph for slide 3", "team photo"]
 
 @router.post("/create")
 async def create_ppt_backend(request: PPTCreateRequest):
@@ -110,6 +112,7 @@ async def create_ppt_backend(request: PPTCreateRequest):
                 None,  # research_data
                 request.purpose,
                 request.image_paths,
+                request.image_descriptions,
             ):
                 yield chunk + "\n\n"
         except Exception as e:
