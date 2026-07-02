@@ -496,7 +496,7 @@ LAYOUT SCHEMAS:
 - aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
 - aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
-- aesthetic_poster: "cards": [{"header":"...", "bullets":["..."]}] (4 cards) + "bullets": [{"bold":"...", "text":"..."}] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
+- aesthetic_poster: "cards": [{{"header":"...", "bullets":["..."]}}] (4 cards) + "bullets": [{{"bold":"...", "text":"..."}}] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
 - aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
 - aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
 - aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
