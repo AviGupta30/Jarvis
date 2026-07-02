@@ -494,11 +494,11 @@ ABSOLUTE RULES:
 
 LAYOUT SCHEMAS:
 - aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
-- aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
-- aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
-- aesthetic_poster: "cards": [{{"header":"...", "bullets":["..."]}}] (4 cards for broad overview) + "bullets": [{{"bold":"...", "text":"..."}}] (2-3 bullets for deep-dive specific details that DO NOT repeat the cards)
-- aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
-- aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
+- aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (2-4 bullets, do NOT hallucinate to reach 4)
+- aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (2-4 cards, only what is unique)
+- aesthetic_poster: "cards": [{{"header":"...", "bullets":["..."]}}] (2-4 overview cards) + "bullets": [{{"bold":"...", "text":"..."}}] (2-3 deep-dive specific details that DO NOT repeat the cards)
+- aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (3-5 nodes)
+- aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (2-4 metrics)
 - aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
 
 EXAMPLE OUTPUT for aesthetic_split:
