@@ -2092,10 +2092,12 @@ def ppt_create(prompt: str, style: str = None, output_path: str = None,
 
     # ── Extract explicit slide count from prompt ──────────────────────────────
     _slide_count_m = re.search(r'(\d+)\s*slides?', prompt, re.IGNORECASE)
+    _target_slides = 0
     if _slide_count_m:
         _n = int(_slide_count_m.group(1))
         # Clamp between 4 and 20 for sanity
         _n = max(4, min(20, _n))
+        _target_slides = _n
         slide_count_rule = f"Outline EXACTLY {_n} slides. No more, no less. STRICTLY {_n} slides."
     else:
         slide_count_rule = "Outline 8 to 12 slides."
@@ -2175,6 +2177,18 @@ SOURCES (Cite these if applicable): {sources_str}
         except Exception as e:
             yield f"⚠️ Could not extract theme from image ({e}). Using auto-theme.\n"
     slides_outline = plan.get("slides", [])
+    
+    # ── ALGORITHMIC SLIDE LIMIT ENFORCEMENT ──
+    # If the user explicitly requested N slides, and the LLM ignored the prompt 
+    # rule by generating > N slides, we strictly truncate the outline.
+    if _target_slides > 0 and len(slides_outline) > _target_slides:
+        yield f"⚠️ Enforcing strict slide limit: Truncating from {len(slides_outline)} to {_target_slides} slides.\n"
+        # Preserve the very last slide (it's usually the Conclusion/Thank You)
+        last_slide = slides_outline[-1]
+        slides_outline = slides_outline[:_target_slides - 1]
+        last_slide["slide_number"] = _target_slides
+        slides_outline.append(last_slide)
+        
     total_slides = len(slides_outline)
     yield f"\U0001f4cb Outline created: {total_slides} slides planned.\n"
 
