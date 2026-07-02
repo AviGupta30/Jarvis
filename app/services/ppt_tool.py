@@ -806,11 +806,47 @@ class PresentationBuilder:
                 _rect(slide, Inches(0.25), Inches(0.7), W - Inches(0.5), Inches(0.02), fill=self.P["ac1"])
                 _tb(slide, title.upper(), Inches(0.25), Inches(0.15), W - Inches(0.5), Inches(0.5), sz=sz, bold=True, col=self.P["text"], align=PP_ALIGN.LEFT)
 
-    def _premium_image_frame(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
+    def _premium_image_frame(self, slide, path_or_paths, l, t, w, h, suggestion: str, chart_data: dict = None):
         """
-        Draws a premium rounded frame with an inner image, auto-generated chart, or
-        text fallback. Images are perfectly shrink-wrapped so there is no glaring white 
-        letterbox/pillarbox space, and centered in the provided bounding box.
+        Draws one or multiple premium images intelligently tiled within the bounding box.
+        """
+        if isinstance(path_or_paths, str):
+            paths = [path_or_paths]
+        else:
+            paths = path_or_paths
+            
+        # Filter and clean
+        paths = [_clean_image_path(p) for p in paths if p]
+        
+        if not paths:
+            self._premium_image_frame_single(slide, "", l, t, w, h, suggestion, chart_data)
+            return
+            
+        n = len(paths)
+        if n == 1:
+            self._premium_image_frame_single(slide, paths[0], l, t, w, h, suggestion, chart_data)
+            return
+            
+        # Multiple images: Tile them!
+        gap = Inches(0.18)
+        if h >= w:
+            # Stack vertically (portrait area)
+            ch = (h - gap * (n - 1)) / n
+            for i, p in enumerate(paths):
+                self._premium_image_frame_single(slide, p, l, t + i*(ch + gap), w, ch, 
+                                                 suggestion if i == 0 else "", 
+                                                 chart_data if i == 0 else None)
+        else:
+            # Side by side (landscape area)
+            cw = (w - gap * (n - 1)) / n
+            for i, p in enumerate(paths):
+                self._premium_image_frame_single(slide, p, l + i*(cw + gap), t, cw, h, 
+                                                 suggestion if i == 0 else "", 
+                                                 chart_data if i == 0 else None)
+
+    def _premium_image_frame_single(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
+        """
+        Draws a single premium rounded frame. Images are perfectly shrink-wrapped.
         """
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
         frame_pad = Inches(0.12)      # uniform inner padding around the frame border
@@ -840,30 +876,35 @@ class PresentationBuilder:
                     fit_w = inner_h * img_ratio
 
                 # ── Step 3: Shrink-wrap the frame tightly around the image ──
-                final_w = fit_w + 2 * frame_pad
-                final_h = fit_h + 2 * frame_pad
+                final_w = fit_w
+                final_h = fit_h
                 
                 # Center the tight frame within the original (l, t, w, h) slot
                 frame_x = l + (w - final_w) / 2
                 frame_y = t + (h - final_h) / 2
 
-                # Draw the tight frame
-                _round(slide, frame_x, frame_y, final_w, final_h, fill=self.P["card"], line=self.P["border"], lw=bw)
+                # Insert the image perfectly filling the inner frame
+                from pptx.enum.shapes import MSO_SHAPE
+                pic = slide.shapes.add_picture(
+                    clean,
+                    frame_x,
+                    frame_y,
+                    final_w,
+                    final_h,
+                )
+                
+                # Give the image itself rounded corners so it doesn't bleed out!
+                pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
+                
+                # Apply premium border directly to the image
+                pic.line.color.rgb = _c(self.P["border"])
+                pic.line.width = Pt(bw)
 
                 if getattr(self, "S", {}).get("tech_dots", True):
                     for di in range(3):
                         _oval(slide, frame_x + final_w - Inches(0.6) + di * Inches(0.16), frame_y + Inches(0.15),
                               Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
 
-                # Insert the image perfectly filling the inner frame
-                pic = slide.shapes.add_picture(
-                    clean,
-                    frame_x + frame_pad,
-                    frame_y + frame_pad,
-                    fit_w,
-                    fit_h,
-                )
-                pic.line.fill.background()
                 return
             except Exception as e:
                 print(f"[ppt] image error: {e}")
@@ -1022,28 +1063,14 @@ class PresentationBuilder:
         avail_w = W - 2 * margin
 
         extra_paths = d.get("extra_image_paths", [])
-
-        if extra_paths:
-            # ── Dual-image side-by-side ────────────────────────────────────────
-            n_imgs  = 1 + len(extra_paths)  # primary + extras (cap at 2)
-            n_imgs  = min(n_imgs, 2)
-            img_w   = (avail_w - gap * (n_imgs - 1)) / n_imgs
-            all_paths = [d.get("image_path", "")] + list(extra_paths)
-            for i, p in enumerate(all_paths[:n_imgs]):
-                ix = margin + i * (img_w + gap)
-                self._premium_image_frame(
-                    slide, p,
-                    ix, top, img_w, avail_h,
-                    d.get("visual_suggestion", ""),
-                )
-        else:
-            # ── Single hero image ──────────────────────────────────────────────
-            self._premium_image_frame(
-                slide, d.get("image_path", ""),
-                margin, top,
-                avail_w, avail_h,
-                d.get("visual_suggestion", "[ Massive Hero Visual ]")
-            )
+        all_paths = [d.get("image_path", "")] + list(extra_paths) if d.get("image_path") or extra_paths else []
+        
+        self._premium_image_frame(
+            slide, all_paths,
+            margin, top,
+            avail_w, avail_h,
+            d.get("visual_suggestion", "[ Massive Hero Visual ]")
+        )
 
 
     # ── LAYOUT: SPLIT — INTELLIGENT TEXT + IMAGE ────────────────────────────
@@ -1089,10 +1116,12 @@ class PresentationBuilder:
             txt_x = geo.txt_x
             img_x = geo.img_x
 
+        all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_image else []
+        
         # Image frame fills full content height — _premium_image_frame handles
         # letterbox containment internally, so no wasted white space.
         self._premium_image_frame(
-            slide, d.get("image_path", ""),
+            slide, all_paths,
             img_x, top, geo.img_w, avail,
             d.get("visual_suggestion", ""),
             chart_data=d.get("chart_data"),
@@ -1156,9 +1185,11 @@ class PresentationBuilder:
                 txt_x = geo.txt_x
                 img_x = geo.img_x
                 
+            all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_img else []
+            
             # Image frame fills full content height — _premium_image_frame handles letterbox
             self._premium_image_frame(
-                slide, d.get("image_path", "") if has_img else "",
+                slide, all_paths,
                 img_x, top, geo.img_w, avail,
                 d.get("visual_suggestion", ""),
                 chart_data=d.get("chart_data")
@@ -1302,9 +1333,11 @@ class PresentationBuilder:
                 txt_x = MX
                 img_x = MX + txt_w + GAP
 
+            all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_img else []
+            
             # Image frame fills the full content zone height — letterbox handled internally
             self._premium_image_frame(
-                slide, d.get("image_path", "") if has_img else "",
+                slide, all_paths,
                 img_x, content_y, img_w, content_h,
                 d.get("visual_suggestion", ""),
                 chart_data=d.get("chart_data"),
@@ -1465,7 +1498,8 @@ class PresentationBuilder:
             # No description text — give the full height to the visual
             vt = top
         vh = H - vt - Inches(0.3)
-        self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
+        all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if d.get("image_path") or d.get("extra_image_paths") else []
+        self._premium_image_frame(slide, all_paths, Inches(0.25), vt,
                                    W - Inches(0.43), vh, d.get("visual_suggestion", "[ Architecture ]"),
                                    chart_data=d.get("chart_data"))
 
@@ -1606,8 +1640,9 @@ class PresentationBuilder:
         if has_chart:
             chart_top = top + col_area_h + Inches(0.15)
             chart_h   = H - chart_top - Inches(0.3)
+            all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if d.get("image_path") or d.get("extra_image_paths") else []
             self._premium_image_frame(
-                slide, "", Inches(0.25), chart_top,
+                slide, all_paths, Inches(0.25), chart_top,
                 W - Inches(0.43), chart_h,
                 d.get("visual_suggestion", "[ Comparison Chart ]"),
                 chart_data=d.get("chart_data")
@@ -1727,7 +1762,8 @@ class PresentationBuilder:
         
         desc_fallback = d.get("description", d.get("text", ""))
         fallback_text = desc_fallback if desc_fallback else d.get("visual_suggestion", "[ Flowchart / Architecture ]")
-        self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), bot_t, lw, bot_h, fallback_text,
+        all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if d.get("image_path") or d.get("extra_image_paths") else []
+        self._premium_image_frame(slide, all_paths, Inches(0.25), bot_t, lw, bot_h, fallback_text,
                                    chart_data=d.get("chart_data"))
         
         # If no meaningful bullets, skip drawing the right side cards
