@@ -1979,8 +1979,12 @@ def _auto_select_image_layout(slide_dict: dict) -> str:
     is_portrait   = img_aspect < 0.85
 
     # ── Dense content: route to poster ────────────────────────────────────────
-    # Any combination of: cards+bullets, cards+image, or all three together
-    if has_cards and (has_bullets or has_img):
+    # The poster layout places cards at the top and text+image at the bottom.
+    # We must only choose this if we actually have text (bullets or fallback description) 
+    # to put next to the image. Otherwise, it leaves awkward empty space!
+    has_poster_text = has_bullets or bool(slide_dict.get("description") or slide_dict.get("subtitle"))
+    
+    if has_cards and has_poster_text:
         return "aesthetic_poster"
 
     # ── Portrait image + text → flow ──────────────────────────────────────────
