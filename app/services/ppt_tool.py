@@ -496,7 +496,7 @@ LAYOUT SCHEMAS:
 - aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
 - aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
-- aesthetic_poster: "cards": [...] + "bullets": [...] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
+- aesthetic_poster: "cards": [{"header":"...", "bullets":["..."]}] (4 cards) + "bullets": [{"bold":"...", "text":"..."}] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
 - aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
 - aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
 - aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
@@ -894,9 +894,14 @@ class PresentationBuilder:
                     img_px_w, img_px_h = 16, 9   # safe 16:9 assumption
 
                 img_ratio  = img_px_w / max(img_px_h, 1)
-                inner_w    = w - 2 * frame_pad
-                inner_h    = h - 2 * frame_pad
-                slot_ratio = inner_w / max(inner_h, 1)
+                
+                # Dynamically cap padding so it never exceeds 10% of the image size
+                # This prevents negative geometry bugs when drawing thin/small images
+                actual_pad = min(frame_pad, w * 0.1, h * 0.1)
+                
+                inner_w    = max(w - 2 * actual_pad, 0.01)
+                inner_h    = max(h - 2 * actual_pad, 0.01)
+                slot_ratio = inner_w / inner_h
 
                 # ── Step 2: Contain fit to find optimal dimensions ──
                 if img_ratio >= slot_ratio:
@@ -1757,16 +1762,10 @@ class PresentationBuilder:
         auto_chart = d.get("chart_data")
         if not auto_chart and metrics:
             auto_chart = {
-                "type": "bar",
+                "type": "metrics", # Let ChartEngine handle extraction safely
                 "title": d.get("title", "Key Metrics"),
-                "labels": [m.get("label", f"Metric {j+1}") for j, m in enumerate(metrics[:4])],
-                "values": []
+                "metrics": metrics[:4]
             }
-            for m in metrics[:4]:
-                val_str = str(m.get("value", "0"))
-                # Extract numeric value from strings like "94%", "$1.2M", "3.5x"
-                num_match = re.search(r'([\d.]+)', val_str)
-                auto_chart["values"].append(float(num_match.group(1)) if num_match else 0)
 
         self._premium_image_frame(slide, d.get("image_path", ""), Inches(0.25), vt,
                                    W - Inches(0.43), vh, fallback_text,
