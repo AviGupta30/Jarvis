@@ -490,13 +490,13 @@ ABSOLUTE RULES:
    NEVER output items as plain strings like {{'bold': 'x', 'text': 'y'}} -- always use double quotes.
 2. Each bullet: "bold" = 2-5 word sub-header. "text" = 25-35 words of detailed, informative content.
 3. Every slide MUST include "visual_suggestion" describing a specific chart, diagram, or infographic.
-4. UNIQUE CONTENT: Ensure EVERY slide has completely unique content. Do NOT repeat the same descriptions or facts across different slides. Every slide must advance the presentation with new information.
+4. UNIQUE CONTENT: Ensure ALL text is completely unique. Do NOT repeat facts or concepts across different slides OR within the same slide. If a layout requires both cards and bullets, they MUST contain disjoint, complementary information (e.g. cards for high-level summary, bullets for deep-dive technical details).
 
 LAYOUT SCHEMAS:
 - aesthetic_showcase: "visual_suggestion": "description of the hero image" (No bullets/cards needed)
 - aesthetic_split/aesthetic_pitch/aesthetic_flow: "bullets": [{{"bold":"...", "text":"..."}}] (3-4 bullets)
 - aesthetic_grid: "cards": [{{"header":"Card Title", "bullets":["detailed sentence 1", "detailed sentence 2"]}}] (4 cards)
-- aesthetic_poster: "cards": [{{"header":"...", "bullets":["..."]}}] (4 cards) + "bullets": [{{"bold":"...", "text":"..."}}] (BOTH required — use for dense slides with 3-4 cards AND 2-3 bullet points)
+- aesthetic_poster: "cards": [{{"header":"...", "bullets":["..."]}}] (4 cards for broad overview) + "bullets": [{{"bold":"...", "text":"..."}}] (2-3 bullets for deep-dive specific details that DO NOT repeat the cards)
 - aesthetic_timeline: "nodes": [{{"header":"Phase Name", "text":"25-35 word description"}}] (4-5 nodes)
 - aesthetic_metrics: "metrics": [{{"value":"94%", "label":"Satisfaction Rate"}}] (3-4 metrics)
 - aesthetic_comparison: "left_header":"...", "right_header":"...", "left_bullets":[...], "right_bullets":[...]
