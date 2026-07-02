@@ -268,9 +268,10 @@ def _tb(slide, text: str, l, t, w, h, font="Calibri", sz=11, bold=False, italic=
     
     from pptx.enum.shapes import MSO_SHAPE
     try:
-        from pptx.enum.text import MSO_AUTO_SIZE
+        from pptx.enum.text import MSO_AUTO_SIZE, MSO_ANCHOR
     except ImportError:
         MSO_AUTO_SIZE = None
+        MSO_ANCHOR = None
         
     tb = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE, l, t, w, h)
     tb.fill.background()
@@ -280,6 +281,8 @@ def _tb(slide, text: str, l, t, w, h, font="Calibri", sz=11, bold=False, italic=
     tf.word_wrap = True
     if MSO_AUTO_SIZE:
         tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+    if MSO_ANCHOR:
+        tf.vertical_anchor = MSO_ANCHOR.TOP
         
     tf.margin_left = 0
     tf.margin_right = 0
@@ -827,22 +830,50 @@ class PresentationBuilder:
             self._premium_image_frame_single(slide, paths[0], l, t, w, h, suggestion, chart_data)
             return
             
-        # Multiple images: Tile them!
+        # ── SMART MASONRY TILING ──────────────────────────────────────────────
         gap = Inches(0.18)
-        if h >= w:
-            # Stack vertically (portrait area)
-            ch = (h - gap * (n - 1)) / n
+        
+        # Calculate aspect ratios for all images (fallback to 16:9 if invalid)
+        aspects = []
+        for p in paths:
+            r = _get_image_aspect_ratio(p)
+            if r <= 0: r = 1.78
+            aspects.append(r)
+            
+        # Option A: Horizontal Gallery (All images have the SAME HEIGHT)
+        h_a = (w - gap * (n - 1)) / sum(aspects)
+        h_a = min(h_a, h)
+        w_a = sum([h_a * r for r in aspects]) + gap * (n - 1)
+        area_a = sum([h_a * (h_a * r) for r in aspects])
+        
+        # Option B: Vertical Gallery (All images have the SAME WIDTH)
+        w_b = (h - gap * (n - 1)) / sum([1.0/r for r in aspects])
+        w_b = min(w_b, w)
+        h_b = sum([w_b / r for r in aspects]) + gap * (n - 1)
+        area_b = sum([w_b * (w_b / r) for r in aspects])
+        
+        if area_a >= area_b:
+            # Render Option A (Horizontal, perfectly centered)
+            cx = l + (w - w_a) / 2
+            cy = t + (h - h_a) / 2
+            curr_x = cx
             for i, p in enumerate(paths):
-                self._premium_image_frame_single(slide, p, l, t + i*(ch + gap), w, ch, 
+                img_w = h_a * aspects[i]
+                self._premium_image_frame_single(slide, p, curr_x, cy, img_w, h_a, 
                                                  suggestion if i == 0 else "", 
                                                  chart_data if i == 0 else None)
+                curr_x += img_w + gap
         else:
-            # Side by side (landscape area)
-            cw = (w - gap * (n - 1)) / n
+            # Render Option B (Vertical, perfectly centered)
+            cx = l + (w - w_b) / 2
+            cy = t + (h - h_b) / 2
+            curr_y = cy
             for i, p in enumerate(paths):
-                self._premium_image_frame_single(slide, p, l + i*(cw + gap), t, cw, h, 
+                img_h = w_b / aspects[i]
+                self._premium_image_frame_single(slide, p, cx, curr_y, w_b, img_h, 
                                                  suggestion if i == 0 else "", 
                                                  chart_data if i == 0 else None)
+                curr_y += img_h + gap
 
     def _premium_image_frame_single(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
         """
@@ -1080,7 +1111,14 @@ class PresentationBuilder:
         • Landscape (>1.2): Image spans top, text in 2 columns below.
         • Portrait/Square (<=1.2): Image on left/right, text beside it.
         """
-        bullets = d.get("bullets", [])
+        bullets = [b for b in d.get("bullets", []) if b]
+        
+        # ── INTELLIGENT CONTENT FALLBACK ──
+        if not bullets and d.get("description"):
+            bullets = [{"bold": "Overview", "text": d.get("description")}]
+        elif not bullets and d.get("subtitle"):
+            bullets = [{"bold": "Summary", "text": d.get("subtitle")}]
+            
         if not bullets or all(not _parse_bullet(b)[1] for b in bullets):
             self._lay_aesthetic_showcase(d, cur, total)
             return
@@ -1248,6 +1286,16 @@ class PresentationBuilder:
         avail_h = H - TOP - BOT
 
         bullets = [b for b in d.get("bullets", []) if b]
+        
+        # ── INTELLIGENT CONTENT FALLBACK ──
+        # If the LLM didn't generate bullets for the bottom section, dynamically pull the 
+        # description or subtitle so we can populate a summary card next to the image.
+        # This prevents the image from floating in a massive empty void.
+        if not bullets and d.get("description"):
+            bullets = [{"bold": "Overview", "text": d.get("description")}]
+        elif not bullets and d.get("subtitle"):
+            bullets = [{"bold": "Summary", "text": d.get("subtitle")}]
+            
         cards   = [_parse_card(c) for c in d.get("cards", []) if c]
         for i, c in enumerate(cards):
             if not c.get("header"):
@@ -1311,27 +1359,29 @@ class PresentationBuilder:
                 img_aspect = 1.78
 
             # How wide should the image be?
-            # Natural width if the slot were content_h tall.
-            nat_img_w = content_h * img_aspect
-            # Cap at 62% of full width, ensure at least 38% for bullets
-            max_img_w = min(FULL_W * 0.62, FULL_W - FULL_W * 0.34 - GAP)
-            img_w = min(nat_img_w, max_img_w)
-            img_w = max(img_w, FULL_W * 0.35)  # at least 35%
+            if not bullets:
+                img_w = FULL_W
+                txt_w = 0
+            else:
+                nat_img_w = content_h * img_aspect
+                # Cap at 62% of full width, ensure at least 38% for bullets
+                max_img_w = min(FULL_W * 0.62, FULL_W - FULL_W * 0.34 - GAP)
+                img_w = min(nat_img_w, max_img_w)
+                img_w = max(img_w, FULL_W * 0.35)  # at least 35%
+                txt_w = FULL_W - img_w - GAP
 
             # Actual image height to preserve aspect ratio (never stretch)
             actual_img_h = img_w / img_aspect
             # Centre image vertically in the content zone
             img_y = content_y + (content_h - actual_img_h) / 2
 
-            txt_w = FULL_W - img_w - GAP
-
             # Alternate left/right per slide for visual variety
             if cur % 2 == 0:
                 img_x = MX
-                txt_x = MX + img_w + GAP
+                txt_x = MX + img_w + GAP if img_w < FULL_W else MX
             else:
                 txt_x = MX
-                img_x = MX + txt_w + GAP
+                img_x = MX + txt_w + GAP if img_w < FULL_W else MX
 
             all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_img else []
             
@@ -1346,8 +1396,16 @@ class PresentationBuilder:
             # Draw bullet cards in text zone
             if bullets:
                 n_b  = min(len(bullets), 4)
-                bh   = (content_h - GAP * (n_b - 1)) / max(n_b, 1)
-                by   = content_y
+                
+                # Cap the maximum height of a bullet card so sparse text doesn't look awkwardly huge
+                max_bh = Inches(1.5)
+                bh   = min((content_h - GAP * (n_b - 1)) / max(n_b, 1), max_bh)
+                
+                # Vertically center the entire stack of bullets so they sit elegantly next to the image
+                total_bullets_h = n_b * bh + (n_b - 1) * GAP
+                start_y = content_y + (content_h - total_bullets_h) / 2
+                
+                by   = start_y
                 for i, b in enumerate(bullets[:n_b]):
                     bold_txt, body_txt = _parse_bullet(b)
                     self._bullet_card(
@@ -1430,19 +1488,25 @@ class PresentationBuilder:
         by = t + hh + Inches(0.1)
         
         sz_b = getattr(self, "S", {}).get("body_font_size", 11.5)
+        
+        # Combine bullets into a single paragraph block to prevent overlap
+        combined = []
+        is_numbered = getattr(self, "S", {}).get("numbered_badges", True)
+        
         for bi, b in enumerate(bullets[:5]):
             bold_part, text_part = _parse_bullet(b)
             display = text_part if text_part else (bold_part if bold_part else str(b))
+            prefix = f"{bi+1}. " if is_numbered else "• "
+            combined.append(f"{prefix}{display}")
             
-            if getattr(self, "S", {}).get("numbered_badges", True):
-                _oval(slide, l + Inches(0.15), by + Inches(0.06), Inches(0.2), Inches(0.2), fill=color, line=None)
-                _tb(slide, str(bi+1), l + Inches(0.15), by + Inches(0.07), Inches(0.2), Inches(0.18), sz=9, bold=True, col=self.P["bg"], align=PP_ALIGN.CENTER)
-                _tb(slide, display, l + Inches(0.42), by + Inches(0.02), w - Inches(0.55), bsh - Inches(0.04), sz=sz_b, col=text_col)
-            else:
-                _oval(slide, l + Inches(0.15), by + Inches(0.08), Inches(0.1), Inches(0.1), fill=color, line=None)
-                _tb(slide, display, l + Inches(0.35), by + Inches(0.02), w - Inches(0.45), bsh - Inches(0.04), sz=sz_b, col=text_col)
-            by += bsh
-
+        full_text = "\n\n".join(combined)
+        
+        # Dynamically shrink font size if text is exceptionally long to ensure fit
+        if len(full_text) > 250:
+            sz_b = max(sz_b - 2, 8)
+            
+        # Draw a single auto-fitting text box to handle line wrapping naturally
+        _tb(slide, full_text, l + Inches(0.15), by, w - Inches(0.3), avail_h, sz=sz_b, col=text_col)
     # ── LAYOUT 4: FLOW — TOP CALLOUT + DOMINANT FULL-WIDTH IMAGE ─────────────
     def _lay_aesthetic_flow(self, d: dict, cur: int, total: int):
         slide = self._blank()
