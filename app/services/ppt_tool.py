@@ -1743,10 +1743,26 @@ class PresentationBuilder:
             border_col = color if getattr(self, "S", {}).get("colored_borders", True) else self.P["border"]
             _round(slide, mx, top, mw, mh, fill=self.P["card"], line=border_col, lw=bw)
             
+            val_str = str(m.get("value", "—"))
+            val_len = len(val_str)
+            if val_len > 25:
+                v_sz = 14
+            elif val_len > 15:
+                v_sz = 18
+            elif val_len > 8:
+                v_sz = 26
+            else:
+                v_sz = 34
+                
             # Value
-            _tb(slide, m.get("value", "—"), mx + Inches(0.1), top + Inches(0.15),
-                mw - Inches(0.2), Inches(0.85), sz=34, bold=True,
-                col=color, align=PP_ALIGN.CENTER)
+            try:
+                from pptx.enum.text import MSO_ANCHOR
+                v_align = MSO_ANCHOR.MIDDLE
+            except ImportError:
+                v_align = None
+            _tb(slide, val_str, mx + Inches(0.1), top + Inches(0.15),
+                mw - Inches(0.2), Inches(0.85), sz=v_sz, bold=True,
+                col=color, align=PP_ALIGN.CENTER, v_align=v_align)
             # Divider
             _rect(slide, mx + Inches(0.25), top + Inches(1.0), mw - Inches(0.5),
                   Inches(0.02), fill=color)
