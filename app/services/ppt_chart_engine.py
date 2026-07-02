@@ -284,6 +284,18 @@ def _render_comparison(data: dict, palette: dict, w: float=None, h: float=None) 
 
     if not categories or not left_vals or not right_vals:
         return b""
+        
+    def _to_float(arr):
+        res = []
+        for x in arr:
+            try:
+                res.append(float(str(x).replace("%", "").replace("$", "").replace(",", "")))
+            except ValueError:
+                res.append(0.0)
+        return res
+
+    left_vals = _to_float(left_vals)
+    right_vals = _to_float(right_vals)
 
     n = min(len(categories), len(left_vals), len(right_vals))
     categories = categories[:n]

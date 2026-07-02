@@ -263,7 +263,7 @@ def _oval(slide, l, t, w, h, fill=None, line=None, lw=1.0):
     return _shape(slide, MSO_SHAPE.OVAL, l, t, w, h, fill=fill, line=line, lw=lw)
 
 def _tb(slide, text: str, l, t, w, h, font="Calibri", sz=11, bold=False, italic=False,
-        col="FFFFFF", align=PP_ALIGN.LEFT):
+        col="FFFFFF", align=PP_ALIGN.LEFT, v_align=None):
     if not text: return
     
     from pptx.enum.shapes import MSO_SHAPE
@@ -282,7 +282,7 @@ def _tb(slide, text: str, l, t, w, h, font="Calibri", sz=11, bold=False, italic=
     if MSO_AUTO_SIZE:
         tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
     if MSO_ANCHOR:
-        tf.vertical_anchor = MSO_ANCHOR.TOP
+        tf.vertical_anchor = v_align if v_align else MSO_ANCHOR.TOP
         
     tf.margin_left = 0
     tf.margin_right = 0
@@ -972,9 +972,15 @@ class PresentationBuilder:
                 print(f"[ppt] chart render error: {e}")
 
         # Text fallback
+        try:
+            from pptx.enum.text import MSO_ANCHOR
+            v_align = MSO_ANCHOR.MIDDLE
+        except ImportError:
+            v_align = None
+            
         _tb(slide, suggestion or "[ Detailed Visual ]",
             l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
-            sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER)
+            sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER, v_align=v_align)
 
     def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str, tag_col: str, idx: int):
         sz_b = getattr(self, "S", {}).get("body_font_size", 11)
@@ -2219,10 +2225,10 @@ SOURCES (Cite these if applicable): {sources_str}
                 _normalize_and_recover(chunk_data, chunk)
                 chunk_slides = chunk_data.get("slides", [])
                 # After _normalize_and_recover has already fixed empty slides,
-                # just check we got at least as many slides as expected
-                if len(chunk_slides) >= len(chunk):
+                # just check we got at least one slide so we can map it
+                if len(chunk_slides) > 0:
                     break  # Success
-                last_err = ValueError(f"Got {len(chunk_slides)} slides, expected {len(chunk)}.")
+                last_err = ValueError(f"Got 0 slides, expected {len(chunk)}.")
             except Exception as e:
                 last_err = e
             if attempt < 2:  # Don't sleep after last attempt
