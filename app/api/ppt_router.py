@@ -32,7 +32,7 @@ async def build_ppt(request: PPTBuildRequest):
     Build a PPTX from a pre-generated slide plan (JSON).
     Streams live per-slide progress back to the client.
 
-    The frontend calls Puter.js (Gemini 3.1 Pro free) to generate the plan,
+    The frontend calls Puter.js (Gemini free) to generate the plan,
     then POSTs it here. This keeps content generation on the free Puter.js tier
     while python-pptx rendering stays fast and local.
     """
@@ -45,16 +45,27 @@ async def build_ppt(request: PPTBuildRequest):
             import re, time
             from pathlib import Path
 
-            # Resolve / validate personality
-            personality = plan.get("personality")
-            if not personality or personality not in PERSONALITIES:
-                # Auto-detect from title
-                title = plan.get("presentation_title", "")
-                personality = _pick(title)
-                plan["personality"] = personality
+            deck_title = plan.get("presentation_title", "Presentation")
+
+            # ── Personality / theme resolution ───────────────────────────────
+            personality = plan.get("personality", "")
+            has_custom_theme = bool(plan.get("custom_theme"))
+
+            if has_custom_theme:
+                # Custom theme takes full priority — keep whatever personality
+                # is in the plan (or fall back to ocean_pro as base palette).
+                if not personality or personality not in PERSONALITIES:
+                    personality = "ocean_pro"
+                    plan["personality"] = personality
+                ct = plan["custom_theme"]
+                yield f"🎨 Custom theme applied: bg=#{ct.get('bg','?')} ac1=#{ct.get('ac1','?')}\n\n"
+            else:
+                # No custom theme — pick intelligently from the title
+                if not personality or personality not in PERSONALITIES:
+                    personality = _pick(deck_title)
+                    plan["personality"] = personality
 
             P = PERSONALITIES[personality]
-            deck_title = plan.get("presentation_title", "Presentation")
             n_slides = len(plan.get("slides", []))
 
             yield f"🎨 Style: **{P['name']}**\n\n"
@@ -79,9 +90,12 @@ async def build_ppt(request: PPTBuildRequest):
             yield f"📂 Saved to: `{out}`\n\n"
 
         except Exception as e:
+            import traceback
             yield f"❌ Build failed: {e}\n\n"
+            yield f"```\n{traceback.format_exc()}\n```\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream")
+
 
 
 class PPTCreateRequest(BaseModel):

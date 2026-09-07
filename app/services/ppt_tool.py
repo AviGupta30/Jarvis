@@ -323,45 +323,64 @@ class SlotGeometry:
     txt_x: float; txt_y: float; txt_w: float; txt_h: float
 
 
-def compute_split_geometry(top: float, avail_h: float, img_aspect: float) -> SlotGeometry:
+def compute_split_geometry(top: float, avail_h: float, img_aspect: float,
+                           n_bullets: int = 3) -> SlotGeometry:
     """
-    Dynamically compute left-text / right-image split geometry based on the
-    image's ACTUAL aspect ratio.  The image slot adapts to the image so that:
-      • Landscape images (wide) get a wider right slot.
-      • Portrait images (tall) get a narrower right slot.
-      • Text always gets at least 34% of the usable slide width.
-      • The image is NEVER forced into a shape that would require cropping.
+    Dynamically compute left-text / right-image split geometry.
+
+    The split ratio adapts to BOTH image aspect ratio AND text density:
+      • More bullets (dense text) → text gets more width (up to 48%)
+      • Fewer bullets (sparse / no text) → image gets more width (up to 70%)
+      • Landscape images (wide) get a wider right slot naturally
+      • Portrait images (tall) get a narrower right slot naturally
+      • Text always gets at least 30% of usable width
+      • Image always gets at least 30% of usable width
 
     Args:
-        top:        Top edge of the content zone (EMU).
+        top:        Top edge of content zone (EMU).
         avail_h:    Available height for the content zone (EMU).
         img_aspect: width / height of the actual image (clamped internally).
+        n_bullets:  Number of bullet/text items on this slide (drives text width).
 
     Returns:
         SlotGeometry with img_* and txt_* fields all in EMU.
     """
-    # Clamp to sane bounds (0.4 = very tall portrait, 2.8 = very wide panorama)
+    # Clamp aspect ratio
     img_aspect = max(0.4, min(2.8, img_aspect))
 
-    # Total usable width: full slide minus left + right margins
+    # Total usable width
     margin_l = Inches(0.25)
     margin_r = Inches(0.3)
-    gap      = Inches(0.2)
+    gap      = Inches(0.18)
     total_w  = W - margin_l - margin_r
+
+    # ── Dynamic max image width based on content density ──────────────────────
+    # 0 bullets → image can take up to 70% of width
+    # 1-2 bullets → 65%
+    # 3+ bullets → cap at 57% (give text breathing room)
+    if n_bullets == 0:
+        max_img_frac = 0.70
+        min_txt_frac = 0.0   # no text, image can go full width
+    elif n_bullets <= 2:
+        max_img_frac = 0.65
+        min_txt_frac = 0.30
+    else:
+        max_img_frac = 0.57
+        min_txt_frac = 0.38
 
     # Natural image width if the slot were exactly avail_h tall
     natural_img_w = avail_h * img_aspect
 
-    # Constraints:
-    #   • Image can take at most 62% of total_w
-    #   • Text must keep at least 34% of total_w
-    max_img_w = min(total_w * 0.62, total_w - total_w * 0.34 - gap)
+    max_img_w = min(total_w * max_img_frac, total_w - total_w * min_txt_frac - gap)
     img_w     = min(natural_img_w, max_img_w)
 
-    # Ensure image is at least 30% of total_w (for very portrait images)
+    # Ensure image is at least 30% of total_w
     img_w = max(img_w, total_w * 0.30)
+    # Clamp so text always has minimum space (if text exists)
+    if n_bullets > 0:
+        img_w = min(img_w, total_w - total_w * min_txt_frac - gap)
 
-    txt_w = total_w - img_w - gap
+    txt_w = max(total_w - img_w - gap, 0.0)
 
     txt_x = margin_l
     img_x = txt_x + txt_w + gap
@@ -372,6 +391,7 @@ def compute_split_geometry(top: float, avail_h: float, img_aspect: float) -> Slo
     )
 
 def _parse_bullet(b) -> tuple:
+
     """Safely parse any bullet item into (bold_text, body_text).
     Handles: proper dicts, single-quoted dict strings, plain strings."""
     if isinstance(b, dict):
@@ -441,23 +461,27 @@ Create a VISUAL-FIRST presentation outline for:
 TOPIC/REQUEST: {prompt}
 
 RULES:
-- SLIDE COUNT: {slide_count_rule}
+- SLIDE COUNT: {slide_count_rule} This is a HARD LIMIT — do NOT generate more or fewer slides than specified.
 - First slide MUST use "aesthetic_title".
 - The FINAL slide (and ONLY the final slide) MUST be a Conclusion/Summary. Do not place it earlier.
 - {image_rules}
 - Use a mix of layouts: "aesthetic_split", "aesthetic_grid", "aesthetic_flow", "aesthetic_timeline", "aesthetic_comparison", "aesthetic_metrics", "aesthetic_pitch", "aesthetic_poster".
 - You MUST use AT LEAST 4 different layouts in the presentation.
-- Use "aesthetic_poster" for high-density slides that combine BOTH cards AND bullet points (e.g., problem statement with 4 issue cards + key detail bullets). It automatically builds a dashboard-style layout.
+- Use "aesthetic_poster" for high-density slides that combine BOTH cards AND bullet points.
 - {purpose_rules}
-- DO NOT use the exact same layout for two consecutive slides (e.g., do not put two 'aesthetic_grid' slides back-to-back).
-- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), DO NOT rely on presets. You MUST output a "custom_theme" object with 6-character hex codes (NO hash) that PERFECTLY matches their request. Set "ac1", "ac2", "ac3", "border", "hdr_bg", and "bar" to the requested colors.
+- DO NOT use the exact same layout for two consecutive slides.
+- PERSONALITY: Pick the most fitting personality key from this list based on the topic:
+  tech/AI/data → "cyber_dark" | hackathon/startup/pitch → "neon_dark" | medical/health → "emerald"
+  finance/banking → "midnight_exec" | environment/climate → "forest_calm" | education/research → "arctic_clean"
+  creative/design/brand → "synthwave" | energy/space/nuclear → "solar_flare" | ocean/marine → "ocean_pro"
+  general/default → "ocean_pro"
+- COLORS: If the user requests ANY specific color or theme (e.g. "cyan", "red", "maroon"), output a "custom_theme" object with 6-character hex codes (NO hash). Only include "custom_theme" if the user explicitly requested it.
 - Output ONLY valid JSON.
 
 JSON SCHEMA:
 {{
   "presentation_title": "...",
-  "personality": "ocean_pro",
-  "custom_theme": {{"bg": "400000", "bg2": "4A0000", "card": "550000", "card2": "600000", "text": "FFFFFF", "sub": "DDDDDD", "ac1": "FFD700", "ac2": "FFAA00", "ac3": "FFFF00", "border": "FFD700", "hdr_bg": "FFD700", "hdr_text": "400000", "bar": "FFD700"}},
+  "personality": "<pick from the list above based on topic>",
   "slides": [
     {{
       "slide_number": 1,
@@ -472,6 +496,7 @@ JSON SCHEMA:
     }}
   ]
 }}"""
+
 
 _SYS_CHUNK = """\
 You are an elite presentation generator. Generate highly dense content for specific slides based on the provided outline.
@@ -601,43 +626,160 @@ def _parse(raw: str) -> dict:
     return json.loads(raw[raw.find("{"):raw.rfind("}") + 1])
 
 
+def _extract_theme_pil_local(image_path: str) -> dict:
+    """
+    Pure-PIL color extraction — no API call needed.
+    Samples the image at key regions, quantizes to a small palette,
+    then assigns colors to theme roles based on luminance ordering.
+    Returns a fully-populated theme dict with 6-char hex codes (no #).
+    """
+    from PIL import Image as _PIL
+    import colorsys
+
+    def _rgb_to_hex(r, g, b):
+        return f"{int(r):02X}{int(g):02X}{int(b):02X}"
+
+    def _lum(r, g, b):
+        return (0.299 * r + 0.587 * g + 0.114 * b) / 255.0
+
+    def _saturate(r, g, b, factor=1.5):
+        h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+        s = min(s * factor, 1.0)
+        nr, ng, nb = colorsys.hsv_to_rgb(h, s, v)
+        return int(nr*255), int(ng*255), int(nb*255)
+
+    with _PIL.open(image_path) as img:
+        img = img.convert("RGB")
+        # Quantize to 16 colors for speed, then extract most common
+        small = img.resize((150, 84), _PIL.LANCZOS)
+        quantized = small.quantize(colors=16, method=_PIL.Quantize.FASTOCTREE)
+        palette_raw = quantized.getpalette()  # flat list [R,G,B, R,G,B, ...]
+        # Get pixel counts per color index
+        histo = quantized.histogram()
+        # Build list of (count, R, G, B)
+        colors_ranked = sorted(
+            [(histo[i], palette_raw[i*3], palette_raw[i*3+1], palette_raw[i*3+2])
+             for i in range(16)],
+            reverse=True
+        )
+        # Remove near-black and near-white
+        meaningful = [(c, r, g, b) for c, r, g, b in colors_ranked
+                      if not (_lum(r, g, b) < 0.04 or _lum(r, g, b) > 0.97)]
+
+        # Dominant background color (most common meaningful color)
+        if meaningful:
+            _, br, bg_c, bb = meaningful[0]
+        else:
+            br, bg_c, bb = palette_raw[0], palette_raw[1], palette_raw[2]
+
+        bg_lum = _lum(br, bg_c, bb)
+        is_dark = bg_lum < 0.45
+
+        # Accent: pick the most saturated color from the palette
+        def saturation(r, g, b):
+            _, s, _ = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+            return s
+
+        accent_candidates = sorted(
+            [(saturation(r, g, b), r, g, b) for _, r, g, b in colors_ranked],
+            reverse=True
+        )
+        # Pick top 3 accent candidates (must differ from bg by at least 0.25 lum)
+        accents = []
+        for s, r, g, b in accent_candidates:
+            if abs(_lum(r, g, b) - bg_lum) > 0.2 and s > 0.25:
+                accents.append((r, g, b))
+                if len(accents) == 3:
+                    break
+
+        # Fallback accents
+        while len(accents) < 3:
+            accents.append((255, 165, 0) if is_dark else (26, 86, 219))
+
+        a1r, a1g, a1b = accents[0]
+        a2r, a2g, a2b = accents[1] if len(accents) > 1 else _saturate(*accents[0])
+        a3r, a3g, a3b = accents[2] if len(accents) > 2 else accents[0]
+
+        # Slightly lighter/darker bg for bg2
+        shift = -15 if is_dark else 15
+        bg2r = max(0, min(255, br + shift))
+        bg2g = max(0, min(255, bg_c + shift))
+        bg2b = max(0, min(255, bb + shift))
+
+        # Card color: slightly different from bg
+        card_shift = 10 if is_dark else -10
+        cr = max(0, min(255, br + card_shift))
+        cg = max(0, min(255, bg_c + card_shift))
+        cb = max(0, min(255, bb + card_shift))
+
+        text_col  = "F5F5F5" if is_dark else "111111"
+        sub_col   = "B0B0C0" if is_dark else "555555"
+        hdr_text  = "111111" if _lum(a1r, a1g, a1b) > 0.5 else "FFFFFF"
+
+        return {
+            "bg":       _rgb_to_hex(br, bg_c, bb),
+            "bg2":      _rgb_to_hex(bg2r, bg2g, bg2b),
+            "card":     _rgb_to_hex(cr, cg, cb),
+            "card2":    _rgb_to_hex(max(0,min(255,cr+card_shift)), max(0,min(255,cg+card_shift)), max(0,min(255,cb+card_shift))),
+            "text":     text_col,
+            "sub":      sub_col,
+            "ac1":      _rgb_to_hex(a1r, a1g, a1b),
+            "ac2":      _rgb_to_hex(a2r, a2g, a2b),
+            "ac3":      _rgb_to_hex(a3r, a3g, a3b),
+            "border":   _rgb_to_hex(a1r, a1g, a1b),
+            "hdr_bg":   _rgb_to_hex(a1r, a1g, a1b),
+            "hdr_text": hdr_text,
+            "bar":      _rgb_to_hex(a2r, a2g, a2b),
+        }
+
+
 def extract_theme_from_image(image_path: str) -> dict:
     """
-    Analyze a PPT screenshot using Groq's vision model and extract
-    the exact color palette as a custom_theme dict.
+    Analyze a PPT screenshot and extract the exact color palette as a custom_theme dict.
+
+    Strategy (in order):
+      1. Try local PIL-based extraction first (fast, no API cost, always works)
+      2. Try Groq vision model for higher accuracy (if API available)
+      3. Fall back to PIL result if Groq fails
+
     Returns a dict with keys: bg, bg2, card, card2, text, sub,
-    ac1, ac2, ac3, border, hdr_bg, hdr_text, bar
+    ac1, ac2, ac3, border, hdr_bg, hdr_text, bar  (all 6-char hex, no #)
     """
-    import base64, pathlib
-    if _GROQ is None:
-        raise RuntimeError("GROQ_API_KEY not configured")
+    import pathlib
 
-    img_bytes = pathlib.Path(image_path).read_bytes()
-    b64 = base64.standard_b64encode(img_bytes).decode()
+    required = ["bg","bg2","card","card2","text","sub","ac1","ac2","ac3","border","hdr_bg","hdr_text","bar"]
 
-    # Detect mime type
-    suffix = pathlib.Path(image_path).suffix.lower()
-    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
-            "webp": "image/webp"}.get(suffix.lstrip("."), "image/png")
+    def _validate(theme: dict) -> dict:
+        """Ensure all required keys exist and are valid 6-char hex."""
+        for k in required:
+            v = theme.get(k, "")
+            if not isinstance(v, str) or len(v.lstrip("#")) != 6:
+                theme[k] = "F5F5F5" if k in ("text","hdr_text") else "111111"
+            else:
+                theme[k] = v.lstrip("#")
+        return theme
 
-    sys_prompt = "You are a color extraction expert. Output ONLY valid JSON — no markdown fences, no explanation."
-    usr_prompt = """\
+    # ── Step 1: PIL local extraction (always attempted first) ─────────────────
+    pil_theme = None
+    try:
+        pil_theme = _extract_theme_pil_local(image_path)
+        print(f"[ppt-theme] PIL extraction OK — bg={pil_theme['bg']} ac1={pil_theme['ac1']}")
+    except Exception as pil_err:
+        print(f"[ppt-theme] PIL extraction failed: {pil_err}")
+
+    # ── Step 2: Groq vision model (higher accuracy, optional) ─────────────────
+    if _GROQ is not None:
+        try:
+            import base64
+            img_bytes = pathlib.Path(image_path).read_bytes()
+            b64 = base64.standard_b64encode(img_bytes).decode()
+            suffix = pathlib.Path(image_path).suffix.lower()
+            mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+                    "webp": "image/webp"}.get(suffix.lstrip("."), "image/png")
+
+            sys_prompt = "You are a color extraction expert. Output ONLY valid JSON — no markdown fences, no explanation."
+            usr_prompt = """\
 Analyze this presentation slide image and extract its exact color palette.
-Identify the following colors from the image:
-- bg: The main background color of the slide
-- bg2: A slightly darker/lighter secondary background shade
-- card: The main card/box background color
-- card2: A secondary card color variant
-- text: The main body text color
-- sub: The subtitle or secondary text color
-- ac1: The primary accent color (most prominent — used for headers, borders, highlights)
-- ac2: The secondary accent color
-- ac3: A tertiary accent color
-- border: The border/outline color of cards or boxes
-- hdr_bg: The header/title box background color
-- hdr_text: The header/title text color
-- bar: The bottom bar or footer bar color
-
 Return ONLY this JSON (all values are 6-character hex codes WITHOUT the # symbol):
 {
   "bg": "xxxxxx",
@@ -653,31 +795,40 @@ Return ONLY this JSON (all values are 6-character hex codes WITHOUT the # symbol
   "hdr_bg": "xxxxxx",
   "hdr_text": "xxxxxx",
   "bar": "xxxxxx"
-}"""
+}
+Rules:
+- bg: the dominant background color
+- ac1: the most prominent accent color (headers, highlights, borders)
+- text: the main body text color (must have high contrast against bg)"""
 
-    resp = _GROQ.chat.completions.create(
-        model="openai/gpt-oss-120b",
-        messages=[{
-            "role": "user",
-            "content": [
-                {"type": "text", "text": sys_prompt + "\n\n" + usr_prompt},
-                {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
-            ]
-        }],
-        max_tokens=512,
-        temperature=0.1,
-    )
-    raw = resp.choices[0].message.content or ""
-    theme = _parse(raw)
-    # Ensure all required keys are present with safe 6-char hex fallbacks
-    required = ["bg","bg2","card","card2","text","sub","ac1","ac2","ac3","border","hdr_bg","hdr_text","bar"]
-    for k in required:
-        v = theme.get(k, "")
-        if not isinstance(v, str) or len(v.lstrip("#")) != 6:
-            theme[k] = "FFFFFF" if k in ("text","hdr_text") else "111111"
-        else:
-            theme[k] = v.lstrip("#")
-    return theme
+            resp = _GROQ.chat.completions.create(
+                model="openai/gpt-oss-120b",
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": sys_prompt + "\n\n" + usr_prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:{mime};base64,{b64}"}}
+                    ]
+                }],
+                max_tokens=512,
+                temperature=0.1,
+            )
+            raw = resp.choices[0].message.content or ""
+            groq_theme = _parse(raw)
+            groq_theme = _validate(groq_theme)
+            print(f"[ppt-theme] Groq vision extraction OK — bg={groq_theme['bg']} ac1={groq_theme['ac1']}")
+            return groq_theme
+        except Exception as groq_err:
+            print(f"[ppt-theme] Groq vision failed ({groq_err}), using PIL fallback")
+
+    # ── Step 3: Return PIL result ─────────────────────────────────────────────
+    if pil_theme:
+        return _validate(pil_theme)
+
+    # Last resort: minimal safe defaults
+    print("[ppt-theme] WARNING: All extraction methods failed, using safe defaults")
+    return _validate({})
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 class PresentationBuilder:
@@ -878,113 +1029,118 @@ class PresentationBuilder:
 
     def _premium_image_frame_single(self, slide, path: str, l, t, w, h, suggestion: str, chart_data: dict = None):
         """
-        Draws a single premium rounded frame. Images are perfectly shrink-wrapped.
+        Render a single image with CONTAIN-FIT (object-fit: contain).
+
+        The image is scaled to fit ENTIRELY within the slot (l, t, w, h) while
+        preserving its aspect ratio — NO cropping, NO pixel distortion, NO stretching.
+        The image is centered in the slot and any empty area is filled with a subtle
+        rounded background card in the theme color, making it look intentional.
+
+        Falls back to chart rendering or text placeholder when no image is available.
         """
+        from pptx.enum.shapes import MSO_SHAPE
         bw = getattr(self, "S", {}).get("card_border_width", 1.5)
-        frame_pad = Inches(0.12)      # uniform inner padding around the frame border
 
         clean = _clean_image_path(path) if path else ""
         if clean and Path(clean).exists():
             try:
-                # ── Step 1: Get real image dimensions ──
+                # ── Step 1: Read actual pixel dimensions ──────────────────────────
                 try:
                     from PIL import Image as _PIL
                     with _PIL.open(clean) as _im:
                         img_px_w, img_px_h = _im.size
                 except Exception:
-                    img_px_w, img_px_h = 16, 9   # safe 16:9 assumption
+                    img_px_w, img_px_h = 1600, 900   # safe 16:9 fallback
 
-                img_ratio  = img_px_w / max(img_px_h, 1)
-                
-                # Dynamically cap padding so it never exceeds 10% of the image size
-                # This prevents negative geometry bugs when drawing thin/small images
-                actual_pad = min(frame_pad, w * 0.1, h * 0.1)
-                
-                inner_w    = max(w - 2 * actual_pad, 0.01)
-                inner_h    = max(h - 2 * actual_pad, 0.01)
-                slot_ratio = inner_w / inner_h
+                img_ar  = img_px_w / max(img_px_h, 1)   # image aspect ratio
+                slot_ar = w / max(h, 1)                  # slot aspect ratio (EMU)
 
-                # ── Step 2: Contain fit to find optimal dimensions ──
-                if img_ratio >= slot_ratio:
-                    fit_w = inner_w
-                    fit_h = inner_w / img_ratio
+                # ── Step 2: Contain-fit — scale image to fit fully inside slot ─────
+                # Find the largest size that fits the slot in BOTH dimensions
+                if img_ar >= slot_ar:
+                    # Image is wider → constrain by width, letterbox top/bottom
+                    fit_w = w
+                    fit_h = w / img_ar
                 else:
-                    fit_h = inner_h
-                    fit_w = inner_h * img_ratio
+                    # Image is taller → constrain by height, letterbox left/right
+                    fit_h = h
+                    fit_w = h * img_ar
 
-                # ── Step 3: Shrink-wrap the frame tightly around the image ──
-                final_w = fit_w
-                final_h = fit_h
-                
-                # Center the tight frame within the original (l, t, w, h) slot
-                frame_x = l + (w - final_w) / 2
-                frame_y = t + (h - final_h) / 2
+                # Center the image inside the slot
+                fit_x = l + (w - fit_w) / 2
+                fit_y = t + (h - fit_h) / 2
 
-                # Insert the image perfectly filling the inner frame
-                from pptx.enum.shapes import MSO_SHAPE
-                pic = slide.shapes.add_picture(
-                    clean,
-                    frame_x,
-                    frame_y,
-                    final_w,
-                    final_h,
-                )
-                
-                # Give the image itself rounded corners so it doesn't bleed out!
+                # ── Step 3: Draw background card first (fills the letterbox areas) ─
+                # This makes empty space look intentional rather than broken
+                _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
+
+                # ── Step 4: Place image at its natural contain-fit dimensions ──────
+                pic = slide.shapes.add_picture(clean, fit_x, fit_y, fit_w, fit_h)
+
+                # Rounded corners for premium feel
                 pic.auto_shape_type = MSO_SHAPE.ROUNDED_RECTANGLE
-                
-                # Apply premium border directly to the image
-                pic.line.color.rgb = _c(self.P["border"])
-                pic.line.width = Pt(bw)
+                # No border on the image itself (the card behind has the border)
 
+                # Tiny accent dots — top-right of the SLOT (not image)
                 if getattr(self, "S", {}).get("tech_dots", True):
                     for di in range(3):
-                        _oval(slide, frame_x + final_w - Inches(0.6) + di * Inches(0.16), frame_y + Inches(0.15),
-                              Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
-
+                        _oval(slide,
+                              l + w - Inches(0.55) + di * Inches(0.16),
+                              t + Inches(0.14),
+                              Inches(0.08), Inches(0.08),
+                              fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di],
+                              line=None)
                 return
             except Exception as e:
-                print(f"[ppt] image error: {e}")
+                print(f"[ppt] image contain-fit error: {e}")
 
-        # ── AUTO-CHART / FALLBACK (Uses full box) ──
+        # ── NO IMAGE: try chart first, then text placeholder ─────────────────
         _round(slide, l, t, w, h, fill=self.P["card"], line=self.P["border"], lw=bw)
         if getattr(self, "S", {}).get("tech_dots", True):
             for di in range(3):
-                _oval(slide, l + w - Inches(0.6) + di * Inches(0.16), t + Inches(0.15),
-                      Inches(0.08), Inches(0.08), fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di], line=None)
+                _oval(slide,
+                      l + w - Inches(0.55) + di * Inches(0.16),
+                      t + Inches(0.14),
+                      Inches(0.08), Inches(0.08),
+                      fill=[self.P["ac1"], self.P["ac2"], self.P["ac3"]][di],
+                      line=None)
 
         if chart_data and isinstance(chart_data, dict):
             try:
                 from app.services.ppt_chart_engine import ChartEngine
+                c_pad = Inches(0.2)
                 png_bytes = ChartEngine.render(
-                    chart_data, 
-                    self.P, 
-                    w=(w / 914400.0) - 0.5, 
-                    h=(h / 914400.0) - 0.5
+                    chart_data,
+                    self.P,
+                    w=(w / 914400.0) - (c_pad * 2 / 914400.0),
+                    h=(h / 914400.0) - (c_pad * 2 / 914400.0),
                 )
                 if png_bytes and len(png_bytes) > 100:
-                    c_pad = Inches(0.25)
-                    pic = slide.shapes.add_picture(
+                    slide.shapes.add_picture(
                         io.BytesIO(png_bytes), l + c_pad, t + c_pad,
-                        w - 2*c_pad, h - 2*c_pad
+                        w - 2 * c_pad, h - 2 * c_pad
                     )
                     return
             except Exception as e:
                 print(f"[ppt] chart render error: {e}")
 
-        # Text fallback
+        # ── Text placeholder fallback ─────────────────────────────────────────
         try:
             from pptx.enum.text import MSO_ANCHOR
             v_align = MSO_ANCHOR.MIDDLE
         except ImportError:
             v_align = None
-            
+
         _tb(slide, suggestion or "[ Detailed Visual ]",
             l + Inches(0.2), t + Inches(0.2), w - Inches(0.4), h - Inches(0.4),
             sz=14, italic=False, col=self.P["sub"], align=PP_ALIGN.CENTER, v_align=v_align)
 
+
     def _bullet_card(self, slide, l, t, w, h, bold_txt: str, body_txt: str, tag_col: str, idx: int):
         sz_b = getattr(self, "S", {}).get("body_font_size", 11)
+
+
+
         
         # Ensure text is visible against card background
         def _lum(c):
@@ -1154,22 +1310,24 @@ class PresentationBuilder:
             img_aspect = 1.78
 
         tag_colors = self.P["tag_colors"]
+        n_bullets_count = len(bullets[:4])
 
-        # ALWAYS use Left/Right split for standard slides. Vertical mode squishes the cards too much.
-        geo = compute_split_geometry(top, avail, img_aspect)
-        
-        # Alternate sides
+        # Dynamic split — pass bullet count so image gets more space when text is sparse
+        geo = compute_split_geometry(top, avail, img_aspect, n_bullets=n_bullets_count)
+
+        # Alternate image left/right per slide for visual variety
         if cur % 2 == 0:
-            img_x = margin
-            txt_x = margin + geo.img_w + gap
-        else:
-            txt_x = geo.txt_x
+            # Image on RIGHT, text on LEFT
             img_x = geo.img_x
+            txt_x = geo.txt_x
+        else:
+            # Image on LEFT, text on RIGHT
+            img_x = Inches(0.25)
+            txt_x = Inches(0.25) + geo.img_w + gap
 
         all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_image else []
-        
-        # Image frame fills full content height — _premium_image_frame handles
-        # letterbox containment internally, so no wasted white space.
+
+        # Image fills its full allocated slot — cover-fill, no empty card behind it
         self._premium_image_frame(
             slide, all_paths,
             img_x, top, geo.img_w, avail,
@@ -1177,8 +1335,8 @@ class PresentationBuilder:
             chart_data=d.get("chart_data"),
         )
 
-        # Bullet cards
-        n = max(len(bullets[:4]), 1)
+        # Bullet cards stacked vertically in the text zone
+        n = max(n_bullets_count, 1)
         ch2 = (geo.txt_h - gap * (n - 1)) / n
         by = geo.txt_y
 
@@ -1189,6 +1347,7 @@ class PresentationBuilder:
                 bold_txt, body_txt,
                 tag_colors[i % len(tag_colors)], i + 1,
             )
+
             by += ch2 + gap
 
     # ── LAYOUT 3: GRID — 2×2 COLORED CARDS (+ optional side image) ───────────
@@ -1225,35 +1384,39 @@ class PresentationBuilder:
                 img_aspect = _get_image_aspect_ratio(img_path)
             if img_aspect <= 0:
                 img_aspect = 1.78
-                
-            geo = compute_split_geometry(top, avail, img_aspect)
-            
+
+            # Pass card count so geometry gives more space to image when fewer cards
+            n_cards = len(cards[:4])
+            geo = compute_split_geometry(top, avail, img_aspect, n_bullets=n_cards)
+
             if cur % 2 != 0:
-                img_x = margin
-                txt_x = margin + geo.img_w + gap
+                # Image on LEFT, cards on RIGHT
+                img_x = Inches(0.25)
+                txt_x = Inches(0.25) + geo.img_w + gap
             else:
-                txt_x = geo.txt_x
+                # Image on RIGHT, cards on LEFT
                 img_x = geo.img_x
-                
+                txt_x = geo.txt_x
+
             all_paths = [d.get("image_path", "")] + d.get("extra_image_paths", []) if has_img else []
-            
-            # Image frame fills full content height — _premium_image_frame handles letterbox
+
             self._premium_image_frame(
                 slide, all_paths,
                 img_x, top, geo.img_w, avail,
                 d.get("visual_suggestion", ""),
                 chart_data=d.get("chart_data")
             )
-            
+
             n_cols, n_rows = 2, 2
             col_w = (geo.txt_w - gap) / 2
             row_h = (geo.txt_h - gap) / 2
-            
+
             for i, c in enumerate(cards[:4]):
                 ci, ri = i % n_cols, i // n_cols
                 cx2 = txt_x + ci * (col_w + gap)
                 cy2 = geo.txt_y + ri * (row_h + gap)
                 self._colored_card_full(slide, cx2, cy2, col_w, row_h, c, self.P["tag_colors"][i % 4])
+
         else:
             # Standard 2×2 grid (no chart data, no image)
             n_cols, n_rows = 2, 2
@@ -2380,33 +2543,33 @@ SOURCES (Cite these if applicable): {sources_str}
 
             yield f"\U0001f5bc\ufe0f Matched {assigned} image(s) to best-fit slides with adaptive layouts.\n"
 
-            # ── Overflow: group into gallery slides (up to 4 images each) ─────────
+            # ── Overflow: embed into existing slides — respect user slide count ──────
             if overflow_images:
-                yield f"\U0001f5bc\ufe0f {len(overflow_images)} overflow image(s) → creating gallery slide(s)...\n"
-                insert_pos = max(len(full_slides) - 1, 1)
-                # Group every 4 overflow images into a single gallery slide
-                batch_size = 4
-                for batch_start in range(0, len(overflow_images), batch_size):
-                    batch = overflow_images[batch_start : batch_start + batch_size]
-                    # Build a title from the hints / filenames in this batch
-                    titles = [
-                        (desc.hint.strip() or Path(desc.path).stem.replace("_", " ").replace("-", " ").title())
-                        for desc in batch
-                    ]
-                    gallery_title = " · ".join(t[:20] for t in titles[:3])
-                    if len(titles) > 3:
-                        gallery_title += f" +{len(titles)-3} more"
-
-                    new_slide = {
-                        "slide_number":   insert_pos + 1,
-                        "layout":         "aesthetic_gallery",
-                        "title":          gallery_title[:60] or "Visual Gallery",
-                        "image_paths":    [desc.path for desc in batch],
-                        "image_slot":     True,
-                    }
-                    full_slides.insert(insert_pos, new_slide)
-                    insert_pos += 1
-                    assigned += len(batch)
+                yield f"\U0001f5bc\ufe0f {len(overflow_images)} overflow image(s) → embedding into existing slides...\n"
+                # Prefer slides that don't already have extra images (skip title + last slide)
+                absorb_eligible = [
+                    i for i, sd in enumerate(full_slides)
+                    if sd.get("layout") not in ("aesthetic_title",)
+                    and not sd.get("extra_image_paths")
+                    and i != len(full_slides) - 1
+                ]
+                for desc in overflow_images:
+                    if absorb_eligible:
+                        idx = absorb_eligible.pop(0)
+                        full_slides[idx].setdefault("extra_image_paths", []).append(desc.path)
+                        assigned += 1
+                    elif _target_slides == 0:
+                        # User didn't specify exact count — safe to insert a new gallery slide
+                        insert_pos = max(len(full_slides) - 1, 1)
+                        full_slides.insert(insert_pos, {
+                            "slide_number": insert_pos + 1,
+                            "layout":       "aesthetic_gallery",
+                            "title":        "Visual Gallery",
+                            "image_paths":  [desc.path],
+                            "image_slot":   True,
+                        })
+                        assigned += 1
+                    # else: user specified exact N slides — skip extra images to honor the count
 
             # Re-number slides after insertions
             for idx, slide in enumerate(full_slides):
@@ -2460,4 +2623,45 @@ def ppt_styles():
     return {"styles": {k: {"name": v["name"], "desc": v["desc"]} for k, v in PERSONALITIES.items()},
             "count": len(PERSONALITIES)}
 
-def _pick(p): return "ocean_pro"
+def _pick(p: str) -> str:
+    """Intelligently pick a palette based on the presentation topic."""
+    lower = p.lower()
+    # Tech / AI / Data / Cyber
+    if any(kw in lower for kw in ["ai", "machine learning", "deep learning", "neural", "cyber",
+                                   "data science", "blockchain", "cloud", "devops", "software",
+                                   "algorithm", "model", "llm", "chatbot", "automation"]):
+        return "cyber_dark"
+    # Hackathon / Startup / Pitch
+    if any(kw in lower for kw in ["hackathon", "startup", "pitch", "investor", "mvp",
+                                   "product launch", "demo day", "innovation"]):
+        return "neon_dark"
+    # Medical / Health / Biology / Science
+    if any(kw in lower for kw in ["medical", "health", "biology", "pharmaceutical", "clinical",
+                                   "hospital", "patient", "dna", "genome", "drug", "vaccine"]):
+        return "emerald"
+    # Finance / Business / Corporate
+    if any(kw in lower for kw in ["finance", "financial", "investment", "banking", "revenue",
+                                   "profit", "market", "stock", "economy", "business", "corporate",
+                                   "quarterly", "report", "strategy", "sales"]):
+        return "midnight_exec"
+    # Environment / Nature / Sustainability
+    if any(kw in lower for kw in ["environment", "climate", "green", "sustainability", "ecology",
+                                   "nature", "forest", "renewable", "carbon", "earth"]):
+        return "forest_calm"
+    # Education / Academic / Research
+    if any(kw in lower for kw in ["education", "learning", "university", "research", "academic",
+                                   "school", "study", "curriculum", "teaching"]):
+        return "arctic_clean"
+    # Creative / Design / Art
+    if any(kw in lower for kw in ["design", "creative", "art", "brand", "marketing",
+                                   "advertising", "visual", "ux", "ui", "product"]):
+        return "synthwave"
+    # Energy / Solar / Space
+    if any(kw in lower for kw in ["energy", "solar", "space", "nasa", "rocket", "physics",
+                                   "power", "fusion", "nuclear"]):
+        return "solar_flare"
+    # Ocean / Water / Marine
+    if any(kw in lower for kw in ["ocean", "water", "marine", "sea", "aqua"]):
+        return "ocean_pro"
+    # Default: clean professional
+    return "ocean_pro"
