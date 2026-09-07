@@ -47,7 +47,7 @@ client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 # ── Configuration ─────────────────────────────────────────────────────────────
 MAX_PARALLEL    = 2       # max nodes running at the same time (avoids Groq rate limits)
 RETRY_BACKOFF   = [0.5, 1.0]   # seconds to wait between retries (len = max retries)
-AGGREGATE_MODEL = "llama-3.1-8b-instant"
+AGGREGATE_MODEL = "openai/gpt-oss-20b"
 
 
 # ── Data Structures ────────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ async def _call_dag_planner(task: str, context: str) -> dict:
     prompt = DAG_PLANNER_PROMPT.format(task=task, context=context or "Desktop")
     try:
         resp = await client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             max_tokens=2000,

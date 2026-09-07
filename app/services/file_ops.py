@@ -190,7 +190,7 @@ def _maybe_summarize(filename: str, content: str, cap: int) -> str:
             f"Ready to speak aloud.\n\nCONTENT:\n{content[:3000]}"
         )
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
             temperature=0.3

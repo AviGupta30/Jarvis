@@ -131,7 +131,7 @@ def call_groq(prompt: str, attempt: int = 0) -> str:
     
     client = get_groq_client()
     response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
         temperature=temperatures[min(attempt, 2)],
         top_p=top_p_values[min(attempt, 2)],

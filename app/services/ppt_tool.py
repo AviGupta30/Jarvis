@@ -580,7 +580,7 @@ def _groq_call(sys_p: str, usr_p: str, tokens: int = 4000) -> str:
     safe_tokens = min(tokens, 4500)
     try:
         r = _GROQ.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "system", "content": sys_p}, {"role": "user", "content": usr_p}],
             max_tokens=safe_tokens, temperature=0.7, response_format={"type": "json_object"},
         )
@@ -589,7 +589,7 @@ def _groq_call(sys_p: str, usr_p: str, tokens: int = 4000) -> str:
         err_str = str(e).lower()
         if "429" in err_str or "413" in err_str or "rate" in err_str or "too large" in err_str:
             r = _GROQ.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "system", "content": sys_p}, {"role": "user", "content": usr_p}],
                 max_tokens=safe_tokens, temperature=0.7, response_format={"type": "json_object"},
             )
@@ -656,7 +656,7 @@ Return ONLY this JSON (all values are 6-character hex codes WITHOUT the # symbol
 }"""
 
     resp = _GROQ.chat.completions.create(
-        model="meta-llama/llama-4-scout-17b-16e-instruct",
+        model="openai/gpt-oss-120b",
         messages=[{
             "role": "user",
             "content": [

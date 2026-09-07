@@ -460,9 +460,9 @@ def _humanize_via_llm(text: str) -> str:
     chunks = _split_into_chunks(protected_text, max_chars=3000)
 
     model_chain = [
-        ("llama-3.1-8b-instant", 3000),
-        ("llama-3.1-8b-instant",    2500),
-        ("gemma2-9b-it",            2500),
+        ("openai/gpt-oss-20b", 3000),
+        ("openai/gpt-oss-20b",    2500),
+        ("openai/gpt-oss-20b",            2500),
     ]
 
     humanized_chunks = []

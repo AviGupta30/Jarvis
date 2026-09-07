@@ -9,14 +9,14 @@ Architecture (Rule #4 compliant):
   - All output returned as strings; nothing is written to disk
 
 Pipeline:
-  1. Read syllabus topics from an image  → Groq Vision (llama-3.2-11b-vision-preview)
+  1. Read syllabus topics from an image  → Groq Vision (openai/gpt-oss-20b)
   2. Fetch playlist video IDs            → youtube-transcript-api
   3. Fetch captions per video            → youtube-transcript-api (skip if unavailable)
   4. Chunk transcripts                   → 300-token sliding window, 50-token overlap
   5. Embed chunks + topics               → sentence-transformers (all-MiniLM-L6-v2)
   6. Build in-memory vector store        → chromadb (ephemeral, no disk writes)
   7. Score coverage per topic            → cosine similarity depth scoring
-  8. LLM verify top topics               -> Groq llama-3.3-70b-versatile
+  8. LLM verify top topics               -> Groq openai/gpt-oss-120b
   9. Assemble + return response          → markdown (chat) + spoken summary (voice)
 
 Usage (via tools.py → /chat route):
@@ -87,7 +87,7 @@ def _load_image_as_b64(image_path: str) -> tuple[str, str]:
 
 def _extract_syllabus_from_image(image_path: str) -> list[str]:
     """
-    Send the syllabus image to Groq Vision (llama-3.2-11b-vision-preview) and
+    Send the syllabus image to Groq Vision (openai/gpt-oss-20b) and
     extract all topics as a clean Python list of strings.
 
     The model is prompted to be exhaustive — every chapter, unit, subtopic,
@@ -120,7 +120,7 @@ def _extract_syllabus_from_image(image_path: str) -> list[str]:
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.2-11b-vision-preview",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "user",
@@ -636,7 +636,7 @@ def _format_timestamp(seconds: float) -> str:
 
 def _llm_verify_topic(topic: str, top_chunks: list[dict]) -> dict:
     """
-    Send the top-3 relevant chunks for a topic to Groq llama-3.3-70b-versatile.
+    Send the top-3 relevant chunks for a topic to Groq openai/gpt-oss-120b.
     Only called for MODERATE and DEEP topics (reduces token spend).
 
     Returns a dict with verified depth label, confidence, summary,
@@ -683,7 +683,7 @@ def _llm_verify_topic(topic: str, top_chunks: list[dict]) -> dict:
     try:
         client = _get_groq_client()
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.1,
             max_tokens=400,

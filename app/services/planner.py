@@ -171,7 +171,7 @@ async def _call_planner(task: str, context: str) -> dict:
     # ──────────────────────────────────────────────────────────────────────
     prompt = PLANNER_PROMPT.format(task=task, context=context or "Desktop", task_history=task_history)
     resp = await client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         max_tokens=2000,
@@ -200,7 +200,7 @@ async def _call_replanner(task: str, completed: list, failed_step: dict,
         next_step_num=next_num,
     )
     resp = await client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model="openai/gpt-oss-20b",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         max_tokens=1500,

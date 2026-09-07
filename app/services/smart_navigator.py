@@ -48,7 +48,7 @@ def _llm_extract(url: str, raw_text: str, purpose: str) -> str:
             f"Ignore navigation links, footers, and cookie banners.\n\nCONTENT:\n{raw_text[:4000]}"
         )
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
             temperature=0.2

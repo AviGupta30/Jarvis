@@ -2,9 +2,9 @@
 llm.py — Jarvis LLM Brain
 ---------------------------
 Model routing:
-  Groq llama-3.1-8b-instant  → tool routing + simple fast responses
+  Groq openai/gpt-oss-20b  → tool routing + simple fast responses
   Gemma 4 (Google AI Studio)    → complex reasoning, planner narration, deep Q&A
-  Groq llama-3.1-8b-instant     → history compression (cheap + fast)
+  Groq openai/gpt-oss-20b     → history compression (cheap + fast)
 
 All models are 100% free on their respective free tiers.
 """
@@ -43,7 +43,7 @@ async def _groq_generate(messages: list, max_tokens: int = 800, temperature: flo
     for attempt in range(2):
         try:
             completion = await client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=messages,
                 stream=True,
                 max_tokens=max_tokens,
@@ -114,7 +114,7 @@ async def check_for_tool_intent(user_prompt: str, history: list) -> dict | None:
     for attempt in range(2):
         try:
             completion = await client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=messages,
                 response_format={"type": "json_object"},
                 max_tokens=150,
@@ -242,7 +242,7 @@ async def _maybe_compress_history():
             f"Summarize the following conversation in 2-3 sentences, preserving key facts:\n{old_text}"
         )
         resp = await client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
             temperature=0.3

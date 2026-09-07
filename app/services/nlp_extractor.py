@@ -73,7 +73,7 @@ class NLPExtractor:
 
             try:
                 r = _GROQ.chat.completions.create(
-                    model="llama-3.1-8b-instant", # Fast model for extraction
+                    model="openai/gpt-oss-20b", # Fast model for extraction
                     messages=[
                         {"role": "system", "content": _SYS_EXTRACT},
                         {"role": "user", "content": _USR_EXTRACT.format(topic=topic, url=url, text=text)}

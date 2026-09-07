@@ -390,7 +390,7 @@ def _extract_via_vision(pdf_path: str) -> list[dict]:
     for page_num, b64_img in enumerate(page_images, start=1):
         try:
             response = _groq.chat.completions.create(
-                model="llama-3.2-11b-vision-preview",
+                model="openai/gpt-oss-20b",
                 messages=[
                     {
                         "role": "user",
@@ -459,7 +459,7 @@ def _extract_via_llm_text(pdf_path: str) -> list[dict]:
             continue
         try:
             response = _groq.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[
                     {"role": "system", "content": _LLM_TEXT_PROMPT},
                     {"role": "user", "content": f"Page {page_num} text:\n\n{page_text}"}

@@ -12,7 +12,7 @@ PURPOSE:
     hinglish ratio, emoji frequency, punctuation style, and your own examples.
 
 LLM ROUTING (mirrors llm.py logic — uses Groq directly, no llm.py import):
-    - Groq llama-3.1-8b-instant  (same API key from env)
+    - Groq openai/gpt-oss-20b  (same API key from env)
     - Falls back gracefully if the key is missing
 
 OUTPUT FORMAT:
@@ -86,7 +86,7 @@ def _call_groq(prompt: str, system: str, max_tokens: int = 600, temperature: flo
         from groq import Groq
         client = Groq(api_key=key)
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": prompt},

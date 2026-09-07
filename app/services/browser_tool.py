@@ -72,7 +72,7 @@ def _llm_extract(url: str, raw_text: str, purpose: str = "general") -> str:
             f"If it's an article, summarize the key points.\n\nCONTENT:\n{raw_text[:3000]}"
         )
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=300,
             temperature=0.2

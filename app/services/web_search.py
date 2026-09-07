@@ -336,7 +336,7 @@ def _synthesize_with_llm(query: str, raw_sources: str) -> str:
             f"for the query: '{query}'\n\nSOURCES:\n{raw_sources[:2500]}"
         )
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=200,
             temperature=0.3

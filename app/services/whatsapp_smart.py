@@ -370,7 +370,7 @@ def read_whatsapp_messages(contact_name: str, count: int = 5) -> str:
                         f"Ignore UI text like timestamps, delivery ticks, etc.\n\nRAW:\n{raw_joined}"
                     )
                     resp = client.chat.completions.create(
-                        model="llama-3.1-8b-instant",
+                        model="openai/gpt-oss-20b",
                         messages=[{"role": "user", "content": prompt}],
                         max_tokens=200,
                         temperature=0.2

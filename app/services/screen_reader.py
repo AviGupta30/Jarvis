@@ -110,7 +110,7 @@ def _groq_vision_screen() -> str:
                     }},
                 ],
             }],
-            model="llama-3.2-90b-vision-preview",
+            model="openai/gpt-oss-120b",
             temperature=0.2,
             max_tokens=300,
         )
@@ -293,7 +293,7 @@ def read_screen_as_tool(user_query: str = "What am I looking at?") -> str:
             f"RAW TEXT:\n{raw[:3000]}"
         )
         resp = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": prompt}],
             max_tokens=150,
             temperature=0.3,

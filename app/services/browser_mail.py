@@ -56,7 +56,7 @@ def smart_mail_action(task: str) -> str:
             client = Groq(api_key=api_key)
             prompt = f"Extract email fields from this task: '{task}'. Return ONLY JSON format: {{\"to\": \"...\", \"subject\": \"...\", \"body\": \"...\"}}. If a field is not specified, leave it empty."
             resp = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}],
                 response_format={"type": "json_object"}
             )
@@ -83,7 +83,7 @@ def smart_mail_action(task: str) -> str:
             client = Groq(api_key=api_key)
             prompt = f"Extract the Gmail search query from this task: '{task}'. Return ONLY the raw search query string (e.g. 'from:boss', 'is:unread', 'meeting'). If unclear, just return 'is:unread'."
             resp = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}]
             )
             query = resp.choices[0].message.content.strip().strip("'\"")

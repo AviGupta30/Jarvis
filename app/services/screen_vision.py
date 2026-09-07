@@ -162,7 +162,7 @@ def _build_history_context() -> str:
 
 def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> str:
     """
-    Send screenshot + context to Groq Vision API (llama-3.2-11b-vision-preview).
+    Send screenshot + context to Groq Vision API (openai/gpt-oss-20b).
     """
     try:
         from groq import Groq
@@ -176,7 +176,7 @@ def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> 
         prompt_text = f"{system_prompt}\n\nUser asked: {user_query}" if user_query else system_prompt
         
         response = client.chat.completions.create(
-            model="llama-3.2-11b-vision-preview",
+            model="openai/gpt-oss-20b",
             messages=[
                 {
                     "role": "user",
@@ -197,7 +197,7 @@ def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> 
 
 def _call_gemma_reasoning(scene_description: str, task_prompt: str) -> str:
     """
-    Send a scene description to Groq (llama-3.1-8b-instant) for reasoning.
+    Send a scene description to Groq (openai/gpt-oss-20b) for reasoning.
     """
     try:
         from groq import Groq
@@ -217,7 +217,7 @@ def _call_gemma_reasoning(scene_description: str, task_prompt: str) -> str:
         )
 
         response = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=[{"role": "user", "content": full_prompt}],
             temperature=0.7,
             max_tokens=800

@@ -241,7 +241,7 @@ def list_unread(max_results: int = 5) -> str:
                 f"Number them 1, 2, 3.\n\n{email_text}"
             )
             resp = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model="openai/gpt-oss-20b",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=150,
                 temperature=0.2

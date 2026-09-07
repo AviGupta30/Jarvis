@@ -260,7 +260,7 @@ def _screenshot_extract(page) -> str:
         screenshot_bytes = page.screenshot(full_page=False)
         b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
         response = _groq.chat.completions.create(
-            model="llama-3.2-11b-vision-preview",
+            model="openai/gpt-oss-20b",
             messages=[{
                 "role": "user",
                 "content": [
@@ -438,9 +438,9 @@ def _groq_answer(question: str, question_type: str, has_figure: bool = False) ->
 
     # Model fallback chain: best quality → fast → alternative
     model_chain = [
-        ("llama-3.1-8b-instant", 2500),
-        ("llama-3.1-8b-instant",    2000),
-        ("gemma2-9b-it",            2000),
+        ("openai/gpt-oss-20b", 2500),
+        ("openai/gpt-oss-20b",    2000),
+        ("openai/gpt-oss-20b",            2000),
     ]
 
     last_error = ""
