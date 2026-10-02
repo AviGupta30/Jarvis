@@ -15,12 +15,11 @@
 
 ## Relationships
 
-- [screen_vision](screen_vision.md) (3 shared connections)
-- [chat-routing + CLAUDE](chat-routing_+_CLAUDE.md) (1 shared connections)
+- [screen_vision](screen_vision.md) (4 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 - [file_ops](file_ops.md) (1 shared connections)
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
 - [screen_reader](screen_reader.md) (1 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (1 shared connections)
+- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
 
 ## Source Files
 

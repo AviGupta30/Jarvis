@@ -33,11 +33,11 @@
 
 ## Relationships
 
-- [persistence + server](persistence_+_server.md) (5 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (5 shared connections)
 - [main](main.md) (1 shared connections)
-- [chat-routing + CLAUDE](chat-routing_+_CLAUDE.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 - [frontend](frontend.md) (1 shared connections)
-- [rag_memory + test_rag_memory](rag_memory_+_test_rag_memory.md) (1 shared connections)
+- [rag_memory + memory](rag_memory_+_memory.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 
 ## Source Files

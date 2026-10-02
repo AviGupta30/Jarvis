@@ -1,6 +1,6 @@
 # safe_executor
 
-> 23 nodes · cohesion 0.13
+> 21 nodes · cohesion 0.14
 
 ## Key Concepts
 
@@ -8,7 +8,6 @@
 - **execute_safe()** (11 connections) — `app/services/safe_executor.py`
 - **SecurityError** (8 connections) — `app/services/safe_executor.py`
 - **SafetyVisitor** (6 connections) — `app/services/safe_executor.py`
-- **click_ui_element()** (6 connections) — `app/services/ui_inspector.py`
 - **_safe_import()** (4 connections) — `app/services/safe_executor.py`
 - **_safe_open()** (4 connections) — `app/services/safe_executor.py`
 - **_validate_code()** (4 connections) — `app/services/safe_executor.py`
@@ -25,31 +24,30 @@
 - **AST visitor that inspects generated code before execution.** (1 connections) — `app/services/safe_executor.py`
 - **Parse and walk the AST, raising SecurityError on violations.** (1 connections) — `app/services/safe_executor.py`
 - **Validates and runs 'code' in a restricted namespace. Returns: (success: bool,…** (1 connections) — `app/services/safe_executor.py`
-- **Legacy-compatible API: find a control by text in the active window and click…** (1 connections) — `app/services/ui_inspector.py`
 - **contextlib** (1 connections)
 
 ## Relationships
 
-- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (7 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (3 shared connections)
-- [screen_reader](screen_reader.md) (2 shared connections)
-- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
-- [persistence + server](persistence_+_server.md) (1 shared connections)
-- [gmail_tool + download_kokoro](gmail_tool_+_download_kokoro.md) (1 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (5 shared connections)
+- [ui_inspector + tools](ui_inspector_+_tools.md) (2 shared connections)
+- [main + screen_vision](main_+_screen_vision.md) (2 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (2 shared connections)
+- [screen_reader](screen_reader.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
+- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (1 shared connections)
+- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
+- [assignment_tool](assignment_tool.md) (1 shared connections)
 - [refresh_docs](refresh_docs.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/safe_executor.py`
-- `app/services/ui_inspector.py`
 - `test_exec.py`
 
 ## Audit Trail
 
-- EXTRACTED: 46 (88%)
+- EXTRACTED: 42 (88%)
 - INFERRED: 6 (12%)
 - AMBIGUOUS: 0 (0%)
 

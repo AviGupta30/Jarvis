@@ -28,8 +28,12 @@ Originally found in the code survey of 2026-09-28 (commit cb8a3aa). Most were fi
 - **PPT research depends on `ddgs` web search, which throttles bursts.** Searches run ≤ 2 at a time with backoff; if it still returns nothing, Wikipedia alone grounds the deck (fewer facts → more qualitative slides).
 
 ## Fixed on 2026-10-02 (resume creator)
+- Projects listed under "EXPERIENCE (PROJECTS)" became fake jobs ("Full Stack Software Developer" ×3, "Image Processing Engineer"), and facts were repeated across highlights/achievements/competencies. Fixed with prompt rules plus `_finalize_content`, `_user_headings`, `_restore_dropped` and the projects→Experience slot swap.
+- Photo appeared top-right instead of in the sidebar for "photo in sidebar, name on a band" designs → new `sidebar_photo` header.
+- "Single page" requests could produce 2 pages → strict `target_pages` via `_fit_render` (shrink → condense overflowing column → trim).
 - Resume requests went to `/ppt/create`: `App.jsx:isPPTRequest` treated any message containing "presentation/slides/deck" as a PPT request, even inside pasted resume details. Now `isResumeRequest` (whichever artifact is named first wins) runs first. The backend `detect_resume_request` had the same flaw with "email".
 - Fallback text model omitted the name → `_guess_name`/`_guess_title` recover it from the user's text. The profile used a gendered pronoun guessed from the name; the content prompt now forbids pronouns.
+- Wave/curved resume designs (wavy header/footer, ringed round photo, equal columns, square heading icons, language bars) fell back to a diagonal banner + single column: the design vocabulary couldn't express them. Added `header_shape`, `footer_shape`, `two_column`, `bottom_sections` etc. and a `wave` preset. Fixed footers with inline SVG didn't repeat on page 2 (Chromium) → SVG backgrounds.
 - Resume fit loop could leave one section alone on page 2: sections were moved only main→sidebar and unplaced sections couldn't move. Now `_placement` + two-way moves.
 
 ## Fixed on 2026-10-01 (PPT)

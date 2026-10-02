@@ -107,6 +107,29 @@ PRESETS: dict[str, dict] = {
         "sidebar_sections": ["contact", "skills", "languages", "certifications", "interests", "education"],
         "main_sections": ["profile", "experience", "projects", "competencies", "achievements", "highlights", "references"],
     },
+    "wave": {
+        "layout": "two_column", "sidebar_width": 50, "header": "full_band", "header_shape": "wave", "photo": "circle",
+        "photo_position": "right", "photo_ring": True, "name_align": "center", "footer_shape": "wave", "decor": "none",
+        "font": "modern", "name_case": "title", "heading_style": "square_icon", "skills_style": "bars",
+        "language_style": "bars", "competency_style": "list", "timeline": False,
+        "colors": {"primary": "#29abd4", "accent": "#1f9cc7", "heading": "#1f9cc7", "text": "#4b5563",
+                   "sidebar_bg": "#ffffff", "page_bg": "#ffffff", "header_text": "#ffffff", "track": "#1f2937",
+                   "skill_colors": ["#29abd4", "#1f9cc7", "#7dd3ea"]},
+        "sidebar_sections": ["profile", "education", "experience", "projects"],
+        "main_sections": ["skills", "languages", "competencies", "achievements", "certifications", "highlights", "interests", "references"],
+        "bottom_sections": ["contact"],
+    },
+    "corporate": {
+        "layout": "sidebar_left", "sidebar_width": 33, "header": "sidebar_photo", "photo": "circle",
+        "font": "serif", "name_case": "upper", "heading_style": "underline", "skills_style": "bars",
+        "language_style": "squares", "competency_style": "list", "timeline": False,
+        "colors": {"primary": "#1e88d0", "accent": "#1565c0", "heading": "#0b2a4a", "text": "#333333",
+                   "sidebar_bg": "#0b2d55", "page_bg": "#ffffff", "header_text": "#ffffff", "band": "#f1f1f1",
+                   "skill_colors": ["#1e88d0", "#1565c0", "#90caf9"]},
+        "sidebar_sections": ["contact", "skills", "languages", "interests", "certifications"],
+        "main_sections": ["profile", "experience", "projects", "education", "achievements", "highlights", "competencies", "references"],
+        "bottom_sections": [],
+    },
 }
 PRESET_BLURBS = {
     "elegant": "gold diagonal banner + photo, light sidebar, Venn skills, icon competencies",
@@ -115,7 +138,13 @@ PRESET_BLURBS = {
     "creative": "teal header band, coral accents, right sidebar, skill dots",
     "executive": "charcoal & gold, rounded photo, skill rings",
     "tech": "monospace headings, dark sidebar, skill bars",
+    "wave": "wavy colour header & footer, round photo with ring, two equal columns, language bars",
+    "corporate": "navy sidebar with round photo, name on a grey band, serif headings, skill bars, square language markers",
 }
+
+# Optional design keys (added 2026-10-02): every design gets these, so old saved designs keep working.
+_STYLE_DEFAULTS = {"header_shape": "flat", "footer_shape": "none", "photo_position": "left", "photo_ring": False,
+                   "name_align": "left", "language_style": "dots", "decor": "none", "bottom_sections": []}
 
 _FONTS = {
     "sans":      ("'Roboto', 'Segoe UI', Arial, sans-serif", "'Roboto', 'Segoe UI', Arial, sans-serif", "Roboto:wght@300;400;500;700;900"),
@@ -453,20 +482,29 @@ Dominant colours measured from the image (hex, share of pixels): {palette}
 
 Return ONLY one JSON object, no prose:
 {{
- "layout": "sidebar_left|sidebar_right|single_column",
- "sidebar_width": <percent of page width taken by the sidebar, 25-40; 0 for single_column>,
- "header": "diagonal_banner|full_band|centered|left_plain|sidebar_name",
+ "layout": "sidebar_left|sidebar_right|two_column|single_column",
+ "sidebar_width": <percent of page width taken by the left/narrow column, 25-50; 0 for single_column>,
+ "header": "diagonal_banner|full_band|centered|left_plain|sidebar_name|sidebar_photo",
+ "header_shape": "flat|wave|curve|diagonal" <shape of the coloured header's bottom edge>,
+ "footer_shape": "none|wave|curve|bar" <decorative coloured shape along the page bottom>,
  "photo": "square|circle|rounded|none",
+ "photo_position": "left|right|center",
+ "photo_ring": true|false <coloured ring/border around the photo>,
+ "name_align": "left|center",
+ "decor": "none|circles|dots" <faint background decorations>,
  "photo_bbox": [x0, y0, x1, y1] <photo position as fractions 0-1 of the WHOLE image, or null>,
  "font": "sans|geometric|modern|serif|elegant|mono",
  "name_case": "upper|title",
- "heading_style": "underline|bar_left|boxed|caps_line|plain",
+ "heading_style": "underline|bar_left|boxed|caps_line|plain|square_icon|dot",
  "skills_style": "venn|bars|dots|chips|circles|list",
+ "language_style": "bars|dots|squares|text",
  "competency_style": "icon_grid|list",
  "timeline": true|false,
  "colors": {{"primary": "<header/banner colour>", "accent": "<secondary accent>", "heading": "<section heading text colour>",
              "text": "<body text>", "sidebar_bg": "<sidebar background>", "page_bg": "<main page background>",
-             "header_text": "<text colour on the header>", "skill_colors": ["<up to 3 colours used in the skills graphic>"]}},
+             "header_text": "<text colour on the header>", "skill_colors": ["<up to 3 colours used in the skills graphic>"],
+             "track": "<colour of empty progress-bar tracks, if any>",
+             "band": "<background colour behind the name if it sits on its own light band, else empty>"}},
  "sidebar_sections": [<ordered section keys printed in the sidebar>],
  "main_sections": [<ordered section keys in the main column; for single_column, every section>],
  "section_titles": {{"<key>": "<heading text exactly as printed>"}},
@@ -474,8 +512,13 @@ Return ONLY one JSON object, no prose:
 }}
 Section keys: profile, highlights, contact, skills, competencies, experience, education, achievements, certifications, languages, interests, projects, references.
 ("highlights" = career highlights/summary bullets, "competencies" = core competencies/expertise blocks with icons.)
-Header meanings: diagonal_banner = coloured banner with a slanted bottom edge next to/over a photo; full_band = solid coloured band across the top;
-centered = name centred on plain background; left_plain = name left-aligned on plain background; sidebar_name = name printed inside the sidebar.
+Layout: sidebar_* = one narrow column with its own background colour; two_column = two similar-width columns on the same background.
+Header meanings: diagonal_banner = coloured banner with a slanted bottom edge next to/over a photo; full_band = coloured band across the top
+(set header_shape: wave = wavy bottom edge, curve = one smooth arc, diagonal = straight slant, flat = straight);
+centered = name centred on plain background; left_plain = name left-aligned on plain background; sidebar_name = name printed inside the sidebar;
+sidebar_photo = PHOTO at the top of the sidebar while the NAME sits at the top of the main column (often on a light band).
+Look carefully where the photo is: if it is inside the coloured sidebar, the header is sidebar_photo or sidebar_name, not left_plain.
+heading_style: square_icon = small filled square before each heading; dot = filled circle before each heading.
 skills_style: venn = overlapping circles; bars = progress bars; dots = rating dots; circles = ring charts; chips = tags; list = plain list.
 Choose colours from the measured list whenever they match."""
 
@@ -484,8 +527,9 @@ Choose colours from the measured list whenever they match."""
 # when asked only this (the big style prompt alone tends to answer "single_column").
 _LAYOUT_PROMPT = """Look at this resume page (ignore phone UI bars and viewer background). List every section heading in
 reading order and say which column it is in.
-Return ONLY JSON: {"columns": 1 or 2, "narrow_column": "left|right|none", "narrow_column_width_percent": <n>,
-"sections": [{"title": "<heading text>", "column": "left|right|full"}],
+Return ONLY JSON: {"columns": 1 or 2, "equal_columns": true|false, "narrow_column": "left|right|none",
+"narrow_column_width_percent": <n>, "left_column_has_own_background": true|false,
+"sections": [{"title": "<heading text>", "column": "left|right|full"}],   ("full" = spans the whole page width, e.g. a contact strip at the bottom)
 "heading_text_color": "<hex of section heading text such as PROFILE>", "skill_graphic_colors": ["<hex>", "<hex>", "<hex>"],
 "banner_color": "<hex of the header/banner background>", "name_color": "<hex of the person's name text>"}"""
 
@@ -553,26 +597,35 @@ def _file_hash(path: str) -> str:
 
 def _apply_layout_answer(spec: dict, lay: dict) -> dict:
     secs = [s for s in (lay.get("sections") or []) if isinstance(s, dict)]
-    side, main, titles = [], [], {}
     narrow = str(lay.get("narrow_column") or "").lower()
-    two_cols = str(lay.get("columns")) == "2" and narrow in ("left", "right")
-    for s in secs:
+    cols2 = str(lay.get("columns")) == "2"
+    equal = lay.get("equal_columns") is True or (cols2 and narrow not in ("left", "right")) or         (cols2 and lay.get("left_column_has_own_background") is False and narrow != "right")
+    side_col = "left" if (equal or narrow not in ("left", "right")) else narrow
+    side, main, bottom, titles = [], [], [], {}
+    last_col_idx = max([i for i, s in enumerate(secs) if str(s.get("column")).lower() in ("left", "right")] or [-1])
+    for i, s in enumerate(secs):
         key = _title_key(s.get("title", ""))
-        if not key or key in side or key in main:
+        if not key or key in side or key in main or key in bottom:
             continue
         titles[key] = str(s.get("title") or "").strip()[:40]
-        (side if two_cols and str(s.get("column")).lower() == narrow else main).append(key)
+        col = str(s.get("column")).lower()
+        if not cols2:
+            main.append(key)
+        elif col == "full":
+            (bottom if i > last_col_idx >= 0 else main).append(key)
+        else:
+            (side if col == side_col else main).append(key)
     if secs:
         spec["section_titles"] = {**(spec.get("section_titles") or {}), **titles}
-    if two_cols and side and main:
-        spec["layout"] = "sidebar_left" if narrow == "left" else "sidebar_right"
-        spec["sidebar_sections"], spec["main_sections"] = side, main
+    if cols2 and side and main:
+        spec["layout"] = "two_column" if equal else ("sidebar_left" if narrow == "left" else "sidebar_right")
+        spec["sidebar_sections"], spec["main_sections"], spec["bottom_sections"] = side, main, bottom
         try:
-            spec["sidebar_width"] = int(float(lay.get("narrow_column_width_percent") or spec.get("sidebar_width") or 32))
+            spec["sidebar_width"] = 50 if equal else int(float(lay.get("narrow_column_width_percent") or spec.get("sidebar_width") or 32))
         except Exception:
             pass
-    elif secs and str(lay.get("columns")) == "1":
-        spec["layout"], spec["sidebar_sections"], spec["main_sections"] = "single_column", [], main
+    elif secs and not cols2:
+        spec["layout"], spec["sidebar_sections"], spec["main_sections"], spec["bottom_sections"] = "single_column", [], main, []
     if not isinstance(spec.get("colors"), dict):
         spec["colors"] = {}
     cols = spec["colors"]
@@ -589,7 +642,7 @@ def _apply_layout_answer(spec: dict, lay: dict) -> dict:
 
 def _analyse_design(image_path: str) -> dict:
     from concurrent.futures import ThreadPoolExecutor
-    key = _file_hash(image_path)
+    key = "v3:" + _file_hash(image_path)       # bump when the design vocabulary changes (old readings lack new keys)
     cache = _load_state().get("design_cache") or {}
     if key and key in cache:                      # same picture again → no vision tokens spent
         return cache[key]
@@ -622,6 +675,8 @@ def _closest_preset(spec: dict) -> str:
     for name, p in PRESETS.items():
         score = sum(2 if spec.get(k) == p.get(k) else 0 for k in ("layout", "header"))
         score += sum(1 for k in ("skills_style", "heading_style", "font", "photo") if spec.get(k) == p.get(k))
+        if spec.get("header_shape") not in (None, "", "flat") and spec.get("header_shape") == p.get("header_shape"):
+            score += 3
         if score > best_score:
             best, best_score = name, score
     return best
@@ -630,13 +685,19 @@ def _closest_preset(spec: dict) -> str:
 def _merge_design(base: dict, over: dict) -> dict:
     d = json.loads(json.dumps(base))
     allowed = {
-        "layout": {"sidebar_left", "sidebar_right", "single_column"},
-        "header": {"diagonal_banner", "full_band", "centered", "left_plain", "sidebar_name"},
+        "layout": {"sidebar_left", "sidebar_right", "single_column", "two_column"},
+        "header": {"diagonal_banner", "full_band", "centered", "left_plain", "sidebar_name", "sidebar_photo"},
         "photo": {"square", "circle", "rounded", "none"},
         "font": set(_FONTS), "name_case": {"upper", "title"},
-        "heading_style": {"underline", "bar_left", "boxed", "caps_line", "plain"},
+        "heading_style": {"underline", "bar_left", "boxed", "caps_line", "plain", "square_icon", "dot"},
         "skills_style": {"venn", "bars", "dots", "chips", "circles", "list"},
         "competency_style": {"icon_grid", "list"},
+        "header_shape": {"flat", "wave", "curve", "diagonal"},
+        "footer_shape": {"none", "wave", "curve", "bar"},
+        "photo_position": {"left", "right", "center"},
+        "name_align": {"left", "center"},
+        "language_style": {"bars", "dots", "squares", "text"},
+        "decor": {"none", "circles", "dots"},
     }
     for k, ok in allowed.items():
         v = str(over.get(k) or "").strip().lower()
@@ -644,23 +705,25 @@ def _merge_design(base: dict, over: dict) -> dict:
             d[k] = v
     if isinstance(over.get("timeline"), bool):
         d["timeline"] = over["timeline"]
+    if isinstance(over.get("photo_ring"), bool):
+        d["photo_ring"] = over["photo_ring"]
     try:
         sw = int(float(over.get("sidebar_width") or 0))
-        if 22 <= sw <= 42:
+        if 22 <= sw <= 56:
             d["sidebar_width"] = sw
     except Exception:
         pass
     cols = over.get("colors") or {}
     if isinstance(cols, dict):
-        for k in ("primary", "accent", "heading", "text", "sidebar_bg", "page_bg", "header_text"):
+        for k in ("primary", "accent", "heading", "text", "sidebar_bg", "page_bg", "header_text", "track", "band"):
             if cols.get(k):
-                d["colors"][k] = _hex(cols[k], d["colors"][k])
+                d["colors"][k] = _hex(cols[k], d["colors"].get(k) or "#888888")
         sc = [_hex(c, "") for c in (cols.get("skill_colors") or []) if _hex(c, "")]
         if sc:
             d["colors"]["skill_colors"] = (sc + d["colors"]["skill_colors"])[:3]
-    for key in ("sidebar_sections", "main_sections"):
+    for key in ("sidebar_sections", "main_sections", "bottom_sections"):
         lst = [s for s in (over.get(key) or []) if s in SECTION_KEYS]
-        if lst or (key == "sidebar_sections" and over.get("layout") == "single_column"):
+        if lst or (key == "sidebar_sections" and over.get("layout") == "single_column") or                 (key == "bottom_sections" and "bottom_sections" in over):
             d[key] = list(dict.fromkeys(lst))
     titles = over.get("section_titles") or {}
     if isinstance(titles, dict):
@@ -692,13 +755,16 @@ def _apply_color(design: dict, color: str) -> dict:
 
 def _sanitize_design(design: dict) -> dict:
     """Make sure colours stay readable and every section has a home."""
+    for k, v in _STYLE_DEFAULTS.items():
+        design.setdefault(k, json.loads(json.dumps(v)))
     c = design["colors"]
     c["header_text"] = _readable_on(c["primary"], c.get("header_text"))
     if _contrast(c["text"], c["page_bg"]) < 4:
         c["text"] = _readable_on(c["page_bg"])
-    if _contrast(c["heading"], c["page_bg"]) < 2.5:
-        c["heading"] = c["accent"] if _contrast(c["accent"], c["page_bg"]) >= 2.5 else _readable_on(c["page_bg"])
-    if _contrast(c["accent"], c["page_bg"]) < 2.5:      # accent is used for company names / bullets
+    # headings are large & bold, so a lighter brand colour (≈2:1, e.g. sky blue on white) still reads fine
+    if _contrast(c["heading"], c["page_bg"]) < 2.0:
+        c["heading"] = c["accent"] if _contrast(c["accent"], c["page_bg"]) >= 2.0 else _readable_on(c["page_bg"])
+    if _contrast(c["accent"], c["page_bg"]) < 2.0:      # accent is used for company names / bullets
         c["accent"] = c["heading"]
     venn = []
     for col in c.get("skill_colors") or []:              # white labels sit on these circles
@@ -711,11 +777,19 @@ def _sanitize_design(design: dict) -> dict:
     if design["layout"] == "single_column":
         design["main_sections"] = list(dict.fromkeys(design.get("sidebar_sections", []) + design["main_sections"]))
         design["sidebar_sections"] = []
-        if design["header"] == "sidebar_name":
+        if design["header"] in ("sidebar_name", "sidebar_photo"):
             design["header"] = "left_plain"
     elif not design.get("sidebar_sections"):
         design["sidebar_sections"] = ["contact", "skills", "education", "languages"]
-    design["main_sections"] = [s for s in design["main_sections"] if s not in design.get("sidebar_sections", [])]
+    if design["layout"] == "two_column":                  # two equal white columns: no sidebar colour
+        c["sidebar_bg"] = c["page_bg"]
+        design["sidebar_width"] = max(44, min(56, int(design.get("sidebar_width") or 50)))
+        if design["header"] in ("sidebar_name", "sidebar_photo"):
+            design["header"] = "full_band"
+    bottom = list(dict.fromkeys(design.get("bottom_sections") or []))
+    design["bottom_sections"] = bottom
+    design["sidebar_sections"] = [s for s in design.get("sidebar_sections", []) if s not in bottom]
+    design["main_sections"] = [s for s in design["main_sections"] if s not in design.get("sidebar_sections", []) and s not in bottom]
     return design
 
 
@@ -755,8 +829,16 @@ RULES
 - Write in standard resume voice with NO pronouns (no I/he/she/they/his/her) and don't start the profile with the person's name.
   e.g. "B.Tech CSE student at DTU building AI assistants..." — never guess gender.
 - You MAY polish wording, fix grammar, make bullets punchy and action-led, and write short descriptions that restate the user's facts.
-- Fill the design's sections when the user's facts support them (e.g. derive core competencies and key skills from their experience).
-- Keep it tight so it fits 1-2 A4 pages. Omit a field (empty string/list) when there is nothing true to put in it.
+- PROJECTS ARE NOT JOBS. Put projects in "projects" with their REAL names (e.g. "SmartFlex – AI-Powered Smart Classroom System"),
+  the tech line in "tech" and their points in "bullets" — even if the user lists them under an "Experience" heading.
+  "experience" is only for real jobs/internships the user states, with the role and organisation exactly as written.
+  Never fill a role with a generic title like "Full Stack Software Developer" that the user didn't write for that entry.
+- Say each fact ONCE. Don't repeat a project, award or bullet in highlights/achievements/competencies/profile bullets.
+- Only produce sections the user gave or the design lists. Never create highlights, competencies, interests or references
+  from nothing. Skip placeholder text without real values (e.g. "Links: LinkedIn / Portfolio / GitHub" with no URLs).
+- If the user wrote section headings or said which column a section goes in (e.g. "LEFT COLUMN: Contact, Skills"), copy
+  them into "section_titles" / "layout_hint" (keys from the shape below).
+- Keep all of the user's real content; wording should be tight (bullets <= 22 words). Omit a field when there is nothing true for it.
 Return exactly this JSON shape:
 {
  "name": "", "title": "<headline, e.g. 'Chief Branch Manager & Marketing Professional'>",
@@ -770,8 +852,13 @@ Return exactly this JSON shape:
  "education": [{"degree": "", "institution": "", "period": "", "details": ""}],
  "achievements": [""], "certifications": [""],
  "languages": [{"name": "", "level": <1-5>}], "interests": [""],
- "projects": [{"name": "", "description": ""}], "references": [""]
+ "projects": [{"name": "<real project name>", "tech": "<tech stack line, if given>", "period": "", "bullets": [""], "description": ""}],
+ "references": [""],
+ "section_titles": {"<section key>": "<heading the user explicitly wrote, e.g. 'Experience (Projects)'>"},
+ "layout_hint": {"sidebar": ["<section keys the user put in the side column>"], "main": ["<section keys for the main column>"]}
 }
+Section keys: profile, highlights, contact, skills, competencies, experience, education, achievements, certifications,
+languages, interests, projects, references.
 Icon keys: target, users, user, pie, bars, trending, refresh, handshake, compass, presentation, lightbulb, gear, book, megaphone, shield, star, clipboard, code, globe, money, briefcase, award, chat, clock, heart, cap."""
 
 
@@ -783,9 +870,11 @@ def _content_brief(design: dict) -> str:
     else:
         lines.append("List 5-8 skills with honest relative levels; extra ones go to additional_skills.")
     if "competencies" in secs:
-        lines.append("Write 6-8 competencies (even number) derived from the user's real work.")
+        lines.append("The design has a competencies block: write 4-6 competencies from the user's real work (only if it doesn't just repeat other sections).")
     if "highlights" in secs:
-        lines.append("Write 3-5 career highlights.")
+        lines.append("The design has career highlights: 3-4, but only facts not already shown elsewhere.")
+    if "experience" in secs and "projects" not in secs:
+        lines.append("The design has an Experience slot but no Projects slot: still put projects in 'projects' (they are shown in that slot).")
     return " ".join(lines)
 
 
@@ -869,14 +958,30 @@ def _normalise_content(c: dict) -> dict:
         if isinstance(x, str):
             x = {"name": x}
         if isinstance(x, dict) and x.get("name"):
-            projs.append({"name": str(x["name"]).strip(), "description": str(x.get("description") or "").strip()})
-    out["projects"] = projs[:6]
+            projs.append({"name": str(x["name"]).strip(), "tech": str(x.get("tech") or "").strip(),
+                          "period": str(x.get("period") or "").strip(), "bullets": _str_list(x.get("bullets"), 8),
+                          "description": str(x.get("description") or "").strip()})
+    out["projects"] = projs[:8]
     out["references"] = _str_list(c.get("references"), 4)
+    titles = c.get("section_titles") if isinstance(c.get("section_titles"), dict) else {}
+    out["section_titles"] = {k: str(v).strip()[:40] for k, v in titles.items() if k in SECTION_KEYS and str(v or "").strip()}
+    hint = c.get("layout_hint") if isinstance(c.get("layout_hint"), dict) else {}
+    out["layout_hint"] = {side: [k for k in (hint.get(side) or []) if k in SECTION_KEYS] for side in ("sidebar", "main")}
+    out["section_order"] = [k for k in (c.get("section_order") or []) if k in SECTION_KEYS]
     return out
 
 
 def _nums(text: str) -> set[str]:
-    return {n.replace(",", "") for n in re.findall(r"\d[\d,]*(?:\.\d+)?", text or "")}
+    out = set()
+    for n, k in re.findall(r"(\d[\d,]*(?:\.\d+)?)\s*([kKmM](?![a-zA-Z]))?", text or ""):
+        n = n.replace(",", "")
+        out.add(n)
+        if k:            # "30K" is the same fact as "30,000"
+            try:
+                out.add(str(int(float(n) * (1000 if k.lower() == "k" else 1_000_000))))
+            except ValueError:
+                pass
+    return out
 
 
 def _drop_invented(content: dict, source: str) -> dict:
@@ -902,6 +1007,7 @@ def _drop_invented(content: dict, source: str) -> dict:
         comp["description"] = clean_text(comp["description"])
     for proj in content["projects"]:
         proj["description"] = clean_text(proj["description"])
+        proj["bullets"] = [b for b in proj.get("bullets", []) if ok(b)]
     for edu in content["education"]:
         if not ok(edu["period"]):
             edu["period"] = ""
@@ -944,9 +1050,164 @@ def _guess_title(details: str) -> str:
     return m.group(1).strip().title() if m else ""
 
 
+_WORD_RX = re.compile(r"[a-z0-9+#]+")
+_STOP = {"and", "the", "a", "an", "of", "to", "in", "for", "with", "on", "at", "by", "using", "via", "from", "as", "into"}
+
+
+def _words(text: str) -> set[str]:
+    return {w for w in _WORD_RX.findall((text or "").lower()) if w not in _STOP and len(w) > 1}
+
+
+def _similar(a: str, b: str) -> float:
+    wa, wb = _words(a), _words(b)
+    if not wa or not wb:
+        return 0.0
+    return len(wa & wb) / min(len(wa), len(wb))
+
+
+# headings that show the user really gave a section (derived sections without these get dropped)
+_EXPLICIT_RX = {
+    "highlights": r"highlight|key\s+facts|at\s+a\s+glance", "competencies": r"competenc|expertise|strength|core\s+areas",
+    "interests": r"interest|hobb|passion", "references": r"reference|referee", "achievements": r"achievement|award|honou?r|accomplish|rank|percentile|runner|winner|prize",
+    "certifications": r"certif|course|licen|training", "languages": r"language|english|hindi|french|spanish|german|arabic",
+}
+
+
+def _finalize_content(content: dict, details: str, design: dict) -> dict:
+    """Deterministic clean-up after the LLM: invented job entries, repeated facts, sections nobody asked for."""
+    src = (details or "").lower()
+    src_norm = re.sub(r"\s+", " ", src)
+    # experience entries without an organisation whose role the user never wrote are projects in disguise
+    kept = []
+    for job in content["experience"]:
+        role = re.sub(r"\s+", " ", job["role"].lower()).strip()
+        if job["company"] or not role or role in src_norm:
+            kept.append(job)
+            continue
+        text = " ".join(job["bullets"])
+        if any(_similar(text, " ".join(pr.get("bullets", [])) + " " + pr.get("description", "")) > 0.5 for pr in content["projects"]):
+            continue                                   # already captured as a project
+        content["projects"].append({"name": job["role"], "tech": "", "period": job["period"], "bullets": job["bullets"], "description": ""})
+    content["experience"] = kept
+    # drop sections that neither the design nor the user's text has
+    design_secs = set(design.get("sidebar_sections", [])) | set(design.get("main_sections", [])) | set(design.get("bottom_sections") or [])
+    for key, rx in _EXPLICIT_RX.items():
+        if content.get(key) and key not in design_secs and not re.search(rx, src):
+            content[key] = []
+    if not re.search(_EXPLICIT_RX["competencies"], src) and content["competencies"] and "competencies" not in design_secs:
+        content["competencies"] = []
+    # each fact once: weaker sections lose items already said by stronger ones
+    strong = [b for j in content["experience"] for b in j["bullets"]] + \
+             [x for pr in content["projects"] for x in pr.get("bullets", []) + [pr.get("description", ""), pr["name"]]] + \
+             [e["degree"] + " " + e["details"] for e in content["education"]]
+    for key in ("achievements", "certifications"):
+        content[key] = [x for x in content[key] if not any(_similar(x, y) > 0.7 for y in strong)]
+        strong += content[key]
+    content["highlights"] = [x for x in content["highlights"] if not any(_similar(x, y) > 0.55 for y in strong)]
+    strong += content["highlights"]
+    content["competencies"] = [x for x in content["competencies"]
+                               if not any(_similar(x["title"] + " " + x["description"], y) > 0.75 for y in strong)]
+    for key in ("highlights", "achievements", "certifications", "additional_skills", "interests"):   # in-list repeats
+        uniq = []
+        for x in content[key]:
+            if not any(_similar(x, u) > 0.8 for u in uniq):
+                uniq.append(x)
+        content[key] = uniq
+    names = {s["name"].lower() for s in content["skills"]}
+    content["additional_skills"] = [x for x in content["additional_skills"] if x.lower() not in names]
+    # a heading the user wrote that covers two list sections ("Certifications & Achievements") → one list
+    titles = content.get("section_titles") or {}
+    for key in ("certifications", "achievements", "highlights", "interests"):
+        title = titles.get(key, "")
+        for other in ("certifications", "achievements", "highlights", "interests"):
+            if other != key and content.get(other) and other not in titles and re.search(_EXPLICIT_RX[other], title, re.I):
+                content[key] = content[key] + content[other]
+                content[other] = []
+    return content
+
+
+# UPPERCASE headings the user typed ("EXPERIENCE (PROJECTS)", "CERTIFICATIONS & ACHIEVEMENTS") → exact titles + order.
+# Pasted text often loses newlines ("CONTACTEmail:"), so only the known heading word (+ "(…)" / "& WORD") is taken.
+_HEADING_WORDS = {
+    "profile": r"PROFESSIONAL SUMMARY|SUMMARY|PROFILE|ABOUT ME|OBJECTIVE", "highlights": r"CAREER HIGHLIGHTS|HIGHLIGHTS",
+    "contact": r"CONTACT(?: DETAILS| INFO)?", "competencies": r"CORE COMPETENCIES|COMPETENCIES|EXPERTISE",
+    "skills": r"TECHNICAL SKILLS|SKILLS", "experience": r"WORK EXPERIENCE|PROFESSIONAL EXPERIENCE|EXPERIENCE|EMPLOYMENT",
+    "education": r"EDUCATION", "achievements": r"ACHIEVEMENTS|AWARDS|HONOU?RS", "certifications": r"CERTIFICATIONS?|COURSES",
+    "languages": r"LANGUAGES", "interests": r"INTERESTS|HOBBIES", "projects": r"PROJECTS", "references": r"REFERENCES",
+}
+_HEADING_RX = re.compile(r"(?<![A-Z])(" + "|".join(f"(?P<{k}>{v})" for k, v in _HEADING_WORDS.items()) +
+                         r")(\s*\([A-Z][A-Z &/]{1,30}\)|\s*(?:&|AND)\s*(?:" + "|".join(_HEADING_WORDS.values()) + r"))?")
+
+
+def _user_headings(details: str) -> tuple[dict, list]:
+    titles, order, spans = {}, [], []
+    for m in _HEADING_RX.finditer(details or ""):
+        if any(a <= m.start() < b for a, b in spans):
+            continue                                # "PROJECTS" inside "EXPERIENCE (PROJECTS)"
+        key = next(k for k in _HEADING_WORDS if m.group(k))
+        if key in titles:
+            continue
+        spans.append((m.start(), m.end()))
+        titles[key] = re.sub(r"\s+", " ", m.group(0)).strip()
+        order.append(key)
+    return titles, order
+
+
+def _restore_dropped(content: dict, details: str) -> dict:
+    """Fallback models sometimes silently drop a project's/job's points. Re-add any full sentence from that
+    entry's own block of the user's text that no bullet covers (verbatim — nothing invented)."""
+    src = details or ""
+    low = src.lower()
+    entries = [(pr, pr["name"]) for pr in content["projects"]] + [(j, j["company"] or j["role"]) for j in content["experience"]]
+    def where(n: str) -> int:              # exact case first: a lowercase mention in the summary isn't the entry
+        i = src.find(n)
+        return i if i >= 0 else low.find(n.lower())
+    starts = sorted({where(n) for _, n in entries if n and where(n) >= 0} | {m.start() for m in _HEADING_RX.finditer(src)})
+    for entry, name in entries:
+        if not name or not entry.get("bullets"):
+            continue
+        a = where(name)
+        if a < 0:
+            continue
+        b = next((x for x in starts if x > a), len(src))
+        block = src[a + len(name):b]
+        for sent in re.split(r"(?<=[.!?])\s+|\s{3,}|\n+", block):
+            sent = sent.strip(" -•\t")
+            if len(sent.split()) < 8 or not sent[:1].isupper() or not sent.endswith((".", "!")) or len(entry["bullets"]) >= 6:
+                continue
+            if not any(_similar(sent, x) > 0.5 for x in entry["bullets"]):
+                entry["bullets"].append(sent)
+    return content
+
+
+def _apply_layout_hint(design: dict, content: dict) -> dict:
+    """The user said which column a section goes in → that wins over the reference picture."""
+    hint = content.get("layout_hint") or {}
+    side, main = hint.get("sidebar") or [], hint.get("main") or []
+    if design["layout"] in ("single_column",) or not (side or main):
+        return design
+    d = json.loads(json.dumps(design))
+    for k in side:
+        for lst in ("main_sections", "bottom_sections"):
+            if k in (d.get(lst) or []):
+                d[lst].remove(k)
+    for k in main:
+        for lst in ("sidebar_sections", "bottom_sections"):
+            if k in (d.get(lst) or []):
+                d[lst].remove(k)
+    d["sidebar_sections"] = list(dict.fromkeys(side + [k for k in d["sidebar_sections"] if k not in side]))
+    d["main_sections"] = list(dict.fromkeys(main + [k for k in d["main_sections"] if k not in main]))
+    return d
+
+
 def _build_content(details: str, design: dict) -> dict:
     user = f"{_content_brief(design)}\n\nUSER DETAILS:\n{details.strip()[:12000]}"
     content = _drop_invented(_normalise_content(_llm_json(_CONTENT_SYSTEM, user)), details)
+    titles, order = _user_headings(details)
+    if len(order) >= 2:                              # the user's own headings & order are authoritative
+        content["section_titles"], content["section_order"] = titles, order
+    content = _finalize_content(content, details, design)
+    content = _restore_dropped(content, details)
     if not content["name"]:
         content["name"] = _guess_name(details)
     if not content["title"]:
@@ -1133,6 +1394,59 @@ def _experience_html(c: dict, d: dict, side: bool) -> str:
     return f'<div class="{"timeline" if d.get("timeline") else "jobs"}">{"".join(rows)}</div>'
 
 
+def _projects_html(c: dict, d: dict, side: bool) -> str:
+    edit = _EDIT.get()
+    rows, rich = [], any(x["bullets"] or x["tech"] for x in c["projects"])
+    for i, x in enumerate(c["projects"]):
+        p = f"projects.{i}"
+        if not rich:
+            desc = f'<div>{_f(p + ".description", x["description"], "description")}</div>' if (x["description"] or edit) else ""
+            rows.append(f'<div class="proj"{_it(p)}><b>{_f(p + ".name", x["name"], "project")}</b>{desc}</div>')
+            continue
+        tech = f'<div class="job-co">{_f(p + ".tech", x["tech"], "tech stack")}</div>' if (x["tech"] or edit) else ""
+        desc = f'<div class="proj-d">{_f(p + ".description", x["description"], "description")}</div>' if x["description"] else ""
+        bullets = "".join(f'<li{_it(f"{p}.bullets.{j}")}>{_f(f"{p}.bullets.{j}", b, "point")}</li>' for j, b in enumerate(x["bullets"]))
+        rows.append(f'<div class="job"{_it(p)}><div class="job-top"><div class="job-role">{_f(p + ".name", x["name"], "project")}</div>'
+                    f'<div class="job-period">{_f(p + ".period", x["period"], "period")}</div></div>{tech}{desc}'
+                    f'{f"<ul>{bullets}</ul>" if bullets else ""}</div>')
+    if not rows:
+        return ""
+    return f'<div class="{"timeline" if (rich and d.get("timeline")) else "jobs"}">{"".join(rows)}</div>'
+
+
+def _effective_design(c: dict, d: dict) -> dict:
+    """Per-content tweaks: projects take an empty Experience slot; headings the user wrote win."""
+    d = json.loads(json.dumps(d))
+    lists = [d.setdefault("sidebar_sections", []), d.setdefault("main_sections", []), d.get("bottom_sections") or []]
+    swapped = False
+    if c.get("projects") and not c.get("experience") and any("experience" in lst for lst in lists):
+        for lst in lists:                            # no real jobs: projects take the Experience slot
+            if "projects" in lst:
+                lst.remove("projects")
+        for lst in lists:
+            if "experience" in lst:
+                lst[lst.index("experience")] = "projects"
+                swapped = True
+                break
+    user_titles = dict(c.get("section_titles") or {})
+    if swapped and "projects" not in user_titles and user_titles.get("experience"):
+        user_titles["projects"] = user_titles.pop("experience")
+    order = list(c.get("section_order") or [])
+    if swapped and "experience" in order and "projects" not in order:
+        order[order.index("experience")] = "projects"
+    if order:                                        # the user's section order within each column
+        for name in ("sidebar_sections", "main_sections"):
+            lst = d[name]
+            d[name] = sorted(lst, key=lambda k: (order.index(k), 0) if k in order else (len(order), lst.index(k)))
+    if user_titles:
+        d["section_titles"] = {**(d.get("section_titles") or {}), **user_titles}
+    if c.get("layout_hint"):
+        d["pinned"] = list(dict.fromkeys((d.get("pinned") or []) + (c["layout_hint"].get("sidebar") or []) + (c["layout_hint"].get("main") or [])))
+        if swapped and "experience" in d["pinned"]:
+            d["pinned"].append("projects")
+    return d
+
+
 def _education_html(c: dict, d: dict, side: bool) -> str:
     edit = _EDIT.get()
     out = []
@@ -1155,8 +1469,10 @@ def _contact_html(c: dict, d: dict, side: bool) -> str:
     col = "var(--side-heading)" if side else "var(--heading)"
     rows = [(k, ic) for k, ic in (("phone", "phone"), ("email", "mail"), ("location", "pin"),
                                   ("linkedin", "linkedin"), ("website", "link")) if ct.get(k) or edit]
-    return "".join(f'<div class="ct"><span class="ct-ic">{_icon(ic, col, fill=col if ic == "phone" else "none")}</span>'
-                   f'<span class="ct-v">{_f("contact." + k, ct[k], k)}</span></div>' for k, ic in rows)
+    if not rows:
+        return ""
+    return '<div class="ct-wrap">' + "".join(f'<div class="ct"><span class="ct-ic">{_icon(ic, col, fill=col if ic == "phone" else "none")}</span>'
+                                             f'<span class="ct-v">{_f("contact." + k, ct[k], k)}</span></div>' for k, ic in rows) + "</div>"
 
 
 def _list_html(key: str, items: list[str], icon: str | None, side: bool) -> str:
@@ -1191,19 +1507,12 @@ def _section_html(key: str, c: dict, d: dict, side: bool) -> str:
     elif key == "certifications":
         inner = _list_html("certifications", c["certifications"], "award", side)
     elif key == "languages":
-        inner = "".join(
-            f'<div class="dot-row"{_it(f"languages.{i}")}><span>{_f(f"languages.{i}.name", x["name"], "language")}</span><span class="dot-set">' +
-            "".join(f'<i class="{"on" if k < x["level"] else ""}"></i>' for k in range(5)) + "</span></div>"
-            for i, x in enumerate(c["languages"]))
+        inner = _languages_html(c, d, side)
     elif key == "interests":
         inner = ('<div class="chips">' + "".join(f'<span{_it(f"interests.{i}")}>{_f(f"interests.{i}", x, "interest")}</span>'
                                                  for i, x in enumerate(c["interests"])) + "</div>") if c["interests"] else ""
     elif key == "projects":
-        out = []
-        for i, x in enumerate(c["projects"]):
-            desc = f'<div>{_f(f"projects.{i}.description", x["description"], "description")}</div>' if (x["description"] or edit) else ""
-            out.append(f'<div class="proj"{_it(f"projects.{i}")}><b>{_f(f"projects.{i}.name", x["name"], "project")}</b>{desc}</div>')
-        inner = "".join(out)
+        inner = _projects_html(c, d, side)
     elif key == "references":
         inner = _list_html("references", c["references"], None, side)
     else:
@@ -1241,11 +1550,158 @@ def _name_size(name: str, avail_mm: float, max_pt: float) -> float:
     return max(16.0, min(max_pt, avail_mm / (0.68 * 0.3528 * max(len(name), 6))))
 
 
+# ── Shapes & decorations (wave / curve / diagonal header band, footer, corner decor) ─────────────
+# Paths live in a 1000×300 box stretched over the element (preserveAspectRatio="none").
+_SHAPES = {
+    "wave": ("M0,0 H1000 V182 C860,262 700,92 500,152 C330,206 175,256 0,200 Z",
+             "M0,0 H1000 V212 C850,296 690,128 500,184 C320,238 170,284 0,230 Z"),
+    "curve": ("M0,0 H1000 V185 Q500,300 0,185 Z", "M0,0 H1000 V212 Q500,322 0,212 Z"),
+    "diagonal": ("M0,0 H1000 V115 L0,228 Z", "M0,0 H1000 V146 L0,258 Z"),
+}
+_FOOT_H = {"wave": 26, "curve": 20, "bar": 7}
+
+
+def _shape_svg(shape: str, cls: str, flip: bool = False) -> str:
+    main, back = _SHAPES.get(shape, _SHAPES["wave"])
+    tf = ' transform="translate(0,300) scale(1,-1)"' if flip else ""
+    return (f'<svg class="{cls}" viewBox="0 0 1000 300" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">'
+            f'<g{tf}><path d="{back}" fill="var(--primary)" fill-opacity="0.32"/><path d="{main}" fill="var(--primary)"/></g></svg>')
+
+
+def _shaped_header_html(c: dict, d: dict, photo_uri: str) -> str:
+    name = c["name"] or "Your Name"
+    ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar hd-avatar-lg")
+    pos = d.get("photo_position", "right") if ph else "none"
+    avail = 210 - 26 - (48 if ph and pos != "center" else 0)
+    return (f'<header class="hd-shape pos-{pos} al-{d.get("name_align", "center")}">{_shape_svg(d["header_shape"], "hd-svg")}'
+            f'<div class="hd-inner"><div class="hd-txt">{_name_block(c, d, _name_size(name, avail, 32))}</div>{ph}</div></header>')
+
+
+def _svg_bg(svg: str) -> str:
+    """CSS background for an SVG. Chromium repeats position:fixed elements on every printed page, but not
+    when they contain an inline <svg>, so footer/decor shapes must be background images (hex colours, no CSS vars)."""
+    from urllib.parse import quote
+    return f"background:url(\"data:image/svg+xml;charset=utf-8,{quote(svg)}\") no-repeat;background-size:100% 100%"
+
+
+def _footer_html(d: dict) -> str:
+    shape = d.get("footer_shape", "none")
+    if shape == "none":
+        return ""
+    if shape == "bar":
+        return '<div class="rb-foot rb-foot-bar"></div>'
+    col = d["colors"]["primary"]
+    main, back = _SHAPES.get(shape, _SHAPES["wave"])
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 300" preserveAspectRatio="none">'
+           f'<g transform="translate(0,300) scale(1,-1)"><path d="{back}" fill="{col}" fill-opacity="0.32"/>'
+           f'<path d="{main}" fill="{col}"/></g></svg>')
+    return f"<div class=\"rb-foot\" style='{_svg_bg(svg)}'></div>"
+
+
+def _decor_html(d: dict) -> str:
+    decor = d.get("decor", "none")
+    p, a = d["colors"]["primary"], d["colors"]["accent"]
+    if decor == "circles":
+        body = (f'<circle cx="205" cy="120" r="34" fill="{p}" fill-opacity="0.07"/>'
+                f'<circle cx="2" cy="230" r="46" fill="{p}" fill-opacity="0.06"/>'
+                f'<circle cx="190" cy="270" r="14" fill="{a}" fill-opacity="0.08"/>')
+    elif decor == "dots":
+        body = "".join(f'<circle cx="{180 + (i % 6) * 4.2:.1f}" cy="{96 + (i // 6) * 4.2:.1f}" r="0.8" fill="{p}" fill-opacity="0.35"/>'
+                       for i in range(36))
+    else:
+        return ""
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 297" preserveAspectRatio="none">{body}</svg>'
+    return f"<div class=\"rb-decor\" style='{_svg_bg(svg)}'></div>"
+
+
+def _languages_html(c: dict, d: dict, side: bool) -> str:
+    style = d.get("language_style", "dots")
+    langs = c["languages"]
+    if not langs:
+        return ""
+    if style == "bars":
+        fg = "var(--side-accent)" if side else "var(--primary)"
+        return '<div class="bars lang-bars">' + "".join(
+            f'<div class="lang-row"{_it(f"languages.{i}")}><span class="lang-n">{_f(f"languages.{i}.name", x["name"], "language")}</span>'
+            f'<div class="bar-t lang-t"><div class="bar-f" style="width:{x["level"] * 20}%;background:{fg}"></div></div></div>'
+            for i, x in enumerate(langs)) + "</div>"
+    if style == "text":
+        words = {5: "Native / Fluent", 4: "Professional", 3: "Intermediate", 2: "Basic", 1: "Beginner"}
+        return "".join(f'<div class="lang-txt"{_it(f"languages.{i}")}><b>{_f(f"languages.{i}.name", x["name"], "language")}</b>'
+                       f' — {words.get(x["level"], "")}</div>' for i, x in enumerate(langs))
+    sq = " sq" if style == "squares" else ""
+    return "".join(
+        f'<div class="dot-row"{_it(f"languages.{i}")}><span>{_f(f"languages.{i}.name", x["name"], "language")}</span><span class="dot-set{sq}">' +
+        "".join(f'<i class="{"on" if k < x["level"] else ""}"></i>' for k in range(5)) + "</span></div>"
+        for i, x in enumerate(langs))
+
+
+def _css_extra(d: dict, scale: float) -> str:
+    """CSS for the newer design vocabulary (kept apart from _css so older designs render identically)."""
+    c = d["colors"]
+    foot = d.get("footer_shape", "none")
+    foot_h = _FOOT_H.get(foot, 0)
+    track = c.get("track") or ""
+    hs = d["heading_style"]
+    marker = ""
+    if hs in ("square_icon", "dot"):
+        radius = "50%" if hs == "dot" else "1px"
+        marker = (f'.sec h2::before{{content:"";display:inline-block;width:.74em;height:.74em;background:var(--primary);'
+                  f'border-radius:{radius};margin-right:2.6mm;vertical-align:-.06em}}'
+                  f'aside .sec h2::before{{background:var(--side-accent)}}')
+    ring = ("box-shadow:0 0 0 1.6mm var(--page),0 0 0 2.5mm var(--primary);" if d.get("photo_ring") else "")
+    band = c.get("band") or _mix(c["page_bg"], "#000000", 0.05)
+    out = [marker]
+    out.append(f"""
+.hd-shape{{position:relative;height:calc(70mm*(0.45 + 0.55*var(--s)))}}
+.hd-svg{{position:absolute;inset:0;width:100%;height:100%;display:block}}
+.hd-inner{{position:relative;display:flex;align-items:flex-start;justify-content:space-between;gap:6mm;padding:8mm 13mm 0}}
+.hd-shape .hd-txt{{flex:1;color:var(--on-primary);padding-top:1mm}}
+.hd-shape.al-center .hd-txt{{text-align:center}}
+.hd-shape.pos-left .hd-inner{{flex-direction:row-reverse}}
+.hd-shape.pos-center .hd-inner{{flex-direction:column;align-items:center}}
+.hd-shape .ttl{{opacity:.95}}
+.hd-avatar-lg{{width:calc(40mm*(0.6 + 0.4*var(--s)));height:calc(40mm*(0.6 + 0.4*var(--s)));border:0!important;{ring}margin-top:1mm}}
+.hd-band.pos-right{{flex-direction:row-reverse;justify-content:space-between}}
+.hd-avatar{{{ring}}}
+.rb-foot{{position:fixed;left:0;right:0;bottom:0;height:{foot_h}mm;z-index:0}}
+.rb-foot-bar{{background:var(--primary)}}
+.rb-decor{{position:fixed;inset:0;z-index:0;pointer-events:none}}
+.lay-two_column aside{{padding:7mm 6mm 10mm 13mm}} .lay-two_column main{{padding:7mm 13mm 10mm 6mm}}
+.lay-two_column .side-bg{{display:none}}
+.bottom{{position:relative;z-index:1;padding:2mm 13mm 6mm}}
+.bottom .sec{{margin-bottom:3mm}}
+.bottom .sec-contact{{display:flex;align-items:center;gap:10mm;flex-wrap:wrap}}
+.bottom .sec-contact h2{{margin:0}}
+.bottom .ct-wrap{{display:grid;grid-template-columns:auto auto;gap:2mm 12mm}}
+.lang-row{{display:flex;align-items:center;gap:4mm;margin-bottom:2.4mm}}
+.lang-n{{width:22mm;flex:none;color:var(--accent);font-weight:500}}
+.lang-bars .lang-t{{flex:1;height:1.6mm;{f"background:{track}!important;" if track else ""}}}
+.lang-txt{{margin-bottom:1.6mm}}
+.dot-set.sq i{{border-radius:1px}}
+.proj-d{{margin-bottom:1mm}}
+.main-top{{margin:-8mm -9mm 7mm;padding:10mm 9mm 8mm;background:{band};text-align:center}}
+.main-top .nm{{color:var(--heading)}}
+.main-top .ttl{{color:var(--text);letter-spacing:2.2px;font-weight:500;margin-top:3.5mm;font-size:calc(10.5pt*var(--s))}}
+.side-top.photo-only{{margin-bottom:8mm}}
+.side-top.photo-only .hd-avatar{{width:38mm;height:38mm;border:2.5mm solid #ffffff;margin:0 auto}}
+""".replace("{band}", band))
+    if foot_h:   # keep text clear of the footer shape on every page
+        # columns always keep footer clearance (cloned at every page break); a bottom strip is pulled up into it
+        out.append(f"aside,main{{padding-bottom:calc({foot_h}mm + 8mm)!important}}"
+                   f".bottom{{margin-top:calc(-{foot_h}mm - 4mm);padding-bottom:calc({foot_h}mm + 6mm)}}")
+    if track:
+        out.append(f".bars .bar-t{{background:{_mix(track, c['page_bg'], 0.82)}!important}}")
+    return "".join(out)
+
+
 def _header_html(c: dict, d: dict, photo_uri: str) -> str:
     h, sw = d["header"], d.get("sidebar_width", 32) if d["layout"] != "single_column" else 0
     name = c["name"] or "Your Name"
-    if h == "sidebar_name":
+    if h in ("sidebar_name", "sidebar_photo"):
         return ""
+    if h == "full_band" and d.get("header_shape", "flat") != "flat":
+        return _shaped_header_html(c, d, photo_uri)
     if h == "diagonal_banner":
         ph = _photo_html(photo_uri, name, "square" if d["photo"] != "none" else "none", "hd-photo")
         width_pct = sw if (ph and sw) else (30 if ph else 0)
@@ -1255,7 +1711,7 @@ def _header_html(c: dict, d: dict, photo_uri: str) -> str:
     if h == "full_band":
         ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
         avail = 210 - 24 - (40 if ph else 0)
-        return f'<header class="hd-band">{ph}<div class="hd-txt">{_name_block(c, d, _name_size(name, avail, 32))}</div></header>'
+        return f'<header class="hd-band pos-{d.get("photo_position", "left")}">{ph}<div class="hd-txt">{_name_block(c, d, _name_size(name, avail, 32))}</div></header>'
     if h == "centered":
         ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
         return f'<header class="hd-center">{ph}{_name_block(c, d, _name_size(name, 170, 30))}</header>'
@@ -1278,7 +1734,7 @@ def _css(d: dict, scale: float) -> str:
         "boxed": "display:inline-block;background:var(--primary);color:var(--on-primary)!important;padding:1.2mm 3.2mm;border-radius:2px;",
         "caps_line": "letter-spacing:2.2px;border-bottom:1px solid var(--rule);padding-bottom:1.2mm;display:block;",
         "plain": "",
-    }[hs]
+    }.get(hs, "")      # square_icon / dot markers come from _css_extra
     side_h2_fix = "aside .sec h2{border-left-color:var(--side-accent)}" if hs == "bar_left" else ""
     if hs == "boxed":
         side_h2_fix = "aside .sec h2{background:var(--side-accent);color:%s!important}" % _readable_on(side_accent)
@@ -1387,7 +1843,7 @@ def _placement(d: dict) -> tuple[list[str], list[str]]:
     lay = d["layout"]
     side_secs = list(d.get("sidebar_sections", [])) if lay != "single_column" else []
     main_secs = list(d.get("main_sections", []))
-    placed = set(side_secs) | set(main_secs)
+    placed = set(side_secs) | set(main_secs) | set(d.get("bottom_sections") or [])
     for key in SECTION_KEYS:      # anything with content but no slot in the design still gets printed
         if key not in placed:
             (side_secs if (lay != "single_column" and key in _SIDEBAR_FRIENDLY - {"skills", "profile"}) else main_secs).append(key)
@@ -1403,6 +1859,7 @@ def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: boo
 
 
 def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
+    d = _effective_design(c, d)
     _, _, gfont = _FONTS.get(d["font"], _FONTS["sans"])
     lay = d["layout"]
     side_secs, main_secs = _placement(d)
@@ -1413,11 +1870,21 @@ def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
         name = c["name"] or "Your Name"
         avail = 210 * d.get("sidebar_width", 32) / 100 - 14
         top = f'<div class="side-top">{_photo_html(photo_uri, name, d["photo"], "hd-avatar")}{_name_block(c, d, _name_size(name, avail * 1.5, 22))}</div>'
+    elif d["header"] == "sidebar_photo" and lay != "single_column":
+        name = c["name"] or "Your Name"
+        ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
+        top = f'<div class="side-top photo-only">{ph}</div>' if ph else ""
+        avail = 210 * (100 - d.get("sidebar_width", 32)) / 100 - 24
+        main_html = f'<div class="main-top">{_name_block(c, d, _name_size(name, avail, 26))}</div>' + main_html
     body = (f'<div class="cols"><main>{main_html}</main></div>' if lay == "single_column" else
             f'<div class="side-bg"></div><div class="cols"><aside>{top}{side_html}</aside><main>{main_html}</main></div>')
+    bottom_html = "".join(_section_html(k, c, d, False) for k in d.get("bottom_sections") or [])
+    if bottom_html:
+        body += f'<div class="bottom">{bottom_html}</div>'
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{_e(c["name"] or "Resume")} — Resume</title>'
             f'<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family={gfont}&display=swap" rel="stylesheet">'
-            f'<style>{_css(d, scale)}</style></head><body class="lay-{lay}">{_header_html(c, d, photo_uri)}{body}</body></html>')
+            f'<style>{_css(d, scale)}{_css_extra(d, scale)}</style></head><body class="lay-{lay}">'
+            f'{_decor_html(d)}{_footer_html(d)}{_header_html(c, d, photo_uri)}{body}</body></html>')
 
 
 def _data_uri(path: str) -> str:
@@ -1437,7 +1904,42 @@ def _launch(pw):
         return pw.chromium.launch(headless=True, channel="msedge")
 
 
-def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
+_SECTION_HEIGHTS_JS = r"""Array.from(document.querySelectorAll('aside > .sec, main > .sec')).map(e => {
+  const m = e.className.match(/sec-(\w+)/);
+  return [m ? m[1] : '', e.getBoundingClientRect().height + parseFloat(getComputedStyle(e).marginBottom || 0)];
+})"""
+
+
+def _balance_columns(wd: dict, measured: list) -> bool:
+    """Greedy: move the section that most reduces the taller column, until no move helps. Profile stays put."""
+    h = {k: float(v) for k, v in measured if k}
+    left = [k for k in wd["sidebar_sections"] if k in h]
+    right = [k for k in wd["main_sections"] if k in h]
+    changed = False
+    for _ in range(10):
+        hl, hr = sum(h[k] for k in left), sum(h[k] for k in right)
+        src, dst = (left, right) if hl > hr else (right, left)
+        best_k, best_max = None, max(hl, hr) - 15
+        for k in src:
+            if k == "profile" or k in (wd.get("pinned") or []):
+                continue
+            new_max = max(hl - h[k], hr + h[k]) if src is left else max(hl + h[k], hr - h[k])
+            if new_max < best_max:
+                best_k, best_max = k, new_max
+        if not best_k:
+            break
+        src.remove(best_k)
+        dst.append(best_k)
+        changed = True
+    if changed:
+        rest_l = [k for k in wd["sidebar_sections"] if k not in h]
+        rest_r = [k for k in wd["main_sections"] if k not in h]
+        wd["sidebar_sections"], wd["main_sections"] = left + rest_l, right + rest_r
+    return changed
+
+
+def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: int | None = None,
+                  start_scale: float = 1.0) -> dict:
     """HTML → PDF (auto-shrinks to avoid a nearly-empty last page) → PNG previews."""
     from playwright.sync_api import sync_playwright
     os.makedirs(OUT_DIR, exist_ok=True)
@@ -1445,7 +1947,7 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
     pdf_path = os.path.join(OUT_DIR, stem + ".pdf")
     html_path = os.path.join(OUT_DIR, stem + ".html")
     import fitz
-    wd = json.loads(json.dumps(d))       # working copy: sections may be moved between columns to fit
+    wd = _effective_design(c, d)         # working copy: sections may be moved between columns to fit
     if wd["layout"] != "single_column":
         wd["sidebar_sections"], wd["main_sections"] = _placement(wd)
     moved: set[str] = set()              # never move a section back (stops ping-pong)
@@ -1455,8 +1957,11 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
         try:
             page = browser.new_page(viewport={"width": 794, "height": 1123})
             page.emulate_media(media="print")
-            scale, html, pdf_bytes, moves = 1.0, "", b"", 0
-            for _ in range(8):
+            scale, html, pdf_bytes, moves = start_scale, "", b"", 0
+            min_scale = 0.74 if target_pages else 0.79   # a page target allows slightly smaller type
+            best = None                          # (score, pdf_bytes, html) — a later attempt can be worse
+            balanced = False
+            for _ in range(14):
                 html = _render_html(c, wd, photo_uri, scale)
                 page.set_content(html, wait_until="domcontentloaded")
                 try:
@@ -1475,18 +1980,44 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
                 doc.close()
                 if os.environ.get("RESUME_DEBUG"):
                     print(f"[resume] fit: pages={pages} fill={fill:.2f} scale={scale:.2f} side={wd.get('sidebar_sections')} main={wd.get('main_sections')}")
-                if pages == 1 or (pages == 2 and fill > 0.45):
+                # one readable page beats everything; otherwise prefer a well-filled second page
+                # on two pages: a non-trivial page 2 first, then columns that end at similar heights
+                cols_h = page.evaluate("[document.querySelector('aside')?.scrollHeight||0, document.querySelector('main')?.scrollHeight||0]")
+                imbalance = round(abs(cols_h[0] - cols_h[1]) / 60) if wd["layout"] != "single_column" else 0
+                if target_pages and pages <= target_pages:
+                    score = (3, scale, fill)               # meets the user's page target: biggest type wins
+                else:
+                    score = (2, scale) if pages == 1 else ((1, fill >= 0.2, -imbalance, fill) if pages == 2 else (0, -pages))
+                if best is None or score > best[0]:
+                    best = (score, pdf_bytes, html)
+                if pages == 1 or (target_pages and pages <= target_pages):
                     break
+                # 0) equal columns: measure every section once and even the columns out in one pass
+                if wd["layout"] == "two_column" and not balanced:
+                    balanced = True
+                    if _balance_columns(wd, page.evaluate(_SECTION_HEIGHTS_JS)):
+                        continue
+                # a bottom strip (e.g. contact row) alone on page 2 → fold it into the shorter column
+                if pages == 2 and fill < 0.1 and wd.get("bottom_sections") and wd["layout"] != "single_column":
+                    side_h, main_h = page.evaluate("[document.querySelector('aside')?.scrollHeight||0, document.querySelector('main')?.scrollHeight||0]")
+                    wd["sidebar_sections" if side_h <= main_h else "main_sections"].extend(wd["bottom_sections"])
+                    wd["bottom_sections"] = []
+                    continue
+                good_two = pages == 2 and fill > 0.45 and not target_pages   # acceptable, but still even out the columns
                 # 1) move a section from the end of the longer column to the shorter one
                 if wd["layout"] != "single_column" and moves < 4:
                     side_h, main_h = page.evaluate("[document.querySelector('aside')?.scrollHeight||0, document.querySelector('main')?.scrollHeight||0]")
-                    if side_h + 60 < main_h:
-                        movable = [k for k in reversed(wd["main_sections"]) if k in _SIDEBAR_FRIENDLY - {"skills", "profile"}
+                    thr = 150 if good_two else 60
+                    pinned = set(wd.get("pinned") or [])
+                    to_side = (lambda k: k not in pinned) if wd["layout"] == "two_column" else \
+                        (lambda k: k in _SIDEBAR_FRIENDLY - {"skills", "profile"} and k not in pinned)
+                    if side_h + thr < main_h:
+                        movable = [k for k in reversed(wd["main_sections"]) if to_side(k)
                                    and k not in moved and _section_html(k, c, wd, True)]
                         src, dst = "main_sections", "sidebar_sections"
-                    elif main_h + 60 < side_h:
+                    elif main_h + thr < side_h:
                         movable = [k for k in reversed(wd["sidebar_sections"]) if k not in ("contact", "profile")
-                                   and k not in moved and _section_html(k, c, wd, False)]
+                                   and k not in moved and k not in pinned and _section_html(k, c, wd, False)]
                         src, dst = "sidebar_sections", "main_sections"
                     else:
                         movable = []
@@ -1496,12 +2027,24 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
                         moved.add(movable[0])
                         moves += 1
                         continue
+                if good_two:
+                    break
                 # 2) otherwise shrink the type a little
-                if scale - 0.04 < 0.8:
+                if scale - 0.04 < min_scale:
                     break
                 scale -= 0.04
+            try:
+                cols_h = page.evaluate("[document.querySelector('aside')?.scrollHeight||0, document.querySelector('main')?.scrollHeight||0]")
+            except Exception:
+                cols_h = [0, 0]
         finally:
             browser.close()
+    if wd["layout"] == "single_column":
+        long_col = list(wd["main_sections"])
+    else:
+        long_col = list(wd["main_sections"] if cols_h[1] >= cols_h[0] else wd["sidebar_sections"])
+    if best:
+        pdf_bytes, html = best[1], best[2]
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
     with open(html_path, "w", encoding="utf-8") as f:
@@ -1521,7 +2064,122 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
     except Exception as e:
         print(f"[resume] preview failed: {e}")
         n_pages = 0
-    return {"pdf": pdf_path, "html": html_path, "pngs": pngs, "pages": n_pages}
+    return {"pdf": pdf_path, "html": html_path, "pngs": pngs, "pages": n_pages, "long_column": long_col}
+
+
+# ── Strict page target ("single page resume", "2 pages") ─────────────────────────────────────────
+_PAGES_RX = re.compile(r"\b(one|single|1|two|2|three|3)[\s-]*pages?\b|\bpages?\s*(?:limit|count)?\s*[:=]?\s*(1|2|3)\b|\bone[\s-]?pager\b", re.I)
+
+
+def _parse_pages(text: str) -> int | None:
+    m = _PAGES_RX.search(text or "")
+    if not m:
+        return None
+    if "pager" in m.group(0).lower():
+        return 1
+    word = (m.group(1) or m.group(2) or "").lower()
+    return {"one": 1, "single": 1, "1": 1, "two": 2, "2": 2, "three": 3, "3": 3}.get(word)
+
+
+_CONDENSE_SYSTEM = """You shorten resumes to fit a page limit. Return the FULL resume JSON in the same shape.
+- Keep every real section, job, project, degree and award — shorten wording instead of deleting facts where possible.
+- Only shorten the sections listed as TOO LONG; return the others exactly as they are.
+- When a bullet must go, drop the most generic one; keep bullets with results, numbers or awards.
+- Copy every number exactly as written (30,000+, 99.05, 5%) — never abbreviate or round them.
+- Bullets: at most 3 per entry, each <= 14 words. Profile: one paragraph <= 40 words. Descriptions <= 18 words.
+- If it still can't fit, drop the least important items first (extra skills, minor bullets, duplicate points).
+- NEVER invent anything or add numbers that aren't already in the JSON. Keep section_titles and layout_hint unchanged."""
+
+
+def _condense_content(content: dict, target: int, pages: int, long_keys: list | None = None) -> dict:
+    keys = [k for k in (long_keys or SECTION_KEYS) if k != "contact"]
+    user = (f"The resume currently prints on {pages} A4 page(s); it MUST fit on {target}. "
+            f"TOO LONG sections: {', '.join(keys)}. Cut roughly {max(15, int(100 * (pages - target) / max(pages, 1)))}% "
+            f"of their text.\n\nRESUME JSON:\n" + json.dumps(content, ensure_ascii=False))
+    try:
+        data = _llm_json(_CONDENSE_SYSTEM, user)
+    except Exception as e:
+        print(f"[resume] condense failed: {e}")
+        return content
+    out = _drop_invented(_normalise_content(data), json.dumps(content, ensure_ascii=False))
+    for k in ("section_titles", "layout_hint"):
+        out[k] = content.get(k) or out.get(k)
+    for k in SECTION_KEYS:                       # columns that weren't overflowing stay untouched
+        if k not in keys and k in content:
+            out[k] = content[k]
+    if "skills" not in keys:
+        out["additional_skills"] = content["additional_skills"]
+    if not out["name"]:
+        out["name"], out["title"], out["contact"] = content["name"], content["title"], content["contact"]
+    return out if (out["experience"] or out["projects"] or out["profile"]) else content
+
+
+def _cap_bullets(c: dict, n: int) -> bool:
+    changed = False
+    for e in c["experience"] + c["projects"]:
+        if len(e.get("bullets", [])) > n:
+            e["bullets"] = e["bullets"][:n]
+            changed = True
+    return changed
+
+
+def _cap(c: dict, key: str, n: int) -> bool:
+    if len(c.get(key) or []) > n:
+        c[key] = c[key][:n]
+        return True
+    return False
+
+
+def _short_profile(c: dict, words: int) -> bool:
+    text = " ".join(c["profile"])
+    if len(text.split()) <= words and len(c["profile"]) <= 1:
+        return False
+    sentences, out = re.split(r"(?<=[.!?])\s+", text), []
+    for snt in sentences:
+        if out and len(" ".join(out + [snt]).split()) > words:
+            break
+        out.append(snt)
+    c["profile"] = [" ".join(out)]
+    return True
+
+
+# least important first; each step returns True if it changed something
+_TRIM_STEPS = [
+    lambda c: _cap(c, "references", 0), lambda c: _cap(c, "interests", 0), lambda c: _short_profile(c, 60),
+    lambda c: _cap_bullets(c, 3), lambda c: _cap(c, "highlights", 2), lambda c: _cap(c, "competencies", 4),
+    lambda c: _cap(c, "additional_skills", 8), lambda c: _cap(c, "skills", 7), lambda c: _short_profile(c, 40),
+    lambda c: _cap_bullets(c, 2), lambda c: _cap(c, "certifications", 3), lambda c: _cap(c, "achievements", 3),
+    lambda c: _cap(c, "highlights", 0), lambda c: _cap(c, "competencies", 0), lambda c: _cap(c, "additional_skills", 4),
+    lambda c: _cap(c, "education", 2), lambda c: _short_profile(c, 25), lambda c: _cap_bullets(c, 1),
+]
+
+
+def _fit_render(content: dict, design: dict, photo: str, stem: str, target: int | None):
+    """Render; with a page target, shrink → AI-condense → trim until it fits. Returns (files, content, note)."""
+    files = _render_files(content, design, photo, stem, target)
+    if not target or files["pages"] <= target:
+        return files, content, ""
+    content = _condense_content(json.loads(json.dumps(content)), target, files["pages"], files.get("long_column"))
+    files = _render_files(content, design, photo, stem, target, start_scale=0.92)
+    note = "condensed the wording"
+    trimmed = 0
+    for step in _TRIM_STEPS:
+        if files["pages"] <= target:
+            break
+        before = json.loads(json.dumps(content))
+        if step(content):
+            changed = [k for k in SECTION_KEYS if content.get(k) != before.get(k)] + \
+                      (["skills"] if content["additional_skills"] != before["additional_skills"] else [])
+            if not set(changed) & set(files.get("long_column") or SECTION_KEYS):
+                content = before                     # that section isn't in the overflowing column
+                continue
+            trimmed += 1
+            files = _render_files(content, design, photo, stem, target, start_scale=0.86)
+    if trimmed:
+        note += " and trimmed the least important items"
+    if files["pages"] > target:
+        note += f" — still {files['pages']} pages, the content is too long for {target}"
+    return files, content, note
 
 
 # ── Visual editor (/resume/editor) ───────────────────────────────────────────────────────────────
@@ -1541,7 +2199,8 @@ _ITEM_TEMPLATES = {
                    "bullets": ["What you achieved there"]},
     "education": {"degree": "Degree / course", "institution": "Institution", "period": "", "details": ""},
     "languages": {"name": "Language", "level": 4},
-    "projects": {"name": "Project name", "description": "What it does and your role."},
+    "projects": {"name": "Project name", "tech": "Tech stack", "period": "", "bullets": ["What you built and the result"],
+                 "description": ""},
 }
 _ADDABLE = ["profile", "highlights", "skills", "competencies", "experience", "education", "projects",
             "achievements", "certifications", "languages", "interests", "references"]
@@ -1550,7 +2209,7 @@ _EDITOR_CSS = """
 <style id="rb-editor-css">
 html{background:#2f333b!important}
 body{position:relative;margin:76px auto 60px!important;box-shadow:0 8px 44px rgba(0,0,0,.5);min-height:297mm}
-.side-bg{position:absolute!important}
+.side-bg,.rb-foot,.rb-decor{position:absolute!important}
 body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:40;
  background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(297mm - 2px),rgba(239,68,68,.8) calc(297mm - 2px),rgba(239,68,68,.8) 297mm)}
 [data-f]{outline:none;border-radius:2px;cursor:text;transition:background .12s,box-shadow .12s;display:inline;padding:0 1px}
@@ -1645,7 +2304,9 @@ _EDITOR_JS = """
     send({op: {action: b.dataset.a, path: hot.dataset.item}}, true);
   });
 
-  $('#rb-save').onclick = () => send({export: true}, false);
+  $('#rb-save').onclick = async () => { const j = await send({export: true}, false);
+    if (j && j.reload) { try { sessionStorage.setItem('rbScroll', String(window.scrollY)); } catch(e) {} setTimeout(() => location.reload(), 1500); } };
+  $('#rb-pages').onchange = e => send({target_pages: e.target.value}, false);
   document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); send({export: true}, false); } });
   $('#rb-tpl').onchange = e => { if (e.target.value) send({template: e.target.value}, true); };
   $('#rb-color').onchange = e => send({color: e.target.value}, true);
@@ -1672,6 +2333,9 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
     tpl = "".join(f'<option value="{k}" title="{_e(v)}">{k.title()}</option>' for k, v in PRESET_BLURBS.items())
     empty = [k for k in _ADDABLE if not content.get(k)]
     add = "".join(f'<option value="{k}">{_e(DEFAULT_TITLES[k])}</option>' for k in empty)
+    tp = state.get("target_pages")
+    pages_opts = "".join(f'<option value="{v}"{" selected" if str(tp or "") == v else ""}>{lbl}</option>'
+                         for v, lbl in (("", "Pages: auto"), ("1", "Fit 1 page"), ("2", "Fit 2 pages")))
     pdf = state.get("last_pdf") or ""
     last = (f'Last PDF: <a href="{MEDIA_URL}/{_e(os.path.basename(pdf))}" target="_blank">open</a>'
             if pdf and os.path.exists(pdf) else "Click any text to edit it")
@@ -1683,6 +2347,7 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
             f'<button id="rb-nophoto" title="Remove the photo block">No photo</button>'
             f'<input type="text" id="rb-ai" placeholder="Ask AI, e.g. make bullets punchier">'
             f'<button id="rb-ai-go">✨ Apply</button>'
+            f'<select id="rb-pages" title="Strict page limit for the PDF">{pages_opts}</select>'
             f'<button id="rb-save" class="primary">💾 Save &amp; export PDF</button>'
             f'<span id="rb-status">{last}</span></div>'
             f'<div id="rb-ctl"><button data-a="add" title="Add an item below">＋</button>'
@@ -1770,6 +2435,10 @@ def editor_save(payload: dict) -> dict:
         if payload.get("instruction"):
             content = _edit_content(content, str(payload["instruction"]))
             note = "AI edit applied."
+        if "target_pages" in payload:
+            tp = str(payload.get("target_pages") or "")
+            st["target_pages"] = int(tp) if tp in ("1", "2", "3") else None
+            note = f"Page target: {st['target_pages'] or 'auto'}."
 
         st.update({"content": content, "design": design, "awaiting_details": False, "updated": time.time()})
         _save_state(st)
@@ -1778,14 +2447,18 @@ def editor_save(payload: dict) -> dict:
 
         slug = re.sub(r"[^a-z0-9]+", "_", (content.get("name") or "resume").lower()).strip("_")[:30] or "resume"
         photo = st.get("photo") if st.get("photo") and os.path.exists(st["photo"]) else ""
-        files = _render_files(content, design, photo, f"resume_{slug}_{int(time.time())}")
+        target = st.get("target_pages")
+        files, fitted, fit_note = _fit_render(content, design, photo, f"resume_{slug}_{int(time.time())}", target)
+        if fitted is not content:
+            st["content"] = fitted
         st["last_pdf"] = files["pdf"]
         _save_state(st)
         pdf_url = f"{MEDIA_URL}/{os.path.basename(files['pdf'])}"
         return {"ok": True, "reload": False, "pdf_url": pdf_url,
                 "png_urls": [f"{MEDIA_URL}/{os.path.basename(p)}" for p in files["pngs"]],
+                "reload": bool(fit_note),            # fitting changed the text -> show it in the editor
                 "message": f"PDF exported ({files['pages']} page(s)).",
-                "message_html": f'✅ PDF exported ({files["pages"]} page(s)) — <a href="{pdf_url}" target="_blank">open PDF</a>'}
+                "message_html": f'✅ PDF exported ({files["pages"]} page(s)){" — " + _e(fit_note) if fit_note else ""} — <a href="{pdf_url}" target="_blank">open PDF</a>'}
     except Exception as e:
         import traceback
         traceback.print_exc()
@@ -1942,10 +2615,12 @@ def list_resume_templates() -> str:
 
 # ── Tool entry point ────────────────────────────────────────────────────────────────────────────
 def create_resume(details: str = "", image_path: str = "", photo_path: str = "", template: str = "", color: str = "",
-                  instruction: str = "", reuse_photo: bool = False, open_file: bool = False):
+                  instruction: str = "", reuse_photo: bool = False, open_file: bool = False, pages: int | None = None):
     """Generator: progress lines, then markdown with PNG preview(s) + PDF/HTML links."""
     try:
         state = _load_state()
+        # "single page resume" / "fit it in 2 pages" -> strict page target (looked for in the request part only)
+        pages = pages or _parse_pages((details or instruction or "")[:300])
         tags_img, tags_photo = _split_images(details or instruction or "")
         image_path = image_path or tags_img
         photo_path = photo_path or tags_photo
@@ -1980,6 +2655,7 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         elif has_new_details:
             yield "✍️ Structuring your details into resume sections…\n\n"
             content = _build_content(clean_details or details, design)
+            design = _apply_layout_hint(design, content)        # "LEFT COLUMN: Contact, Skills" beats the picture
         elif state.get("content") and (image_path or template or color or re.search(r"\b(again|same|my)\b", details.lower())):
             content = state["content"]
         if not content or not (content.get("name") or content.get("experience") or content.get("profile")):
@@ -1997,16 +2673,17 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         ref_for_photo = image_path or state.get("ref_image", "")
         if not photo and (reuse_photo or state.get("reuse_photo")) and ref_for_photo:
             photo = _crop_photo(ref_for_photo, design.get("photo_bbox"))
-        if not photo and not (image_path or photo_path) and state.get("photo") and os.path.exists(state["photo"]):
-            photo = state["photo"]
+        if not photo and state.get("photo") and os.path.exists(state["photo"]) and design.get("photo") != "none":
+            photo = state["photo"]                       # the user's own photo carries over to new designs
 
         # 4) Render
-        yield "🖨️ Typesetting and rendering the PDF…\n\n"
+        target = pages or (None if has_new_details else state.get("target_pages"))
+        yield ("🖨️ Typesetting and rendering the PDF" + (f" (strictly {target} page{'s' if target > 1 else ''})" if target else "") + "…\n\n")
         slug = re.sub(r"[^a-z0-9]+", "_", (content.get("name") or "resume").lower()).strip("_")[:30] or "resume"
         stem = f"resume_{slug}_{int(time.time())}"
-        files = _render_files(content, design, photo, stem)
+        files, content, fit_note = _fit_render(content, design, photo, stem, target)
 
-        state.update({"design": design, "content": content, "awaiting_details": False, "photo": photo,
+        state.update({"design": design, "content": content, "awaiting_details": False, "photo": photo, "target_pages": target,
                       "ref_image": ref_for_photo, "reuse_photo": False, "last_pdf": files["pdf"], "updated": time.time()})
         _save_state(state)
         if open_file:
@@ -2021,7 +2698,8 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         if design["photo"] != "none" and not photo:
             missing.append("attach a photo (or say *\"use the same photo\"*) to replace the initials block")
         tips = ("\n\n_" + "; ".join(missing) + "._") if missing else ""
-        yield (f"Your resume is ready, Sir. {design_note} {files['pages']} page(s).\n\n{previews}\n\n"
+        fit_txt = f" To fit {target} page{'s' if target > 1 else ''} I {fit_note}." if fit_note else ""
+        yield (f"Your resume is ready, Sir. {design_note} {files['pages']} page(s).{fit_txt}\n\n{previews}\n\n"
                f"✏️ [Edit text, sections & layout]({EDITOR_URL}) · 📄 [Download PDF]({MEDIA_URL}/{name(files['pdf'])}) · "
                f"🌐 [HTML]({MEDIA_URL}/{name(files['html'])})\n\n"
                f"Saved to `{files['pdf']}`. Say things like *\"change the resume colour to navy\"*, *\"use the modern template\"* "
@@ -2033,10 +2711,10 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
 
 
 def resume_tool(details: str = "", image_path: str = "", photo_path: str = "", template: str = "", color: str = "",
-                instruction: str = "", reuse_photo: bool = False):
+                instruction: str = "", reuse_photo: bool = False, pages: int | None = None):
     """Registry entry: also handles a bare 'list templates' request."""
     if not any([details, image_path, photo_path, template, color, instruction]) and not _load_state().get("content"):
         yield list_resume_templates()
         return
     yield from create_resume(details=details, image_path=image_path, photo_path=photo_path, template=template,
-                             color=color, instruction=instruction, reuse_photo=reuse_photo)
+                             color=color, instruction=instruction, reuse_photo=reuse_photo, pages=pages)

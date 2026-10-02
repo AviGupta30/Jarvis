@@ -1,6 +1,6 @@
 # ppt_tool
 
-> 38 nodes · cohesion 0.19
+> 40 nodes · cohesion 0.18
 
 ## Key Concepts
 
@@ -27,17 +27,17 @@
 - **._lay_aesthetic_timeline()** (8 connections) — `app/services/ppt_tool.py`
 - **._premium_image_frame_single()** (8 connections) — `app/services/ppt_tool.py`
 - **_clean_image_path()** (7 connections) — `app/services/ppt_tool.py`
+- **_get_image_aspect_ratio()** (7 connections) — `app/services/ppt_tool.py`
 - **_oval()** (7 connections) — `app/services/ppt_tool.py`
-- **._lay_aesthetic_showcase()** (7 connections) — `app/services/ppt_tool.py`
-- *... and 13 more nodes in this community*
+- *... and 15 more nodes in this community*
 
 ## Relationships
 
-- [ppt_tool](ppt_tool.md) (28 shared connections)
+- [ppt_tool](ppt_tool.md) (26 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (3 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [ppt](ppt.md) (1 shared connections)
+- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 
@@ -45,7 +45,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 165 (97%)
+- EXTRACTED: 168 (97%)
 - INFERRED: 5 (3%)
 - AMBIGUOUS: 0 (0%)
 

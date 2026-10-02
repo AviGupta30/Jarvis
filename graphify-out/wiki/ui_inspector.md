@@ -27,8 +27,8 @@
 
 ## Relationships
 
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (1 shared connections)
+- [ui_inspector + tools](ui_inspector_+_tools.md) (1 shared connections)
+- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
 
 ## Source Files
 

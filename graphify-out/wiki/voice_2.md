@@ -1,55 +1,43 @@
 # voice
 
-> 25 nodes · cohesion 0.11
+> 18 nodes · cohesion 0.12
 
 ## Key Concepts
 
-- **Speaker** (17 connections) — `app/services/voice.py`
-- **Channel** (8 connections) — `app/services/voice.py`
-- **hinglish_to_devanagari()** (6 connections) — `app/services/hinglish_normalizer.py`
-- **TTS (`voice.Speaker`, `start_clip`, `_Player`)** (6 connections) — `docs/features/voice.md`
-- **.is_echo()** (5 connections) — `app/services/voice.py`
-- **._take()** (5 connections) — `app/services/voice.py`
-- **_norm_words()** (4 connections) — `app/services/voice.py`
-- **.run()** (4 connections) — `app/services/voice.py`
-- **.stop_all()** (4 connections) — `app/services/voice.py`
-- **Fixed on 2026-09-30 (voice)** (4 connections) — `docs/KNOWN_ISSUES.md`
-- **._wake()** (3 connections) — `app/services/voice.py`
-- **.channel()** (2 connections) — `app/services/voice.py`
-- **._gc()** (2 connections) — `app/services/voice.py`
-- **.say_now()** (2 connections) — `app/services/voice.py`
-- **Rewrite the Hindi words of a romanized Hinglish sentence in Devanagari, leaving…** (1 connections) — `app/services/hinglish_normalizer.py`
-- **.close()** (1 connections) — `app/services/voice.py`
+- **Clip** (11 connections) — `app/services/voice.py`
+- **start_clip()** (10 connections) — `app/services/voice.py`
+- **_synth_edge()** (6 connections) — `app/services/voice.py`
+- **_synthesize()** (5 connections) — `app/services/voice.py`
+- **route_language()** (4 connections) — `app/services/voice.py`
+- **prewarm()** (3 connections) — `app/services/voice.py`
+- **_sapi_sync()** (3 connections) — `app/services/voice.py`
+- **.push()** (2 connections) — `app/services/voice.py`
+- **_voice_for()** (2 connections) — `app/services/voice.py`
+- **.cancel()** (1 connections) — `app/services/voice.py`
+- **.finish()** (1 connections) — `app/services/voice.py`
 - **.__init__()** (1 connections) — `app/services/voice.py`
-- **.mute()** (1 connections) — `app/services/voice.py`
-- **The speech stream of one command's reply.** (1 connections) — `app/services/voice.py`
-- **Plays sentences from many Channels without overlap: - urgent phrases (acks,…** (1 connections) — `app/services/voice.py`
-- **Barge-in "stop": silence now and drop everything queued.** (1 connections) — `app/services/voice.py`
-- **Did the mic just hear Jarvis himself (speaker → mic bleed)? Echo comes back…** (1 connections) — `app/services/voice.py`
-- **Next (channel, text, lang) or None. Non-blocking.** (1 connections) — `app/services/voice.py`
-- **.busy()** (1 connections) — `app/services/voice.py`
-- **.wait_idle()** (1 connections) — `app/services/voice.py`
+- **.iter_chunks()** (1 connections) — `app/services/voice.py`
+- **PCM (int16, 24 kHz) that fills while synthesis streams; playable immediately.** (1 connections) — `app/services/voice.py`
+- **hi' → Hindi voice, 'en' → English voice, for one sentence.** (1 connections) — `app/services/voice.py`
+- **Begin synthesising `text` now; returns a Clip that can be played while it fills.** (1 connections) — `app/services/voice.py`
+- **Synthesise short stock phrases (greetings, acks) into the cache for instant…** (1 connections) — `app/services/voice.py`
+- **_decode()** (1 connections) — `app/services/voice.py`
 
 ## Relationships
 
-- [voice](voice.md) (9 shared connections)
-- [hinglish_normalizer + voice](hinglish_normalizer_+_voice.md) (4 shared connections)
-- [voice_agent](voice_agent.md) (3 shared connections)
+- [voice](voice.md) (14 shared connections)
+- [voice + context_classifier](voice_+_context_classifier.md) (1 shared connections)
 - [voice + tools](voice_+_tools.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
-- [ppt_content](ppt_content.md) (1 shared connections)
+- [hinglish_normalizer](hinglish_normalizer.md) (1 shared connections)
 
 ## Source Files
 
-- `app/services/hinglish_normalizer.py`
 - `app/services/voice.py`
-- `docs/KNOWN_ISSUES.md`
-- `docs/features/voice.md`
 
 ## Audit Trail
 
-- EXTRACTED: 40 (78%)
-- INFERRED: 11 (22%)
+- EXTRACTED: 34 (94%)
+- INFERRED: 2 (6%)
 - AMBIGUOUS: 0 (0%)
 
 ---

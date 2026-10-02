@@ -1190,7 +1190,7 @@ TOOL_REGISTRY = {
     # ── Media Enhancement Tool ───────────────────────────────────────────────
     "enhance_media": lambda file_path: __import__('app.services.media_enhancement', fromlist=['enhance_media']).enhance_media(file_path),
     # ── Resume Creator (copies an uploaded resume design, or a fixed format) ──
-    "create_resume": lambda details="", image_path="", photo_path="", template="", color="", instruction="", reuse_photo=False: __import__('app.services.resume_builder', fromlist=['resume_tool']).resume_tool(details, image_path, photo_path, template, color, instruction, reuse_photo),
+    "create_resume": lambda details="", image_path="", photo_path="", template="", color="", instruction="", reuse_photo=False, pages=None: __import__('app.services.resume_builder', fromlist=['resume_tool']).resume_tool(details, image_path, photo_path, template, color, instruction, reuse_photo, pages),
     # ── Social Content Manager ───────────────────────────────────────────────
     "generate_social_content": lambda idea, platform="Instagram", tone="engaging", creativity=50.0, formality=50.0, smart_emojis=True, auto_hashtag=True, contextual_suggestions=True, target_audience="": __import__('app.services.social_content_manager', fromlist=['generate_social_content']).generate_social_content(idea, platform, tone, creativity, formality, smart_emojis, auto_hashtag, contextual_suggestions, target_audience),
     "refine_social_content": lambda original_content, refinement_instruction, platform="Instagram": __import__('app.services.social_content_manager', fromlist=['refine_social_content']).refine_social_content(original_content, refinement_instruction, platform),

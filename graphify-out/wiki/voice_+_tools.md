@@ -1,37 +1,37 @@
 # voice + tools
 
-> 19 nodes · cohesion 0.12
+> 17 nodes · cohesion 0.13
 
 ## Key Concepts
 
+- **Voice: STT, TTS, wake word, clap wake, overlay** (12 connections) — `docs/features/voice.md`
 - **speak_text()** (10 connections) — `app/services/voice.py`
-- **SentenceSplitter** (9 connections) — `app/services/voice.py`
 - **set_reminder()** (7 connections) — `app/services/tools.py`
-- **speak_stream()** (5 connections) — `app/services/voice.py`
+- **test_hindi_tts.py** (6 connections) — `scripts/test_hindi_tts.py`
 - **Gotchas** (5 connections) — `docs/features/voice.md`
-- **preload_local_stt()** (4 connections) — `app/services/voice.py`
-- **_load_whisper_model()** (3 connections) — `app/services/voice.py`
-- **split_sentences()** (3 connections) — `app/services/voice.py`
-- **_load()** (2 connections) — `app/services/voice.py`
 - **main()** (2 connections) — `scripts/test_hindi_tts.py`
 - **Sets a reminder that Jarvis will speak after a given number of seconds.** (1 connections) — `app/services/tools.py`
 - **_remind()** (1 connections) — `app/services/tools.py`
-- **Load the local Whisper models in the background (voice agent startup).** (1 connections) — `app/services/voice.py`
-- **Feed streamed tokens; get back speakable sentences as early as possible.** (1 connections) — `app/services/voice.py`
 - **Speak a complete text. All sentences synthesise in parallel, play in order.** (1 connections) — `app/services/voice.py`
-- **Speak an async generator of text chunks, sentence by sentence, pipelined.** (1 connections) — `app/services/voice.py`
-- **.feed()** (1 connections) — `app/services/voice.py`
-- **.flush()** (1 connections) — `app/services/voice.py`
-- **.__init__()** (1 connections) — `app/services/voice.py`
+- **voice.md** (1 connections) — `docs/features/voice.md`
+- **Config (`app/core/config.py` + env)** (1 connections) — `docs/features/voice.md`
+- **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/voice.md`
+- **Graphify** (1 connections) — `docs/features/voice.md`
+- **Measured (2026-09-30/10-01, i9-13900H, no GPU)** (1 connections) — `docs/features/voice.md`
+- **Purpose** (1 connections) — `docs/features/voice.md`
+- **Server-side tripwire** (1 connections) — `docs/features/voice.md`
+- **Test language-adaptive TTS - plays English then Hindi to verify both engines…** (1 connections) — `scripts/test_hindi_tts.py`
 
 ## Relationships
 
-- [voice](voice.md) (10 shared connections)
+- [voice](voice.md) (7 shared connections)
 - [tools](tools.md) (3 shared connections)
-- [voice_agent](voice_agent.md) (2 shared connections)
-- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (2 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
-- [hinglish_normalizer + voice](hinglish_normalizer_+_voice.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (2 shared connections)
+- [youtube_player](youtube_player.md) (1 shared connections)
+- [hinglish_normalizer](hinglish_normalizer.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [voice + context_classifier](voice_+_context_classifier.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
 
 ## Source Files
 
@@ -42,8 +42,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 29 (74%)
-- INFERRED: 10 (26%)
+- EXTRACTED: 27 (77%)
+- INFERRED: 8 (23%)
 - AMBIGUOUS: 0 (0%)
 
 ---

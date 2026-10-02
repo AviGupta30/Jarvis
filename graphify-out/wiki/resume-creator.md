@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **Resume creator** (9 connections) — `docs/features/resume-creator.md`
+- **Resume creator** (11 connections) — `docs/features/resume-creator.md`
 - **_image_b64()** (4 connections) — `app/services/resume_builder.py`
 - **Data/config** (2 connections) — `docs/features/resume-creator.md`
 - **UI** (2 connections) — `docs/features/resume-creator.md`
@@ -16,7 +16,7 @@
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (6 shared connections)
+- [resume_builder](resume_builder.md) (8 shared connections)
 
 ## Source Files
 
@@ -25,8 +25,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 12 (86%)
-- INFERRED: 2 (14%)
+- EXTRACTED: 14 (88%)
+- INFERRED: 2 (12%)
 - AMBIGUOUS: 0 (0%)
 
 ---

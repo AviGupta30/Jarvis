@@ -28,9 +28,9 @@
 
 ## Relationships
 
-- [voice_agent](voice_agent.md) (5 shared connections)
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (3 shared connections)
-- [ppt_content](ppt_content.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (6 shared connections)
+- [voice + context_classifier](voice_+_context_classifier.md) (2 shared connections)
+- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 

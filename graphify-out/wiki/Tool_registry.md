@@ -11,8 +11,8 @@
 
 ### references
 - keyword_detect_tool() `INFERRED`
-- youtube_play_result() `INFERRED`
 - create_resume() `INFERRED`
+- youtube_play_result() `INFERRED`
 - ppt_create() `INFERRED`
 - youtube_channel() `INFERRED`
 - detect_resume_request() `INFERRED`

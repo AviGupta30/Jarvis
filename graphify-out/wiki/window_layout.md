@@ -1,6 +1,6 @@
 # window_layout
 
-> 39 nodes · cohesion 0.09
+> 37 nodes · cohesion 0.10
 
 ## Key Concepts
 
@@ -22,37 +22,38 @@
 - **win32_close_active_tab()** (5 connections) — `app/services/window_layout.py`
 - **win32_close_active_window()** (5 connections) — `app/services/window_layout.py`
 - **_norm()** (4 connections) — `app/services/window_layout.py`
-- **_find_window_fuzzy()** (3 connections) — `app/services/tools.py`
 - **_cb()** (3 connections) — `app/services/window_layout.py`
 - **media_state.py — which media app the user used last (Spotify or YouTube)…** (1 connections) — `app/services/media_state.py`
 - **True if the Spotify desktop app has a window (cheap: EnumWindows, no UIA).** (1 connections) — `app/services/media_state.py`
-- **Find a window HWND by fuzzy name matching using Win32 API (no pygetwindow).** (1 connections) — `app/services/tools.py`
 - **window_layout.py — Isolated Window Layout & Window Manager…** (1 connections) — `app/services/window_layout.py`
 - **Return True if this HWND looks like a real user-facing application window.** (1 connections) — `app/services/window_layout.py`
-- *... and 14 more nodes in this community*
+- **Normalise string for fuzzy comparison.** (1 connections) — `app/services/window_layout.py`
+- **Return list of (hwnd, title) for all real user-facing windows, in Z-order…** (1 connections) — `app/services/window_layout.py`
+- *... and 12 more nodes in this community*
 
 ## Relationships
 
 - [tools](tools.md) (16 shared connections)
-- [youtube_player](youtube_player.md) (5 shared connections)
-- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (3 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (3 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (3 shared connections)
-- [persistence + server](persistence_+_server.md) (2 shared connections)
-- [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (1 shared connections)
-- [chat + rag_memory](chat_+_rag_memory.md) (1 shared connections)
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
+- [youtube_player](youtube_player.md) (6 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (3 shared connections)
+- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
+- [media_sessions](media_sessions.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [uia_local](uia_local.md) (1 shared connections)
 - [prompt_enhancer_button](prompt_enhancer_button.md) (1 shared connections)
+- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/media_state.py`
-- `app/services/tools.py`
 - `app/services/window_layout.py`
 
 ## Audit Trail
 
-- EXTRACTED: 99 (96%)
+- EXTRACTED: 97 (96%)
 - INFERRED: 4 (4%)
 - AMBIGUOUS: 0 (0%)
 

@@ -4,26 +4,25 @@
 
 ## Key Concepts
 
-- **send_whatsapp_message()** (5 connections) — `app/services/whatsapp.py`
-- **_focus_or_open_whatsapp()** (4 connections) — `app/services/whatsapp.py`
-- **open_whatsapp()** (4 connections) — `app/services/whatsapp.py`
-- **Focus the WhatsApp window or open it if not running. Returns True on success.** (1 connections) — `app/services/whatsapp.py`
-- **Opens the WhatsApp desktop app.** (1 connections) — `app/services/whatsapp.py`
-- **Sends a WhatsApp message using the Windows desktop app via keyboard automation.…** (1 connections) — `app/services/whatsapp.py`
+- **WhatsApp: send, call, read, reply-style cloning** (6 connections) — `docs/features/whatsapp.md`
+- **whatsapp.md** (1 connections) — `docs/features/whatsapp.md`
+- **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/whatsapp.md`
+- **Gotchas** (1 connections) — `docs/features/whatsapp.md`
+- **Graphify** (1 connections) — `docs/features/whatsapp.md`
+- **Purpose** (1 connections) — `docs/features/whatsapp.md`
 
 ## Relationships
 
-- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (3 shared connections)
-- [tools](tools.md) (3 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (1 shared connections)
 
 ## Source Files
 
-- `app/services/whatsapp.py`
+- `docs/features/whatsapp.md`
 
 ## Audit Trail
 
-- EXTRACTED: 10 (91%)
-- INFERRED: 1 (9%)
+- EXTRACTED: 6 (100%)
+- INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
 ---

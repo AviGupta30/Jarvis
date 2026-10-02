@@ -14,9 +14,9 @@
 
 ## Relationships
 
-- [youtube_player](youtube_player.md) (4 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (2 shared connections)
-- [youtube_control + os-control](youtube_control_+_os-control.md) (1 shared connections)
+- [youtube_player](youtube_player.md) (5 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [youtube_control](youtube_control.md) (1 shared connections)
 
 ## Source Files
 

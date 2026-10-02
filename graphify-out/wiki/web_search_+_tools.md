@@ -34,16 +34,16 @@
 ## Relationships
 
 - [tools](tools.md) (12 shared connections)
-- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (3 shared connections)
-- [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (2 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (2 shared connections)
-- [browser_tool](browser_tool.md) (2 shared connections)
+- [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (3 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (2 shared connections)
+- [browser_tool + smart_navigator](browser_tool_+_smart_navigator.md) (2 shared connections)
 - [ppt_research](ppt_research.md) (2 shared connections)
-- [chat + rag_memory](chat_+_rag_memory.md) (1 shared connections)
-- [persistence + server](persistence_+_server.md) (1 shared connections)
-- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
-- [content_humanizer + content-tools](content_humanizer_+_content-tools.md) (1 shared connections)
-- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
+- [content_humanizer](content_humanizer.md) (1 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
 - [browser_mail](browser_mail.md) (1 shared connections)
 
 ## Source Files

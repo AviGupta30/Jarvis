@@ -1,17 +1,17 @@
 # dark_enhancement + dark_video_enhancement
 
-> 28 nodes · cohesion 0.13
+> 24 nodes · cohesion 0.17
 
 ## Key Concepts
 
 - **dark_enhancement.py** (15 connections) — `app/services/dark_enhancement.py`
 - **dark_video_enhancement.py** (12 connections) — `app/services/dark_video_enhancement.py`
+- **numpy** (8 connections)
 - **get_all_enhancements()** (7 connections) — `app/services/dark_enhancement.py`
 - **run_pipeline_b()** (7 connections) — `app/services/dark_enhancement.py`
 - **process_video_smartly()** (7 connections) — `app/services/dark_video_enhancement.py`
 - **media_enhancement.py** (7 connections) — `app/services/media_enhancement.py`
 - **enhance_media()** (7 connections) — `app/services/media_enhancement.py`
-- **Dark image/video enhancement** (5 connections) — `docs/features/media-enhancement.md`
 - **_path_2_wavelet()** (4 connections) — `app/services/dark_enhancement.py`
 - **run_pipeline_a()** (4 connections) — `app/services/dark_enhancement.py`
 - **_enhance_frame()** (4 connections) — `app/services/dark_video_enhancement.py`
@@ -27,18 +27,22 @@
 - **ndarray** (1 connections)
 - **Re-encode a video to H.264 MP4 so browsers can play it.** (1 connections) — `app/services/dark_video_enhancement.py`
 - **Enhance a dark image or video using the dark enhancement pipeline. It returns a…** (1 connections) — `app/services/media_enhancement.py`
-- **media-enhancement.md** (1 connections) — `docs/features/media-enhancement.md`
-- **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/media-enhancement.md`
-- *... and 3 more nodes in this community*
+- **pywt** (1 connections)
 
 ## Relationships
 
-- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (2 shared connections)
-- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (2 shared connections)
-- [gmail_tool + download_kokoro](gmail_tool_+_download_kokoro.md) (1 shared connections)
-- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
-- [chat-routing + CLAUDE](chat-routing_+_CLAUDE.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (2 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
+- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
+- [media-enhancement](media-enhancement.md) (1 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
+- [content_humanizer](content_humanizer.md) (1 shared connections)
+- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (1 shared connections)
+- [screen_vision](screen_vision.md) (1 shared connections)
+- [voice](voice.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (1 shared connections)
 
 ## Source Files
 
@@ -49,7 +53,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 54 (92%)
+- EXTRACTED: 56 (92%)
 - INFERRED: 5 (8%)
 - AMBIGUOUS: 0 (0%)
 
