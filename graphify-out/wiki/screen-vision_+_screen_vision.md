@@ -15,11 +15,11 @@
 
 ## Relationships
 
-- [screen_vision](screen_vision.md) (4 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
-- [file_ops](file_ops.md) (1 shared connections)
+- [screen_vision](screen_vision.md) (3 shared connections)
+- [file_ops](file_ops.md) (2 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
 - [screen_reader](screen_reader.md) (1 shared connections)
-- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 

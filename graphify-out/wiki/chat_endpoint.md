@@ -2,7 +2,7 @@
 
 > God node · 50 connections · `app/api/chat.py`
 
-**Community:** [chat + llm](chat_+_llm.md)
+**Community:** [chat](chat.md)
 
 ## Connections by Relation
 

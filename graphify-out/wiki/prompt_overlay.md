@@ -1,6 +1,6 @@
 # prompt_overlay
 
-> 21 nodes · cohesion 0.15
+> 22 nodes · cohesion 0.14
 
 ## Key Concepts
 
@@ -14,6 +14,7 @@
 - **.show()** (3 connections) — `app/services/prompt_overlay.py`
 - **._start_enhance()** (3 connections) — `app/services/prompt_overlay.py`
 - **.toggle()** (3 connections) — `app/services/prompt_overlay.py`
+- **main()** (2 connections) — `app/services/prompt_overlay.py`
 - **._copy_result()** (2 connections) — `app/services/prompt_overlay.py`
 - **._enhance_done()** (2 connections) — `app/services/prompt_overlay.py`
 - **._on_enter()** (2 connections) — `app/services/prompt_overlay.py`
@@ -28,7 +29,7 @@
 
 ## Relationships
 
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (2 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
 
 ## Source Files
 
@@ -36,7 +37,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 32 (97%)
+- EXTRACTED: 33 (97%)
 - INFERRED: 1 (3%)
 - AMBIGUOUS: 0 (0%)
 

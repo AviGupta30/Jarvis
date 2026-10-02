@@ -34,7 +34,7 @@
 ## Relationships
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (11 shared connections)
-- [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (1 shared connections)
+- [prompt_enhancer_button + prompt-enhancer](prompt_enhancer_button_+_prompt-enhancer.md) (1 shared connections)
 
 ## Source Files
 

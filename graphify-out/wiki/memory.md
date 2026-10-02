@@ -27,14 +27,12 @@
 
 ## Relationships
 
-- [dag_executor + planner](dag_executor_+_planner.md) (4 shared connections)
-- [chat + llm](chat_+_llm.md) (3 shared connections)
-- [tools](tools.md) (3 shared connections)
-- [agentic_web](agentic_web.md) (1 shared connections)
-- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
-- [memory_tool](memory_tool.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (4 shared connections)
+- [tools](tools.md) (4 shared connections)
+- [chat](chat.md) (3 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (2 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
-- [rag_memory + memory](rag_memory_+_memory.md) (1 shared connections)
+- [syllabus_auditor + syllabus-auditor](syllabus_auditor_+_syllabus-auditor.md) (1 shared connections)
 
 ## Source Files
 

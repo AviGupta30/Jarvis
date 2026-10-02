@@ -16,10 +16,10 @@
 
 ## Relationships
 
-- [chat + llm](chat_+_llm.md) (3 shared connections)
+- [chat](chat.md) (3 shared connections)
 - [rag_memory + memory](rag_memory_+_memory.md) (2 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
+- [youtube_control](youtube_control.md) (1 shared connections)
 
 ## Source Files
 

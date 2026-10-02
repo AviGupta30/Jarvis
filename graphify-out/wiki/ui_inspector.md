@@ -27,8 +27,8 @@
 
 ## Relationships
 
-- [ui_inspector + tools](ui_inspector_+_tools.md) (1 shared connections)
-- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
+- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 

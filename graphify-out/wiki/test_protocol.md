@@ -34,13 +34,10 @@
 ## Relationships
 
 - [engine + test_protocol](engine_+_test_protocol.md) (9 shared connections)
-- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (2 shared connections)
-- [server + test_concurrency](server_+_test_concurrency.md) (2 shared connections)
-- [reply_generator](reply_generator.md) (1 shared connections)
-- [screen_reader](screen_reader.md) (1 shared connections)
-- [chat + llm](chat_+_llm.md) (1 shared connections)
-- [test_lru](test_lru.md) (1 shared connections)
-- [assignment_tool](assignment_tool.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (5 shared connections)
+- [persistence + server](persistence_+_server.md) (2 shared connections)
+- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
+- [lru + test_lru](lru_+_test_lru.md) (1 shared connections)
 
 ## Source Files
 

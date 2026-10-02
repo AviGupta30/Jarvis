@@ -1,6 +1,6 @@
 # voice_agent
 
-> 21 nodes · cohesion 0.12
+> 20 nodes · cohesion 0.13
 
 ## Key Concepts
 
@@ -11,7 +11,6 @@
 - **ndarray** (5 connections)
 - **.feed()** (3 connections) — `scripts/voice_agent.py`
 - **._hf_ratio()** (3 connections) — `scripts/voice_agent.py`
-- **Fixed on 2026-10-01 (voice, round 2)** (2 connections) — `docs/KNOWN_ISSUES.md`
 - **.__call__()** (2 connections) — `scripts/voice_agent.py`
 - **.reset()** (2 connections) — `scripts/voice_agent.py`
 - **.__call__()** (2 connections) — `scripts/voice_agent.py`
@@ -28,18 +27,18 @@
 
 ## Relationships
 
-- [voice_agent](voice_agent.md) (6 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (3 shared connections)
+- [voice_agent](voice_agent.md) (3 shared connections)
 - [voice + context_classifier](voice_+_context_classifier.md) (2 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [ppt_content + KNOWN_ISSUES](ppt_content_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 
-- `docs/KNOWN_ISSUES.md`
 - `scripts/voice_agent.py`
 
 ## Audit Trail
 
-- EXTRACTED: 31 (91%)
+- EXTRACTED: 30 (91%)
 - INFERRED: 3 (9%)
 - AMBIGUOUS: 0 (0%)
 

@@ -17,7 +17,7 @@
 
 ## Relationships
 
-- [test_lru](test_lru.md) (1 shared connections)
+- [lru + test_lru](lru_+_test_lru.md) (1 shared connections)
 
 ## Source Files
 

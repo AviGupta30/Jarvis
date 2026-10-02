@@ -948,128 +948,128 @@
     "semantic_hash": ""
   },
   "docs/features/agents.md": {
-    "mtime": 1790930787.3859227,
-    "seen": 1790930807.184934,
+    "mtime": 1790932236.3990853,
+    "seen": 1790932256.3686655,
     "ast_hash": "a1a26a9ea873fbdba921611b96798ffc",
     "semantic_hash": ""
   },
   "docs/features/air-drawing.md": {
-    "mtime": 1790930788.601264,
-    "seen": 1790930807.1849368,
+    "mtime": 1790932237.6129413,
+    "seen": 1790932256.3686683,
     "ast_hash": "af70f588d176d9de0b92e36fba7fb2df",
     "semantic_hash": ""
   },
   "docs/features/assignment.md": {
-    "mtime": 1790930787.802096,
-    "seen": 1790930807.184939,
+    "mtime": 1790932236.8166547,
+    "seen": 1790932256.368671,
     "ast_hash": "822ed8d8a34bcdaff6689ce17f9e13a0",
     "semantic_hash": ""
   },
   "docs/features/chat-routing.md": {
-    "mtime": 1790930787.3218317,
-    "seen": 1790930807.1849418,
+    "mtime": 1790932236.3357165,
+    "seen": 1790932256.3686736,
     "ast_hash": "981c2add324331ac0936dc71e26386bd",
     "semantic_hash": ""
   },
   "docs/features/content-tools.md": {
-    "mtime": 1790930788.3143632,
-    "seen": 1790930807.1849444,
+    "mtime": 1790932237.319641,
+    "seen": 1790932256.3686762,
     "ast_hash": "5d2a2dee17c3ba4c10facbf9dff17f9b",
     "semantic_hash": ""
   },
   "docs/features/dsa-mode.md": {
-    "mtime": 1790930788.5610814,
-    "seen": 1790930807.1849468,
+    "mtime": 1790932237.5734859,
+    "seen": 1790932256.3686783,
     "ast_hash": "083efa369b0b4b189ddb536139a68d5b",
     "semantic_hash": ""
   },
   "docs/features/email-calendar.md": {
-    "mtime": 1790930788.2048285,
-    "seen": 1790930807.1849487,
+    "mtime": 1790932237.207023,
+    "seen": 1790932256.368681,
     "ast_hash": "eb21225fae0ef51941b9a93f773c2056",
     "semantic_hash": ""
   },
   "docs/features/frontend.md": {
-    "mtime": 1790930788.5871344,
-    "seen": 1790930807.1849508,
+    "mtime": 1790932237.5991366,
+    "seen": 1790932256.3686845,
     "ast_hash": "e5a57c600aa868c14e410809d4255210",
     "semantic_hash": ""
   },
   "docs/features/llm-personality.md": {
-    "mtime": 1790930787.3984435,
-    "seen": 1790930807.184953,
+    "mtime": 1790932236.4109945,
+    "seen": 1790932256.3686872,
     "ast_hash": "2faae7c84ddb473450d8a588d1be3359",
     "semantic_hash": ""
   },
   "docs/features/media-enhancement.md": {
-    "mtime": 1790930788.323921,
-    "seen": 1790930807.1849554,
+    "mtime": 1790932237.3276563,
+    "seen": 1790932256.3686898,
     "ast_hash": "71848ba766f440c12040db64315301b5",
     "semantic_hash": ""
   },
   "docs/features/memory.md": {
-    "mtime": 1790930787.4251654,
-    "seen": 1790930807.1849577,
+    "mtime": 1790932236.439835,
+    "seen": 1790932256.368692,
     "ast_hash": "7df5f527e65c44928165e31f66e44ea0",
     "semantic_hash": ""
   },
   "docs/features/neural-cache.md": {
-    "mtime": 1790930788.5801315,
-    "seen": 1790930807.1849604,
+    "mtime": 1790932237.5916123,
+    "seen": 1790932256.3686945,
     "ast_hash": "f1e6427e2c74c287a0d5e48c9696dfd8",
     "semantic_hash": ""
   },
   "docs/features/os-control.md": {
-    "mtime": 1790930788.0715847,
-    "seen": 1790930807.1849625,
+    "mtime": 1790932237.0971038,
+    "seen": 1790932256.368697,
     "ast_hash": "7ba3c41e5abcdfe8d94de69e11318055",
     "semantic_hash": ""
   },
   "docs/features/ppt.md": {
-    "mtime": 1790930787.7631462,
-    "seen": 1790930807.1849647,
+    "mtime": 1790932236.7763624,
+    "seen": 1790932256.3686993,
     "ast_hash": "b903efee4357ee8b4951ebf82afaf849",
     "semantic_hash": ""
   },
   "docs/features/prompt-enhancer.md": {
-    "mtime": 1790930788.2840312,
-    "seen": 1790930807.1849668,
+    "mtime": 1790932237.291123,
+    "seen": 1790932256.3687017,
     "ast_hash": "bce171c049d0b52aad1c750e896531e7",
     "semantic_hash": ""
   },
   "docs/features/screen-vision.md": {
-    "mtime": 1790930787.9487388,
-    "seen": 1790930807.1849718,
+    "mtime": 1790932236.9717033,
+    "seen": 1790932256.3687062,
     "ast_hash": "ab85743cb28adb8cfcb14e09d22da813",
     "semantic_hash": ""
   },
   "docs/features/syllabus-auditor.md": {
-    "mtime": 1790930788.30372,
-    "seen": 1790930807.1849747,
+    "mtime": 1790932237.309647,
+    "seen": 1790932256.3687088,
     "ast_hash": "c1188a12e57470dc7aca88e698c956c9",
     "semantic_hash": ""
   },
   "docs/features/tool-registry.md": {
-    "mtime": 1790930787.3592691,
-    "seen": 1790930807.1849768,
+    "mtime": 1790932236.3747728,
+    "seen": 1790932256.3687115,
     "ast_hash": "bc2c740760ebf2164d9205e6052406fe",
     "semantic_hash": ""
   },
   "docs/features/voice.md": {
-    "mtime": 1790930788.256028,
-    "seen": 1790930807.1849792,
+    "mtime": 1790932237.2630954,
+    "seen": 1790932256.368714,
     "ast_hash": "6c146c6881adfef2d23ad020075caea7",
     "semantic_hash": ""
   },
   "docs/features/web.md": {
-    "mtime": 1790930788.1501348,
-    "seen": 1790930807.1849813,
+    "mtime": 1790932237.1538625,
+    "seen": 1790932256.3687167,
     "ast_hash": "fbcc13376a1c7659575efdd835f13eb9",
     "semantic_hash": ""
   },
   "docs/features/whatsapp.md": {
-    "mtime": 1790930787.895402,
-    "seen": 1790930807.1849837,
+    "mtime": 1790932236.9176633,
+    "seen": 1790932256.3687193,
     "ast_hash": "8433f918efa791d1cd6ac8b2de62dc60",
     "semantic_hash": ""
   },
@@ -1152,15 +1152,15 @@
     "semantic_hash": ""
   },
   "app/services/resume_builder.py": {
-    "mtime": 1790930692.232276,
-    "seen": 1790930807.1846583,
-    "ast_hash": "9bcfe9bc621b8c1a37425982d2704f00",
+    "mtime": 1790932186.5474937,
+    "seen": 1790932256.3683748,
+    "ast_hash": "7fbbedf35a6f29a5d37006eb98cf589a",
     "semantic_hash": ""
   },
   "docs/features/resume-creator.md": {
-    "mtime": 1790930788.5196252,
-    "seen": 1790930807.1849692,
-    "ast_hash": "76c5c31d35321b2d1d766823874cef99",
+    "mtime": 1790932237.5305364,
+    "seen": 1790932256.3687043,
+    "ast_hash": "72baafd51bdd7aade64adb66353d9016",
     "semantic_hash": ""
   },
   "app/api/resume_router.py": {

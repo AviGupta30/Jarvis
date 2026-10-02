@@ -33,15 +33,13 @@
 
 ## Relationships
 
+- [persistence + server](persistence_+_server.md) (11 shared connections)
 - [test_protocol](test_protocol.md) (9 shared connections)
-- [persistence](persistence.md) (7 shared connections)
-- [server + test_concurrency](server_+_test_concurrency.md) (4 shared connections)
-- [lru](lru.md) (2 shared connections)
-- [reply_generator](reply_generator.md) (2 shared connections)
-- [benchmark](benchmark.md) (1 shared connections)
-- [rag_memory + memory](rag_memory_+_memory.md) (1 shared connections)
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (1 shared connections)
-- [neural-cache](neural-cache.md) (1 shared connections)
+- [lru + test_lru](lru_+_test_lru.md) (3 shared connections)
+- [ui_inspector + lru](ui_inspector_+_lru.md) (2 shared connections)
+- [syllabus_auditor + syllabus-auditor](syllabus_auditor_+_syllabus-auditor.md) (1 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
 
 ## Source Files
 

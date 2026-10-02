@@ -1,36 +1,30 @@
 # resume_builder
 
-> 20 nodes · cohesion 0.14
+> 17 nodes · cohesion 0.23
 
 ## Key Concepts
 
-- **create_resume()** (18 connections) — `app/services/resume_builder.py`
-- **detect_resume_request()** (14 connections) — `app/services/resume_builder.py`
-- **_analyse_design()** (10 connections) — `app/services/resume_builder.py`
-- **_load_state()** (10 connections) — `app/services/resume_builder.py`
-- **_split_images()** (6 connections) — `app/services/resume_builder.py`
-- **open_resume_editor()** (5 connections) — `app/services/resume_builder.py`
-- **resume_tool()** (5 connections) — `app/services/resume_builder.py`
-- **_save_state()** (5 connections) — `app/services/resume_builder.py`
-- **_apply_layout_hint()** (4 connections) — `app/services/resume_builder.py`
-- **_has_details()** (4 connections) — `app/services/resume_builder.py`
-- **_attachments()** (3 connections) — `app/services/resume_builder.py`
-- **_parse_pages()** (3 connections) — `app/services/resume_builder.py`
-- **resume_awaiting_details()** (3 connections) — `app/services/resume_builder.py`
-- **_strip_tags()** (3 connections) — `app/services/resume_builder.py`
-- **_file_hash()** (2 connections) — `app/services/resume_builder.py`
-- **The user said which column a section goes in → that wins over the reference…** (1 connections) — `app/services/resume_builder.py`
-- **→ (reference_image, photo). A photo is labelled as such or is a close-up face.** (1 connections) — `app/services/resume_builder.py`
-- **Fast regex router → create_resume kwargs (or {"_list": True}), else None.** (1 connections) — `app/services/resume_builder.py`
-- **Generator: progress lines, then markdown with PNG preview(s) + PDF/HTML links.** (1 connections) — `app/services/resume_builder.py`
-- **Registry entry: also handles a bare 'list templates' request.** (1 connections) — `app/services/resume_builder.py`
+- **_sanitize_design()** (9 connections) — `app/services/resume_builder.py`
+- **_apply_color()** (8 connections) — `app/services/resume_builder.py`
+- **_contrast()** (8 connections) — `app/services/resume_builder.py`
+- **_measure_band()** (8 connections) — `app/services/resume_builder.py`
+- **_hex()** (7 connections) — `app/services/resume_builder.py`
+- **_measure_frame()** (7 connections) — `app/services/resume_builder.py`
+- **_mix()** (7 connections) — `app/services/resume_builder.py`
+- **_rgb()** (7 connections) — `app/services/resume_builder.py`
+- **_lum()** (6 connections) — `app/services/resume_builder.py`
+- **_readable_on()** (6 connections) — `app/services/resume_builder.py`
+- **_css()** (5 connections) — `app/services/resume_builder.py`
+- **near()** (3 connections) — `app/services/resume_builder.py`
+- **near()** (2 connections) — `app/services/resume_builder.py`
+- **ch()** (1 connections) — `app/services/resume_builder.py`
+- **White frame around the coloured blocks (sidebar / header band) in the…** (1 connections) — `app/services/resume_builder.py`
+- **Gaps around a light name band (e.g. grey box behind the name next to a…** (1 connections) — `app/services/resume_builder.py`
+- **Make sure colours stay readable and every section has a home.** (1 connections) — `app/services/resume_builder.py`
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (35 shared connections)
-- [chat + llm](chat_+_llm.md) (7 shared connections)
-- [resume-creator](resume-creator.md) (2 shared connections)
-- [tools](tools.md) (2 shared connections)
+- [resume_builder](resume_builder.md) (25 shared connections)
 
 ## Source Files
 
@@ -38,8 +32,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 62 (85%)
-- INFERRED: 11 (15%)
+- EXTRACTED: 52 (93%)
+- INFERRED: 4 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---

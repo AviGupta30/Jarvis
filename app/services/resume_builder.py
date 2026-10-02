@@ -144,7 +144,8 @@ PRESET_BLURBS = {
 
 # Optional design keys (added 2026-10-02): every design gets these, so old saved designs keep working.
 _STYLE_DEFAULTS = {"header_shape": "flat", "footer_shape": "none", "photo_position": "left", "photo_ring": False,
-                   "name_align": "left", "language_style": "dots", "decor": "none", "bottom_sections": []}
+                   "name_align": "left", "language_style": "dots", "decor": "none", "bottom_sections": [],
+                   "page_inset": [0, 0, 0, 0], "band_inset": []}
 
 _FONTS = {
     "sans":      ("'Roboto', 'Segoe UI', Arial, sans-serif", "'Roboto', 'Segoe UI', Arial, sans-serif", "Roboto:wght@300;400;500;700;900"),
@@ -640,12 +641,138 @@ def _apply_layout_answer(spec: dict, lay: dict) -> dict:
     return spec
 
 
+def _measure_frame(image_path: str, colors: dict) -> list:
+    """White frame around the coloured blocks (sidebar / header band) in the reference, as [top, right, bottom, left] mm.
+    Measured from pixels, not guessed: the page is the area dominated by the design's own colours (phone status
+    bars, toolbars and the viewer background drop out); an inset only counts on a side a coloured block runs along."""
+    try:
+        import cv2
+        import numpy as np
+        img = cv2.imread(image_path)
+        if img is None:
+            return [0, 0, 0, 0]
+        h, w = img.shape[:2]
+        f = 700 / max(w, 1)
+        if f < 1:
+            img = cv2.resize(img, (int(w * f), int(h * f)), interpolation=cv2.INTER_AREA)
+        rgb = img[:, :, ::-1].astype(np.int32)
+
+        def near(hexc: str, tol: int = 42):
+            r, g, b = _rgb(hexc)
+            return np.sqrt(((rgb - np.array([r, g, b])) ** 2).sum(-1)) < tol
+
+        page_c = _hex(colors.get("page_bg") or "#ffffff", "#ffffff")
+        blocks = [c for c in (colors.get("sidebar_bg"), colors.get("primary")) if c and _contrast(_hex(c), page_c) > 1.25]
+        if not blocks:
+            return [0, 0, 0, 0]
+        colored = np.zeros(rgb.shape[:2], bool)
+        for c in blocks:
+            colored |= near(_hex(c))
+        design = near(page_c) | colored
+        rows = np.where(design.mean(1) >= 0.45)[0]
+        cols = np.where(design.mean(0) >= 0.45)[0]
+        if len(rows) < 20 or len(cols) < 20:
+            return [0, 0, 0, 0]
+        py0, py1, px0, px1 = rows[0], rows[-1] + 1, cols[0], cols[-1] + 1
+        pw = px1 - px0
+        sub = colored[py0:py1, px0:px1]
+        ccols = np.where(sub.mean(0) >= 0.25)[0]          # columns mostly covered by a coloured block
+        crows = np.where(sub.mean(1) >= 0.15)[0]
+        if not len(ccols) or not len(crows):
+            return [0, 0, 0, 0]
+        mm = 210.0 / pw
+        raw = [crows[0] * mm, (pw - 1 - ccols[-1]) * mm, (sub.shape[0] - 1 - crows[-1]) * mm, ccols[0] * mm]
+        # < 0.8 mm = touching the edge; > 14 mm = that side has no block running along it (just content margin)
+        return [round(float(v), 1) if 0.8 <= v <= 14 else 0 for v in raw]
+    except Exception as e:
+        print(f"[resume] frame measure failed: {e}")
+        return [0, 0, 0, 0]
+
+
+def _measure_band(image_path: str, colors: dict, layout: str) -> list:
+    """Gaps around a light name band (e.g. grey box behind the name next to a sidebar), as
+    [top, right, gap-to-sidebar] mm from the page edges / sidebar edge. [] when there is no such band."""
+    try:
+        import cv2
+        import numpy as np
+        band_c, page_c = colors.get("band"), _hex(colors.get("page_bg") or "#ffffff", "#ffffff")
+        side_c = colors.get("sidebar_bg")
+        if not band_c or not side_c or layout not in ("sidebar_left", "sidebar_right") or _contrast(_hex(band_c), page_c) < 1.03:
+            return []
+        img = cv2.imread(image_path)
+        if img is None:
+            return []
+        h, w = img.shape[:2]
+        f = 700 / max(w, 1)
+        if f < 1:
+            img = cv2.resize(img, (int(w * f), int(h * f)), interpolation=cv2.INTER_AREA)
+        rgb = img[:, :, ::-1].astype(np.int32)
+
+        def near(hexc: str, tol: int):
+            r, g, b = _rgb(_hex(hexc))
+            return np.sqrt(((rgb - np.array([r, g, b])) ** 2).sum(-1)) < tol
+
+        side = near(side_c, 42)
+        design = near(page_c, 42) | side
+        rows = np.where(design.mean(1) >= 0.45)[0]
+        cols = np.where(design.mean(0) >= 0.45)[0]
+        if len(rows) < 20 or len(cols) < 20:
+            return []
+        py0, py1, px0, px1 = rows[0], rows[-1] + 1, cols[0], cols[-1] + 1
+        pw, ph = px1 - px0, py1 - py0
+        side_cols = np.where(side[py0:py1, px0:px1].mean(0) >= 0.5)[0]
+        if not len(side_cols):
+            return []
+        # band colour from the pixels (vision hexes for near-white tones are unreliable): the dominant light,
+        # non-page tone in the top quarter of the main column
+        region = rgb[py0:py0 + ph // 4, px0:px1].copy()
+        outside = np.ones(region.shape[:2], bool)
+        if layout == "sidebar_left":
+            outside[:, :side_cols[-1] + 1] = False
+        else:
+            outside[:, side_cols[0]:] = False
+        pr, pg, pb = _rgb(page_c)
+        dist_page = np.sqrt(((region - np.array([pr, pg, pb])) ** 2).sum(-1))
+        lum = region.mean(-1)
+        cand = outside & (dist_page > 6) & (dist_page < 70) & (lum > 170)
+        if cand.sum() < 200:
+            return []
+        q = (region[cand] // 4) * 4                       # quantise, take the most common tone
+        vals, counts = np.unique(q.reshape(-1, 3), axis=0, return_counts=True)
+        r0, g0, b0 = (int(v) + 2 for v in vals[counts.argmax()])
+        band_c = "#%02x%02x%02x" % (r0, g0, b0)
+        top = near(band_c, 9)[py0:py0 + ph // 4, px0:px1] & outside
+        bcols = np.where(top.mean(0) >= 0.25)[0]
+        brows = np.where(top.mean(1) >= 0.3)[0]
+        if len(bcols) < 10 or len(brows) < 5:
+            return []
+        mm = 210.0 / pw
+        if layout == "sidebar_left":
+            gap, right = bcols[0] - side_cols[-1] - 1, pw - 1 - bcols[-1]
+        else:
+            gap, right = side_cols[0] - bcols[-1] - 1, bcols[0]     # "right" = outer edge
+        vals = [brows[0] * mm, right * mm, gap * mm]
+        return [round(float(v), 1) if 0.8 <= v <= 14 else 0 for v in vals] + [band_c]
+    except Exception as e:
+        print(f"[resume] band measure failed: {e}")
+        return []
+
+
 def _analyse_design(image_path: str) -> dict:
     from concurrent.futures import ThreadPoolExecutor
-    key = "v3:" + _file_hash(image_path)       # bump when the design vocabulary changes (old readings lack new keys)
+    key = "v3:" + _file_hash(image_path)       # bump on vocabulary changes; v3 entries get pixel measurements added lazily
     cache = _load_state().get("design_cache") or {}
     if key and key in cache:                      # same picture again → no vision tokens spent
-        return cache[key]
+        spec = cache[key]
+        if "page_inset" not in spec or "band_inset" not in spec:   # older reading: add pixel measurements (no vision call)
+            spec["page_inset"] = _measure_frame(image_path, spec.get("colors") or {})
+            spec["band_inset"] = _measure_band(image_path, spec.get("colors") or {}, spec.get("layout", ""))
+            if len(spec["band_inset"]) == 4:
+                spec.setdefault("colors", {})["band"] = spec["band_inset"].pop()
+            st = _load_state()
+            st.setdefault("design_cache", {})[key] = spec
+            _save_state(st)
+        return spec
     pal = _palette(image_path)
     pal_txt = ", ".join(f"{c} ({s:.0%})" for c, s in pal) or "unavailable"
     try:
@@ -661,6 +788,10 @@ def _analyse_design(image_path: str) -> dict:
         return {"_palette": pal, "_vision_failed": True}
     spec = _apply_layout_answer(spec or {}, lay or {})
     spec["_palette"] = pal
+    spec["page_inset"] = _measure_frame(image_path, spec.get("colors") or {})
+    spec["band_inset"] = _measure_band(image_path, spec.get("colors") or {}, spec.get("layout", ""))
+    if len(spec["band_inset"]) == 4:                 # measured band colour beats the vision guess for near-white tones
+        spec.setdefault("colors", {})["band"] = spec["band_inset"].pop()
     if key:
         st = _load_state()
         cache = st.get("design_cache") or {}
@@ -707,6 +838,18 @@ def _merge_design(base: dict, over: dict) -> dict:
         d["timeline"] = over["timeline"]
     if isinstance(over.get("photo_ring"), bool):
         d["photo_ring"] = over["photo_ring"]
+    band = over.get("band_inset")
+    if isinstance(band, list) and len(band) in (0, 3):
+        try:
+            d["band_inset"] = [max(0.0, min(14.0, float(v))) for v in band]
+        except (TypeError, ValueError):
+            pass
+    inset = over.get("page_inset")
+    if isinstance(inset, list) and len(inset) == 4:
+        try:
+            d["page_inset"] = [max(0.0, min(14.0, float(v))) for v in inset]
+        except (TypeError, ValueError):
+            pass
     try:
         sw = int(float(over.get("sidebar_width") or 0))
         if 22 <= sw <= 56:
@@ -1695,6 +1838,26 @@ def _css_extra(d: dict, scale: float) -> str:
                    f".bottom{{margin-top:calc(-{foot_h}mm - 4mm);padding-bottom:calc({foot_h}mm + 6mm)}}")
     if track:
         out.append(f".bars .bar-t{{background:{_mix(track, c['page_bg'], 0.82)}!important}}")
+    t, r, b, l = (d.get("page_inset") or [0, 0, 0, 0]) + [0, 0, 0, 0][len(d.get("page_inset") or []):]
+    band_in = d.get("band_inset") or []
+    if len(band_in) == 3 and any(band_in):
+        bt, br, bg = max(0.0, band_in[0] - t), max(0.0, band_in[1] - r), band_in[2]
+        if d["layout"] == "sidebar_right":
+            out.append(f".lay-sidebar_right .main-top{{margin:calc(-7mm + {bt}mm) {bg - 8}mm 5.5mm calc(-12mm + {br}mm)}}")
+        else:
+            out.append(f".main-top{{margin:calc(-7mm + {bt}mm) calc(-12mm + {br}mm) 5.5mm calc(-8mm + {bg}mm)}}")
+    if any((t, r, b, l)):
+        swf = (d.get("sidebar_width", 32) or 32) / 100
+        out.append(
+            f".side-bg{{top:{t}mm!important;bottom:{b}mm!important;left:{l}mm!important;"
+            f"width:calc((210mm - {l + r}mm) * {swf:.4f})!important}}"
+            f".lay-sidebar_right .side-bg{{left:auto!important;right:{r}mm!important}}"
+            f"header{{margin:{t}mm {r}mm 0 {l}mm}}"
+            f".cols,.bottom{{margin-left:{l}mm;margin-right:{r}mm}}"
+            f"body:not(:has(header)) .cols{{margin-top:{t}mm}}"
+            f".rb-foot{{left:{l}mm;right:{r}mm;bottom:{b}mm}}"
+            # later pages: keep text inside the framed sidebar block
+            f"aside,main{{padding-bottom:calc(10mm + {b}mm)}}")
     return "".join(out)
 
 

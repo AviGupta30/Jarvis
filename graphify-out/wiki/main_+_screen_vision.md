@@ -1,50 +1,57 @@
 # main + screen_vision
 
-> 13 nodes · cohesion 0.17
+> 22 nodes · cohesion 0.11
 
 ## Key Concepts
 
-- **get_active_window_info()** (10 connections) — `app/services/ui_inspector.py`
-- **Entry points** (10 connections) — `docs/features/screen-vision.md`
+- **main.py** (27 connections) — `app/main.py`
 - **startup_event()** (8 connections) — `app/main.py`
-- **describe_screen_for_llm()** (8 connections) — `app/services/screen_reader.py`
 - **start_background_watcher()** (6 connections) — `app/services/screen_vision.py`
-- **describe_screen_vlm()** (5 connections) — `app/services/screen_vision.py`
+- **shutdown_event()** (5 connections) — `app/main.py`
+- **tripwire_status()** (4 connections) — `app/main.py`
+- **stop_background_watcher()** (4 connections) — `app/services/screen_vision.py`
+- **get_alerts()** (3 connections) — `app/main.py`
 - **_on_screen_alert()** (3 connections) — `app/main.py`
+- **get** (3 connections)
+- **shutil** (3 connections)
+- **test_fastapi.py** (3 connections) — `test_fastapi.py`
+- **read_root()** (2 connections) — `app/main.py`
+- **Stop watcher, acoustic tripwire, and close DB pool cleanly on server shutdown.** (1 connections) — `app/main.py`
+- **Frontend polls this endpoint to receive proactive JARVIS screen alerts. e.g.…** (1 connections) — `app/main.py`
+- **Return current acoustic tripwire state for the frontend toggle.** (1 connections) — `app/main.py`
 - **Callback fired by the background watcher when something notable is detected.…** (1 connections) — `app/main.py`
 - **Start background screen watcher and RAG memory system when the server boots.** (1 connections) — `app/main.py`
-- **Returns a clean, LLM-optimized description of the current screen. Used as…** (1 connections) — `app/services/screen_reader.py`
-- **Lightweight passive description — used as context injection in chat.py. Always…** (1 connections) — `app/services/screen_vision.py`
 - **Start the passive background screen watcher. Args: callback: Function called…** (1 connections) — `app/services/screen_vision.py`
-- **Returns a text summary of the currently focused window: window title + list of…** (1 connections) — `app/services/ui_inspector.py`
+- **Stop the background screen watcher thread cleanly.** (1 connections) — `app/services/screen_vision.py`
+- **fastapi_middleware_cors** (1 connections)
+- **fastapi_staticfiles** (1 connections)
+- **fastapi_testclient** (1 connections)
 
 ## Relationships
 
-- [screen_reader](screen_reader.md) (5 shared connections)
-- [ui_inspector + tools](ui_inspector_+_tools.md) (5 shared connections)
-- [screen_vision](screen_vision.md) (4 shared connections)
-- [main](main.md) (3 shared connections)
+- [main](main.md) (6 shared connections)
+- [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (4 shared connections)
+- [ppt_router + resume_router](ppt_router_+_resume_router.md) (3 shared connections)
 - [rag_memory + memory](rag_memory_+_memory.md) (2 shared connections)
-- [chat + llm](chat_+_llm.md) (2 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (2 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (2 shared connections)
 - [tools](tools.md) (2 shared connections)
-- [safe_executor](safe_executor.md) (2 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [screen-vision + screen_vision](screen-vision_+_screen_vision.md) (1 shared connections)
-- [ui_inspector](ui_inspector.md) (1 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (2 shared connections)
+- [syllabus_auditor + syllabus-auditor](syllabus_auditor_+_syllabus-auditor.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
+- [chat](chat.md) (1 shared connections)
+- [agents + tool_runner](agents_+_tool_runner.md) (1 shared connections)
+- [screen_vision](screen_vision.md) (1 shared connections)
 
 ## Source Files
 
 - `app/main.py`
-- `app/services/screen_reader.py`
 - `app/services/screen_vision.py`
-- `app/services/ui_inspector.py`
-- `docs/features/screen-vision.md`
+- `test_fastapi.py`
 
 ## Audit Trail
 
-- EXTRACTED: 28 (65%)
-- INFERRED: 15 (35%)
+- EXTRACTED: 50 (91%)
+- INFERRED: 5 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

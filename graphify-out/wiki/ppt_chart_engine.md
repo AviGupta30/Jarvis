@@ -1,20 +1,44 @@
 # ppt_chart_engine
 
-> 6 nodes · cohesion 0.33
+> 36 nodes · cohesion 0.12
 
 ## Key Concepts
 
-- **ChartEngine** (7 connections) — `app/services/ppt_chart_engine.py`
-- **.render()** (4 connections) — `app/services/ppt_chart_engine.py`
-- **.available()** (1 connections) — `app/services/ppt_chart_engine.py`
-- **.supported_types()** (1 connections) — `app/services/ppt_chart_engine.py`
-- **Stateless chart renderer. All colors are derived from the active PPT palette —…** (1 connections) — `app/services/ppt_chart_engine.py`
-- **Render a chart from structured data. Args: chart_data: {"type": "bar",…** (1 connections) — `app/services/ppt_chart_engine.py`
+- **ppt_chart_engine.py** (27 connections) — `app/services/ppt_chart_engine.py`
+- **_render_bar()** (10 connections) — `app/services/ppt_chart_engine.py`
+- **_bg_color()** (9 connections) — `app/services/ppt_chart_engine.py`
+- **_palette_colors()** (9 connections) — `app/services/ppt_chart_engine.py`
+- **_render_comparison()** (9 connections) — `app/services/ppt_chart_engine.py`
+- **_text_color()** (9 connections) — `app/services/ppt_chart_engine.py`
+- **_fig_to_bytes()** (8 connections) — `app/services/ppt_chart_engine.py`
+- **_render_line()** (8 connections) — `app/services/ppt_chart_engine.py`
+- **_style_ax()** (8 connections) — `app/services/ppt_chart_engine.py`
+- **_sub_color()** (8 connections) — `app/services/ppt_chart_engine.py`
+- **_render_metrics_dashboard()** (7 connections) — `app/services/ppt_chart_engine.py`
+- **_render_timeline()** (7 connections) — `app/services/ppt_chart_engine.py`
+- **_hex()** (6 connections) — `app/services/ppt_chart_engine.py`
+- **_render_pie()** (5 connections) — `app/services/ppt_chart_engine.py`
+- **_metrics_to_bar()** (4 connections) — `app/services/ppt_chart_engine.py`
+- **math** (4 connections)
+- **_extract_strict_metric()** (3 connections) — `app/services/ppt_chart_engine.py`
+- **ppt_chart_engine.py — Dynamic Data-Visualization Engine for JARVIS PPT…** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Horizontal or vertical bar chart.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Line / trend chart — supports multiple series.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Grouped bar chart for side-by-side comparison.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Large KPI numbers with optional mini-bar underneath.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Ensure a hex string has a '#' prefix.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Horizontal timeline infographic.** (1 connections) — `app/services/ppt_chart_engine.py`
+- **Return *n* cycling accent colors from the palette dict.** (1 connections) — `app/services/ppt_chart_engine.py`
+- *... and 11 more nodes in this community*
 
 ## Relationships
 
-- [ppt_tool](ppt_tool.md) (3 shared connections)
-- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (2 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
+- [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
+- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
+- [ppt_designer](ppt_designer.md) (1 shared connections)
+- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
 
 ## Source Files
 
@@ -22,8 +46,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 8 (80%)
-- INFERRED: 2 (20%)
+- EXTRACTED: 77 (92%)
+- INFERRED: 7 (8%)
 - AMBIGUOUS: 0 (0%)
 
 ---

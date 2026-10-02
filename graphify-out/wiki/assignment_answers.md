@@ -1,23 +1,18 @@
 # assignment_answers
 
-> 26 nodes · cohesion 0.12
+> 18 nodes · cohesion 0.13
 
 ## Key Concepts
 
-- **assignment_answers.py** (22 connections) — `app/services/assignment_answers.py`
 - **_run_browser_session()** (9 connections) — `app/services/assignment_answers.py`
 - **_ask_question_on_page()** (8 connections) — `app/services/assignment_answers.py`
-- **generate_answers()** (6 connections) — `app/services/assignment_answers.py`
-- **generate_answer()** (5 connections) — `app/services/assignment_answers.py`
 - **_find_input()** (4 connections) — `app/services/assignment_answers.py`
-- **_groq_answer()** (4 connections) — `app/services/assignment_answers.py`
 - **_send_message()** (4 connections) — `app/services/assignment_answers.py`
 - **_wait_for_generation()** (4 connections) — `app/services/assignment_answers.py`
 - **_get_persistent_page()** (3 connections) — `app/services/assignment_answers.py`
 - **_screenshot_extract()** (3 connections) — `app/services/assignment_answers.py`
 - **_try_copy_button()** (3 connections) — `app/services/assignment_answers.py`
 - **_upload_pdf()** (3 connections) — `app/services/assignment_answers.py`
-- **Jarvis Assignment Tool — Phase 2: Answer Generation…** (1 connections) — `app/services/assignment_answers.py`
 - **Launch a visible (non-headless) Chromium with a persistent profile. Login…** (1 connections) — `app/services/assignment_answers.py`
 - **Try CSS selectors to find the visible chat input. Returns locator or None.** (1 connections) — `app/services/assignment_answers.py`
 - **Type a message into the AI chat input and submit it.** (1 connections) — `app/services/assignment_answers.py`
@@ -27,20 +22,11 @@
 - **Take a page screenshot and use Groq Vision to extract the AI's answer.** (1 connections) — `app/services/assignment_answers.py`
 - **Send one question to the open AI page and return the answer text.** (1 connections) — `app/services/assignment_answers.py`
 - **Full browser session: open site → upload PDF → ask all questions → close.…** (1 connections) — `app/services/assignment_answers.py`
-- **Generate an answer using Groq LLM with automatic model fallback chain. Tries…** (1 connections) — `app/services/assignment_answers.py`
-- **Generate complete answers for ALL questions from an assignment. Tries these…** (1 connections) — `app/services/assignment_answers.py`
-- *... and 1 more nodes in this community*
 
 ## Relationships
 
-- [assignment_tool + assignment_pipeline](assignment_tool_+_assignment_pipeline.md) (3 shared connections)
-- [screen_reader](screen_reader.md) (2 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (2 shared connections)
-- [tools](tools.md) (2 shared connections)
-- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
-- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (1 shared connections)
-- [assignment_tool](assignment_tool.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (9 shared connections)
+- [assignment_pipeline + assignment_tool](assignment_pipeline_+_assignment_tool.md) (1 shared connections)
 
 ## Source Files
 
@@ -48,8 +34,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 49 (94%)
-- INFERRED: 3 (6%)
+- EXTRACTED: 30 (100%)
+- INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -33,10 +33,10 @@
 
 ## Relationships
 
-- [server + test_concurrency](server_+_test_concurrency.md) (2 shared connections)
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (1 shared connections)
-- [client + test_concurrency](client_+_test_concurrency.md) (1 shared connections)
-- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
+- [client](client.md) (1 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
 
 ## Source Files
 

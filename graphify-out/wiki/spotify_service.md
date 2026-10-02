@@ -33,17 +33,13 @@
 
 ## Relationships
 
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (3 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (3 shared connections)
-- [youtube_player](youtube_player.md) (3 shared connections)
+- [youtube_control](youtube_control.md) (5 shared connections)
+- [youtube_player](youtube_player.md) (5 shared connections)
+- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (4 shared connections)
 - [tools](tools.md) (3 shared connections)
-- [media_sessions](media_sessions.md) (2 shared connections)
-- [uia_local](uia_local.md) (2 shared connections)
-- [agentic_web](agentic_web.md) (1 shared connections)
-- [ssml_processor + debug_wa](ssml_processor_+_debug_wa.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [message_reader + whatsapp](message_reader_+_whatsapp.md) (2 shared connections)
+- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
+- [web_search](web_search.md) (1 shared connections)
 
 ## Source Files
 
