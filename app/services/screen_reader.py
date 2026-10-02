@@ -110,7 +110,7 @@ def _groq_vision_screen() -> str:
                     }},
                 ],
             }],
-            model="openai/gpt-oss-120b",
+            model=settings.GROQ_VISION_MODEL,
             temperature=0.2,
             max_tokens=300,
         )

@@ -11,6 +11,7 @@ pyautogui
 psutil
 requests
 duckduckgo-search
+ddgs
 pygetwindow
 pywhatkit
 chromadb
@@ -27,13 +28,14 @@ send2trash
 mss
 numpy
 google-generativeai
-# Local STT engine — zero-latency, offline, CPU-optimized
+# Local STT fallback (Groq whisper-large-v3-turbo is primary) + bundled Silero VAD
 faster-whisper
 # TTS engines
 edge-tts
-# Kokoro ONNX — local TTS (PRIMARY, free, unlimited, ~85MB model)
+av   # streaming MP3 decode for TTS (voice.py)
+# Kokoro ONNX — no longer used by voice.py (13–30 s/sentence on this CPU)
 kokoro-onnx
-# Audio playback for Kokoro
+# Audio playback (voice.py callback output stream)
 sounddevice
 soundfile
 # Content Humanizer
@@ -54,3 +56,24 @@ PyMySQL
 # PPT Chart Engine — programmatic data visualization
 matplotlib
 seaborn
+# ── Previously missing (imported in code but not listed) ──────────────────────
+python-dotenv
+fastembed
+asyncpg
+playwright            # then run: playwright install chromium
+python-pptx
+opencv-python
+PyWavelets
+rapidfuzz
+dateparser
+keyboard
+uiautomation
+imageio-ffmpeg
+google-api-python-client
+google-auth
+google-auth-oauthlib
+# Windows media sessions (pause/resume whatever is playing: Spotify, browser tabs) — app/services/media_sessions.py
+winrt-runtime==3.2.1
+winrt-Windows.Foundation==3.2.1
+winrt-Windows.Foundation.Collections==3.2.1
+winrt-Windows.Media.Control==3.2.1

@@ -21,7 +21,7 @@ _HINDI_SIGNAL_WORDS = {
     "kya", "hai", "haan", "nahi", "kar", "karo", "mera", "meri", "mujhe",
     "aap", "tum", "yeh", "woh", "isko", "usko", "bata", "batao", "dekho",
     "suno", "jaldi", "abhi", "thoda", "bilkul", "theek", "achha", "acha",
-    "kuch", "sab", "bahut", "zyada", "bhi", "toh", "lekin", "aur", "ya",
+    "kuch", "sab", "bahut", "zyada", "bhi", "toh", "lekin", "aur",
     "matlab", "shayad", "pata", "lagta", "raha", "rahi", "gaya", "gayi",
     "dena", "lena", "khelna", "jana", "aana", "baat", "kaam", "cheez",
     "yaar", "bhai", "dost", "chal", "chalo", "bol", "bolna",
@@ -30,11 +30,13 @@ _HINDI_SIGNAL_WORDS = {
     "mein", "pe", "par", "se", "ko", "ka", "ki", "ke", "ne",
     # Common nouns
     "gaana", "gaane", "gana", "naam", "kaam", "baat", "cheez", "jagah",
-    "din", "raat", "subah", "shaam", "waqt", "time",
+    "din", "raat", "subah", "shaam", "waqt",
     # Verbs
-    "kholo", "kholna", "band", "bandh", "karo", "karna", "dena", "lena",
+    "kholo", "kholna", "bandh", "karo", "karna", "dena", "lena",
     "chalao", "chalana", "dekhna", "sunna", "padhna", "likhna",
-    "delete",   # often used in Hinglish alongside Hindi words
+    "kaisa", "kaise", "kaisi", "kyun", "kab", "kahan", "kaun", "kitna", "hoon", "hain",
+    "tha", "thi", "aaj", "kal", "mausam", "chahiye", "sakta", "sakte", "wala", "wali",
+    "accha", "achha", "nahin", "haanji", "ji", "koi", "kuchh", "mujhse", "humein", "hum",
 }
 
 

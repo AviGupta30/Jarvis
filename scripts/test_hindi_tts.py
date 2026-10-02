@@ -3,9 +3,9 @@ import asyncio, sys, os
 sys.path.insert(0, '.')
 
 async def main():
-    from app.services.voice import _tts_play
+    from app.services.voice import speak_text as _tts_play
 
-    print("Test 1: English - Kokoro am_adam")
+    print("Test 1: English - edge-tts Ryan Neural (British)")
     await _tts_play("Yes Sir, how can I help you today?")
     print("  Done")
 

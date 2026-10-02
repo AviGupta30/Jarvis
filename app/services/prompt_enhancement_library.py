@@ -1,383 +1,183 @@
 """
 prompt_enhancement_library.py
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-All prompt engineering logic for the Jarvis Prompt Enhancer.
+Prompt text + validators for the Jarvis Prompt Enhancer.
 
-Fixes implemented (per bug report v1.0):
-  A1 — Job guard at top of system prompt
-  A2 — PROJECT_CONTEXT injected into every enhancement call
-  A3 — Hallucination detector with fallback
-  B1 — 3-way input classifier (conversational / vague / technical)
-  B2 — 250-word cap + leaked-reasoning stripper
-  B3 — Injection boundary rule + game mechanic sanity check
-  B4 — Removed hardcoded format templates; format rule added
-  B5 — Decision-elimination checklist for code tasks
+Design (v2, "faithful rewrite"):
+  - The enhancer rewrites the user's prompt so another AI (ChatGPT, Claude,
+    Gemini, Copilot, a coding agent…) gives a better answer — WITHOUT adding
+    things the user didn't ask for (tech stack, implementation steps, invented
+    requirements). The receiving AI decides the "how".
+  - Pasted code / logs (``` fenced blocks) are swapped for [[BLOCK_n]]
+    placeholders before the LLM call and restored afterwards, so they are
+    never paraphrased.
+  - Output guards: chatbot/answering signals and bloat trigger one stricter
+    retry, then a fallback to the user's original text.
 """
 
+import re as _re
+
 # ─────────────────────────────────────────────────────────────────────────────
-# PROJECT CONTEXT  (injected into every enhancement call — not in the output)
+# PROJECT CONTEXT  (only injected when the prompt explicitly says "jarvis")
 # ─────────────────────────────────────────────────────────────────────────────
 PROJECT_CONTEXT = """
-The user is building a personal AI OS agent called Jarvis.
-It is a Python-based ReAct agent running on Windows 11.
-
-ALREADY IMPLEMENTED:
-- Voice I/O: Whisper STT + ElevenLabs TTS (Hinglish support)
-- OS Control: volume, clipboard, keyboard simulation, app launch
-- Window Manager: focus, snap, maximize via win32gui + pygetwindow
-- UIA Engine: pywinauto accessibility tree walker, no mouse needed
-- Web Search: DuckDuckGo + BeautifulSoup scraper + Wikipedia
-- Communication: WhatsApp automation, Windows Copilot handoff
-- Memory: ChromaDB vector store with fastembed ONNX embeddings
-- Presentation: PPTX generator
-- Prompt Enhancer: this feature, using Groq as LLM backend
-- ReAct Planner: multi-step Thought → Action → Observation loop
-- Overlay: floating Tkinter prompt-enhancer popup (Ctrl+Space)
-
-LLM BACKEND: Groq (Llama 3.3 70B versatile)
-LANGUAGE: Python 3.11+, Windows-only
-
-When the user refers to "Jarvis", "the agent", "the system",
-or "my project" — they mean THIS system described above.
-Never assume they mean Iron Man's AI, Zuckerberg's home project,
-or any other external tool or fictional AI.
+"Jarvis" is the user's own personal AI assistant for Windows 11: a Python
+FastAPI backend with a React UI and a voice agent, using Groq LLMs, tool
+calling (OS control, WhatsApp, web search, PPT generation, memory) and a
+multi-step planner. When the user says "Jarvis" they mean THIS project,
+never Iron Man's AI or any other product.
 """
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SYSTEM PROMPT  (complete rewrite — job guard FIRST, always)
+# SYSTEM PROMPT
 # ─────────────────────────────────────────────────────────────────────────────
 ENHANCEMENT_SYSTEM_PROMPT = """
-════════════════════════════════════════════════════
-IDENTITY: INTERNAL PROMPT OPTIMIZER — NOT A CHATBOT
-════════════════════════════════════════════════════
+You rewrite a user's rough prompt into a clearer, stronger prompt that they will send to another AI assistant (ChatGPT, Claude, Gemini, Copilot, a coding agent, etc.). You are NOT that assistant: never answer, solve, or start doing the task yourself.
 
-YOU ARE AN INTERNAL TRANSLATION ENGINE.
-Your job: turn a messy human prompt into a precise, constraint-driven
-instruction that an AI can execute perfectly.
+GOAL
+The rewritten prompt must get a noticeably better answer than the original because it is unambiguous, says what the user actually wants, and says what a good result looks like, while asking for exactly the same thing.
 
-OUTPUT: One block of text — the improved prompt. Nothing else.
-No preamble. No "Here is the enhanced prompt:". No explanation after.
+DO
+- Keep the user's intent, scope and every concrete detail (names, numbers, files, code, errors, links, constraints, tone). Never drop information.
+- Fix spelling, grammar and messy phrasing. Hinglish or broken English becomes clear English (keep names and quoted text as they are).
+- Make the implicit explicit: state the real goal and what the response should contain.
+- When the user asks for something to be built or written, describe WHAT it should do or be: the standard behaviour anyone would expect from the thing they named, plus a quality bar (complete, working, polished, concise, ...).
+- Keep the request type. A question stays a question: "how do I ..." stays a how-to/explanation request and never becomes "Build ...". A request to write or build stays that.
+- Keep the user's point of view ("I", "my", "me").
+- Scale the length to the input: a one-line prompt becomes about 2 to 5 sentences; a long prompt gets tightened and organised, never padded. Stay under 150 words, not counting text the user supplied.
+- Write plain prose. Use a short list only when the user gave several separate requirements.
 
-ANTI-CHATBOT RULES:
-✗ NEVER say "Sure!", "Great!", "Of course!", or any affirmation
-✗ NEVER address the user directly (no "you", "your question")
-✗ NEVER ask a clarifying question back at the user
-✗ NEVER start with "I will...", "I can...", "Let me..."
-✗ NEVER end with a question mark directed at a human
+DO NOT ADD
+- Technology choices: programming languages, frameworks, libraries, engines, tools, platforms, file structure, architecture, databases or APIs, unless the user named them. The receiving AI decides how to do it.
+- Implementation steps, algorithms, step-by-step build plans or instructions on how to build it.
+- New features, requirements, numbers, versions, deadlines, audiences or facts the user did not state or clearly imply.
+- Role-play openers ("Act as ...", "You are an expert ..."), greetings, "Please" padding, meta-commentary or sign-offs.
+- Headings, markdown formatting, quotes around the output, or labels such as "Enhanced prompt:".
+- Questions back to the user. If a detail is missing, do not invent it: leave a placeholder like [topic] or ask the AI to state its assumptions.
 
-IF YOU FIND YOURSELF WRITING "I WILL PROVIDE" OR ASKING THE USER A QUESTION
-— STOP. DELETE EVERYTHING. START OVER.
+SPECIAL CASES
+- Casual chat, greetings or feedback (e.g. "thanks it works"): only fix spelling and grammar.
+- Already clear and specific: make minimal edits.
+- Placeholders like [[BLOCK_1]] stand for code or text the user pasted. Keep every placeholder exactly once, unchanged, where it belongs.
 
-════════════════════════════════════════════════════
-CRITICAL: PROJECT CONTEXT IS BACKGROUND KNOWLEDGE ONLY
-════════════════════════════════════════════════════
+OUTPUT: only the rewritten prompt text, nothing before or after it.
 
-If PROJECT CONTEXT is provided, it is your internal reference ONLY.
-It tells you what system the user is working on.
+EXAMPLES
 
-YOU MUST NEVER:
-✗ List, enumerate, or paraphrase the existing components from the context
-✗ Mention "Python 3.11", "Groq LLM", "ChromaDB", "FastAPI" etc. in the output
-   UNLESS the user explicitly named those in their raw prompt
-✗ Include a summary of what the system already does
-✗ Use the context as a description to inject into the prompt
+Input: create a snake game
+Output: Create a complete, playable Snake game. The snake moves continuously and the player steers it, it grows each time it eats food, and the game ends when it hits a wall or itself. Show the current score and let me restart after a game over. Make sure it is fully working.
 
-YOU SHOULD:
-✓ Use the context ONLY to understand the domain deeply
-✓ Use it to write SMARTER constraints and BETTER role primes
-✓ Reference it silently — the output must look like the user wrote it,
-   not like an agent dumped a spec sheet
+Input: how do i make my website load faster
+Output: How can I make my website load faster? Explain how to find out what is slowing it down and the most effective fixes for each cause, starting with the changes that usually make the biggest difference.
 
-════════════════════════════════════════════════════
-FULL ENHANCEMENT RULES
-════════════════════════════════════════════════════
+Input: write email to my professor asking for extension on assignment bcoz i was sick
+Output: Write a short, polite email to my professor asking for an extension on my assignment because I was sick. Briefly explain the situation, keep a respectful tone, and ask for a new deadline. Use placeholders for names, the course and dates.
 
-WORD LIMIT:
-Enhanced prompt must be under 250 words. Shorter + precise > longer + vague.
+Input: fix this error [[BLOCK_1]]
+Output: Help me fix this error. Explain what is causing it, then give me the corrected code or the exact steps to resolve it.
 
-ROLE PRIMING TEMPLATE:
-Always open with a role prime using this format:
-  "Act as [specific expert role] for [specific system/domain]."
+[[BLOCK_1]]
 
-Examples:
-  "Act as the Core System Architect for [system name]."
-  "Act as a senior ML engineer specializing in NLP classification."
-  "Act as a game developer building a classic Snake game."
+Input: explain recursion
+Output: Explain recursion clearly: what it is, how a recursive function works (base case and recursive case), and when it is a better choice than a loop. Include one simple example.
 
-The role prime MUST be specific to the exact task — never generic like
-"Act as an expert" or "As an AI assistant".
-
-FEATURE / SUGGESTION REQUESTS:
-When the user asks for ideas, features, or improvements to add to a system:
-  1. Open with: "Act as [expert role] for [the user's system]."
-  2. Define the task precisely: "Generate a prioritized list of [N] advanced,
-     non-generic [features/improvements] that [specific goal]."
-  3. Add 2-3 architectural constraints derived from the domain
-     (e.g. "must leverage existing [relevant component]",
-          "must not require external APIs",
-          "must integrate with the current [architecture]")
-  4. End with an output directive (see OUTPUT DIRECTIVE below)
-
-NO-INVENTION RULE:
-BEFORE ADDING ANY DETAIL, ask:
-  "Did the user mention or clearly imply this — or am I inventing it?"
-  If invented → DO NOT add it.
-
-NEVER add these unless the user stated them:
-✗ Specific numbers ("10,000 samples", "80-20 split")
-✗ Specific versions ("Python 3.11", "Pygame 2.x")
-✗ Specific model/class/dataset names the user didn't mention
-✗ Evaluation metrics, logging, test cases the user didn't ask for
-✗ Any component names from PROJECT CONTEXT unless user named them
-
-OUTPUT DIRECTIVE RULE:
-Every enhanced technical prompt MUST end with a clear output format instruction.
-Template: "Output [format]. Omit all [type of fluff]."
-
-Examples:
-  "Output as a numbered technical specification. Omit introductions."
-  "Output clean, modular code with no placeholder comments."
-  "Output a direct answer with examples. No preamble."
-
-FORMAT RULE:
-- Technical task → role prime first, then task, then constraints, then output directive
-- Conversational → natural prose, no sections
-- Never impose nested bullets
-
-LEAKED REASONING RULE:
-NEVER include:
-- "Before writing, consider..."
-- Any question directed at the AI about HOW to approach the task
-
-SELF-CHECK before outputting:
-□ Does it start with "Act as [specific role]"?
-□ Does it end with an output directive ("Output as X. Omit Y.")?
-□ Is it under 250 words?
-□ Did I mention any component from PROJECT CONTEXT the user didn't name? → remove it
-□ Did I invent a number, version, class name, or model? → remove it
-□ Does the output read as a command TO an AI, not a chatbot response FROM one?
+Input: thanks bro it works now
+Output: Thanks, it works now.
 """
 
-
-# ─────────────────────────────────────────────────────────────────────────────
-# CLASSIFIER
-# ─────────────────────────────────────────────────────────────────────────────
-def classify_prompt(raw: str) -> str:
-    """
-    Returns: 'conversational' | 'vague' | 'technical'
-    """
-    raw_lower = raw.lower()
-    word_count = len(raw.split())
-
-    TECHNICAL_VERBS = [
-        "write", "create", "build", "make", "generate", "code",
-        "implement", "develop", "design", "fix", "debug", "explain",
-        "analyze", "compare", "summarize", "refactor", "optimize",
-        "calculate", "convert", "translate", "render", "find",
-        "search", "list", "give me a list", "show me how",
-        # Request / recommendation verbs (e.g. "add features", "suggest ideas")
-        "add", "suggest", "recommend", "tell me", "give me",
-        "what should i", "what can i", "what features", "what more",
-        "how should i", "how do i", "what are the best",
-    ]
-    CONVERSATIONAL_SIGNALS = [
-        "its working", "it's working", "that's great", "this is great",
-        "finally working", "i'm stuck", "not working", "help me think",
-        "what do you think", "let's talk", "let's think",
-        "we need to think", "what should we", "any ideas", "thoughts?",
-        "hey", "btw", "by the way", "just wanted to", "quick question",
-        "how are you", "what's up", "checking in", "it works",
-        "i think", "we should", "can we", "should we",
-    ]
-
-    has_technical_verb = any(v in raw_lower for v in TECHNICAL_VERBS)
-    has_conversational = any(s in raw_lower for s in CONVERSATIONAL_SIGNALS)
-
-    if has_conversational and not has_technical_verb:
-        return "conversational"
-    if has_technical_verb and word_count >= 4:
-        return "technical"
-    if word_count < 15 and not has_technical_verb:
-        return "vague"
-
-    return "technical"  # safe default
+RETRY_REMINDER = (
+    "Your previous output broke the rules (it answered the prompt, talked to the user, "
+    "or added things the user never asked for, or was too long). Rewrite the ORIGINAL "
+    "prompt again: same request, clearer wording, nothing invented, no tech stack or "
+    "implementation steps, under 150 words. Output only the rewritten prompt."
+)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# HALLUCINATION DETECTOR
+# CODE-BLOCK PROTECTION
 # ─────────────────────────────────────────────────────────────────────────────
-# HALLUCINATION DETECTOR
-# ─────────────────────────────────────────────────────────────────────────────
-FACTUAL_INJECTION_SIGNALS = [
-    "is a real-life",
-    "was developed by",
-    "was created by",
-    "is a fictional",
-    "in the marvel",
-    "tony stark",
-    "zuckerberg",
-    "according to",
-    "historically",
-    "in reality",
-    "fun fact",
-    "i will provide",
-    "here is information about",
-    "here are some",
-    "as an ai",
-    # Chatbot-mode signals
-    "sure!",
-    "great!",
-    "of course!",
-    "absolutely!",
-    "can you tell me more",
-    "what do you mean by",
-    "i see you want",
-    "it sounds like you",
-    "it seems like you",
-    "happy to help",
-    "i'd be happy",
-    "i would be happy",
-    "let me know if",
-    "feel free to",
-]
-
-def check_for_hallucination(enhanced: str) -> bool:
-    """Returns True if hallucination or chatbot-mode signals are detected."""
-    lower = enhanced.lower()
-    return any(sig in lower for sig in FACTUAL_INJECTION_SIGNALS)
+_FENCE_RE = _re.compile(r"```.*?```", _re.DOTALL)
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# CHATBOT FILLER STRIPPER  (Python-level safety net)
-# ─────────────────────────────────────────────────────────────────────────────
-_CHATBOT_OPENERS = [
-    "sure!", "sure,", "great!", "of course!", "absolutely!",
-    "happy to help", "i'd be happy", "i would be happy",
-    "i can help", "i will help", "let me help",
-    "you're looking", "you are looking", "it sounds like", "it seems like",
-]
+def protect_blocks(raw: str) -> tuple[str, list[str]]:
+    """Replace ``` fenced blocks with [[BLOCK_n]] placeholders."""
+    blocks: list[str] = []
 
-def strip_chatbot_filler(text: str) -> str:
-    """
-    If the output starts with a chatbot filler opener, strip the first sentence.
-    If the output ends with a question mark (user-directed question), strip the
-    last sentence.
-    """
-    stripped = text.strip()
-    lower = stripped.lower()
+    def _sub(m):
+        blocks.append(m.group(0))
+        return f"[[BLOCK_{len(blocks)}]]"
 
-    # Strip chatbot opener sentence
-    for opener in _CHATBOT_OPENERS:
-        if lower.startswith(opener):
-            # Remove everything up to the first sentence break
-            for sep in ['. ', '! ', '\n']:
-                idx = stripped.find(sep)
-                if idx != -1:
-                    stripped = stripped[idx + len(sep):].strip()
-                    lower = stripped.lower()
-                    break
-            break
-
-    # Strip trailing user-directed question
-    if stripped.endswith('?'):
-        lines = [s.strip() for s in stripped.replace('\n', ' ').split('.') if s.strip()]
-        if len(lines) > 1:
-            stripped = '. '.join(lines[:-1]).strip()
-            if not stripped.endswith('.'):
-                stripped += '.'
-
-    return stripped
+    return _FENCE_RE.sub(_sub, raw), blocks
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# LEAKED REASONING STRIPPER
-# ─────────────────────────────────────────────────────────────────────────────
-LEAKED_PATTERNS = [
-    "before writing the final answer, consider",
-    "consider the following questions",
-    "consider the following",
-    "think about the following",
-    "here is the enhanced prompt",
-    "enhanced version of",
-    "the following enhanced",
-    "note that",
-    "keep in mind that",
-    "it's worth noting",
-    "it is worth noting",
-]
-
-def strip_leaked_reasoning(text: str) -> str:
-    """Cut the output at the first leaked-reasoning pattern found."""
-    text_lower = text.lower()
-    for pattern in LEAKED_PATTERNS:
-        idx = text_lower.find(pattern)
-        if idx != -1:
-            text = text[:idx].strip()
-            text_lower = text.lower()
+def restore_blocks(text: str, blocks: list[str]) -> str:
+    """Put protected blocks back; append any the model dropped."""
+    for i, block in enumerate(blocks, 1):
+        tag = f"[[BLOCK_{i}]]"
+        if tag in text:
+            text = text.replace(tag, block, 1).replace(tag, "")
+        else:
+            text = text.rstrip() + "\n\n" + block
     return text
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# INJECTION / BLOAT VALIDATOR  (kept from v1 + updated)
+# OUTPUT CLEANUP + GUARDS
 # ─────────────────────────────────────────────────────────────────────────────
-import re as _re
+_LABEL_RE = _re.compile(
+    r"^\s*(\*\*)?\s*(enhanced|improved|rewritten|refined|optimi[sz]ed)?\s*prompt\s*(\*\*)?\s*:\s*(\*\*)?\s*",
+    _re.IGNORECASE,
+)
+_OUTPUT_LABEL_RE = _re.compile(r"^\s*output\s*:\s*", _re.IGNORECASE)
 
-_VERSION_RE = _re.compile(r'\bpython\s+3\.\d+\b', _re.IGNORECASE)
-_NUMBER_RE  = _re.compile(r'\b\d[\d,]+\b')
 
-def validate_enhancement(raw: str, enhanced: str) -> tuple[str, list[str]]:
-    """
-    Validate the enhanced prompt for common failure modes.
-    Returns (possibly_cleaned_text, list_of_warnings).
-    """
-    warnings = []
-    result = enhanced
+def clean_output(text: str) -> str:
+    """Strip labels, wrapping quotes and code fences the model sometimes adds."""
+    t = (text or "").strip()
+    # gpt-oss likes non-breaking hyphens / narrow spaces; they look odd in chat boxes
+    t = t.replace("‑", "-").replace(" ", " ").replace(" ", " ")
+    t = _LABEL_RE.sub("", t, count=1)
+    t = _OUTPUT_LABEL_RE.sub("", t, count=1).strip()
+    if len(t) >= 2 and t[0] == t[-1] and t[0] in "\"'“”`":
+        t = t[1:-1].strip()
+    if t.startswith("“") and t.endswith("”"):
+        t = t[1:-1].strip()
+    return t
 
-    # Word-count cap
-    if len(enhanced.split()) > 250:
-        warnings.append(
-            f"BLOAT: Enhanced is {len(enhanced.split())} words "
-            f"(limit 250). Likely over-engineered."
-        )
 
-    # Injected requirements
-    injected_flags = [
-        ("logging",               "logging"     not in raw.lower()),
-        ("test cases",            "test"        not in raw.lower()),
-        ("performance",           "performance" not in raw.lower()
-                                  and "optim"   not in raw.lower()),
-        ("debugging statements",  "debug"       not in raw.lower()),
-    ]
-    for term, was_injected in injected_flags:
-        if was_injected and term in enhanced.lower():
-            warnings.append(f"INJECTED REQUIREMENT: '{term}' not in original.")
+# Phrases that mean the model answered / chatted instead of rewriting.
+# START signals only count at the very beginning of the output.
+CHATBOT_START_SIGNALS = [
+    "sure", "great!", "of course", "absolutely", "certainly", "okay,", "ok,",
+    "here is", "here's", "below is",
+]
+CHATBOT_SIGNALS = [
+    "happy to help", "i'd be happy", "i would be happy",
+    "enhanced prompt", "rewritten prompt", "improved prompt",
+    "as an ai", "i see you want", "it sounds like you", "it seems like you",
+    "can you tell me more", "what do you mean by", "tony stark", "in the marvel",
+]
 
-    # Injected Python version strings (e.g. "Python 3.11") not in original
-    if _VERSION_RE.search(enhanced) and not _VERSION_RE.search(raw):
-        warnings.append("INJECTED VERSION: explicit Python version not in original.")
 
-    # Injected bare large numbers not in original (e.g. "10,000", "80")
-    enh_nums = set(_NUMBER_RE.findall(enhanced))
-    raw_nums = set(_NUMBER_RE.findall(raw))
-    new_nums = enh_nums - raw_nums
-    if new_nums:
-        warnings.append(f"INJECTED NUMBERS: {new_nums} not in original prompt.")
+def check_for_hallucination(enhanced: str, raw: str = "") -> bool:
+    """True if the output looks like a chatbot reply rather than a rewritten prompt.
+    Signals that already appear in the user's own prompt are ignored."""
+    lower = enhanced.lower().lstrip()
+    raw_lower = raw.lower().lstrip()
+    if any(lower.startswith(s) and not raw_lower.startswith(s) for s in CHATBOT_START_SIGNALS):
+        return True
+    return any(sig in lower and sig not in raw_lower for sig in CHATBOT_SIGNALS)
 
-    # Nested bullets
-    deep_nests = [
-        ln for ln in enhanced.split("\n")
-        if ln.startswith("   *") or ln.startswith("      ")
-    ]
-    if len(deep_nests) > 3:
-        warnings.append(
-            f"NESTED BULLETS: {len(deep_nests)} deeply nested lines found."
-        )
 
-    return result, warnings
+def is_bloated(raw: str, enhanced: str) -> bool:
+    """True if the rewrite is far longer than the input warrants."""
+    raw_words = len(raw.split())
+    enh_words = len(enhanced.split())
+    return enh_words > max(170, int(raw_words * 2.5) + 60)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DOMAIN DETECTOR  (kept for the header label)
+# DOMAIN DETECTOR (used for the chat header label only)
 # ─────────────────────────────────────────────────────────────────────────────
 DOMAIN_KEYWORDS = {
     "coding": [
@@ -403,6 +203,7 @@ DOMAIN_KEYWORDS = {
         "email", "report", "presentation", "startup", "plan",
     ],
 }
+
 
 def detect_domain(prompt: str) -> str:
     prompt_lower = prompt.lower()

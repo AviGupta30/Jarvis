@@ -243,7 +243,7 @@ def _get_answer(page) -> str:
         ss = page.screenshot(full_page=False)
         b64 = base64.b64encode(ss).decode()
         r = g.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model=settings.GROQ_VISION_MODEL,
             messages=[{"role": "user", "content": [
                 {"type": "text", "text": (
                     "Screenshot of Gemini AI chat. Extract ONLY the latest AI response. "

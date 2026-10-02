@@ -51,7 +51,6 @@ AVAILABLE TOOLS (call by exact name with arguments as JSON):
   open_app(app_name)                        — open notepad, word, chrome, etc.
   open_website(url)                         — open a URL in browser
   take_screenshot()                         — screenshot to Desktop
-  create_folder(folder_name)               — create folder on Desktop
   read_file(path)                           — read contents of any text file or PDF
   write_file(path, content)                 — create or overwrite a file with content
   append_file(path, content)                — add content to existing file
@@ -243,13 +242,11 @@ async def _execute_step(step: dict, results: dict) -> tuple[bool, str]:
         except Exception as e:
             return False, str(e)
 
-    # Known tool → call from registry
+    # Known tool → run via tool_runner (thread pool, generators consumed, async recall)
     if tool_name in TOOL_REGISTRY:
         try:
-            loop = asyncio.get_event_loop()
-            # Run blocking tools in executor to avoid blocking the event loop
-            result = await loop.run_in_executor(None, lambda: TOOL_REGISTRY[tool_name](**resolved_args))
-            return True, str(result)
+            from app.services.tool_runner import run_tool
+            return True, await run_tool(tool_name, resolved_args)
         except Exception as e:
             return False, str(e)
 

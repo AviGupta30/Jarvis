@@ -162,7 +162,7 @@ def _build_history_context() -> str:
 
 def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> str:
     """
-    Send screenshot + context to Groq Vision API (openai/gpt-oss-20b).
+    Send screenshot + context to the Groq vision model (settings.GROQ_VISION_MODEL).
     """
     try:
         from groq import Groq
@@ -176,7 +176,7 @@ def _call_gemini_vision(b64_image: str, system_prompt: str, user_query: str) -> 
         prompt_text = f"{system_prompt}\n\nUser asked: {user_query}" if user_query else system_prompt
         
         response = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model=settings.GROQ_VISION_MODEL,
             messages=[
                 {
                     "role": "user",

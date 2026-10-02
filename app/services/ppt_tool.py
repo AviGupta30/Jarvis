@@ -802,7 +802,7 @@ Rules:
 - text: the main body text color (must have high contrast against bg)"""
 
             resp = _GROQ.chat.completions.create(
-                model="openai/gpt-oss-120b",
+                model=settings.GROQ_VISION_MODEL,
                 messages=[{
                     "role": "user",
                     "content": [
@@ -2260,9 +2260,47 @@ def _normalize_and_recover(chunk_data, outline_chunk):
 def ppt_create(prompt: str, style: str = None, output_path: str = None,
                theme_image_path: str = None, research_data: dict = None,
                purpose: str = None, image_paths: list = None,
+               image_descriptions: list = None, template_path: str = None):
+    """
+    PPT v6 entry point → ppt_studio.create (adaptive layouts, strict user content,
+    template filling, follow-up edits). Falls back to the legacy v5 engine if v6 crashes.
+    Positional order is kept for /ppt/create.
+    """
+    try:
+        from app.services import ppt_studio
+        yield from ppt_studio.create(prompt, style, output_path, theme_image_path, research_data,
+                                     purpose, image_paths, image_descriptions, template_path)
+        return
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        if re.search(r"tokens per day|TPD|quota|rate limit", str(e), re.I):
+            # the classic engine uses the same Groq key, so falling back would only fail again
+            yield ("❌ The AI providers' daily limit is used up (Groq free tier: 200k tokens/day per model; Gemini "
+                   "backup also unavailable). Please try again in a little while — nothing was invented or saved.\n")
+            return
+        yield f"⚠️ New design engine failed ({e}). Falling back to the classic engine…\n"
+    yield from _ppt_create_legacy(prompt, style, output_path, theme_image_path, research_data,
+                                  purpose, image_paths, image_descriptions)
+
+
+def ppt_edit(edit_prompt: str, image_paths: list = None):
+    """Follow-up edit of the last deck (generator). See ppt_studio.edit."""
+    try:
+        from app.services import ppt_studio
+        yield from ppt_studio.edit(edit_prompt, image_paths)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        yield f"❌ Couldn't edit the presentation: {e}"
+
+
+def _ppt_create_legacy(prompt: str, style: str = None, output_path: str = None,
+               theme_image_path: str = None, research_data: dict = None,
+               purpose: str = None, image_paths: list = None,
                image_descriptions: list = None):
     """
-    End-to-end PPT generation pipeline.
+    Legacy v5 generation pipeline (fixed aesthetic_* layouts). Used only as a fallback.
 
     Args:
         image_descriptions: Parallel list of user-provided hints for each image in
@@ -2620,8 +2658,16 @@ SOURCES (Cite these if applicable): {sources_str}
     yield f"✅ Saved to: `{out}`\n"
 
 def ppt_styles():
-    return {"styles": {k: {"name": v["name"], "desc": v["desc"]} for k, v in PERSONALITIES.items()},
-            "count": len(PERSONALITIES)}
+    styles = {}
+    try:
+        from app.services.ppt_designer import THEMES
+        styles.update({k: {"name": v["name"], "desc": ("dark" if k in ("midnight", "neon_pitch", "cosmic", "ember",
+                                                                          "emerald_dark") else "light") + " theme"}
+                       for k, v in THEMES.items()})
+    except Exception:
+        pass
+    styles.update({k: {"name": v["name"], "desc": v["desc"]} for k, v in PERSONALITIES.items() if k not in styles})
+    return {"styles": styles, "count": len(styles)}
 
 def _pick(p: str) -> str:
     """Intelligently pick a palette based on the presentation topic."""

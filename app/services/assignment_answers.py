@@ -260,7 +260,7 @@ def _screenshot_extract(page) -> str:
         screenshot_bytes = page.screenshot(full_page=False)
         b64 = base64.b64encode(screenshot_bytes).decode("utf-8")
         response = _groq.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model=settings.GROQ_VISION_MODEL,
             messages=[{
                 "role": "user",
                 "content": [

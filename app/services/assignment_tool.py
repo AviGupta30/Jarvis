@@ -390,7 +390,7 @@ def _extract_via_vision(pdf_path: str) -> list[dict]:
     for page_num, b64_img in enumerate(page_images, start=1):
         try:
             response = _groq.chat.completions.create(
-                model="openai/gpt-oss-20b",
+                model=settings.GROQ_VISION_MODEL,
                 messages=[
                     {
                         "role": "user",

@@ -36,15 +36,25 @@ class ForgetRequest(BaseModel):
 
 @router.post("/ingest")
 async def ingest_memory(request: IngestRequest):
-    """Ingest a knowledge chunk into the vector store."""
+    """
+    Ingest a knowledge chunk. Primary store: Postgres/pgvector (DATABASE_URL).
+    If that is unavailable, fall back to the MySQL + FAISS long-term memory,
+    which llm.py recalls from automatically on every reply.
+    """
     try:
         from app.services.embeddings import get_embedding
         from app.services.vector_store import save_document_chunk
         embedding = await get_embedding(request.content)
         await save_document_chunk(request.content, embedding)
         return {"status": "success", "message": "Document ingested successfully"}
-    except Exception as e:
-        return {"status": "error", "message": str(e)}
+    except Exception as pg_err:
+        try:
+            from app.services.rag_memory import store_turn
+            await store_turn(role="user", content=f"[Saved knowledge] {request.content}")
+            return {"status": "success",
+                    "message": f"Saved to long-term memory (knowledge DB unavailable: {pg_err})"}
+        except Exception as e:
+            return {"status": "error", "message": f"{pg_err}; fallback failed: {e}"}
 
 
 # ── Long-Term RAG Memory Endpoints ───────────────────────────────────────────

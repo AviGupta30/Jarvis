@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Database, Loader2, CheckCircle2, Cpu, Wifi, Mic } from 'lucide-react';
+import { API_BASE } from './config';
 
 export default function MemorySidebar() {
   const [content, setContent] = useState('');
@@ -14,7 +15,7 @@ export default function MemorySidebar() {
     setStatusMessage(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/ingest", {
+      const response = await fetch(`${API_BASE}/memory/ingest`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -22,8 +23,10 @@ export default function MemorySidebar() {
         body: JSON.stringify({ content: content.trim() }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to ingest memory");
+      // The endpoint reports failures as 200 + {status: "error"}, so check the body too
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || data.status !== 'success') {
+        throw new Error(data.message || "Failed to ingest memory");
       }
 
       setContent('');

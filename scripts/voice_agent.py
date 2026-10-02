@@ -1,19 +1,50 @@
-import os
-import sys
-import struct
-import wave
-import pyaudio
+"""
+voice_agent.py — hands-free JARVIS voice loop (separate process → POST /chat)
+
+    MicListener (thread)  owns the ONLY PyAudio stream and never pauses, not even
+                          while Jarvis talks or thinks. Silero VAD per 32 ms frame cuts
+                          utterances, with a 0.5 s pre-roll so the "Jar-" of "Jarvis"
+                          is never clipped. Optional strict double-clap wake
+                          (JARVIS_CLAP_WAKE=1) runs inline.
+    utterance loop        STT (Groq turbo, local fallback) → echo filter → stop words
+                          → wake word / follow-up window → dispatch.
+    command tasks         one asyncio task per command, run CONCURRENTLY: say
+                          "Jarvis, play music" and, while it works, "Jarvis, what's
+                          the weather" — both run, replies are spoken one after another.
+    Speaker               one voice, never overlapping, next sentence synthesised
+                          while the current one plays (app/services/voice.py).
+
+Talk to it: "Jarvis, <command>" (wake word anywhere in the sentence), or just
+"Jarvis" and then the command. Without the wake word it only listens right after
+it greeted you or asked you a question — random room noise can't start it.
+"Jarvis, stop" / "Jarvis, bas" / "chup" silences it.
+Speak English → English reply (British voice); speak Hindi → Hindi reply (Hindi voice).
+"""
+
 import asyncio
-import httpx
-import re
-import time
-import math
+import difflib
 import json
-import subprocess
+import os
 import random
+import re
+import subprocess
+import sys
+import threading
+import time
+from collections import deque
+
+import httpx
+import numpy as np
+import pyaudio
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from app.core.config import settings  # noqa: E402
+from app.services import voice  # noqa: E402
+from app.services.context_classifier import detect_language  # noqa: E402
 
 # ── Shared UI state file (read by jarvis_overlay.py) ────────────────────────
 _UI_STATE_FILE = os.path.join(os.environ.get('TEMP', os.path.expanduser('~')), 'jarvis_ui_state.json')
+
 
 def set_ui_state(state: str):
     """Write Jarvis UI state so the overlay can animate accordingly."""
@@ -23,517 +54,760 @@ def set_ui_state(state: str):
     except Exception:
         pass
 
-# Timing constants
-SILENCE_LIMIT = 1.5      # Stop recording 1.5s after speech ends
-MAX_RECORD_TIME = 8.0    # Max recording time
-CHUNK = 512
+
+# ── Audio / VAD tuning ───────────────────────────────────────────────────────
 RATE = 16000
-SILENCE_THRESHOLD = 500  # Dynamically calibrated at startup
+CHUNK = 512                               # 32 ms — Silero's native frame size
+FRAME_S = CHUNK / RATE
+PREROLL_S = 0.5                           # audio kept from before speech onset
+END_SILENCE_S = float(os.getenv("JARVIS_END_SILENCE_MS", "700")) / 1000
+MIN_SPEECH_S = 0.25                       # shorter = cough / click
+MAX_UTTERANCE_S = 20.0
+MAX_WHILE_SPEAKING_S = 2.5                # rolling windows while Jarvis talks → fast barge-in
+VAD_START, VAD_END = 0.5, 0.35            # hysteresis on Silero speech probability
 
-def get_rms(data):
-    count = len(data) // 2
-    if count == 0:
-        return 0
-    shorts = struct.unpack(f"{count}h", data)
-    sum_squares = sum(s * s for s in shorts)
-    return math.sqrt(sum_squares / count)
+FOLLOWUP_GREET_S = 8.0                    # after "Yes, sir?": the command, no wake word needed
+FOLLOWUP_QUESTION_S = 10.0                # after Jarvis asked a question: the answer
+MAX_PARALLEL = 4
+CLAP_WAKE = os.getenv("JARVIS_CLAP_WAKE", "0") == "1"   # off by default: noise woke Jarvis up
 
-
-def calibrate_noise(audio_stream, sample_seconds: float = 1.5) -> float:
-    print("🎤 Calibrating ambient noise level...")
-    samples = []
-    num_chunks = int(RATE / CHUNK * sample_seconds)
-    for _ in range(num_chunks):
-        data = audio_stream.read(CHUNK, exception_on_overflow=False)
-        samples.append(get_rms(data))
-    avg_noise = sum(samples) / len(samples) if samples else 300
-    threshold = max(avg_noise * 2.5, 300)
-    print(f"✅ Noise floor: {avg_noise:.0f} → Trigger threshold set to {threshold:.0f}")
-    return threshold
+# Speech without a wake word must be clearly speech, clearly worded and loud enough
+# (room noise / TV / distant voices otherwise became commands).
+NO_WAKE_MIN_LOGPROB = -0.8
+NO_WAKE_MAX_NO_SPEECH = 0.4
+LEVEL_OVER_NOISE = 4.0                    # speech level vs ambient noise floor
+LEVEL_MIN = 60.0
 
 
-# Known wake word forms (English + Devanagari + common Whisper mishearings)
-WAKE_WORDS = [
-    "jarvis", "जारविस", "जार्विस",
-    "jarwis", "jaarvis", "jarbus", "jarvas", "jarves",
-    "jarbis", "jarbi", "harvey", "j.a.r.v.i.s",
-    "hey jarvis", "javis", "jarvice",
-]
+# ═════════════════════════════════════════════════════════════════════════════
+#  Wake word / stop words
+# ═════════════════════════════════════════════════════════════════════════════
 
-WAKE_PREFIXES = ["hey", "ok", "okay", "hi", "yo", "aye"]
+WAKE_WORDS = ["jarvis", "jarvish", "jarwis", "jaarvis", "jarbis", "jarvas", "jarves",
+              "jervis", "javis", "jarvice", "jarviz"]
+_WAKE_PREFIX = {"hey", "ok", "okay", "hi", "hello", "yo", "aye", "arre", "are", "suno", "oye", "listen"}
+_WAKE_DEV = ("जार्विस", "जारविस", "जार्वीस", "जरविस")
 
 
-def _fuzzy_contains_wake_word(text: str) -> tuple[bool, str]:
-    import difflib
-    words = text.split()
-    for i, word in enumerate(words):
-        cleaned = re.sub(r'[^a-z]', '', word.lower())
-        if not cleaned:
-            continue
-        for ww in WAKE_WORDS:
-            ww_clean = re.sub(r'[^a-z]', '', ww.lower())
-            if not ww_clean:
-                continue
-            ratio = difflib.SequenceMatcher(None, cleaned, ww_clean).ratio()
-            if ratio >= 0.72 or cleaned == ww_clean:
-                remaining = ' '.join(words[i+1:]).strip()
-                remaining = re.sub(r'^[,!?.।\s]+', '', remaining).strip()
-                return True, remaining
-    for ww in ["जारविस", "जार्विस"]:
-        if ww in text:
-            idx = text.index(ww)
-            remaining = text[idx + len(ww):].strip().lstrip(',!?. ')
-            return True, remaining
-    return False, ""
+def _is_wake_token(word: str) -> bool:
+    w = re.sub(r"[^a-z]", "", word.lower())
+    if w.endswith("s") and w[:-1] in WAKE_WORDS:     # "Jarvis's"
+        w = w[:-1]
+    if len(w) < 5 or len(w) > 9:
+        return False
+    if w in WAKE_WORDS:
+        return True
+    # Fuzzy only for j-words: "Travis", "harvest", "service" must never wake Jarvis
+    return w[0] == "j" and difflib.SequenceMatcher(None, w, "jarvis").ratio() >= 0.8
 
 
 def extract_wake_word_command(text: str) -> str | None:
-    found, command = _fuzzy_contains_wake_word(text)
-    if found:
-        return command
+    """
+    None if no wake word; otherwise the command with the wake word (and a
+    leading "hey"/"ok") removed. Wake word may be anywhere: "open Chrome, Jarvis".
+    Returns "" when the user only said the wake word.
+    """
+    for dev in _WAKE_DEV:
+        text = text.replace(dev, "Jarvis")
+    words = text.split()
+    for i, word in enumerate(words):
+        if _is_wake_token(word):
+            before = words[:i]
+            if before and re.sub(r"[^a-z]", "", before[-1].lower()) in _WAKE_PREFIX:
+                before = before[:-1]
+            after = " ".join(words[i + 1:])
+            # Words after the wake word are the command; words before only count when
+            # nothing follows ("open Chrome, Jarvis") — otherwise they're usually noise
+            # or Jarvis's own voice bleeding into the mic.
+            rest = after if re.search(r"\w", after) else " ".join(before)
+            return re.sub(r"^[\s,!?.।:;-]+|[\s,;:-]+$", "", rest).strip()
     return None
 
 
-# ── Ensure we can import the app module ─────────────────────────────────────
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from app.services.voice import transcribe_audio, speak_text, speak_stream
-from app.services.whatsapp import open_whatsapp, send_whatsapp_message
-from app.services.hinglish_normalizer import normalize_for_tts
-
-# ── Acoustic Tripwire (double-clap wake) ─────────────────────────────────────
-try:
-    from app.services.acoustic_tripwire import get_engine as _get_tripwire_engine
-    _TRIPWIRE_AVAILABLE = True
-except Exception as _tw_err:
-    print(f"[Tripwire] Could not load acoustic engine (non-fatal): {_tw_err}")
-    _TRIPWIRE_AVAILABLE = False
-
-# Import planner classifier at module level (not inside the hot loop)
-try:
-    from app.services.planner import is_complex_task as _is_complex_task
-except Exception:
-    def _is_complex_task(cmd): return False
-
-# (PIN removed — WhatsApp now uses two-phase confirmation instead)
+_STOP_RE = re.compile(
+    r"^(please\s+)?(stop( it| talking| now)?|ruko|ruk ja(o)?|bas( karo| kar| itna hi)?|chup( ho ja(o)?| raho| karo)?|"
+    r"cancel( it)?|shut up|(be )?quiet|enough|that'?s enough|khamosh|silence|never ?mind|rehne do|"
+    r"band karo bolna|mute)(\s+(sir|please|yaar|jarvis))?[\s.!]*$",
+    re.IGNORECASE,
+)
+_FILLERS = {"hmm", "hm", "uh", "um", "ah", "oh", "huh", "mm", "mhm", "uh huh", "ahem"}
 
 
+def _is_stop(cmd: str) -> bool:
+    return bool(_STOP_RE.match(cmd.strip(" ,.!?")))
 
 
-def clean_markdown(text: str) -> str:
-    """Strip markdown and Devanagari before text reaches TTS."""
-    # Use the hinglish normalizer — it handles Devanagari + markdown in one pass
-    return normalize_for_tts(text)
+# ═════════════════════════════════════════════════════════════════════════════
+#  Microphone + VAD (thread)
+# ═════════════════════════════════════════════════════════════════════════════
+
+class _SileroStream:
+    """Stateful frame-by-frame Silero VAD using the ONNX model bundled with faster-whisper."""
+
+    def __init__(self):
+        from faster_whisper.vad import get_vad_model
+        self.session = get_vad_model().session
+        self.reset()
+
+    def reset(self):
+        self.h = np.zeros((1, 1, 128), np.float32)
+        self.c = np.zeros((1, 1, 128), np.float32)
+        self.ctx = np.zeros(64, np.float32)
+
+    def __call__(self, pcm: np.ndarray) -> float:
+        f = pcm.astype(np.float32) / 32768.0
+        out, self.h, self.c = self.session.run(
+            None, {"input": np.concatenate([self.ctx, f])[None, :], "h": self.h, "c": self.c})
+        self.ctx = f[-64:]
+        return float(np.ravel(out)[0])
 
 
-async def record_audio(audio_stream, pa) -> str | None:
-    """Records audio from the stream until silence, saves to temp file, returns path."""
-    frames = []
-    start_time = time.time()
-    silence_start = None
+class _EnergyVAD:
+    """Fallback if Silero can't load: adaptive noise floor."""
 
-    # Flush stale buffer
-    audio_stream.read(audio_stream.get_read_available(), exception_on_overflow=False)
+    def __init__(self):
+        self.floor = 300.0
 
-    while True:
-        data = audio_stream.read(CHUNK, exception_on_overflow=False)
-        frames.append(data)
+    def reset(self):
+        pass
 
-        current_time = time.time()
-        elapsed = current_time - start_time
-        current_rms = get_rms(data)
+    def __call__(self, pcm: np.ndarray) -> float:
+        rms = float(np.sqrt(np.mean(pcm.astype(np.float32) ** 2)))
+        if rms < self.floor * 2:
+            self.floor = 0.97 * self.floor + 0.03 * max(rms, 50.0)
+        return 1.0 if rms > self.floor * 2.5 else 0.0
 
-        if current_rms < SILENCE_THRESHOLD:
-            if silence_start is None:
-                silence_start = current_time
-            elif current_time - silence_start > SILENCE_LIMIT:
-                break
+
+class _ClapDetector:
+    """
+    Strict double clap. The old tripwire fired on ANY two loud 2–8 kHz frames within
+    1.5 s — keyboard, door, dishes — and woke Jarvis on its own. Now a clap must be:
+    a sudden onset (≥6× the previous frame), well above the room's noise, not speech,
+    mostly high-frequency energy, decaying within ~100 ms; exactly two of them
+    0.15–0.9 s apart, with quiet before the first and after the second.
+    """
+
+    def __init__(self):
+        self.t = 0.0
+        self.noise = None
+        self.prev_rms = 0.0
+        self.candidate = None          # (peak_rms, t, frames_since)
+        self.impulses: deque = deque(maxlen=8)
+        self.loud: deque = deque(maxlen=64)   # times of other loud frames
+        self.cooldown_until = 0.0
+
+    @staticmethod
+    def _hf_ratio(pcm: np.ndarray) -> float:
+        spec = np.abs(np.fft.rfft(pcm.astype(np.float32))) ** 2
+        freqs = np.fft.rfftfreq(len(pcm), 1.0 / RATE)
+        total = float(spec.sum()) or 1.0
+        return float(spec[freqs >= 2000].sum()) / total
+
+    def feed(self, pcm: np.ndarray, vad_p: float) -> bool:
+        self.t += FRAME_S
+        rms = float(np.sqrt(np.mean(pcm.astype(np.float32) ** 2)))
+        if self.noise is None:
+            self.noise = rms
+        if rms < self.noise * 3:
+            self.noise = 0.995 * self.noise + 0.005 * rms
+        thr = max(self.noise * 30.0, 3000.0)
+
+        if self.candidate is not None:
+            peak, t0, n = self.candidate
+            if rms < 0.25 * peak:
+                self.impulses.append(t0)
+                self.candidate = None
+            elif n >= 3:                              # sustained: not a clap
+                self.candidate = None
+                self.loud.append(self.t)
+            else:
+                self.candidate = (max(peak, rms), t0, n + 1)
+        elif (rms >= thr and rms >= 6.0 * max(self.prev_rms, 1.0) and vad_p < 0.3
+              and self._hf_ratio(pcm) >= 0.4):
+            self.candidate = (rms, self.t, 0)
+        elif rms >= thr * 0.3:
+            self.loud.append(self.t)
+        self.prev_rms = rms
+
+        if not self.impulses or self.candidate is not None or self.t - self.impulses[-1] < 0.5:
+            return False
+        imps = list(self.impulses)
+        self.impulses.clear()
+        if self.t < self.cooldown_until or len(imps) != 2:
+            return False
+        a, b = imps
+        if not 0.15 <= b - a <= 0.9:
+            return False
+        if any(a - 0.6 <= x <= a - 0.05 or b + 0.2 <= x <= b + 0.5 for x in self.loud):
+            return False
+        self.cooldown_until = self.t + 3.0
+        return True
+
+
+class MicListener(threading.Thread):
+    def __init__(self, loop: asyncio.AbstractEventLoop, events: asyncio.Queue, speaking_flag,
+                 clap_wake: bool = False, output_level=lambda: 0.0):
+        super().__init__(daemon=True, name="jarvis-mic")
+        self.loop, self.events = loop, events
+        self.speaking_flag = speaking_flag          # callable → bool (is Jarvis talking?)
+        self.clap = _ClapDetector() if clap_wake else None
+        self.in_speech = False
+        self.running = True
+        self.noise_floor = 50.0                     # RMS of non-speech frames (EMA)
+        # Double-talk detection: while Jarvis talks, mic RMS ≈ echo_gain × output RMS.
+        # Frames well above that are the user talking over Jarvis.
+        self.output_level = output_level
+        self.echo_ratios: deque = deque(maxlen=400)
+        self.user_frames = 0
+        try:
+            self.vad = _SileroStream()
+            print("🎚️  Silero VAD active.")
+        except Exception as e:
+            print(f"[VAD] Silero unavailable ({e}) — using energy VAD.")
+            self.vad = _EnergyVAD()
+
+    def _emit(self, *event):
+        self.loop.call_soon_threadsafe(self.events.put_nowait, event)
+
+    def _open(self, pa):
+        return pa.open(rate=RATE, channels=1, format=pyaudio.paInt16, input=True, frames_per_buffer=CHUNK)
+
+    def _calibrate(self, stream):
+        """Initial ambient noise floor (kept up to date on every non-speech frame)."""
+        levels = []
+        for _ in range(int(1.0 / FRAME_S)):
+            pcm = np.frombuffer(stream.read(CHUNK, exception_on_overflow=False), np.int16)
+            levels.append(float(np.sqrt(np.mean(pcm.astype(np.float32) ** 2))))
+        self.noise_floor = max(float(np.median(levels)) if levels else 50.0, 1.0)
+        print(f"🎤 Ambient noise level {self.noise_floor:.0f} RMS."
+              + ("  👏 Strict double-clap wake ON." if self.clap else ""))
+
+    def _reset_segmenter(self):
+        self.preroll: deque = deque(maxlen=int(PREROLL_S / FRAME_S))
+        self.frames: list = []
+        self.voiced = self.silence = self.speech_frames = 0
+        self.start_t = 0.0
+
+    def _process(self, data: bytes):
+        """One 32 ms frame → clap check + VAD state machine → events."""
+        pcm = np.frombuffer(data, np.int16)
+        try:
+            p = self.vad(pcm)
+        except Exception:
+            p = 0.0
+        rms = float(np.sqrt(np.mean(pcm.astype(np.float32) ** 2)))
+        speaking = self.speaking_flag()
+        if p < 0.2 and not speaking:
+            self.noise_floor = 0.98 * self.noise_floor + 0.02 * max(rms, 1.0)
+        user_frame = self._is_user_frame(rms, p, speaking)
+        if self.clap is not None and not self.speaking_flag():
+            try:
+                if self.clap.feed(pcm, p):
+                    self._emit("clap")
+            except Exception:
+                pass
+
+        if not self.in_speech:
+            self.preroll.append(pcm)
+            self.voiced = self.voiced + 1 if p >= VAD_START else 0
+            self._pre_user = (getattr(self, "_pre_user", 0) + 1) if user_frame else 0
+            if self.voiced >= 2:
+                self.in_speech = True
+                self.frames = list(self.preroll)
+                self.user_frames = min(self._pre_user, len(self.frames))
+                self.speech_frames, self.silence = self.voiced, 0
+                self.start_t = time.monotonic() - len(self.frames) * FRAME_S
+                self._emit("speech_start", self.start_t)
+            return
+
+        self.frames.append(pcm)
+        if user_frame:
+            self.user_frames += 1
+        if p >= VAD_END:
+            self.silence = 0
+            self.speech_frames += 1
         else:
-            silence_start = None
+            self.silence += 1
 
-        if elapsed > MAX_RECORD_TIME:
-            break
+        dur = len(self.frames) * FRAME_S
+        limit = MAX_WHILE_SPEAKING_S if self.speaking_flag() else MAX_UTTERANCE_S
+        ended = self.silence * FRAME_S >= END_SILENCE_S
+        if not (ended or dur >= limit):
+            return
+        if self.speech_frames * FRAME_S >= MIN_SPEECH_S:
+            audio = np.concatenate(self.frames)
+            rms = [float(np.sqrt(np.mean(f.astype(np.float32) ** 2))) for f in self.frames]
+            level = float(np.percentile(rms, 80))
+            share = self.user_frames / max(len(self.frames), 1)
+            self._emit("utterance", audio, self.start_t, ended, level, self.noise_floor, share)
+        if ended:
+            self.in_speech = False
+            self.voiced = 0
+            self.preroll.clear()
+            self._emit("speech_end")
+        else:
+            # Window cut mid-speech (long talk / Jarvis speaking): keep the last
+            # 0.5 s as overlap so a word on the boundary isn't lost.
+            self.frames = self.frames[-self.preroll.maxlen:]
+            self.speech_frames = self.silence = self.user_frames = 0
+            self.start_t = time.monotonic() - len(self.frames) * FRAME_S
 
-    # Minimum recording: 0.8 seconds of audio — anything shorter is TTS echo or noise
-    MIN_FRAMES = int(RATE / CHUNK * 0.8)
-    if len(frames) < MIN_FRAMES:
-        return None
+    def _is_user_frame(self, rms: float, vad_p: float, speaking: bool) -> bool:
+        if not speaking:
+            return vad_p >= VAD_END
+        out = self.output_level()
+        if out >= 30.0:
+            # Learn the speaker→mic echo gain from EVERY frame while Jarvis plays (the
+            # echo is there whether or not the VAD fires). A low percentile keeps the
+            # estimate honest even if the user talks early.
+            self.echo_ratios.append(rms / out)
+        if vad_p < VAD_END:
+            return False
+        if out < 30.0:                      # Jarvis between words: anything voiced is the user
+            return rms > self.noise_floor * 6
+        if len(self.echo_ratios) < 25:      # echo path not learned yet — be conservative
+            return False
+        echo_gain = float(np.percentile(self.echo_ratios, 30))
+        return rms > max(echo_gain * out * 4.0, self.noise_floor * 6)
 
-    temp_audio = "temp_command.wav"
-    with wave.open(temp_audio, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(pa.get_sample_size(pyaudio.paInt16))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
+    def run(self):
+        pa = pyaudio.PyAudio()
+        stream = None
+        self._reset_segmenter()
+        while self.running:
+            try:
+                if stream is None:
+                    stream = self._open(pa)
+                    self._calibrate(stream)
+                data = stream.read(CHUNK, exception_on_overflow=False)
+            except Exception as e:
+                print(f"[Mic] {e} — reopening in 1 s")
+                try:
+                    stream and stream.close()
+                except Exception:
+                    pass
+                stream = None
+                time.sleep(1.0)
+                continue
+            self._process(data)
+        try:
+            stream and stream.close()
+        finally:
+            pa.terminate()
 
-    return temp_audio
 
+# ═════════════════════════════════════════════════════════════════════════════
+#  Backend streaming → speech
+# ═════════════════════════════════════════════════════════════════════════════
 
-# ── Agentic tag detection ─────────────────────────────────────────────────────
 _AGENTIC_TAGS = ("[STEP", "[PLAN]", "[DONE]", "[REPLAN]", "[SUMMARY]", "[RESULT]")
 
-def _is_agentic_line(text: str) -> bool:
-    return any(text.startswith(tag) for tag in _AGENTIC_TAGS)
 
 def _clean_agentic_line(text: str) -> str:
-    """Convert an agentic tag line into natural spoken text."""
-    # [STEP 1] Description → "Step 1: Description"
-    text = re.sub(r'^\[STEP (\d+)[^\]]*\]\s*', r'Step \1. ', text)
-    # [STEP 1 ✓] result → "Step 1 done. result"
+    """Convert a linear-planner tag line into natural spoken text."""
     text = re.sub(r'^\[STEP (\d+) ✓\]\s*', r'Step \1 done. ', text)
-    # [STEP 1 ✗] error → "Step \1 failed. error"
-    text = re.sub(r'^\[STEP (\d+) ✗\]\s*', r'Step \1 encountered an issue. ', text)
-    text = text.replace("[PLAN] ", "")
-    text = text.replace("[DONE] ", "All done. ")
-    text = text.replace("[REPLAN] ", "Adjusting the plan. ")
-    text = text.replace("[SUMMARY] ", "")
-    text = text.replace("[RESULT] ", "")
+    text = re.sub(r'^\[STEP (\d+) ✗\]\s*', r'Step \1 hit a problem. ', text)
+    text = re.sub(r'^\[STEP (\d+)[^\]]*\]\s*', r'Step \1. ', text)
+    for tag, rep in (("[PLAN]", ""), ("[DONE]", "All done."), ("[REPLAN]", "Adjusting the plan."),
+                     ("[SUMMARY]", ""), ("[RESULT]", "")):
+        text = text.replace(tag, rep)
     return text.strip()
 
 
-async def send_command_streaming(http_client: httpx.AsyncClient, command: str) -> str:
+def _speakable(sentence: str) -> str:
+    s = sentence.strip()
+    if s.startswith(_AGENTIC_TAGS):
+        s = _clean_agentic_line(s)
+    return s
+
+
+async def stream_chat(http: httpx.AsyncClient, command: str, ch: "voice.Channel") -> str:
     """
-    Streams the backend response and speaks it sentence-by-sentence.
-
-    Handles two response modes:
-    - Regular streaming (simple commands): tokens arrive continuously, buffer into sentences
-    - Agentic plan updates: lines starting with [STEP N], [PLAN], etc. — speak each immediately
+    POST /chat with the spoken language, speak the reply into `ch` as it streams.
+    LLM replies come back in the user's language; canned English lines from tool
+    flows are translated (in order) before they are spoken. Returns the full reply.
     """
-    full_response = ""
-    sentence_buffer = ""
+    splitter = voice.SentenceSplitter()
+    full: list[str] = []
+    mode = None
+    sse_buf = ""
+    target = ch.lang or "en"
+    ordered: asyncio.Queue = asyncio.Queue()     # str or Task[str], in reply order
 
-    async def smart_text_generator():
-        nonlocal full_response, sentence_buffer
+    async def pusher():
+        while True:
+            item = await ordered.get()
+            if item is None:
+                return
+            text = await item if isinstance(item, asyncio.Task) else item
+            if text:
+                ch.say(text)
 
+    push_task = asyncio.create_task(pusher())
+
+    def say_text(t: str, flush: bool = False):
+        for s in splitter.feed(t) + (splitter.flush() if flush else []):
+            s = _speakable(s)
+            if not s:
+                continue
+            if _BACKEND_FAIL_RE.search(s):
+                if not getattr(say_text, "failed", False):
+                    say_text.failed = True
+                    ordered.put_nowait(_pick("quota", target))
+                continue
+            if voice.language_mismatch(s, target):
+                ordered.put_nowait(asyncio.create_task(voice.translate_for_speech(s, target)))
+            else:
+                ordered.put_nowait(s)
+
+    def on_event(raw: str):
+        raw = raw.strip()
+        if not raw.startswith("data:"):
+            return
         try:
-            async with http_client.stream(
-                "POST",
-                "http://127.0.0.1:8000/chat",
-                json={"prompt": command},
-                timeout=180.0,   # 3 minutes for complex agentic tasks
-            ) as response:
-                async for chunk in response.aiter_text():
-                    if not chunk:
-                        continue
+            evt = json.loads(raw[5:].strip())
+        except Exception:
+            return
+        kind, text = evt.get("type"), (evt.get("text") or "").strip()
+        # Speak what a person would say; skip per-node bookkeeping.
+        if kind in ("narration", "aggregate", "error", "fallback") and text:
+            full.append(text)
+            say_text(text + "\n", flush=True)
 
-                    # Strip SSE prefix if present
-                    chunk = chunk.replace("data: ", "")
-                    full_response += chunk
-
-                    # Check if this chunk contains an agentic update tag
-                    # Agentic lines come in complete: "[STEP 1] Opening the PDF\n"
-                    if "\n" in chunk:
-                        # Split on newlines, process each line
-                        parts = chunk.split("\n")
-                        for part in parts:
-                            part = part.strip()
-                            if not part:
-                                continue
-                            if _is_agentic_line(part):
-                                # Flush any pending sentence buffer first
-                                if sentence_buffer.strip():
-                                    yield sentence_buffer.strip()
-                                    sentence_buffer = ""
-                                spoken = _clean_agentic_line(part)
-                                if spoken:
-                                    yield spoken
-                            else:
-                                sentence_buffer += part + " "
-                                # Try to extract a complete sentence
-                                while True:
-                                    found = -1
-                                    for sep in ('.', '!', '?', '।'):
-                                        idx = sentence_buffer.find(sep)
-                                        if idx != -1 and (found == -1 or idx < found):
-                                            found = idx
-                                    if found != -1:
-                                        sentence = sentence_buffer[:found+1].strip()
-                                        sentence_buffer = sentence_buffer[found+1:].strip()
-                                        if sentence and len(sentence) > 5:
-                                            yield sentence
-                                    else:
-                                        break
-                    else:
-                        # Regular token chunk — accumulate and sentence-split
-                        sentence_buffer += chunk
-                        while True:
-                            found = -1
-                            for sep in ('.', '!', '?', '।'):
-                                idx = sentence_buffer.find(sep)
-                                if idx != -1 and (found == -1 or idx < found):
-                                    found = idx
-                            if found != -1 and len(sentence_buffer[:found+1].strip()) > 5:
-                                sentence = sentence_buffer[:found+1].strip()
-                                sentence_buffer = sentence_buffer[found+1:].strip()
-                                yield sentence
-                            else:
-                                break
-
-        except httpx.ConnectError:
-            msg = "I can't reach my backend server. Please make sure the Jarvis server is running."
-            print(f"[Backend Error] ConnectError")
-            yield msg
-        except Exception as e:
-            msg = f"Backend error: {str(e)[:80]}"
-            print(f"[Backend Error] {e}")
-            yield msg
-
-        # Yield any remaining buffer
-        if sentence_buffer.strip() and len(sentence_buffer.strip()) > 2:
-            yield sentence_buffer.strip()
-
-    print("🔊 Speaking...")
-    set_ui_state("speaking")
-    await speak_stream(smart_text_generator())
-    set_ui_state("idle")
-    print()
-    return full_response
-
-
-async def safe_transcribe(audio_path: str) -> str:
-    """
-    Transcribes audio with a 20-second timeout. Returns empty string on failure.
-    """
+    body = {"prompt": command, "lang": target, "voice": True}
     try:
-        result = await asyncio.wait_for(
-            transcribe_audio(audio_path),
-            timeout=20.0
-        )
-        return result
-    except asyncio.TimeoutError:
-        print("⏳ Transcription timed out (>20s) — skipping.")
-        return ""
-    except Exception as e:
-        err_str = str(e)
-        if any(k in err_str.lower() for k in ["audio", "no speech", "empty", "short"]):
-            return ""
-        print(f"❌ Transcription error: {type(e).__name__}: {err_str[:80]}")
-        return ""
+        async with http.stream("POST", f"{settings.JARVIS_API_URL}/chat", json=body) as resp:
+            if resp.status_code != 200:
+                raise RuntimeError(f"backend HTTP {resp.status_code}")
+            async for chunk in resp.aiter_text():
+                if not chunk:
+                    continue
+                if mode is None:
+                    mode = "sse" if chunk.lstrip().startswith("data:") else "text"
+                if mode == "sse":
+                    sse_buf += chunk
+                    while "\n\n" in sse_buf:
+                        event, sse_buf = sse_buf.split("\n\n", 1)
+                        on_event(event)
+                else:
+                    full.append(chunk)
+                    say_text(chunk)
+        if mode == "sse" and sse_buf:
+            on_event(sse_buf)
+        say_text("", flush=True)
+    finally:
+        ordered.put_nowait(None)
+        await push_task
+    return "".join(full) if mode != "sse" else " ".join(full)
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+#  Agent
+# ═════════════════════════════════════════════════════════════════════════════
+
+PHRASES = {
+    "greet": {
+        "en": ["Yes, sir?", "At your service, sir.", "I'm listening, sir.", "Go ahead, sir."],
+        "hi": ["Haan sir, boliye?", "Ji sir, bataiye.", "Boliye sir, sun raha hoon."],
+    },
+    "ack": {
+        "en": ["On it, sir.", "Right away, sir.", "Working on it.", "One moment, sir."],
+        "hi": ["Ji sir, abhi karta hoon.", "Haan sir, ek second.", "Kar raha hoon, sir."],
+    },
+    "busy": {
+        "en": ["I'm already juggling several tasks, sir. Give me a moment."],
+        "hi": ["Sir, abhi kaafi kaam chal raha hai, ek pal dijiye."],
+    },
+    "offline": {
+        "en": ["I can't reach my core systems, sir. Is the Jarvis server running?"],
+        "hi": ["Sir, main server se connect nahi ho pa raha. Kya Jarvis server chal raha hai?"],
+    },
+    "error": {
+        "en": ["Sorry sir, something went wrong with that one."],
+        "hi": ["Sorry sir, isme kuch gadbad ho gayi."],
+    },
+    "quota": {
+        "en": ["I've hit my AI usage limit for the moment, sir. Give me a minute and ask again."],
+        "hi": ["Sir, abhi meri AI limit poori ho gayi hai. Ek minute baad phir se boliye."],
+    },
+}
+
+# Backend's generic failure line (llm._groq_generate) → an honest, localized sentence
+_BACKEND_FAIL_RE = re.compile(r"issue connecting to my brain|please try again in a moment", re.IGNORECASE)
+
+
+def _pick(kind: str, lang: str) -> str:
+    return random.choice(PHRASES[kind]["hi" if lang == "hi" else "en"])
+
+
+class VoiceAgent:
+    def __init__(self):
+        self.speaker: voice.Speaker | None = None
+        self.mic: MicListener | None = None
+        self.events: asyncio.Queue | None = None
+        self.http: httpx.AsyncClient | None = None
+        self.tasks: set[asyncio.Task] = set()
+        self.task_started: dict[asyncio.Task, float] = {}
+        self.followup_until = 0.0
+        self._followup_pending: float | None = None   # window length to open when speech ends
+        self._speak_spans: deque = deque(maxlen=50)    # (start, end) of Jarvis talking
+        self._speak_start = None
+        self._last_ui = None
+        self._pending_greet: asyncio.Task | None = None
+        self._last_lang = "en"
+
+    # ── speaker state → follow-up window ──
+    def _on_speaker_state(self):
+        now = time.monotonic()
+        if self.speaker.speaking:
+            self._speak_start = now
+        else:
+            if self._speak_start is not None:
+                self._speak_spans.append((self._speak_start, now))
+            self._speak_start = None
+            if self._followup_pending:
+                self.followup_until = now + self._followup_pending
+                self._followup_pending = None
+
+    def _open_followup(self, seconds: float):
+        if self.speaker.busy:
+            self._followup_pending = max(seconds, self._followup_pending or 0)
+        else:
+            self.followup_until = time.monotonic() + seconds
+
+    def _overlaps_speech(self, t0: float, t1: float) -> bool:
+        """Was Jarvis talking (or just finished) during [t0, t1]?"""
+        if self.speaker.speaking and (self._speak_start or 0) <= t1:
+            return True
+        return any(s <= t1 and t0 <= e + 0.35 for s, e in self._speak_spans)
+
+    # ── UI ──
+    async def _ui_loop(self):
+        while True:
+            now = time.monotonic()
+            if self.speaker.speaking:
+                s = "speaking"
+            elif self.mic and self.mic.in_speech:
+                s = "listening"
+            elif self.tasks:
+                s = "working" if any(now - t > 4 for t in self.task_started.values()) else "processing"
+            elif now < self.followup_until:
+                s = "listening"
+            else:
+                s = "idle"
+            if s != self._last_ui:
+                set_ui_state(s)
+                self._last_ui = s
+            await asyncio.sleep(0.15)
+
+    # ── commands ──
+    def dispatch(self, command: str, lang: str):
+        if len(self.tasks) >= MAX_PARALLEL:
+            self.speaker.say_now(_pick("busy", lang), lang)
+            return
+        acked = bool(self.tasks)
+        if acked:
+            # Something is already running — acknowledge instantly so the user knows
+            # the second command was heard and is running in parallel.
+            self.speaker.say_now(_pick("ack", lang), lang)
+        task = asyncio.create_task(self._run_command(command, lang, acked))
+        self.tasks.add(task)
+        self.task_started[task] = time.monotonic()
+
+        def _done(t):
+            self.tasks.discard(t)
+            self.task_started.pop(t, None)
+        task.add_done_callback(_done)
+
+    async def _run_command(self, command: str, lang: str, acked: bool = False):
+        ch = self.speaker.channel(lang)
+        t0 = time.monotonic()
+
+        async def filler():
+            # Nothing to say after 1.8 s? Acknowledge once, like a person would.
+            if acked:
+                return
+            await asyncio.sleep(1.8)
+            if not ch.spoke and not ch.q and not ch.closed and not ch.muted:
+                ch.say(_pick("ack", lang))
+        filler_task = asyncio.create_task(filler())
+        reply = ""
+        try:
+            reply = await stream_chat(self.http, command, ch)
+            print(f"🤖 [{time.monotonic() - t0:.1f}s] {reply.strip()[:200]}")
+        except httpx.ConnectError:
+            print("[Backend] not reachable")
+            ch.say(_pick("offline", lang))
+        except Exception as e:
+            print(f"[Backend error] {type(e).__name__}: {e}")
+            ch.say(_pick("error", lang))
+        finally:
+            filler_task.cancel()
+            ch.close()
+        # Listen without the wake word ONLY if Jarvis asked something. (It used to open a
+        # window after every reply, so TV / room talk became new commands → it kept talking.)
+        if not ch.muted and re.search(r"[?？]\s*[\"')\]]?\s*$", reply.strip()):
+            self._open_followup(FOLLOWUP_QUESTION_S)
+
+    # ── utterances ──
+    async def _greet_after_pause(self, lang: str):
+        # User said just "Jarvis" — if they keep talking, don't talk over them.
+        await asyncio.sleep(0.6)
+        if not (self.mic and self.mic.in_speech):
+            self.speaker.say_now(_pick("greet", lang), lang)
+        self.followup_until = time.monotonic() + FOLLOWUP_GREET_S + 2
+
+    async def handle_utterance(self, pcm: np.ndarray, start_t: float, complete: bool = True,
+                               level: float = 1e9, noise: float = 0.0, user_share: float = 1.0):
+        end_t = time.monotonic()
+        overlapped = self._overlaps_speech(start_t, end_t)
+        if overlapped and user_share < 0.12:
+            return          # only Jarvis's own voice in the mic — nothing to transcribe
+        # Follow-up window: after a reply it only opens once Jarvis is silent; after
+        # a greeting it is open at once. Echo of Jarvis himself is filtered below.
+        in_followup = start_t <= self.followup_until
+        # Quota: speech that is probably not for us (Jarvis's own echo, idle-room
+        # chatter when Groq quota is low) goes through local Whisper first.
+        # Quota saver: idle-room speech goes to local Whisper first only when Groq
+        # quota runs low. The user talking over Jarvis (double-talk detected) gets
+        # the accurate Groq model — tiny Whisper garbled Hindi barge-ins.
+        prefer_local = not in_followup and voice.groq_quota_low()
+        tr = await voice.transcribe_pcm(pcm, prefer_local=prefer_local)
+        text = tr.text.strip()
+        if not text:
+            return
+        command = extract_wake_word_command(text)
+
+        if overlapped and command is not None and not _is_stop(command) and self.speaker.is_echo(text):
+            print(f"   (echo ignored: '{text}')")
+            return
+        if (prefer_local and command is not None and not _is_stop(command)
+                and voice.groq_stt_available()):
+            better = await voice.transcribe_pcm(pcm)      # wake word found — get the accurate version
+            better_cmd = extract_wake_word_command(better.text) if better.text else None
+            if better_cmd is not None:                    # keep local's result if Groq lost the wake word
+                tr, text, command = better, better.text.strip(), better_cmd
+
+        tag = f"{tr.source}/{tr.lang} lp={tr.logprob:.2f} ns={tr.no_speech:.2f} lvl={level:.0f}/{noise:.0f}"
+        loud_enough = level >= max(noise * LEVEL_OVER_NOISE, LEVEL_MIN)
+        sure = tr.confident(NO_WAKE_MIN_LOGPROB, NO_WAKE_MAX_NO_SPEECH)
+        if command is not None and _is_stop(command):
+            if not (self.speaker.speaking or self.speaker.busy):
+                # Jarvis is silent, so "stop" / "stop it" / "mute" is about the music/video
+                print(f"⏸️  Stop → media pause.  ('{text}')")
+                self.followup_until = 0
+                self.dispatch("stop the music", self._last_lang)
+                return
+            print(f"🤫 Stop.  ('{text}')")
+            self.speaker.stop_all()
+            self.followup_until = 0
+            self._followup_pending = None
+            return
+        if overlapped and self.speaker.is_echo(command if command else text):
+            print(f"   (echo ignored: '{text}')")
+            return
+        if command is None:
+            if not in_followup:
+                print(f"   [no wake word] '{text}'  ({tag})")
+                return
+            # No wake word to vouch for it: must be clear, confident, near-field speech.
+            if not (sure and loud_enough) or len(re.findall(r"\w{2,}", text)) == 0:
+                print(f"   [ignored: unclear/quiet] '{text}'  ({tag})")
+                return
+            command = text
+            if command.lower().strip(" .!?") in _FILLERS:
+                return
+            if self.speaker.is_echo(command):
+                return
+        elif not command and not (sure and loud_enough):
+            # A bare "Jarvis" from noise (Whisper hallucination / distant sound) — ignore.
+            print(f"   [ignored: weak wake] '{text}'  ({tag})")
+            return
+        print(f"\n🗣️  '{text}'  ({tag})")
+
+        # Reply language = spoken language. Whisper's audio language ID decides; romanized
+        # Hindi that Whisper labelled English is caught by the word check.
+        lang = "hi" if tr.lang == "hi" or detect_language(command or text) in ("hindi", "hinglish") else "en"
+        self._last_lang = lang
+
+        if _is_stop(command):              # plain "stop" in the follow-up window
+            if not (self.speaker.speaking or self.speaker.busy):
+                print("⏸️  Stop → media pause.")
+                self.followup_until = 0
+                self.dispatch("stop the music", lang)
+                return
+            print("🤫 Stop.")
+            self.speaker.stop_all()
+            self.followup_until = 0
+            self._followup_pending = None
+            return
+        if not command:
+            if self._pending_greet and not self._pending_greet.done():
+                return
+            self._pending_greet = asyncio.create_task(self._greet_after_pause(lang))
+            return
+        if self._pending_greet and not self._pending_greet.done():
+            self._pending_greet.cancel()   # they kept talking — no greeting needed
+
+        self.followup_until = 0          # this utterance consumed the follow-up window
+        print(f"🧠 → /chat: {command}")
+        self.dispatch(command, lang)
+
+    async def on_clap(self):
+        print("\n👏 Double clap — awake.")
+        self.speaker.say_now(_pick("greet", self._last_lang), self._last_lang)
+        self.followup_until = time.monotonic() + FOLLOWUP_GREET_S + 2
+
+    # ── main ──
+    async def run(self):
+        loop = asyncio.get_running_loop()
+        self.events = asyncio.Queue()
+        self.speaker = voice.Speaker(on_state=self._on_speaker_state)
+        speaker_task = asyncio.create_task(self.speaker.run())
+
+        voice.preload_local_stt()
+        prewarm = [p for kind in ("greet", "ack") for lang in ("en", "hi") for p in PHRASES[kind][lang]]
+        asyncio.create_task(voice.prewarm(prewarm))
+
+        self.mic = MicListener(loop, self.events, lambda: self.speaker.speaking, CLAP_WAKE,
+                               voice.get_player().output_level)
+        self.mic.start()
+        ui_task = asyncio.create_task(self._ui_loop())
+
+        timeout = httpx.Timeout(300.0, connect=5.0)
+        async with httpx.AsyncClient(timeout=timeout) as self.http:
+            print("🤖 Jarvis is online. Say 'Jarvis …'" + (" or clap twice" if CLAP_WAKE else "")
+                  + ". (Ctrl+C to exit)")
+            self.speaker.say_now("Online and ready, sir.", "en")   # never say "Jarvis": it would wake itself
+            stt_jobs: set[asyncio.Task] = set()
+            try:
+                while True:
+                    event = await self.events.get()
+                    kind = event[0]
+                    if kind == "utterance":
+                        # Transcribe concurrently so a slow STT call never blocks the next utterance
+                        job = asyncio.create_task(self._safe_utterance(*event[1:]))
+                        stt_jobs.add(job)
+                        job.add_done_callback(stt_jobs.discard)
+                    elif kind == "clap":
+                        await self.on_clap()
+            finally:
+                self.mic.running = False
+                for t in list(self.tasks) + list(stt_jobs) + [ui_task, speaker_task]:
+                    t.cancel()
+
+    async def _safe_utterance(self, pcm, start_t, complete, level=1e9, noise=0.0, user_share=1.0):
+        try:
+            await self.handle_utterance(pcm, start_t, complete, level, noise, user_share)
+        except Exception as e:
+            print(f"[Utterance error] {type(e).__name__}: {e}")
 
 
 async def run_voice_agent():
-    pa = None
-    audio_stream = None
-
-    # Follow-up state
-    awaiting_followup = False
-
-    # ── Acoustic Tripwire (inline mode — shares voice_agent's mic stream) ────
-    # IMPORTANT: We do NOT call engine.start() here. That would open a second
-    # PyAudio stream at 44100 Hz while voice_agent already owns the mic at
-    # 16000 Hz. On Windows, dual exclusive streams at different sample rates
-    # corrupt each other — causing garbled transcriptions and failed detection.
-    # Instead, process_chunk() is called inline on every audio frame we read.
-    _tripwire = None
-    if _TRIPWIRE_AVAILABLE:
-        try:
-            _tripwire = _get_tripwire_engine()
-            _tripwire.enable()   # arm it (no background thread started)
-        except Exception as _e:
-            print(f"[Tripwire] Engine init failed (non-fatal): {_e}")
-            _tripwire = None
-
-    try:
-        pa = pyaudio.PyAudio()
-        audio_stream = pa.open(
-            rate=RATE,
-            channels=1,
-            format=pyaudio.paInt16,
-            input=True,
-            frames_per_buffer=CHUNK
-        )
-
-        # ── Calibrate ambient noise at startup ──────────────────────────────
-        global SILENCE_THRESHOLD
-        SILENCE_THRESHOLD = calibrate_noise(audio_stream)
-
-        # ── Wire tripwire threshold to calibrated noise floor ──────────────
-        # Claps are ~3× louder than speech, so set a much stricter gate to
-        # avoid speech or ambient noise triggering a false wake.
-        if _tripwire is not None:
-            _tw_thresh = max(SILENCE_THRESHOLD * 3.0, 2000.0)
-            _tripwire.set_volume_threshold(_tw_thresh)
-            print(f"👏 Acoustic tripwire armed. Clap threshold: {_tw_thresh:.0f} RMS")
-
-        print("🤖 Jarvis is ready. Say 'Jarvis' or clap twice to wake me up. (Ctrl+C to exit)")
-        set_ui_state("idle")
-
-        # Single persistent HTTP client — no per-request overhead
-        async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=10.0)) as http_client:
-            while True:
-
-                # Read one audio frame (this is the ONLY stream read — shared
-                # by both the wake-word detector and the tripwire)
-                data = audio_stream.read(CHUNK, exception_on_overflow=False)
-                rms  = get_rms(data)
-
-                # ── Acoustic tripwire (inline, no competing stream) ──────────
-                if _tripwire is not None and _tripwire.process_chunk(data, RATE):
-                    print("\n👏 Double-clap — Jarvis awakened by acoustic tripwire!")
-                    set_ui_state("listening")
-                    await speak_text("Yes sir?")
-                    # Longer flush: TTS takes ~0.8–1s to play; we must let it
-                    # fully finish before re-enabling the mic or the TTS echo
-                    # gets transcribed as a command.
-                    await asyncio.sleep(1.2)
-                    _flush_mic(audio_stream)
-                    await asyncio.sleep(0.4)
-                    _flush_mic(audio_stream)
-                    awaiting_followup = True
-                    continue
-
-                # State 1: Idle — wait for sound above threshold
-                if rms <= SILENCE_THRESHOLD:
-                    continue
-
-                # State 2: Recording
-                print("\n🎙️  Listening...")
-                set_ui_state("listening")
-                audio_path = await record_audio(audio_stream, pa)
-
-                if not audio_path:
-                    continue
-
-                # State 3: Transcribing
-                print("⚙️  Processing...")
-                set_ui_state("processing")
-                transcribed_text = await safe_transcribe(audio_path)
-                text_lower = transcribed_text.lower().strip()
-
-                if not text_lower:
-                    set_ui_state("idle")
-                    if awaiting_followup:
-                        print("\n⏳ No response heard. Going back to sleep. Say 'Jarvis' to wake me up.")
-                        awaiting_followup = False
-                    continue
-
-                print(f"📝 Heard: '{transcribed_text}'")
+    await VoiceAgent().run()
 
 
-                # ── Normal command / Wake-word routing ─────────────────────────
-                if awaiting_followup:
-                    awaiting_followup = False
-                    command = transcribed_text.strip()
-                    print(f"📝 Follow-up: {command}")
-                else:
-                    # Multilingual wake word detection
-                    command = extract_wake_word_command(transcribed_text)
-                    if command is None:
-                        print(f"[Ignored — no wake word: '{transcribed_text}']")
-                        continue
-                    print(f"🗣️  Command: '{command}'")
-
-                    if not command:
-                        # User only said "Jarvis" — greet locally in the same language
-                        print("👋 Just a greeting — responding locally.")
-                        from app.services.context_classifier import detect_language
-                        lang = detect_language(transcribed_text)
-
-                        if lang == "english":
-                            greetings = [
-                                "Yes Sir?",
-                                "How can I help?",
-                                "I'm listening.",
-                                "What can I do for you?",
-                                "Go ahead, Sir.",
-                            ]
-                        else:
-                            # Hindi/Hinglish wake — Hinglish greeting
-                            greetings = [
-                                "Haan Sir, boliye?",
-                                "Ji Sir, kya kaam hai?",
-                                "Bol Sir, sun raha hoon.",
-                                "Batao Sir, kya karna hai?",
-                            ]
-                        await speak_text(random.choice(greetings))
-                        _flush_mic(audio_stream)
-                        await asyncio.sleep(0.5)
-                        _flush_mic(audio_stream)
-                        awaiting_followup = True
-                        continue
-
-
-
-                # ── Send to backend ───────────────────────────────────────────
-                print("🧠 Sending to Jarvis brain...")
-
-                if _is_complex_task(command):
-                    print("🤖 Complex task detected — engaging agentic planner...")
-                    await speak_text("On it, sir. Let me work through this step by step.")
-                    set_ui_state("working")
-                elif any(w in command.lower() for w in
-                         ['list', 'organize', 'rename', 'convert', 'batch', 'compress',
-                          'resize', 'automate', 'scroll', 'drag', 'empty', 'find all',
-                          'sort all', 'clean', 'download all', 'move all']):
-                    set_ui_state("working")
-                else:
-                    set_ui_state("processing")
-
-                try:
-                    full_response = await send_command_streaming(http_client, command)
-                except Exception as e:
-                    err_msg = f"Sorry sir, I ran into a problem: {str(e)[:80]}"
-                    print(f"\n[Error: {e}]")
-                    await speak_text(err_msg)
-                    set_ui_state("idle")
-                    _flush_mic(audio_stream)
-                    continue
-
-                # Detect if Jarvis asked a follow-up question
-                response_stripped = full_response.strip()
-
-
-
-                if response_stripped.endswith("?"):
-                    print("\n💬 Jarvis is waiting for your answer (no wake word needed)...")
-                    awaiting_followup = True
-                else:
-                    followups = [
-                        "Aur kuch chahiye, Sir?",
-                        "Koi aur kaam?",
-                        "Kuch aur kar sakta hoon?",
-                        "Batao Sir, aur kya karna hai?",
-                        "Ho gaya. Kuch aur?",
-                    ]
-                    followup = random.choice(followups)
-                    print(f"\n💬 {followup} (Listening...)")
-                    await speak_text(followup)
-                    awaiting_followup = True
-
-                # Post-speech cooldown — flush mic to prevent TTS echo re-triggering
-                await asyncio.sleep(1.0)
-                _flush_mic(audio_stream)
-
-    except KeyboardInterrupt:
-        print("\nStopping Jarvis voice agent...")
-    except Exception as e:
-        print(f"\n[Fatal error in voice agent]: {e}")
-        import traceback
-        traceback.print_exc()
-    finally:
-        if audio_stream is not None:
-            try:
-                audio_stream.close()
-            except Exception:
-                pass
-        if pa is not None:
-            try:
-                pa.terminate()
-            except Exception:
-                pass
-
-
-def _flush_mic(audio_stream):
-    """Discard any audio in the mic buffer to prevent TTS echo from re-triggering."""
-    try:
-        available = audio_stream.get_read_available()
-        if available > 0:
-            audio_stream.read(available, exception_on_overflow=False)
-    except Exception:
-        pass
-
-
-if __name__ == '__main__':
-    # Kill any existing orphaned overlays first
+def _launch_overlay():
     import psutil
     for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
         try:
@@ -542,24 +816,33 @@ if __name__ == '__main__':
                 proc.terminate()
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess, TypeError):
             pass
+    path = os.path.join(os.path.dirname(__file__), 'jarvis_overlay.py')
+    if not os.path.exists(path):
+        return None
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, path],
+            creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0,
+        )
+        print("🎨 Jarvis overlay started.")
+        return proc
+    except Exception as e:
+        print(f"[Overlay] Could not start: {e}")
+        return None
 
-    # Launch the arc reactor overlay as a background process
-    _overlay_path = os.path.join(os.path.dirname(__file__), 'jarvis_overlay.py')
-    _overlay_proc = None
-    if os.path.exists(_overlay_path):
-        try:
-            _overlay_proc = subprocess.Popen(
-                [sys.executable, _overlay_path],
-                creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == 'win32' else 0
-            )
-            print("🎨 Jarvis overlay started.")
-        except Exception as e:
-            print(f"[Overlay] Could not start: {e}")
 
+if __name__ == '__main__':
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+    overlay = _launch_overlay()
     set_ui_state('idle')
     try:
         asyncio.run(run_voice_agent())
+    except KeyboardInterrupt:
+        print("\nStopping Jarvis voice agent...")
     finally:
         set_ui_state('idle')
-        if _overlay_proc:
-            _overlay_proc.terminate()
+        if overlay:
+            overlay.terminate()

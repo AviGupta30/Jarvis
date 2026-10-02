@@ -117,6 +117,26 @@ async def startup_event():
     except Exception as e:
         logger.error(f"Neural Cache auto-start failed (non-fatal): {e}")
 
+    # ── Floating "✦ Enhance" prompt button (auto-start) ──────────────────────
+    # Separate process (Tk needs its own main thread). Shows a click-only button
+    # on ChatGPT/Gemini/Claude/Copilot/... windows; exits when this backend
+    # process dies and holds a named mutex so restarts never stack two buttons.
+    # Disable with JARVIS_ENHANCER_BUTTON=0.
+    if os.name == "nt" and os.getenv("JARVIS_ENHANCER_BUTTON", "1") != "0":
+        try:
+            import subprocess, sys
+            from pathlib import Path
+            subprocess.Popen(
+                [sys.executable, "-m", "app.services.prompt_enhancer_button",
+                 "--parent-pid", str(os.getpid())],
+                cwd=str(Path(__file__).resolve().parent.parent),
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            logger.info("Prompt enhancer button started.")
+        except Exception as e:
+            logger.error(f"Prompt enhancer button auto-start failed (non-fatal): {e}")
+
     # ── Long-term RAG Memory (MySQL + FAISS) ──────────────────────────────────
     try:
         from app.services.rag_memory import init_rag_memory
@@ -126,18 +146,19 @@ async def startup_event():
         logger.error(f"RAG memory init failed (non-fatal): {e}")
 
 
-    # ── Acoustic Tripwire Engine ─────────────────────────────────────────────
-    # Note: The tripwire runs its OWN PyAudio stream in its background thread.
-    # It does NOT conflict with voice_agent.py because voice_agent.py is a
-    # separate process. When running from the frontend only (no voice_agent),
-    # this gives clap-wake capability directly on the server side.
-    try:
-        from app.services.acoustic_tripwire import get_engine as _get_tripwire
-        _tripwire = _get_tripwire()
-        _tripwire.start()
-        logger.info("✅ Acoustic tripwire started (double-clap wake enabled).")
-    except Exception as e:
-        logger.warning(f"⚠️  Acoustic tripwire startup failed (non-fatal): {e}")
+    # ── Acoustic Tripwire Engine (opt-in) ────────────────────────────────────
+    # Off by default: it opens a SECOND mic stream (44.1 kHz) next to the voice
+    # agent's and its loose detector chimed on keyboard/door noise, so Jarvis
+    # seemed to wake up by itself. The voice agent has a strict clap detector
+    # (JARVIS_CLAP_WAKE=1). The UI toggle (/tripwire/enable) still starts it.
+    if os.getenv("JARVIS_SERVER_TRIPWIRE", "0") == "1":
+        try:
+            from app.services.acoustic_tripwire import get_engine as _get_tripwire
+            _tripwire = _get_tripwire()
+            _tripwire.start()
+            logger.info("✅ Acoustic tripwire started (double-clap wake enabled).")
+        except Exception as e:
+            logger.warning(f"⚠️  Acoustic tripwire startup failed (non-fatal): {e}")
 
 
     # ── Background Screen Watcher ─────────────────────────────────────────────

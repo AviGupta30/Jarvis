@@ -25,9 +25,10 @@ import pyautogui
 import pyperclip
 import time
 import sys
+import os
 
 # ── Config ────────────────────────────────────────────────────────────────────
-BACKEND_URL = "http://127.0.0.1:8000/chat"
+BACKEND_URL = os.getenv("JARVIS_API_URL", "http://127.0.0.1:8000").rstrip("/") + "/chat"
 HOTKEY      = "ctrl+space"
 
 # ── Dark Theme Palette ────────────────────────────────────────────────────────

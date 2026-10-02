@@ -1,0 +1,28 @@
+# Reference / duplicate copies of the AirDrawing app (live copy is frontend/src/AirDrawing)
+AirDrawer_ref/
+AirDrawer_ref_new/
+3D/
+# Build/runtime artifacts
+node_modules/
+dist/
+__pycache__/
+.pytest_cache/
+data/
+models/
+graphify-out/
+# Legacy / scratch files at repo root
+chat_old.py
+*_diff.txt
+diff_utf8.txt
+spotify_commit.txt
+spotify_tree.txt
+test_api_resp.txt
+test_router.txt
+verify.txt
+*.pptx
+*.png
+*.wav
+*.sqlite3
+package-lock.json
+app/memory/*.json
+app_element_ids.json

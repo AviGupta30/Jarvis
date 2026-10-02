@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Any, Dict
 from app.services.tools import TOOL_REGISTRY
+from app.services.tool_runner import run_tool
 
 router = APIRouter()
 
@@ -16,10 +17,9 @@ async def execute_tool(request: ToolExecuteRequest):
             "status": "denied",
             "output": "Sorry, I do not have access for this function or the request was disallowed."
         }
-    
+
     try:
-        func = TOOL_REGISTRY[request.tool_name]
-        result = func(**request.arguments)
+        result = await run_tool(request.tool_name, request.arguments)
         return {
             "status": "success",
             "output": result

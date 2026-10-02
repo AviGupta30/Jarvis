@@ -38,3 +38,13 @@ models/
 
 data/
 
+
+# Runtime state (changes every chat)
+app/memory/session.json
+app/memory/youtube_session.json
+app/memory/enhancer_button.json
+app/memory/enhancer_button.log
+app/memory/resume_state.json
+app/data/
+
+NUL.pptx

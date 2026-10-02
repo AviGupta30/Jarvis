@@ -43,63 +43,6 @@ def read_my_screen(user_query: str = "What am I looking at?", intent_mode: str =
     except Exception as e:
         return f"Could not read screen: {e}"
 
-def play_video_in_browser() -> str:
-    """
-    Play a video currently visible in the active browser tab.
-    Used when user says 'play that video', 'play it', 'play the 52 minute one', etc.
-    Tries multiple strategies in order:
-      1. Focus browser window
-      2. Press Space (plays video if player is focused)
-      3. Press 'k' (YouTube keyboard shortcut for play/pause)
-      4. Tab to first video result and press Enter
-    """
-    import time
-    try:
-        import pygetwindow as gw
-        # Find and focus browser window
-        browser_names = ['chrome', 'edge', 'firefox', 'browser', 'youtube']
-        browser_win = None
-        for win in gw.getAllWindows():
-            if win.title and any(b in win.title.lower() for b in browser_names):
-                browser_win = win
-                break
-
-        if browser_win:
-            if browser_win.isMinimized:
-                browser_win.restore()
-            browser_win.activate()
-            time.sleep(0.5)
-    except Exception:
-        pass
-
-    time.sleep(0.3)
-
-    # Strategy 1: If YouTube is open and video player is visible, 'k' toggles play/pause
-    # Strategy 2: Space plays/pauses most video players
-    # Try clicking the center of screen first (often lands on video player)
-    try:
-        screen_w, screen_h = pyautogui.size()
-        # Click upper-center — where the first YouTube search result typically is
-        pyautogui.click(screen_w // 2, int(screen_h * 0.30))
-        time.sleep(0.3)
-        # Press 'k' — YouTube play/pause shortcut
-        pyautogui.press('k')
-        time.sleep(0.5)
-        return "Pressed play on the video."
-    except Exception:
-        pass
-
-    # Strategy 3: Tab to first video thumbnail and press Enter
-    try:
-        # Press Tab several times to reach the first video result
-        for _ in range(3):
-            pyautogui.press('tab')
-            time.sleep(0.15)
-        pyautogui.press('enter')
-        return "Navigated to and opened the video."
-    except Exception as e:
-        return f"Could not play video: {e}"
-
 # ─── Web & Information ──────────────────────────────────────────────────────
 
 def _extract_location(query: str) -> str:
@@ -242,25 +185,6 @@ def open_google_search_in_browser(query: str) -> str:
     webbrowser.open(f"https://www.google.com/search?q={encoded}")
     return f"Searched Google for: {query}"
 
-def youtube_search(query: str, autoplay: bool = False) -> str:
-    """Search YouTube and either play the first video or show results."""
-    encoded = urllib.parse.quote_plus(query)
-    if autoplay:
-        try:
-            from urllib.request import urlopen
-            html = urlopen(f"https://www.youtube.com/results?search_query={encoded}").read().decode()
-            video_ids = re.findall(r"watch\?v=([a-zA-Z0-9_-]{11})", html)
-            if video_ids:
-                first_vid = video_ids[0]
-                webbrowser.open(f"https://www.youtube.com/watch?v={first_vid}")
-                return f"Playing first YouTube result for: {query}"
-        except Exception as e:
-            pass
-    
-    # Fallback or if autoplay is False
-    webbrowser.open(f"https://www.youtube.com/results?search_query={encoded}")
-    return f"Searching YouTube for: {query}"
-
 # ─── Date & Time ────────────────────────────────────────────────────────────
 
 def get_system_time() -> str:
@@ -301,16 +225,6 @@ def snap_windows(left_app: str, right_app: str) -> str:
     return win32_snap_two_windows(left_app, right_app)
 
 # ─── File Operations ────────────────────────────────────────────────────────
-def create_folder(folder_name: str) -> str:
-    """Creates a new folder on the Desktop."""
-    try:
-        desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-        path = os.path.join(desktop, folder_name)
-        os.makedirs(path, exist_ok=True)
-        return f"Successfully created folder '{folder_name}' on Desktop."
-    except Exception as e:
-        return f"Failed to create folder: {str(e)}"
-
 def create_file(filepath: str, content: str) -> str:
     """Creates a new file with the given content."""
     try:
@@ -404,18 +318,9 @@ def media_previous() -> str:
     return "Went to previous track."
 
 def play_music(song: str) -> str:
-    """Play a song on Spotify by searching and playing the top result."""
+    """Play a song on Spotify: search, press play on the top result, confirm what is playing."""
     from app.services.spotify_service import play_song_dynamic
-    import threading
-
-    def _do_play():
-        try:
-            play_song_dynamic(song)
-        except Exception as e:
-            print(f"[Jarvis] Spotify automation failed: {e}")
-
-    threading.Thread(target=_do_play, daemon=True).start()
-    return f"Playing '{song}' on Spotify."
+    return play_song_dynamic(song)
 
 # ─── Clipboard & Typing ─────────────────────────────────────────────────────
 
@@ -896,7 +801,8 @@ def scrape_url_tool(url: str) -> str:
 # Isolated in ppt_tool.py. These thin wrappers convert the returned dict to a
 # human-readable string so it flows cleanly through the /chat response pipeline.
 
-def _ppt_create(user_prompt: str, style: str = None, purpose: str = None, image_paths: list = None, image_descriptions: list = None):
+def _ppt_create(user_prompt: str, style: str = None, purpose: str = None, image_paths: list = None,
+                image_descriptions: list = None, template_path: str = None):
     """
     Generator wrapper — streams live progress to the frontend via chat.py's
     inspect.isgenerator() streaming path. Each yielded string appears as a
@@ -905,7 +811,8 @@ def _ppt_create(user_prompt: str, style: str = None, purpose: str = None, image_
     try:
         from app.services.ppt_tool import ppt_create
         yield from ppt_create(prompt=user_prompt, style=style, purpose=purpose,
-                              image_paths=image_paths, image_descriptions=image_descriptions)
+                              image_paths=image_paths, image_descriptions=image_descriptions,
+                              template_path=template_path)
     except Exception as e:
         yield f"❌ PPT tool error: {e}"
 
@@ -935,13 +842,14 @@ def _research_and_create_ppt(topic: str, style: str = None):
 
 
 
-def _ppt_edit(edit_prompt: str):
+def _ppt_edit(edit_prompt: str, image_paths: list = None):
     """
-    Generator wrapper — streams live progress for slide edits.
+    Generator wrapper — follow-up edits of the last deck ("on slide 3 …", "make it dark", "undo").
+    [ATTACHED_FILE: …] images inside edit_prompt are picked up automatically.
     """
     try:
         from app.services.ppt_tool import ppt_edit
-        yield from ppt_edit(edit_prompt=edit_prompt)
+        yield from ppt_edit(edit_prompt=edit_prompt, image_paths=image_paths)
     except Exception as e:
         yield f"❌ PPT edit error: {e}"
 
@@ -1089,6 +997,31 @@ def get_dsa_cache_status() -> str:
         return f"Could not read DSA status from cache: {e}"
 
 
+def _mail_tool(fn_name: str, *args):
+    """
+    Email tools: try the real Gmail API (gmail_tool) first, fall back to opening
+    Gmail in the browser (browser_mail) if the API is unavailable.
+    The API is only attempted when token.json exists — without it gmail_tool
+    would start an interactive OAuth browser flow and block the request.
+    """
+    from pathlib import Path
+    if (Path(__file__).resolve().parents[2] / "token.json").exists():
+        try:
+            gmail = __import__('app.services.gmail_tool', fromlist=[fn_name])
+            result = getattr(gmail, fn_name)(*args)
+            if not str(result).startswith("Gmail error"):
+                return result
+        except Exception:
+            pass
+    browser = __import__('app.services.browser_mail', fromlist=[fn_name])
+    return getattr(browser, fn_name)(*args)
+
+
+def _recall_memory_placeholder(query: str = "") -> str:
+    """recall_memory is async (MySQL + FAISS); chat.py and tool_runner.run_tool handle it directly."""
+    return "recall_memory must be run through app.services.tool_runner.run_tool (it is async)."
+
+
 TOOL_REGISTRY = {
     # Information & Web
     "get_info": get_info,
@@ -1097,11 +1030,15 @@ TOOL_REGISTRY = {
     "get_system_info": get_system_info,
     "open_website": open_safe_website,
     "open_google_search_in_browser": open_google_search_in_browser,
-    "youtube_search": youtube_search,
+    "youtube_search": lambda query, autoplay=False: __import__('app.services.youtube_control', fromlist=['youtube_control']).youtube_search(query, autoplay),
+    "youtube_open": lambda query="": __import__('app.services.youtube_control', fromlist=['youtube_control']).youtube_open(query),
+    "youtube_channel": lambda name, play_latest=False: __import__('app.services.youtube_control', fromlist=['youtube_channel']).youtube_channel(name, play_latest),
+    "youtube_list_results": lambda: __import__('app.services.youtube_control', fromlist=['youtube_list_results']).youtube_list_results(),
+    "youtube_play_result": lambda choice="first": __import__('app.services.youtube_control', fromlist=['youtube_control']).youtube_play_result(choice),
+    "youtube_control": lambda action, amount=0, value="": __import__('app.services.youtube_control', fromlist=['youtube_control']).youtube_control(action, amount, value),
     "take_screenshot": take_screenshot,
     "snap_windows": snap_windows,
     # File Operations
-    "create_folder": create_folder,
     "create_file": create_file,
     "append_to_file": append_to_file,
     # Browser controls
@@ -1117,6 +1054,8 @@ TOOL_REGISTRY = {
     "volume_down": volume_down,
     "mute_volume": mute_volume,
     "play_music": play_music,
+    "media_control": lambda action="pause", app="": __import__('app.services.media_sessions', fromlist=['media_command']).media_command(action, app),
+    "spotify_control": lambda action="toggle": __import__('app.services.spotify_service', fromlist=['spotify_control']).spotify_control(action),
     "media_play_pause": media_play_pause,
     "media_next": media_next,
     "media_previous": media_previous,
@@ -1165,7 +1104,7 @@ TOOL_REGISTRY = {
     # Screen vision (Step 1)
     "read_my_screen": read_my_screen,
     # Browser video playback (bug fix)
-    "play_video_in_browser": play_video_in_browser,
+    "play_video_in_browser": lambda: __import__('app.services.youtube_control', fromlist=['youtube_control']).youtube_play_result("that"),
     # Web search (Step 3)
     "search_site": search_site_tool,
     "scrape_url": scrape_url_tool,
@@ -1181,10 +1120,10 @@ TOOL_REGISTRY = {
     "bulk_rename":     lambda directory, find, replace: __import__('app.services.file_ops', fromlist=['bulk_rename']).bulk_rename(directory, find, replace),
     "diff_files":       lambda path1, path2: __import__('app.services.file_ops', fromlist=['diff_files']).diff_files(path1, path2),
     # Gmail integration (Step 5 - Browser based)
-    "check_emails":     lambda query='is:unread', max_results=5: __import__('app.services.browser_mail', fromlist=['check_emails']).check_emails(query, max_results),
-    "list_unread":     lambda max_results=5: __import__('app.services.browser_mail', fromlist=['list_unread']).list_unread(max_results),
-    "get_email_body":   lambda email_id: __import__('app.services.browser_mail', fromlist=['get_email_body']).get_email_body(email_id),
-    "summarize_inbox":  lambda max_results=10: __import__('app.services.browser_mail', fromlist=['summarize_inbox']).summarize_inbox(max_results),
+    "check_emails": lambda query='is:unread', max_results=5: _mail_tool("check_emails", query, max_results),
+    "list_unread": lambda max_results=5: _mail_tool("list_unread", max_results),
+    "get_email_body": lambda email_id: _mail_tool("get_email_body", email_id),
+    "summarize_inbox": lambda max_results=10: _mail_tool("summarize_inbox", max_results),
     "smart_mail_action": lambda task: __import__('app.services.browser_mail', fromlist=['smart_mail_action']).smart_mail_action(task),
     # Browser automation (Step 6)
     "browse_and_read":  lambda url: __import__('app.services.browser_tool', fromlist=['browse_and_read']).browse_and_read(url),
@@ -1250,13 +1189,15 @@ TOOL_REGISTRY = {
     "dsa_status": get_dsa_cache_status,
     # ── Media Enhancement Tool ───────────────────────────────────────────────
     "enhance_media": lambda file_path: __import__('app.services.media_enhancement', fromlist=['enhance_media']).enhance_media(file_path),
+    # ── Resume Creator (copies an uploaded resume design, or a fixed format) ──
+    "create_resume": lambda details="", image_path="", photo_path="", template="", color="", instruction="", reuse_photo=False: __import__('app.services.resume_builder', fromlist=['resume_tool']).resume_tool(details, image_path, photo_path, template, color, instruction, reuse_photo),
     # ── Social Content Manager ───────────────────────────────────────────────
     "generate_social_content": lambda idea, platform="Instagram", tone="engaging", creativity=50.0, formality=50.0, smart_emojis=True, auto_hashtag=True, contextual_suggestions=True, target_audience="": __import__('app.services.social_content_manager', fromlist=['generate_social_content']).generate_social_content(idea, platform, tone, creativity, formality, smart_emojis, auto_hashtag, contextual_suggestions, target_audience),
     "refine_social_content": lambda original_content, refinement_instruction, platform="Instagram": __import__('app.services.social_content_manager', fromlist=['refine_social_content']).refine_social_content(original_content, refinement_instruction, platform),
     # ── Long-Term RAG Memory (MySQL + FAISS) ────────────────────────────────
     # Isolated per Rule #1. Accessible via both frontend and voice through /chat.
     # The LLM router can call this when user asks explicit memory questions.
-    "recall_memory": lambda query: __import__('app.services.rag_memory', fromlist=['recall', 'format_recall_for_prompt']).__dict__,  # handled async in chat.py
+    "recall_memory": _recall_memory_placeholder,  # async — run via chat.py / tool_runner.run_tool
     # ── Neural Cache Tools ───────────────────────────────────────────────────
     # Rule #1: isolated in neural_cache/ package, no cross-tool imports.
     # Rule #4: accessible via both frontend and voice through unified /chat.
@@ -1272,4 +1213,4 @@ TOOL_REGISTRY = {
     "get_recent_tasks":    lambda n=5: __import__('app.services.task_ledger', fromlist=['get_recent_tasks']).get_recent_tasks(n),
     "find_resumable_task": lambda query='': __import__('app.services.task_ledger', fromlist=['find_resumable_task']).find_resumable_task(query),
     "get_task_history":    lambda: __import__('app.services.task_ledger', fromlist=['get_task_ledger_for_prompt']).get_task_ledger_for_prompt(),
-}
+}

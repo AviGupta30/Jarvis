@@ -5,7 +5,9 @@ pool = None
 
 async def init_db():
     global pool
-    pool = await asyncpg.create_pool(settings.DATABASE_URL)
+    if not settings.DATABASE_URL:
+        raise RuntimeError("DATABASE_URL not set — pgvector knowledge store disabled")
+    pool = await asyncpg.create_pool(settings.DATABASE_URL, timeout=5)
     
     async with pool.acquire() as conn:
         # Ensure the pgvector extension is active

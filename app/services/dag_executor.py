@@ -294,11 +294,8 @@ async def _execute_node(node: DAGNode, results: dict, task: str) -> tuple[bool, 
     # — Known tool from registry —
     if node.tool in TOOL_REGISTRY:
         try:
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None, lambda: TOOL_REGISTRY[node.tool](**resolved_args)
-            )
-            return True, str(result)
+            from app.services.tool_runner import run_tool
+            return True, await run_tool(node.tool, resolved_args)
         except Exception as e:
             return False, str(e)
 
@@ -367,6 +364,7 @@ _EXCLUDED_FROM_DAG = [
     "create a presentation", "make a ppt", "ppt on", "ppt about",
     # Single-tool tasks that happen to contain 'and'
     "play music and", "open spotify and",
+    "open youtube and", "youtube and search", "youtube and play", "on youtube and",
     "search for", "find me", "look up",
 ]
 

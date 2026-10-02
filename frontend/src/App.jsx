@@ -3,6 +3,7 @@ import { Send, Bot, Loader2, Mic, Paperclip } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import DagPlanPanel from './DagPlanPanel';
 import AirDrawingApp from './AirDrawing/AirDrawingApp';
+import { API_BASE } from './config';
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -12,6 +13,8 @@ function App() {
   const [isUploadMenuOpen, setIsUploadMenuOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
+  const [resumeDesignImage, setResumeDesignImage] = useState(null); // resume picture whose design gets copied
+  const [resumePhoto, setResumePhoto] = useState(null);             // headshot placed on the resume
   const [isAirDrawingOpen, setIsAirDrawingOpen] = useState(false);
 
   // ── Acoustic Tripwire state ────────────────────────────────────────
@@ -24,7 +27,7 @@ function App() {
   useEffect(() => {
     const fetchTripwireStatus = async () => {
       try {
-        const res = await fetch('http://127.0.0.1:8000/tripwire/status');
+        const res = await fetch(`${API_BASE}/tripwire/status`);
         if (res.ok) {
           const data = await res.json();
           setTripwireEnabled(data.enabled ?? false);
@@ -41,7 +44,7 @@ function App() {
   const handleTripwireToggle = async () => {
     const endpoint = tripwireEnabled ? '/tripwire/disable' : '/tripwire/enable';
     try {
-      const res = await fetch(`http://127.0.0.1:8000${endpoint}`, { method: 'POST' });
+      const res = await fetch(`${API_BASE}${endpoint}`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         if (data.status === 'ok') setTripwireEnabled(!tripwireEnabled);
@@ -52,11 +55,11 @@ function App() {
   const handleTripwireCalibrate = async () => {
     setTripwireCalibrating(true);
     try {
-      await fetch('http://127.0.0.1:8000/tripwire/calibrate', { method: 'POST' });
+      await fetch(`${API_BASE}/tripwire/calibrate`, { method: 'POST' });
       // Wait 2.5s for calibration to complete, then refresh threshold
       setTimeout(async () => {
         try {
-          const res = await fetch('http://127.0.0.1:8000/tripwire/status');
+          const res = await fetch(`${API_BASE}/tripwire/status`);
           if (res.ok) {
             const d = await res.json();
             if (d.volume_threshold) setTripwireThreshold(d.volume_threshold);
@@ -111,7 +114,7 @@ function App() {
       formData.append('file', file);
 
       try {
-        const res = await fetch('http://127.0.0.1:8000/upload', {
+        const res = await fetch(`${API_BASE}/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -119,6 +122,10 @@ function App() {
         if (data.status === 'success') {
           if (uploadType === 'ppt_theme') {
             setPptThemeImage({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
+          } else if (uploadType === 'resume_design') {
+            setResumeDesignImage({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
+          } else if (uploadType === 'resume_photo') {
+            setResumePhoto({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
           } else {
             if (uploadType === 'assignment') {
               setInputValue(prev => prev ? `${prev} | do my assignment from ${data.filename}` : `do my assignment from ${data.filename}`);
@@ -155,8 +162,18 @@ function App() {
     'create presentation', 'make presentation',
     'ppt on ', 'ppt about ', 'presentation on ', 'presentation about ', 'slide deck on ',
   ];
+  // Resume/CV requests go to /chat (resume_builder). Whichever artifact is named FIRST wins, so resume
+  // details that mention "presentation skills" or "slides" don't get hijacked by the PPT path.
+  const isResumeRequest = (text) => {
+    const lower = text.toLowerCase();
+    const r = lower.search(/\b(r[eé]sum[eé]s?|cv|curriculum vitae|bio-?data)\b/i);
+    if (r < 0) return false;
+    const p = lower.search(/\b(ppt|presentation|slides?|deck|powerpoint)\b/i);
+    return p < 0 || r < p;
+  };
   const isPPTRequest = (text) => {
     const lower = text.toLowerCase();
+    if (isResumeRequest(lower)) return false;
     const exactMatch = PPT_KW.some(kw => lower.includes(kw));
     const regexMatch = /(?:create|make|build|generate|design|prepare|give|need|want|use|change|update|modify|edit|convert|theme).*(?:ppt|presentation|slide|deck|powerpoint|theme|color)/i.test(lower);
     return exactMatch || regexMatch;
@@ -174,7 +191,8 @@ function App() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const prompt = inputValue.trim();
-    if (!prompt && uploadedFiles.length === 0 && !isLoading) return;
+    const hasResumeUploads = !!(resumeDesignImage || resumePhoto);
+    if (!prompt && uploadedFiles.length === 0 && !hasResumeUploads && !isLoading) return;
 
     setInputValue('');
     if (textareaRef.current) {
@@ -182,13 +200,23 @@ function App() {
     }
     setIsLoading(true);
 
+    // Resume mode: a resume design image/photo is set, or the text asks for a resume/CV
+    const resumeMode = hasResumeUploads || isResumeRequest(prompt);
+    const resumeTags = [];
+    if (resumeDesignImage) resumeTags.push(`[ATTACHED_FILE: ${resumeDesignImage.path.replace(/\\/g, '/')} | DESCRIPTION: resume design reference]`);
+    if (resumePhoto) resumeTags.push(`[ATTACHED_FILE: ${resumePhoto.path.replace(/\\/g, '/')} | DESCRIPTION: my photo for the resume]`);
+    // Make the intent explicit when the user only pasted details next to a resume design image
+    const promptText = hasResumeUploads && !isResumeRequest(prompt)
+      ? `Create my resume${resumeDesignImage ? ' exactly like this design' : ''} using these details: ${prompt}`.trim()
+      : prompt;
+
     const attachedTags = uploadedFiles.map(f => {
       const p = f.path.replace(/\\/g, '/');
       return f.description ? `[ATTACHED_FILE: ${p} | DESCRIPTION: ${f.description}]` : `[ATTACHED_FILE: ${p}]`;
-    }).join("\n");
-    const promptToSend = attachedTags ? `${prompt}\n\n${attachedTags}`.trim() : prompt;
-    const uiDisplayMessage = prompt;
-    const attachedFiles = [...uploadedFiles];
+    }).concat(resumeTags).join("\n");
+    const promptToSend = attachedTags ? `${promptText}\n\n${attachedTags}`.trim() : promptText;
+    const uiDisplayMessage = prompt || (resumeDesignImage ? '📄 Create my resume in this design' : '📄 Resume photo');
+    const attachedFiles = [...uploadedFiles, ...[resumeDesignImage, resumePhoto].filter(Boolean)];
 
     setMessages((prev) => [
       ...prev,
@@ -197,9 +225,11 @@ function App() {
     ]);
 
     setUploadedFiles([]);
+    setResumeDesignImage(null);
+    setResumePhoto(null);
 
     try {
-      if (isPPTRequest(prompt)) {
+      if (!resumeMode && isPPTRequest(prompt)) {
         appendMsg('🚀 Initializing Deep Chunked PPT Generation...\n');
 
         const body = { prompt: promptToSend };
@@ -222,7 +252,7 @@ function App() {
           }
         }
 
-        const res = await fetch('http://127.0.0.1:8000/ppt/create', {
+        const res = await fetch(`${API_BASE}/ppt/create`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -254,7 +284,7 @@ function App() {
       setDagNodeStates({});
       setDagComplete(false);
 
-      const response = await fetch('http://127.0.0.1:8000/chat', {
+      const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: promptToSend }),
@@ -333,7 +363,7 @@ function App() {
         const copy = prev.map((m) => ({ ...m }));
         const last = copy[copy.length - 1];
         if (last && last.role === 'assistant') {
-          last.content += `\n\n⚠️ Could not complete request: ${err.message}. Make sure the backend is running on port 8000.`;
+          last.content += `\n\n⚠️ Could not complete request: ${err.message}. Make sure the backend is running at ${API_BASE}.`;
         }
         return copy;
       });
@@ -746,6 +776,28 @@ function App() {
               </div>
             )}
 
+            {(resumeDesignImage || resumePhoto) && (
+              <div className="relative flex flex-wrap items-center gap-3 px-4 py-2 mb-2 w-full bg-amber-950/50 border border-amber-500/50 rounded-2xl z-10 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
+                {resumeDesignImage && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-300 text-xs font-mono tracking-wide">📄 Resume Design:</span>
+                    <img src={resumeDesignImage.url} alt="resume design" className="h-12 w-10 object-cover object-top rounded-md border border-amber-400/40" />
+                    <button type="button" onClick={() => setResumeDesignImage(null)}
+                      className="text-amber-400 hover:text-white text-xs font-mono bg-amber-900/40 px-2 py-1 rounded-full hover:bg-amber-700/60 transition-colors">✕</button>
+                  </div>
+                )}
+                {resumePhoto && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-300 text-xs font-mono tracking-wide">🧑 Photo:</span>
+                    <img src={resumePhoto.url} alt="resume photo" className="h-12 w-10 object-cover rounded-md border border-amber-400/40" />
+                    <button type="button" onClick={() => setResumePhoto(null)}
+                      className="text-amber-400 hover:text-white text-xs font-mono bg-amber-900/40 px-2 py-1 rounded-full hover:bg-amber-700/60 transition-colors">✕</button>
+                  </div>
+                )}
+                <span className="text-amber-200/70 text-[11px] font-mono ml-auto">Paste your details (or attach a PDF/DOCX) and send</span>
+              </div>
+            )}
+
             <div className="relative flex w-full bg-[#020611]/90 backdrop-blur-xl border border-cyan-500/50 rounded-[28px] shadow-[0_0_25px_rgba(0,243,255,0.15)] focus-within:border-cyan-400 focus-within:shadow-[0_0_30px_rgba(0,243,255,0.3)] transition-all items-end pl-6 pr-2 py-2 z-10">
               <div className="w-2 h-2 bg-cyan-500 rounded-full shadow-[0_0_8px_#00f3ff] animate-pulse shrink-0 ml-2 mb-3" />
 
@@ -798,6 +850,28 @@ function App() {
                       >
                         <span>🎨</span> PPT Theme Image
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsUploadMenuOpen(false);
+                          fileInputRef.current.dataset.uploadType = 'resume_design';
+                          fileInputRef.current?.click();
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs text-amber-300 hover:bg-amber-900/40 hover:text-white transition-colors font-mono flex items-center gap-2 tracking-wide border-t border-cyan-900/30"
+                      >
+                        <span>📄</span> Resume Design Image
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsUploadMenuOpen(false);
+                          fileInputRef.current.dataset.uploadType = 'resume_photo';
+                          fileInputRef.current?.click();
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs text-amber-300 hover:bg-amber-900/40 hover:text-white transition-colors font-mono flex items-center gap-2 tracking-wide border-t border-cyan-900/30"
+                      >
+                        <span>🧑</span> Resume Photo
+                      </button>
                     </div>
                   </>
                 )}
@@ -809,7 +883,7 @@ function App() {
                 style={{ display: 'none' }}
                 data-upload-type="assignment"
                 onChange={handleFileUpload}
-                accept=".pdf,.txt,.docx,.png,.jpg,.jpeg,.webp,.mp4,.avi,.mov,.mkv"
+                accept=".pdf,.txt,.docx,.md,.pptx,.potx,.png,.jpg,.jpeg,.webp,.gif,.mp4,.avi,.mov,.mkv"
                 multiple
               />
 
@@ -840,7 +914,7 @@ function App() {
               <button
                 id="jarvis-send-btn"
                 type="submit"
-                disabled={(!inputValue.trim() && uploadedFiles.length === 0) || isLoading}
+                disabled={(!inputValue.trim() && uploadedFiles.length === 0 && !resumeDesignImage && !resumePhoto) || isLoading}
                 className="p-2.5 rounded-full text-cyan-300 hover:text-white hover:bg-cyan-600/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center bg-cyan-900/40 shrink-0 mb-1 mr-1 border border-cyan-500/30 shadow-[0_0_10px_rgba(0,243,255,0.1)]"
               >
                 {isLoading

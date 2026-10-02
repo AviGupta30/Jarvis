@@ -119,8 +119,9 @@ def _extract_syllabus_from_image(image_path: str) -> list[str]:
     )
 
     try:
+        from app.core.config import settings
         response = client.chat.completions.create(
-            model="openai/gpt-oss-20b",
+            model=settings.GROQ_VISION_MODEL,
             messages=[
                 {
                     "role": "user",

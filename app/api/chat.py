@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import re
 import json
+import asyncio
 from app.services.llm import (
     generate_chat_response,
     check_for_tool_intent,
@@ -22,6 +23,8 @@ router = APIRouter()
 
 class ChatRequest(BaseModel):
     prompt: str
+    lang: str | None = None   # "en" | "hi" — spoken language from the voice agent's STT
+    voice: bool = False       # reply will be spoken aloud (short, Devanagari for Hindi)
 
 
 # ── YouTube query cleaner ──────────────────────────────────────────────────
@@ -103,6 +106,40 @@ def detect_note_intent(text: str) -> bool:
     return False
 
 
+def _named_app(lower: str) -> str:
+    """'spotify' / 'youtube' if the sentence names a player, else '' (= whatever is playing)."""
+    if re.search(r'\bspotify\b', lower):
+        return "spotify"
+    if re.search(r'\b(?:video|youtube|yt)\b', lower):
+        return "youtube"
+    return ""
+
+
+def _media_target(lower: str) -> str | None:
+    """Which player an ambiguous media command ("pause it", "next song") is for:
+    named app > last app the user used (if still open) > whichever is open."""
+    if "spotify" in lower:
+        return "spotify"
+    if re.search(r'\b(?:video|youtube|yt)\b', lower):
+        return "youtube"
+    try:
+        from app.services.media_state import get_last, spotify_running
+        from app.services.youtube_control import youtube_tab_open
+        last = get_last()
+        sp, yt = spotify_running(), youtube_tab_open()
+        if last == "spotify" and sp:
+            return "spotify"
+        if last == "youtube" and yt:
+            return "youtube"
+        if sp:
+            return "spotify"
+        if yt:
+            return "youtube"
+    except Exception:
+        pass
+    return None
+
+
 def keyword_detect_tool(prompt: str) -> dict | None:
     """
     Fast, 100% reliable keyword-based tool detection.
@@ -113,6 +150,9 @@ def keyword_detect_tool(prompt: str) -> dict | None:
     
     # Strip out attached files for keyword matching to prevent filename collisions
     lower = re.sub(r'\[attached_file:.*?\]', '', lower, flags=re.IGNORECASE).strip()
+    # Voice transcripts arrive as "Pause that song." / "Jarvis, play the first result."
+    lower = re.sub(r'^(?:(?:hey|ok|okay)\s+)?jarvis[\s,.!:-]+', '', lower)
+    lower = lower.strip(' .,!?;:')
     
     # If the command is complex (multiple actions), let planner handle it.
     if is_complex_task(lower):
@@ -130,47 +170,132 @@ def keyword_detect_tool(prompt: str) -> dict | None:
                       'match', 'teams', 'cricket', 'news', 'score']
     is_question = any(w in lower for w in question_words)
 
-    # ── Play on Spotify explicitly ──────────────────────
-    spotify_play_m = re.search(
-        r'(?:open\s+spotify\s+and\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+?)(?:\s+on\s+spotify)\s*$',
-        lower
-    )
-    if spotify_play_m and not is_question:
-        song = spotify_play_m.group(1).strip(' ,.')
-        return {"tool_name": "play_music", "arguments": {"song": song}}
+    # ── Spotify player queries/controls (before the question filter) ──────
+    if re.search(r"\bwhat(?:'s| is)\s+(?:this\s+song|the\s+song|playing|this\s+track)\b|"
+                 r"\b(?:which|what)\s+song\s+is\s+(?:this|playing)\b", lower):
+        return {"tool_name": "media_control", "arguments": {"action": "now_playing", "app": _named_app(lower)}}
+    if re.search(r'\b(?:like|save|heart)\s+(?:this|the|current)\s+(?:song|track)\b|\badd\s+(?:this|the)\s+song\s+to\s+(?:my\s+)?liked', lower):
+        return {"tool_name": "spotify_control", "arguments": {"action": "like"}}
+    if re.fullmatch(r'(?:jarvis\s+)?(?:turn\s+(?:on|off)\s+|toggle\s+|enable\s+|disable\s+)?(?:shuffle|repeat)(?:\s+(?:on|off|mode|on spotify|the song|this song))?', lower):
+        return {"tool_name": "spotify_control", "arguments": {"action": "shuffle" if "shuffle" in lower else "repeat"}}
 
-    # ── Play on YouTube explicitly: "play X on youtube" → autoplay first result
-    yt_play_m = re.match(
-        r'^(?:jarvis\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|video))?\s+(.+?)\s+on\s+(?:youtube|yt)\s*$',
-        lower
+    # ── YouTube CHANNEL: "open mrbeast's channel", "search for channel mr beast",
+    #    "play mrbeast's latest video" (before generic search so "channel" isn't searched literally)
+    try:
+        from app.services.youtube_control import _channel_name, _latest_of
+        _yt_l = re.sub(r'^(?:jarvis\s+)?(?:(?:can you|please|could you)\s+)?', '', lower).strip(' .,!?')
+        _latest = _latest_of(_yt_l)
+        if _latest:
+            return {"tool_name": "youtube_channel", "arguments": {"name": _latest, "play_latest": True}}
+        _chan = _channel_name(_yt_l)
+        if _chan and _chan != "__current__":
+            return {"tool_name": "youtube_channel", "arguments": {"name": _chan}}
+    except Exception:
+        pass
+
+    # ── YouTube: "play X on youtube" / "open youtube and play X" → autoplay first result
+    yt_play_m = (
+        re.match(r'^(?:jarvis\s+)?(?:can you\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|video))?\s+(.+?)\s+on\s+(?:youtube|yt)\s*$', lower)
+        or re.match(r'^(?:jarvis\s+)?(?:open|go to|launch)\s+(?:youtube|yt)\s+and\s+play\s+(?:the\s+)?(?:song\s+|video\s+)?(.+)$', lower)
+        or re.match(r'^(?:jarvis\s+)?(?:youtube|yt)\s+play\s+(.+)$', lower)
     )
     if yt_play_m and not is_question:
         song = _clean_yt_query(yt_play_m.group(1).strip(' ,.'))
         return {"tool_name": "youtube_search", "arguments": {"query": song, "autoplay": True}}
 
-    # ── Play video in browser (context-based: "play that", "play it", "play the video") ──
-    # These are reference-based play commands — user means the video currently visible
-    # on screen, NOT a Spotify song. Must be caught BEFORE the bare Spotify matcher.
+    # ── Play on Spotify explicitly ──────────────────────
+    spotify_play_m = re.search(
+        r'(?:open\s+spotify\s+and\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist|playlist))?\s+(.+?)(?:\s+on\s+spotify)\s*$',
+        lower
+    ) or re.search(r'open\s+spotify\s+and\s+play\s+(?:the\s+)?(?:song\s+)?(.+)$', lower)
+    if spotify_play_m and not is_question:
+        song = spotify_play_m.group(1).strip(' ,.')
+        return {"tool_name": "play_music", "arguments": {"song": song}}
+
+    # ── Media grammar: switching / closing / "another" (voice phrasings) ──
+    # "switch to X", "change it to X", "put on X", "play X instead" → "play X"
+    _sw = re.fullmatch(r'(?:switch(?:\s+it)?\s+to|change\s+(?:it|this|that|the\s+(?:video|song|music|track)|this\s+(?:video|song))\s+to|'
+                       r'change\s+to|put\s+on|now\s+play|instead\s+play|replace\s+(?:it|this)\s+with)\s+(.+)', lower)
+    if _sw:
+        lower = "play " + _sw.group(1).strip()
+    lower = re.sub(r'^play\s+(.+?)\s+instead$', r'play \1', lower)
+
+    # "close/stop/end this song" = stop listening (pause), not "close a window called 'this song'"
+    if re.fullmatch(r'(?:please\s+)?(?:close|end|exit|quit|kill|turn\s+off|shut\s+off|switch\s+off|stop)\s+'
+                    r'(?:this|the|current|that|my)?\s*(?:song|track|music|audio)(?:\s+(?:on spotify|on youtube|please|now))?', lower):
+        # pause whatever is actually playing (Windows media sessions), not a guess
+        return {"tool_name": "media_control", "arguments": {"action": "pause", "app": _named_app(lower)}}
+    # "close this video" / "close the youtube tab" → close the YouTube tab
+    if re.fullmatch(r'(?:please\s+)?(?:close|exit|quit|end|kill|shut)\s+(?:this|the|current|that)?\s*(?:youtube\s+)?(?:video|tab)'
+                    r'(?:\s+on\s+youtube)?(?:\s+please)?', lower):
+        return {"tool_name": "youtube_control", "arguments": {"action": "close"}}
+    # "play another song/video", "play something else", "next one"
+    if re.fullmatch(r'(?:play|put\s+on|give\s+me|show\s+me)\s+(?:another|a\s+different|some\s+other|other|a\s+new|the\s+next|next)\s+'
+                    r'(?:video|song|track|one|music|clip)|(?:play\s+)?something\s+else|next\s+one|the\s+next\s+one', lower):
+        _tgt = _media_target(lower)
+        if _tgt == "youtube":
+            return {"tool_name": "youtube_control", "arguments": {"action": "next"}}
+        return {"tool_name": "media_control", "arguments": {"action": "next", "app": _named_app(lower)}}
+    # "go back" / "go back to the previous video" (YouTube page history)
+    if re.fullmatch(r'go\s+back(?:\s+to\s+(?:the\s+)?(?:previous|last|old|earlier)\s+(?:video|page|one|results?))?|previous\s+page|back\s+to\s+(?:the\s+)?(?:previous|last)\s+video', lower):
+        if _media_target(lower) == "youtube":
+            return {"tool_name": "youtube_control", "arguments": {"action": "back"}}
+    # "watch X" → YouTube
+    _w = re.fullmatch(r'watch\s+(?!(?:it|this|that|the\s+(?:first|second|third|last|latest|next)\b))(.+?)(?:\s+videos?)?(?:\s+on\s+(?:youtube|yt))?', lower)
+    if _w and not is_question:
+        return {"tool_name": "youtube_search", "arguments": {"query": _clean_yt_query(_w.group(1)), "autoplay": True}}
+
+    # ── Spotify app: open / close ─────────────────────────────────────────
+    if re.fullmatch(r'(?:please\s+)?(?:close|quit|exit|shut\s*down|kill|end)\s+(?:the\s+)?spotify(?:\s+app)?(?:\s+please)?', lower):
+        return {"tool_name": "spotify_control", "arguments": {"action": "close"}}
+    if re.fullmatch(r'(?:please\s+)?(?:open|launch|start)\s+(?:the\s+)?spotify(?:\s+app)?(?:\s+please)?', lower):
+        return {"tool_name": "spotify_control", "arguments": {"action": "open"}}
+
+    # ── Pause / resume: send to the player the user is actually using ─────
+    # "pause", "pause it", "pause that song", "stop the music", "resume", "play it again"
+    _pause_m = re.fullmatch(r'(?:please\s+)?(?:pause|stop|hold)(?:\s+(?:it|this|that|the|my))?'
+                            r'(?:\s+(?:song|music|track|playback|audio|spotify|video|youtube|media|player))?'
+                            r'(?:\s+(?:on spotify|on youtube|please|now|for a (?:sec|second|moment|bit)))?', lower)
+    _resume_m = re.fullmatch(r'(?:please\s+)?(?:resume|continue|unpause|play)(?:\s+(?:it|this|that|the|my))?'
+                             r'(?:\s+(?:song|music|track|playback|spotify|video|youtube|media))?'
+                             r'(?:\s+(?:again|on spotify|on youtube|please|now))?', lower)
+    if _pause_m or _resume_m:
+        # Windows media sessions: pauses what is REALLY playing (any app, any tab, songs
+        # started by hand), resumes the last-used player.
+        return {"tool_name": "media_control",
+                "arguments": {"action": "pause" if _pause_m else "play", "app": _named_app(lower)}}
+
+    # ── Next / previous song: same targeting ─────────────────────────────
+    _nx = re.search(r'\b(?:next|skip(?:\s+(?:this|the))?)\s+(?:song|track)\b|^next$|^skip$', lower)
+    _pv = re.search(r'\b(?:previous|prev|last)\s+(?:song|track)\b|^previous$', lower)
+    if _nx or _pv:
+        _tgt = _media_target(lower)
+        _act = "next" if _nx else "previous"
+        if _tgt == "youtube" and _named_app(lower) != "spotify":
+            return {"tool_name": "youtube_control", "arguments": {"action": _act}}
+        return {"tool_name": "media_control", "arguments": {"action": _act, "app": _named_app(lower)}}
+
+    # ── Pick / resume a YouTube video ("play the first result", "open the second one") ──
+    # Reference-based play = a video on screen / in the last YouTube results, NOT a
+    # Spotify song. Must be caught BEFORE the bare Spotify matcher.
     browser_video_play_kw = [
-        'play that video', 'play it', 'play this video', 'play the video',
+        'play that video', 'play this video', 'play the video',
         'play that one', 'play this one', 'play the first', 'play the top',
-        'play it now', 'play it please', 'click on it', 'open that video',
-        'open it', 'click the video', 'click that',
+        'click on it', 'open that video', 'open it', 'click the video', 'click that',
     ]
-    # Also catch "play the 52 minutes one", "play the 10 minute video", etc.
+    _ord = r'(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|last|top|\d{1,2}(?:st|nd|rd|th)?)'
     _is_browser_video_play = (
         any(kw in lower for kw in browser_video_play_kw)
         or bool(re.search(r'play\s+the\s+\d+\s*(?:minute|min|hour|hr|second)s?\s+(?:one|video)', lower))
-        or (re.match(r'^(?:jarvis\s+)?play\s+(?:that|it|this|the)\b', lower) and 'spotify' not in lower)
+        or bool(re.search(rf'^(?:play|open|click(?:\s+on)?|watch|start)\s+(?:the\s+)?{_ord}\s+(?:one|video|result|link|search result)\b', lower))
+        or bool(re.search(r'^(?:play|open|watch)\s+(?:video|result)\s+(?:number\s+)?\w+$', lower))
+        or bool(re.search(r'^(?:play|open|watch|start)\s+(?:the\s+)?(?:latest|newest|most recent|most viewed|most popular|oldest)\s+(?:one|video|upload)s?$', lower))
+        or (re.match(r'^play\s+(?:that|this|the)\b', lower) and 'spotify' not in lower
+            and not re.match(r'^play\s+the\s+(?:song|music|track|album|artist|playlist)\b', lower))
     )
     if _is_browser_video_play:
-        return {"tool_name": "play_video_in_browser", "arguments": {}}
-
-    # ── Media (Exact matches for play/pause/resume) ───────────────────────
-    if re.fullmatch(r'^(?:jarvis\s+)?(?:play|resume)(?:\s+(?:music|spotify|media|the song|it))?', lower):
-        return {"tool_name": "media_play_pause", "arguments": {}}
-    if re.fullmatch(r'^(?:jarvis\s+)?(?:pause|stop)(?:\s+(?:music|spotify|media|the song|it))?', lower):
-        return {"tool_name": "media_play_pause", "arguments": {}}
+        _choice = re.sub(r'^(?:play|open|click(?:\s+on)?|watch|start)\s+', '', lower).strip()
+        return {"tool_name": "youtube_play_result", "arguments": {"choice": _choice or "that"}}
 
     # ── Bare "play X" (no platform) → default Spotify ─────────────────────────
     # Exclusions: don't route reference-based play to Spotify
@@ -179,19 +304,32 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         'hour', 'top video', 'first video', 'second video',
     ]
     play_match = re.search(
-        r'(?:open\s+spotify\s+and\s+)?play(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist))?\s+(.+)',
+        r'(?:open\s+spotify\s+and\s+)?\bplay(?:\s+(?:me\s+)?(?:the\s+)?(?:song|music|track|album|artist|playlist))?\s+(.+)',
         lower
     )
     if play_match and not is_question:
         song = play_match.group(1).strip(' ,.')
         song = re.sub(r'\s+(for me|please)$', '', song).strip()
+        # "play mr beast video(s)" → YouTube
+        _vid = re.fullmatch(r'(?:a\s+|some\s+|the\s+)?(.+?)\s+(?:video|videos|clip|clips)(?:\s+on\s+(?:youtube|yt))?', song)
+        if _vid and _vid.group(1) not in ('that', 'this', 'the', 'it', 'a', 'another'):
+            return {"tool_name": "youtube_search", "arguments": {"query": _clean_yt_query(_vid.group(1)), "autoplay": True}}
         # Skip if it looks like a context reference, not a song name
         if song and len(song) > 1 and not any(excl == song or song.startswith(excl + ' ') for excl in _spotify_exclusions):
+            # While the user is watching YouTube, "play X" means YouTube (unless they say song/Spotify)
+            if not re.search(r'\bspotify\b|^play\s+(?:the\s+|a\s+|me\s+)?(?:song|track|album|playlist)\b|\b(?:song|track)$', lower) \
+                    and _media_target(lower) == "youtube":
+                try:
+                    from app.services.media_state import get_last
+                    if get_last() == "youtube":
+                        return {"tool_name": "youtube_search", "arguments": {"query": _clean_yt_query(song), "autoplay": True}}
+                except Exception:
+                    pass
             return {"tool_name": "play_music", "arguments": {"song": song}}
 
-    # ── YouTube SEARCH (show results, no autoplay) ────────────────────────────
+    # ── YouTube SEARCH (show numbered results, enters YouTube mode) ───────────
     yt_search_m = re.search(
-        r'(?:search|find|look\s+up|look\s+for|show|open)\s+(?:for\s+)?(?:the\s+)?(?:channel|video|playlist)?\s*(.+?)\s+(?:on|in)\s+(?:youtube|yt)\b',
+        r'(?:search|find|look\s+up|look\s+for|show)\s+(?:for\s+)?(?:the\s+)?(?:channel|video|videos|playlist)?\s*(.+?)\s+(?:on|in)\s+(?:youtube|yt)\b',
         lower
     )
     if yt_search_m:
@@ -199,15 +337,16 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         return {"tool_name": "youtube_search", "arguments": {"query": query, "autoplay": False}}
 
     yt_open_search_m = re.search(
-        r'(?:youtube|yt)\s+(?:and\s+)?(?:search|find)\s+(?:for\s+)?(.+)',
+        r'(?:youtube|yt)\s+(?:and\s+)?(?:search|find|type|look\s+up)\s+(?:for\s+)?(.+)',
         lower
     )
     if yt_open_search_m:
         query = _clean_yt_query(yt_open_search_m.group(1).strip())
         return {"tool_name": "youtube_search", "arguments": {"query": query, "autoplay": False}}
 
-    if re.match(r'^(?:jarvis\s+)?(?:open|launch)\s+(?:youtube|yt)\s*$', lower):
-        return {"tool_name": "open_website", "arguments": {"url": "youtube"}}
+    if re.match(r'^(?:jarvis\s+)?(?:(?:can you|please)\s+)?(?:open|launch|start|go to)\s+(?:the\s+)?(?:youtube|yt)(?:\s+(?:app|website|for me|please))?\s*$', lower) \
+            or re.fullmatch(r'(?:jarvis\s+)?(?:youtube|yt)', lower):
+        return {"tool_name": "youtube_open", "arguments": {}}
 
     # ── News ──────────────────────────────────────────────────────────────
     news_kw = ['news', 'headlines', 'today news', 'latest news', 'breaking']
@@ -242,10 +381,8 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         return {"tool_name": "mute_volume", "arguments": {}}
 
     # ── Media (Next/Prev) ──────────────────────────────────────────────────
-    if re.search(r'\bnext (song|track)\b', lower):
-        return {"tool_name": "media_next", "arguments": {}}
-    if re.search(r'\bprevious (song|track)\b|\bprev\b', lower):
-        return {"tool_name": "media_previous", "arguments": {}}
+    if re.search(r'\bprev\b', lower):
+        return {"tool_name": "spotify_control", "arguments": {"action": "previous"}}
 
     # ── Media Enhancement (Dark Image/Video) ───────────────────────────────
     if re.search(r'\b(enhance|fix)\b.*\b(image|video|photo|media|picture|dark)\b', lower):
@@ -514,7 +651,10 @@ def keyword_detect_tool(prompt: str) -> dict | None:
             result["app_name"] = app_name
         return result
 
-    _adj = _semantic_window_adjust(lower)
+    # Slide/presentation talk ("put the image on the left of slide 3") is a PPT edit, not a window move.
+    _is_slide_talk = re.search(r'\bslides?\s*\d|\b(ppt|deck|presentation|powerpoint)\b|'
+                               r'\b(first|second|third|fourth|fifth|last|title|closing|final|cover|\d+(st|nd|rd|th))\s+slide\b', lower)
+    _adj = None if _is_slide_talk else _semantic_window_adjust(lower)
     if _adj is not None:
         return {"tool_name": "adjust_active_window", "arguments": _adj}
 
@@ -897,8 +1037,33 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         'create a powerpoint', 'make a powerpoint', 'build a powerpoint',
         'create presentation', 'make presentation', 'ppt on ', 'ppt about ',
         'presentation on ', 'presentation about ', 'slide deck on ',
+        'pitch deck', 'make ppt', 'create ppt', 'make slides for', 'ppt for ', 'presentation for ',
     ]
-    if any(kw in lower for kw in ppt_create_kw):
+    is_ppt_create = any(kw in lower for kw in ppt_create_kw) or \
+        len(re.findall(r'(?im)^\s*(?:#+\s*)?\**\s*slide\s*\d{1,2}\s*\**\s*[:\-–—]', prompt)) >= 3
+
+    # ── PowerPoint follow-up edits (checked before create: "make the ppt dark" ≠ "make a ppt") ──
+    _edit_verbs = (r"(change|replace|make|add|remove|delete|move|swap|rename|convert|turn|use|put|shorten|expand|"
+                   r"rewrite|fix|update|edit|modify|redo|improve|insert|reduce|increase|switch|set|drop|reorder)")
+    _slide_ref = (r"(slides?\s*\d{1,2}|\d{1,2}(st|nd|rd|th)\s+slide|(first|second|third|fourth|fifth|sixth|seventh|"
+                  r"eighth|ninth|tenth|last|title|closing|final|cover)\s+slide)")
+    _explicit_edit = re.search(rf"\b{_edit_verbs}\b.*\b{_slide_ref}\b|\b{_slide_ref}\b.*\b{_edit_verbs}\b", lower) or \
+        re.search(r"\b(add|insert)\s+(a\s+|an\s+|another\s+|one\s+more\s+|new\s+)*(\w+\s+){0,2}slide\b", lower) or \
+        any(kw in lower for kw in ['change slide', 'edit slide', 'update slide', 'modify slide',
+                                   'redo slide', 'fix slide', 'replace slide'])
+    _vague_edit = re.search(rf"\b{_edit_verbs}\b.*\b(the|this|that|my)\s+(ppt|deck|presentation|slides|powerpoint)\b|"
+                            rf"\b(the|this|that|my)\s+(ppt|deck|presentation|slides|powerpoint)\b.*\b{_edit_verbs}\b", lower) \
+        or re.match(r"^\s*(undo|revert)\b", lower)
+    if not is_ppt_create and (_explicit_edit or _vague_edit):
+        try:
+            from app.services.ppt_studio import has_active_deck
+            _deck_ok = has_active_deck(max_age_hours=None if _explicit_edit else 72)
+        except Exception:
+            _deck_ok = False
+        if _deck_ok:
+            return {"tool_name": "ppt_edit", "arguments": {"edit_prompt": prompt}}
+
+    if is_ppt_create:
         style_m = re.search(
             r'\b(cyber_dark|midnight_exec|solar_flare|arctic_clean|forest_calm'
             r'|ocean_gradient|velvet_noir|charcoal_minimal)\b',
@@ -913,9 +1078,13 @@ def keyword_detect_tool(prompt: str) -> dict | None:
         _img_exts = ('.jpg', '.jpeg', '.png', '.webp', '.bmp', '.gif')
         attached_img_paths = []
         attached_img_descriptions = []
+        template_path = None
         for raw in re.findall(r'\[ATTACHED_FILE:\s*(.+?)\]', prompt, re.IGNORECASE):
             parts = raw.split('|')
             img_path = parts[0].strip()
+            if img_path.lower().endswith(('.pptx', '.potx', '.pptm', '.potm')) and _os.path.exists(img_path):
+                template_path = template_path or img_path      # user's own format → used as-is
+                continue
             if img_path.lower().endswith(_img_exts) and _os.path.exists(img_path):
                 attached_img_paths.append(img_path)
                 # Extract DESCRIPTION if present
@@ -934,16 +1103,9 @@ def keyword_detect_tool(prompt: str) -> dict | None:
                 "purpose": purpose,
                 "image_paths": attached_img_paths if attached_img_paths else None,
                 "image_descriptions": attached_img_descriptions if attached_img_descriptions else None,
+                "template_path": template_path,
             }
         }
-
-    # ── PowerPoint Edit ────────────────────────────────────────────────────────
-    ppt_edit_kw = [
-        'change slide', 'edit slide', 'update slide', 'modify slide',
-        'redo slide', 'fix slide', 'replace slide',
-    ]
-    if any(kw in lower for kw in ppt_edit_kw):
-        return {"tool_name": "ppt_edit", "arguments": {"edit_prompt": prompt}}
 
     # ── PowerPoint Styles ──────────────────────────────────────────────────────
     ppt_styles_kw = [
@@ -1062,6 +1224,176 @@ api_whatsapp_flow = {"active": False, "step": None, "contact": None, "message": 
 api_whatsapp_call_flow = {"active": False, "step": None, "contact": None}
 api_note_flow = {"active": False}
 
+# Media tools: blocking UI automation (run in a worker thread so the event loop stays
+# free) whose result string is already the final reply (no LLM paraphrase).
+_DIRECT_MEDIA_TOOLS = {
+    "play_music", "spotify_control", "media_control", "youtube_search", "youtube_open", "youtube_channel",
+    "youtube_list_results",
+    "youtube_play_result", "youtube_control", "play_video_in_browser",
+}
+
+# One dedicated thread for all media automation: UI Automation / COM objects stay on one
+# thread, and two commands can never type into the browser or Spotify at the same time.
+from concurrent.futures import ThreadPoolExecutor as _TPE
+import functools as _ft
+_MEDIA_EXECUTOR = _TPE(max_workers=1, thread_name_prefix="jarvis-media")
+
+
+async def _run_media(name: str, args: dict):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(_MEDIA_EXECUTOR, _ft.partial(TOOL_REGISTRY[name], **args))
+
+
+async def _run_direct_tool(tool_intent: dict, prompt: str):
+    name, args = tool_intent["tool_name"], tool_intent.get("arguments", {}) or {}
+    try:
+        result = str(await _run_media(name, args))
+    except Exception as e:
+        result = f"Sorry Sir, that didn't work: {e}"
+    conversation_history.append({"role": "user", "content": prompt})
+    conversation_history.append({"role": "assistant", "content": result})
+    _save_session()
+    async def direct_stream(): yield result
+    return StreamingResponse(direct_stream(), media_type="text/event-stream")
+
+_MEDIA_TOOLS_ALL = _DIRECT_MEDIA_TOOLS | {"media_play_pause", "media_next", "media_previous"}
+_CLAUSE_SPLIT = re.compile(r"\s*,?\s*\b(?:and\s+then|and\s+after\s+that|after\s+that|and\s+also|and|then)\b\s*,?\s*", re.I)
+
+
+def _media_intent_for(clause: str):
+    """Media tool intent for one clause (YouTube-mode parser first, then keyword router)."""
+    it = None
+    try:
+        from app.services.youtube_control import youtube_session_active, parse_youtube_followup, youtube_tab_open
+        if youtube_session_active():
+            it = parse_youtube_followup(clause)
+        elif youtube_tab_open():
+            it = parse_youtube_followup(clause, controls_only=True)
+        if it and it.pop("bare", False):
+            it = None
+    except Exception:
+        it = None
+    if not it:
+        it = keyword_detect_tool(clause)
+    return it if isinstance(it, dict) and it.get("tool_name") in _MEDIA_TOOLS_ALL else None
+
+
+def _explicit_platform(text: str):
+    """'youtube' / 'spotify' if the text names one platform (song/music are neutral)."""
+    t = (text or "").lower()
+    yt = re.search(r"\b(?:youtube|yt|video|videos|watch|channel)\b", t)
+    sp = re.search(r"\bspotify\b", t)
+    if yt and not sp:
+        return "youtube"
+    if sp and not yt:
+        return "spotify"
+    return None
+
+
+def _to_platform(it: dict, plat: str) -> dict:
+    """Re-target an unspecific media intent (pause/next/play X) to the given platform."""
+    name, args = it["tool_name"], dict(it.get("arguments") or {})
+    act = args.get("action")
+    if plat == "youtube":
+        if name == "spotify_control" and act in ("pause", "play", "next", "previous"):
+            return {"tool_name": "youtube_control", "arguments": {"action": act}}
+        if name == "media_control" and act in ("pause", "play"):
+            return {"tool_name": "media_control", "arguments": {"action": act, "app": "youtube"}}
+        if name == "media_control" and act in ("next", "previous"):
+            return {"tool_name": "youtube_control", "arguments": {"action": act}}
+        if name == "play_music":
+            return {"tool_name": "youtube_search", "arguments": {"query": args.get("song", ""), "autoplay": True}}
+        if name == "media_play_pause":
+            return {"tool_name": "youtube_control", "arguments": {"action": "pause"}}
+    elif plat == "spotify":
+        if name == "youtube_control" and act in ("pause", "play", "next", "previous"):
+            return {"tool_name": "spotify_control", "arguments": {"action": act}}
+        if name == "media_control" and act in ("pause", "play", "next", "previous"):
+            return {"tool_name": "media_control", "arguments": {"action": act, "app": "spotify"}}
+        if name == "youtube_search" and args.get("autoplay"):
+            return {"tool_name": "play_music", "arguments": {"song": args.get("query", "")}}
+        if name == "media_play_pause":
+            return {"tool_name": "spotify_control", "arguments": {"action": "pause"}}
+    return it
+
+
+def _media_compound(prompt: str):
+    """
+    "close this song and play shape of you", "pause the video then open mrbeast's channel":
+    split into clauses and return their media intents, only if EVERY clause is a media
+    command (so "play rock and roll" or "email X and play Y" are left alone).
+    """
+    text = re.sub(r'\[attached_file:.*?\]', '', prompt, flags=re.I).strip().strip(' .!?')
+    text = re.sub(r'^(?:(?:hey|ok|okay)\s+)?jarvis[\s,.!:-]+', '', text, flags=re.I)
+    parts = [p.strip(' ,.') for p in _CLAUSE_SPLIT.split(text) if p and p.strip(' ,.')]
+    if not 2 <= len(parts) <= 4:
+        return None
+    intents = []
+    hint = _explicit_platform(text)  # a platform named anywhere applies to the unspecific parts
+    ctx = None                       # platform set by an earlier clause ("open youtube and play X")
+    for part in parts:
+        it = _media_intent_for(part)
+        if not it:
+            return None
+        pl = part.lower()
+        own = _explicit_platform(pl)
+        plat = own or ctx or hint
+        if plat and not own:
+            it = _to_platform(it, plat)
+        name, args = it["tool_name"], it.get("arguments") or {}
+        if args.get("action") == "close":
+            # closing YouTube itself → what follows is for Spotify, and vice versa;
+            # closing "this video" keeps us on YouTube
+            if name == "youtube_control" and re.search(r"\b(?:youtube|yt)\b", pl):
+                ctx = "spotify"
+            elif name == "spotify_control":
+                ctx = "youtube"
+            else:
+                ctx = "youtube"
+        elif name.startswith("youtube") or name == "play_video_in_browser":
+            ctx = "youtube"
+        elif name in ("play_music", "spotify_control"):
+            ctx = "spotify"
+        elif name == "media_control" and args.get("app") in ("spotify", "youtube"):
+            ctx = args["app"]
+        intents.append(it)
+    # "open youtube and play X" / "open spotify and play X": the later step opens it anyway
+    def _is_open(it):
+        return it["tool_name"] == "youtube_open" or (
+            it["tool_name"] == "spotify_control" and (it.get("arguments") or {}).get("action") == "open")
+    def _plat(it):
+        n = it["tool_name"]
+        return "youtube" if n.startswith("youtube") else ("spotify" if n in ("play_music", "spotify_control") else None)
+    intents = [it for i, it in enumerate(intents)
+               if not (_is_open(it) and any(_plat(n) == _plat(it) and not _is_open(n) for n in intents[i + 1:]))]
+    if not intents:
+        return None
+    # "close this video and play X": keep the tab (pause) so X plays in it
+    for i, it in enumerate(intents[:-1]):
+        if it["tool_name"] == "youtube_control" and (it.get("arguments") or {}).get("action") == "close" \
+                and any(n["tool_name"].startswith("youtube") for n in intents[i + 1:]):
+            it["arguments"] = {"action": "pause"}
+    return intents
+
+
+async def _run_direct_tools(intents: list, prompt: str):
+    """Run several media intents in order; one short combined reply."""
+    replies = []
+    for it in intents:
+        try:
+            replies.append(str(await _run_media(it["tool_name"], it.get("arguments") or {})))
+        except Exception as e:
+            replies.append(f"Sorry Sir, that didn't work: {e}")
+    # Keep it short for voice: drop pure acknowledgements when a later step said more
+    keep = [r for r in replies[:-1] if not re.match(r"^(?:Paused|Resumed|Done|It's already paused|Closed)\b", r)] + replies[-1:]
+    result = " ".join(keep)
+    conversation_history.append({"role": "user", "content": prompt})
+    conversation_history.append({"role": "assistant", "content": result})
+    _save_session()
+    async def direct_stream(): yield result
+    return StreamingResponse(direct_stream(), media_type="text/event-stream")
+
+
 @router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     global api_whatsapp_flow, api_whatsapp_call_flow, api_note_flow
@@ -1161,6 +1493,53 @@ async def chat_endpoint(request: ChatRequest):
             async def flow_stream(): yield reply
             return StreamingResponse(flow_stream(), media_type="text/event-stream")
 
+    # ── Resume creator: "make my resume like this" (+ image), edits, or details after "send me your details" ──
+    # Runs before media/DAG/complex-task checks: pasted resume details are long multi-clause text.
+    try:
+        from app.services.resume_builder import detect_resume_request, create_resume, list_resume_templates
+        _resume_args = detect_resume_request(request.prompt)
+        if _resume_args is not None:
+            from starlette.concurrency import iterate_in_threadpool
+            _gen = iter([list_resume_templates()]) if _resume_args.pop("_list", False) else create_resume(**_resume_args)
+            async def resume_stream():
+                _last = ""
+                async for _chunk in iterate_in_threadpool(_gen):
+                    _last = _chunk
+                    yield _chunk
+                conversation_history.append({"role": "user", "content": _resume_args.get("details") or _resume_args.get("instruction") or request.prompt[:400]})
+                conversation_history.append({"role": "assistant", "content": _last[:1500]})
+                _save_session()
+            return StreamingResponse(resume_stream(), media_type="text/event-stream")
+    except Exception as e:
+        print(f"[Jarvis] resume check failed: {e}")
+
+    # ── Multi-step media commands: "close this song and play X", "pause it then next video" ──
+    try:
+        _compound = _media_compound(request.prompt)
+        if _compound:
+            return await _run_direct_tools(_compound, request.prompt)
+    except Exception as e:
+        print(f"[Jarvis] media compound check failed: {e}")
+
+    # ── YouTube mode: follow-ups after "open youtube" / a YouTube search ──
+    # ("lofi beats", "play the second one", "pause", "skip 30 seconds", "close youtube")
+    try:
+        from app.services.youtube_control import youtube_session_active, parse_youtube_followup, youtube_tab_open
+        _yt_intent = None
+        if youtube_session_active():
+            _yt_intent = parse_youtube_followup(request.prompt)
+        elif youtube_tab_open():
+            # Mode expired, but a YouTube tab is in front: only unambiguous player commands
+            _yt_intent = parse_youtube_followup(request.prompt, controls_only=True)
+        if _yt_intent:
+            # Plain-text search only if no other tool claims the message (weather, time…)
+            if _yt_intent.pop("bare", False) and keyword_detect_tool(request.prompt):
+                _yt_intent = None
+            if _yt_intent:
+                return await _run_direct_tool(_yt_intent, request.prompt)
+    except Exception as e:
+        print(f"[Jarvis] YouTube mode check failed: {e}")
+
     # ── Universal Note / WhatsApp Intent Check (moved from voice_agent) ──
     if detect_note_intent(request.prompt):
         api_note_flow["active"] = True
@@ -1190,6 +1569,13 @@ async def chat_endpoint(request: ChatRequest):
             reply = f"Sure. What message should I send to {wa_contact}?"
         async def flow_stream(): yield reply
         return StreamingResponse(flow_stream(), media_type="text/event-stream")
+
+    # ── Media fast path: player commands skip task-resume / DAG / LLM ─────────
+    # ("resume the music" was being caught by the task-resume detector below)
+    _media_intent = keyword_detect_tool(request.prompt)
+    if isinstance(_media_intent, dict) and _media_intent.get("tool_name") in (
+            _DIRECT_MEDIA_TOOLS | {"media_play_pause", "media_next", "media_previous"}):
+        return await _run_direct_tool(_media_intent, request.prompt)
 
     # ── Task Resumption: detect 'continue/extend/update prior task' intent ──────
     # Runs BEFORE keyword detection and DAG planner so that continuation requests
@@ -1282,6 +1668,32 @@ async def chat_endpoint(request: ChatRequest):
 
         return StreamingResponse(clarification_stream(), media_type="text/event-stream")
 
+    # 3b. Complex multi-step task with no single tool → linear agentic planner.
+    # keyword_detect_tool() bails out on is_complex_task() prompts and the router
+    # prompt tells the LLM to return null for them, so this is where they land.
+    if tool_name is None and is_complex_task(request.prompt):
+        async def planner_stream():
+            updates = []
+            try:
+                async for update in run_agentic_plan(request.prompt):
+                    updates.append(update)
+                    yield update + "\n\n"
+            except Exception as e:
+                msg = f"The planner hit an error: {e}"
+                updates.append(msg)
+                yield msg
+            conversation_history.append({"role": "user", "content": request.prompt})
+            conversation_history.append({"role": "assistant", "content": "\n".join(updates)})
+            _save_session()
+            try:
+                from app.services.rag_memory import store_turn
+                await store_turn(role="user", content=request.prompt, turn_index=len(conversation_history))
+                await store_turn(role="assistant", content="\n".join(updates), turn_index=len(conversation_history))
+            except Exception:
+                pass
+
+        return StreamingResponse(planner_stream(), media_type="text/event-stream")
+
     # 4. Execute tool
     tool_output_str = ""
 
@@ -1299,6 +1711,13 @@ async def chat_endpoint(request: ChatRequest):
                 tool_output_str = "[MEMORY RECALL] No relevant memories found for this query.\n\n"
         except Exception as e:
             tool_output_str = f"[MEMORY RECALL] Could not access memory: {e}\n\n"
+
+    elif tool_name == "open_website" and re.sub(r'^(?:https?://)?(?:www\.)?', '', str(
+            (tool_intent.get("arguments") or {}).get("url", "")).lower()).rstrip('/') in ("youtube", "youtube.com", "yt"):
+        return await _run_direct_tool({"tool_name": "youtube_open", "arguments": {}}, request.prompt)
+
+    elif tool_name in _DIRECT_MEDIA_TOOLS and tool_name in TOOL_REGISTRY:
+        return await _run_direct_tool(tool_intent, request.prompt)
 
     elif tool_name and tool_name in TOOL_REGISTRY:
         args = tool_intent.get("arguments", {})
@@ -1418,13 +1837,18 @@ async def chat_endpoint(request: ChatRequest):
         except Exception:
             rag_context = ""
 
-    # Only call screen inspector if no tool result (avoids double-call)
-    if not tool_output_str:
+    # Only call screen inspector if no tool result (avoids double-call).
+    # It is a screenshot + vision call + OCR: measured 44 s when the vision model is
+    # rate-limited, and it used to run synchronously, freezing every other request.
+    # Voice requests skip it (spoken questions rarely need the screen; "what's on my
+    # screen" still goes through the read_my_screen tool). Otherwise: off the event
+    # loop, capped at 3 s.
+    if not tool_output_str and not request.voice:
         try:
-            current_screen = describe_screen_for_llm()
+            current_screen = await asyncio.wait_for(asyncio.to_thread(describe_screen_for_llm), timeout=3.0)
         except Exception:
             try:
-                current_screen = get_screen_text_summary()
+                current_screen = await asyncio.wait_for(asyncio.to_thread(get_screen_text_summary), timeout=1.5)
             except Exception:
                 current_screen = ""
 
@@ -1472,7 +1896,9 @@ async def chat_endpoint(request: ChatRequest):
         async for chunk in generate_chat_response(
             user_message=request.prompt,
             tool_name="context" if context else None,
-            tool_result=context if context else None
+            tool_result=context if context else None,
+            language=request.lang,
+            voice=request.voice,
         ):
             full_response += chunk
             yield chunk
