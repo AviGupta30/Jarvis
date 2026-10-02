@@ -10,7 +10,7 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
 
 ## Source Files
 

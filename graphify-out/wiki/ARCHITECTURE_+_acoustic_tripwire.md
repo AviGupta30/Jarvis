@@ -19,8 +19,8 @@
 ## Relationships
 
 - [acoustic_tripwire](acoustic_tripwire.md) (3 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
 - [frontend](frontend.md) (1 shared connections)
 - [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)

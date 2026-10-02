@@ -13,14 +13,13 @@
 
 ## Relationships
 
-- [ppt_tool](ppt_tool.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (2 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_research](ppt_research.md) (1 shared connections)
-- [ppt_composer](ppt_composer.md) (1 shared connections)
+- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (1 shared connections)
 - [ppt_template](ppt_template.md) (1 shared connections)
 - [ppt_content](ppt_content.md) (1 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (1 shared connections)
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
+- [ppt_tool + tools](ppt_tool_+_tools.md) (1 shared connections)
 
 ## Source Files
 

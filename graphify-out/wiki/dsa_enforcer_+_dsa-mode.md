@@ -33,10 +33,9 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (2 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (2 shared connections)
 - [client](client.md) (1 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
-- [persistence + server](persistence_+_server.md) (1 shared connections)
 
 ## Source Files
 

@@ -22,7 +22,7 @@
 
 - [acoustic_tripwire](acoustic_tripwire.md) (4 shared connections)
 - [ARCHITECTURE + acoustic_tripwire](ARCHITECTURE_+_acoustic_tripwire.md) (2 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (2 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (2 shared connections)
 
 ## Source Files
 

@@ -1,11 +1,12 @@
 # browser_mail
 
-> 9 nodes · cohesion 0.28
+> 10 nodes · cohesion 0.24
 
 ## Key Concepts
 
 - **browser_mail.py** (12 connections) — `app/services/browser_mail.py`
 - **smart_mail_action()** (4 connections) — `app/services/browser_mail.py`
+- **webbrowser** (3 connections)
 - **check_emails()** (2 connections) — `app/services/browser_mail.py`
 - **_get_api_key()** (2 connections) — `app/services/browser_mail.py`
 - **list_unread()** (2 connections) — `app/services/browser_mail.py`
@@ -16,9 +17,11 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (3 shared connections)
-- [tools](tools.md) (2 shared connections)
-- [web_search](web_search.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (3 shared connections)
+- [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
+- [youtube_control](youtube_control.md) (1 shared connections)
 
 ## Source Files
 
@@ -26,7 +29,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 15 (94%)
+- EXTRACTED: 17 (94%)
 - INFERRED: 1 (6%)
 - AMBIGUOUS: 0 (0%)
 

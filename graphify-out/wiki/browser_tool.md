@@ -1,6 +1,6 @@
 # browser_tool
 
-> 23 nodes · cohesion 0.20
+> 29 nodes · cohesion 0.14
 
 ## Key Concepts
 
@@ -16,6 +16,8 @@
 - **Purpose** (8 connections) — `docs/features/web.md`
 - **fill_form()** (7 connections) — `app/services/browser_tool.py`
 - **_llm_extract()** (7 connections) — `app/services/browser_tool.py`
+- **Web search, research & browser automation** (6 connections) — `docs/features/web.md`
+- **playwright_sync_api** (2 connections)
 - **browser_tool.py — Jarvis Browser Automation (Step 6 — ENHANCED)…** (1 connections) — `app/services/browser_tool.py`
 - **Find a search box on the given site, type the query, submit, and return LLM-…** (1 connections) — `app/services/browser_tool.py`
 - **Navigate to a page, click an element containing the specific text, return new…** (1 connections) — `app/services/browser_tool.py`
@@ -27,14 +29,13 @@
 - **Launch an anti-bot-hardened Chromium browser page.** (1 connections) — `app/services/browser_tool.py`
 - **Pass scraped text through LLM for structured extraction.** (1 connections) — `app/services/browser_tool.py`
 - **Open a URL and extract the visible text on the page, with LLM structured…** (1 connections) — `app/services/browser_tool.py`
+- *... and 4 more nodes in this community*
 
 ## Relationships
 
-- [tools](tools.md) (8 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
-- [smart_navigator](smart_navigator.md) (1 shared connections)
-- [tools + web](tools_+_web.md) (1 shared connections)
-- [web_search](web_search.md) (1 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (8 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (3 shared connections)
+- [web_search + tools](web_search_+_tools.md) (2 shared connections)
 
 ## Source Files
 
@@ -43,8 +44,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 48 (76%)
-- INFERRED: 15 (24%)
+- EXTRACTED: 54 (78%)
+- INFERRED: 15 (22%)
 - AMBIGUOUS: 0 (0%)
 
 ---

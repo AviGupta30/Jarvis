@@ -20,8 +20,8 @@
 ## Relationships
 
 - [voice](voice.md) (10 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
-- [voice + context_classifier](voice_+_context_classifier.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
 
 ## Source Files
 

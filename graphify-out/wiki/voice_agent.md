@@ -27,10 +27,9 @@
 
 ## Relationships
 
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (3 shared connections)
-- [voice_agent](voice_agent.md) (3 shared connections)
-- [voice + context_classifier](voice_+_context_classifier.md) (2 shared connections)
-- [ppt_content + KNOWN_ISSUES](ppt_content_+_KNOWN_ISSUES.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (6 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (2 shared connections)
+- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 

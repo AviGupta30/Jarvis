@@ -1,10 +1,11 @@
 # neural-cache
 
-> 7 nodes · cohesion 0.29
+> 8 nodes · cohesion 0.25
 
 ## Key Concepts
 
 - **Neural cache (Redis-like LRU server)** (7 connections) — `docs/features/neural-cache.md`
+- **Design** (4 connections) — `docs/features/neural-cache.md`
 - **neural-cache.md** (1 connections) — `docs/features/neural-cache.md`
 - **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/neural-cache.md`
 - **Graphify** (1 connections) — `docs/features/neural-cache.md`
@@ -14,7 +15,9 @@
 
 ## Relationships
 
-- [lru + test_lru](lru_+_test_lru.md) (1 shared connections)
+- [client](client.md) (1 shared connections)
+- [persistence + engine](persistence_+_engine.md) (1 shared connections)
+- [lru](lru.md) (1 shared connections)
 
 ## Source Files
 
@@ -22,8 +25,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 7 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 7 (70%)
+- INFERRED: 3 (30%)
 - AMBIGUOUS: 0 (0%)
 
 ---

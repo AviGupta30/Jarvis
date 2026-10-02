@@ -32,8 +32,8 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (12 shared connections)
-- [tools](tools.md) (2 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (12 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (2 shared connections)
 - [assignment_pipeline + assignment_tool](assignment_pipeline_+_assignment_tool.md) (1 shared connections)
 
 ## Source Files

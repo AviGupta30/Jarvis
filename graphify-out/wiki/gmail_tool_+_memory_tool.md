@@ -1,11 +1,13 @@
 # gmail_tool + memory_tool
 
-> 42 nodes · cohesion 0.08
+> 52 nodes · cohesion 0.06
 
 ## Key Concepts
 
 - **gmail_tool.py** (17 connections) — `app/services/gmail_tool.py`
 - **memory_tool.py** (16 connections) — `app/services/memory_tool.py`
+- **check_today_schedule()** (8 connections) — `app/services/calendar_tool.py`
+- **Email, calendar & morning brief** (8 connections) — `docs/features/email-calendar.md`
 - **check_emails()** (7 connections) — `app/services/gmail_tool.py`
 - **summarize_inbox()** (7 connections) — `app/services/gmail_tool.py`
 - **forget_fact()** (7 connections) — `app/services/memory_tool.py`
@@ -27,22 +29,22 @@
 - **_fuzzy_match_topics()** (4 connections) — `app/services/memory_tool.py`
 - **_truncate()** (3 connections) — `app/services/gmail_tool.py`
 - **_ensure_memory_file()** (3 connections) — `app/services/memory_tool.py`
-- **Morning brief** (2 connections) — `docs/features/email-calendar.md`
-- **gmail_tool.py — Jarvis Gmail Integration (Step 5)…** (1 connections) — `app/services/gmail_tool.py`
-- *... and 17 more nodes in this community*
+- *... and 27 more nodes in this community*
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (8 shared connections)
-- [tools](tools.md) (6 shared connections)
-- [calendar_tool](calendar_tool.md) (4 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (10 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (7 shared connections)
+- [tool-registry + memory](tool-registry_+_memory.md) (3 shared connections)
 - [llm + llm-personality](llm_+_llm-personality.md) (2 shared connections)
-- [rag_memory + memory](rag_memory_+_memory.md) (2 shared connections)
-- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
-- [download_kokoro](download_kokoro.md) (1 shared connections)
+- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (1 shared connections)
+- [memory](memory.md) (1 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
 
 ## Source Files
 
+- `app/services/calendar_tool.py`
 - `app/services/gmail_tool.py`
 - `app/services/memory_tool.py`
 - `docs/features/email-calendar.md`
@@ -51,8 +53,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 86 (88%)
-- INFERRED: 12 (12%)
+- EXTRACTED: 96 (86%)
+- INFERRED: 16 (14%)
 - AMBIGUOUS: 0 (0%)
 
 ---

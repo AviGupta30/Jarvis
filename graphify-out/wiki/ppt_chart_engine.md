@@ -33,12 +33,13 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
+- [persistence + engine](persistence_+_engine.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (1 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
 
 ## Source Files
 

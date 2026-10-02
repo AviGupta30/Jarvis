@@ -1,10 +1,9 @@
 # download_kokoro
 
-> 7 nodes · cohesion 0.29
+> 6 nodes · cohesion 0.33
 
 ## Key Concepts
 
-- **traceback** (7 connections)
 - **download_kokoro.py** (4 connections) — `scripts/download_kokoro.py`
 - **test_api.py** (3 connections) — `test_api.py`
 - **urllib_request** (3 connections)
@@ -14,12 +13,8 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (3 shared connections)
-- [dark_enhancement + dark_video_enhancement](dark_enhancement_+_dark_video_enhancement.md) (1 shared connections)
-- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
-- [gmail_tool + memory_tool](gmail_tool_+_memory_tool.md) (1 shared connections)
-- [task_ledger](task_ledger.md) (1 shared connections)
-- [chat](chat.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (2 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
 - [youtube_control](youtube_control.md) (1 shared connections)
 
 ## Source Files
@@ -29,8 +24,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 14 (93%)
-- INFERRED: 1 (7%)
+- EXTRACTED: 8 (89%)
+- INFERRED: 1 (11%)
 - AMBIGUOUS: 0 (0%)
 
 ---

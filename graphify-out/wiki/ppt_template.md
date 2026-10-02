@@ -33,14 +33,13 @@
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (17 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (8 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (3 shared connections)
-- [ppt_composer](ppt_composer.md) (2 shared connections)
+- [ppt_designer](ppt_designer.md) (15 shared connections)
+- [ppt_studio](ppt_studio.md) (8 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (4 shared connections)
+- [ppt_designer + ppt_composer](ppt_designer_+_ppt_composer.md) (4 shared connections)
 - [ppt_content](ppt_content.md) (2 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
 - [ppt](ppt.md) (1 shared connections)
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (1 shared connections)
 
 ## Source Files
 

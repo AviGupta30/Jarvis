@@ -33,10 +33,10 @@
 
 ## Relationships
 
-- [ppt_content](ppt_content.md) (32 shared connections)
+- [ppt_content](ppt_content.md) (33 shared connections)
 - [ppt_research](ppt_research.md) (11 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (5 shared connections)
-- [ppt_content + KNOWN_ISSUES](ppt_content_+_KNOWN_ISSUES.md) (1 shared connections)
+- [ppt_studio](ppt_studio.md) (4 shared connections)
+- [ppt_tool + tools](ppt_tool_+_tools.md) (1 shared connections)
 
 ## Source Files
 

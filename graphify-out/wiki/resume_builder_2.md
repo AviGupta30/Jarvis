@@ -1,51 +1,55 @@
 # resume_builder
 
-> 30 nodes · cohesion 0.10
+> 26 nodes · cohesion 0.10
 
 ## Key Concepts
 
-- **_render_html_inner()** (14 connections) — `app/services/resume_builder.py`
+- **editor_save()** (14 connections) — `app/services/resume_builder.py`
 - **_render_files()** (13 connections) — `app/services/resume_builder.py`
-- **_e()** (12 connections) — `app/services/resume_builder.py`
 - **editor_page()** (10 connections) — `app/services/resume_builder.py`
-- **_shaped_header_html()** (7 connections) — `app/services/resume_builder.py`
-- **Design vocabulary (what a reference image can map to)** (7 connections) — `docs/features/resume-creator.md`
-- **_css_extra()** (6 connections) — `app/services/resume_builder.py`
-- **_header_html()** (6 connections) — `app/services/resume_builder.py`
-- **_name_block()** (6 connections) — `app/services/resume_builder.py`
-- **_photo_html()** (6 connections) — `app/services/resume_builder.py`
-- **_apply_layout_answer()** (5 connections) — `app/services/resume_builder.py`
+- **resume_router.py** (8 connections) — `app/api/resume_router.py`
+- **_normalise_content()** (8 connections) — `app/services/resume_builder.py`
+- **Visual editor (/resume/editor)** (8 connections) — `docs/features/resume-creator.md`
+- **_edit_content()** (6 connections) — `app/services/resume_builder.py`
 - **_effective_design()** (5 connections) — `app/services/resume_builder.py`
 - **_render_html()** (5 connections) — `app/services/resume_builder.py`
-- **_svg_bg()** (5 connections) — `app/services/resume_builder.py`
 - **_balance_columns()** (4 connections) — `app/services/resume_builder.py`
-- **_name_size()** (4 connections) — `app/services/resume_builder.py`
+- **resume_editor()** (3 connections) — `app/api/resume_router.py`
+- **resume_save()** (3 connections) — `app/api/resume_router.py`
+- **_apply_op()** (3 connections) — `app/services/resume_builder.py`
 - **_data_uri()** (3 connections) — `app/services/resume_builder.py`
-- **_decor_html()** (3 connections) — `app/services/resume_builder.py`
 - **_editor_toolbar()** (3 connections) — `app/services/resume_builder.py`
-- **_footer_html()** (3 connections) — `app/services/resume_builder.py`
-- **_initials()** (2 connections) — `app/services/resume_builder.py`
+- **fastapi_responses** (3 connections)
 - **_launch()** (2 connections) — `app/services/resume_builder.py`
-- **_shape_svg()** (2 connections) — `app/services/resume_builder.py`
-- **_title_key()** (2 connections) — `app/services/resume_builder.py`
+- **_str_list()** (2 connections) — `app/services/resume_builder.py`
+- **get** (1 connections)
+- **post** (1 connections)
+- **resume_router.py — FastAPI router for the visual resume editor…** (1 connections) — `app/api/resume_router.py`
 - **Per-content tweaks: projects take an empty Experience slot; headings the user…** (1 connections) — `app/services/resume_builder.py`
-- *... and 5 more nodes in this community*
+- **Greedy: move the section that most reduces the taller column, until no move…** (1 connections) — `app/services/resume_builder.py`
+- **HTML → PDF (auto-shrinks to avoid a nearly-empty last page) → PNG previews.** (1 connections) — `app/services/resume_builder.py`
+- **Full HTML page of the current resume in edit mode.** (1 connections) — `app/services/resume_builder.py`
+- *... and 1 more nodes in this community*
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (48 shared connections)
-- [ppt_router + resume_router](ppt_router_+_resume_router.md) (2 shared connections)
+- [resume_builder](resume_builder.md) (40 shared connections)
+- [agents + tool_runner](agents_+_tool_runner.md) (1 shared connections)
+- [main](main.md) (1 shared connections)
 - [resume-creator](resume-creator.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [ppt_router](ppt_router.md) (1 shared connections)
 
 ## Source Files
 
+- `app/api/resume_router.py`
 - `app/services/resume_builder.py`
 - `docs/features/resume-creator.md`
 
 ## Audit Trail
 
-- EXTRACTED: 82 (85%)
-- INFERRED: 14 (15%)
+- EXTRACTED: 65 (83%)
+- INFERRED: 13 (17%)
 - AMBIGUOUS: 0 (0%)
 
 ---

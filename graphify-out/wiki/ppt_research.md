@@ -33,13 +33,11 @@
 
 ## Relationships
 
-- [ppt_content](ppt_content.md) (18 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (3 shared connections)
-- [web_search](web_search.md) (2 shared connections)
-- [chat](chat.md) (1 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (19 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (4 shared connections)
+- [web_search + tools](web_search_+_tools.md) (2 shared connections)
+- [memory + rag_memory](memory_+_rag_memory.md) (1 shared connections)
 - [ppt](ppt.md) (1 shared connections)
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
 
 ## Source Files
 

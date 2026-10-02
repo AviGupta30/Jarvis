@@ -33,12 +33,13 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (22 shared connections)
-- [tools](tools.md) (6 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (19 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (6 shared connections)
+- [assignment_tool](assignment_tool.md) (3 shared connections)
 - [assignment_answers](assignment_answers.md) (1 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
-- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
+- [tool-registry + memory](tool-registry_+_memory.md) (1 shared connections)
+- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (1 shared connections)
 - [assignment_humanizer](assignment_humanizer.md) (1 shared connections)
 
 ## Source Files

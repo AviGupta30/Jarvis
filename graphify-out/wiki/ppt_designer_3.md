@@ -13,8 +13,8 @@
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (10 shared connections)
-- [ppt_composer](ppt_composer.md) (2 shared connections)
+- [ppt_designer](ppt_designer.md) (9 shared connections)
+- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (3 shared connections)
 
 ## Source Files
 

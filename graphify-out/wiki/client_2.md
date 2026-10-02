@@ -19,12 +19,12 @@
 
 - [client](client.md) (8 shared connections)
 - [test_concurrency](test_concurrency.md) (5 shared connections)
-- [persistence + server](persistence_+_server.md) (3 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (3 shared connections)
 - [benchmark](benchmark.md) (1 shared connections)
 - [dsa_enforcer + dsa-mode](dsa_enforcer_+_dsa-mode.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (1 shared connections)
-- [lru + test_lru](lru_+_test_lru.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
+- [neural-cache](neural-cache.md) (1 shared connections)
 
 ## Source Files
 

@@ -1,12 +1,10 @@
 # test_protocol
 
-> 39 nodes · cohesion 0.10
+> 31 nodes · cohesion 0.11
 
 ## Key Concepts
 
-- **test_protocol.py** (20 connections) — `neural_cache/tests/test_protocol.py`
 - **encode_message()** (17 connections) — `neural_cache/protocol.py`
-- **protocol.py** (13 connections) — `neural_cache/protocol.py`
 - **decode_message()** (13 connections) — `neural_cache/protocol.py`
 - **make_fake_socket()** (9 connections) — `neural_cache/tests/test_protocol.py`
 - **TestDecode** (8 connections) — `neural_cache/tests/test_protocol.py`
@@ -15,7 +13,6 @@
 - **make_socket_from_messages()** (5 connections) — `neural_cache/tests/test_protocol.py`
 - **.test_large_payload_roundtrip()** (5 connections) — `neural_cache/tests/test_protocol.py`
 - **.test_partial_read_handling()** (5 connections) — `neural_cache/tests/test_protocol.py`
-- **_recv_exact()** (4 connections) — `neural_cache/protocol.py`
 - **.test_basic_roundtrip()** (4 connections) — `neural_cache/tests/test_protocol.py`
 - **.test_empty_dict_roundtrip()** (4 connections) — `neural_cache/tests/test_protocol.py`
 - **.test_ping_roundtrip()** (4 connections) — `neural_cache/tests/test_protocol.py`
@@ -28,16 +25,15 @@
 - **.test_non_ascii_value()** (2 connections) — `neural_cache/tests/test_protocol.py`
 - **.test_returns_bytes()** (2 connections) — `neural_cache/tests/test_protocol.py`
 - **TestMultiMessage** (2 connections) — `neural_cache/tests/test_protocol.py`
-- **struct** (2 connections)
-- *... and 14 more nodes in this community*
+- **Serialise a dict to the wire format: [4-byte length][UTF-8 JSON body] Args:…** (1 connections) — `neural_cache/protocol.py`
+- **Read exactly one message from a socket, handling partial TCP reads correctly.…** (1 connections) — `neural_cache/protocol.py`
+- **1 MB value — tests that the length prefix handles large messages.** (1 connections) — `neural_cache/tests/test_protocol.py`
+- **The fake socket returns 1 byte at a time. _recv_exact must loop until it has…** (1 connections) — `neural_cache/tests/test_protocol.py`
+- *... and 6 more nodes in this community*
 
 ## Relationships
 
-- [engine + test_protocol](engine_+_test_protocol.md) (9 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (5 shared connections)
-- [persistence + server](persistence_+_server.md) (2 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
-- [lru + test_lru](lru_+_test_lru.md) (1 shared connections)
+- [persistence + engine](persistence_+_engine.md) (13 shared connections)
 
 ## Source Files
 
@@ -46,8 +42,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 87 (98%)
-- INFERRED: 2 (2%)
+- EXTRACTED: 63 (97%)
+- INFERRED: 2 (3%)
 - AMBIGUOUS: 0 (0%)
 
 ---

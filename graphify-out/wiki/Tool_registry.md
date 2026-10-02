@@ -2,7 +2,7 @@
 
 > God node · 123 connections · `docs/TOOLS.md`
 
-**Community:** [tools](tools.md)
+**Community:** [tools + whatsapp_smart](tools_+_whatsapp_smart.md)
 
 ## Connections by Relation
 

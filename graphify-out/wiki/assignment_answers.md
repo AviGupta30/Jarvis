@@ -25,7 +25,7 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (9 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (9 shared connections)
 - [assignment_pipeline + assignment_tool](assignment_pipeline_+_assignment_tool.md) (1 shared connections)
 
 ## Source Files

@@ -1,11 +1,12 @@
 # ppt_image_engine
 
-> 17 nodes · cohesion 0.15
+> 19 nodes · cohesion 0.16
 
 ## Key Concepts
 
 - **ppt_image_engine.py** (13 connections) — `app/services/ppt_image_engine.py`
 - **build_image_descriptors()** (8 connections) — `app/services/ppt_image_engine.py`
+- **match_images_to_slides()** (8 connections) — `app/services/ppt_image_engine.py`
 - **_extract_keywords()** (5 connections) — `app/services/ppt_image_engine.py`
 - **ImageDescriptor** (4 connections) — `app/services/ppt_image_engine.py`
 - **_parse_slide_ref_by_title()** (4 connections) — `app/services/ppt_image_engine.py`
@@ -17,6 +18,7 @@
 - **Return (aspect_ratio, width_px, height_px) for an image. Falls back to (1.78,…** (1 connections) — `app/services/ppt_image_engine.py`
 - **Build an ImageDescriptor for each uploaded image. Args: paths: Absolute file…** (1 connections) — `app/services/ppt_image_engine.py`
 - **Score relevance of an image to a slide using keyword overlap. Returns a float…** (1 connections) — `app/services/ppt_image_engine.py`
+- **Assign images to slides intelligently. Assignment priority: 1. Explicit slide…** (1 connections) — `app/services/ppt_image_engine.py`
 - **All metadata about one uploaded image.** (1 connections) — `app/services/ppt_image_engine.py`
 - **Extract meaningful 3+ character alpha tokens, filtering stop-words.** (1 connections) — `app/services/ppt_image_engine.py`
 - **Detect explicit slide assignment in the user hint. Recognised patterns (case-…** (1 connections) — `app/services/ppt_image_engine.py`
@@ -24,10 +26,9 @@
 
 ## Relationships
 
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (8 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (5 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (3 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 
 ## Source Files
@@ -36,7 +37,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 34 (100%)
+- EXTRACTED: 37 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

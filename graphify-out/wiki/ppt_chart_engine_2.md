@@ -13,9 +13,8 @@
 
 ## Relationships
 
+- [ppt_tool](ppt_tool.md) (3 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [ppt_tool](ppt_tool.md) (2 shared connections)
-- [ppt_tool + ppt_image_engine](ppt_tool_+_ppt_image_engine.md) (1 shared connections)
 
 ## Source Files
 

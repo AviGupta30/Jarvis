@@ -18,7 +18,7 @@
 
 ## Relationships
 
-- [tools](tools.md) (1 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (1 shared connections)
 - [gestureController + gestureInterpreter](gestureController_+_gestureInterpreter.md) (1 shared connections)
 - [package + App](package_+_App.md) (1 shared connections)
 - [ControlPanel + HandSkeleton](ControlPanel_+_HandSkeleton.md) (1 shared connections)

@@ -28,6 +28,7 @@ Originally found in the code survey of 2026-09-28 (commit cb8a3aa). Most were fi
 - **PPT research depends on `ddgs` web search, which throttles bursts.** Searches run ≤ 2 at a time with backoff; if it still returns nothing, Wikipedia alone grounds the deck (fewer facts → more qualitative slides).
 
 ## Fixed on 2026-10-02 (resume creator)
+- An uploaded design was replaced by the `tech` template because "tech stack" plus a word like "format" in the pasted details matched the template regex. Templates now need an explicit "<name> template/style" in the request line.
 - Projects listed under "EXPERIENCE (PROJECTS)" became fake jobs ("Full Stack Software Developer" ×3, "Image Processing Engineer"), and facts were repeated across highlights/achievements/competencies. Fixed with prompt rules plus `_finalize_content`, `_user_headings`, `_restore_dropped` and the projects→Experience slot swap.
 - Photo appeared top-right instead of in the sidebar for "photo in sidebar, name on a band" designs → new `sidebar_photo` header.
 - "Single page" requests could produce 2 pages → strict `target_pages` via `_fit_render` (shrink → condense overflowing column → trim).

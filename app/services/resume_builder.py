@@ -145,7 +145,8 @@ PRESET_BLURBS = {
 # Optional design keys (added 2026-10-02): every design gets these, so old saved designs keep working.
 _STYLE_DEFAULTS = {"header_shape": "flat", "footer_shape": "none", "photo_position": "left", "photo_ring": False,
                    "name_align": "left", "language_style": "dots", "decor": "none", "bottom_sections": [],
-                   "page_inset": [0, 0, 0, 0], "band_inset": []}
+                   "page_inset": [0, 0, 0, 0], "band_inset": [], "header_accent": "none", "column_divider": False,
+                   "item_rules": False, "skills_columns": 1}
 
 _FONTS = {
     "sans":      ("'Roboto', 'Segoe UI', Arial, sans-serif", "'Roboto', 'Segoe UI', Arial, sans-serif", "Roboto:wght@300;400;500;700;900"),
@@ -493,6 +494,10 @@ Return ONLY one JSON object, no prose:
  "photo_ring": true|false <coloured ring/border around the photo>,
  "name_align": "left|center",
  "decor": "none|circles|dots" <faint background decorations>,
+ "header_accent": "none|left_bar" <a solid dark vertical bar at the left end of the header band>,
+ "column_divider": true|false <thin vertical line between the two columns>,
+ "item_rules": true|false <thin horizontal lines between contact/list rows>,
+ "skills_columns": 1|2 <skills laid out in two columns>,
  "photo_bbox": [x0, y0, x1, y1] <photo position as fractions 0-1 of the WHOLE image, or null>,
  "font": "sans|geometric|modern|serif|elegant|mono",
  "name_case": "upper|title",
@@ -535,7 +540,7 @@ Return ONLY JSON: {"columns": 1 or 2, "equal_columns": true|false, "narrow_colum
 "banner_color": "<hex of the header/banner background>", "name_color": "<hex of the person's name text>"}"""
 
 _TITLE_KEYS = [
-    (r"profile|summary|about|objective|introduction", "profile"), (r"highlight|key\s+facts|at\s+a\s+glance", "highlights"),
+    (r"profile|summary|about|objective|introduction|overview", "profile"), (r"highlight|key\s+facts|at\s+a\s+glance", "highlights"),
     (r"contact|personal\s+(?:info|details)|reach", "contact"), (r"competenc|expertise|strength|core\s+areas", "competencies"),
     (r"skill|abilit", "skills"), (r"experience|employment|work\s+history|career\s+history|professional\s+history", "experience"),
     (r"education|academic|qualification|study", "education"), (r"achievement|award|honou?r|accomplish", "achievements"),
@@ -639,6 +644,62 @@ def _apply_layout_answer(spec: dict, lay: dict) -> dict:
     if lay.get("skill_graphic_colors"):
         cols["skill_colors"] = lay["skill_graphic_colors"]
     return spec
+
+
+def _pixel_colors(image_path: str, colors: dict, spec: dict) -> dict:
+    """Real colours of page / side column / header band from the reference pixels (vision hexes drift, and a
+    side column printed on the page colour must not become a filled sidebar)."""
+    try:
+        import cv2
+        import numpy as np
+        img = cv2.imread(image_path)
+        if img is None:
+            return {}
+        h, w = img.shape[:2]
+        f = 500 / max(w, 1)
+        if f < 1:
+            img = cv2.resize(img, (int(w * f), int(h * f)), interpolation=cv2.INTER_AREA)
+        rgb = img[:, :, ::-1].astype(np.int32)
+
+        def mode(px):
+            if px.size == 0:
+                return None
+            q = (px.reshape(-1, 3) // 4) * 4
+            vals, counts = np.unique(q, axis=0, return_counts=True)
+            r, g, b = (int(v) + 2 for v in vals[counts.argmax()])
+            return "#%02x%02x%02x" % (r, g, b)
+
+        # page box: rows/cols that are mostly light or mostly the vision page colour
+        light = rgb.mean(-1) > 200
+        rows = np.where(light.mean(1) >= 0.35)[0]
+        cols = np.where(light.mean(0) >= 0.35)[0]
+        if len(rows) < 20 or len(cols) < 20:
+            return {}
+        page = rgb[rows[0]:rows[-1] + 1, cols[0]:cols[-1] + 1]
+        ph, pw = page.shape[:2]
+        out = {"page_bg": mode(page[int(ph * .3):int(ph * .95), int(pw * .45):int(pw * .95)])}
+        lay = spec.get("layout")
+        sw = (spec.get("sidebar_width") or 32) / 100
+        if lay in ("sidebar_left", "sidebar_right"):
+            x0, x1 = (0, int(pw * sw * .9)) if lay == "sidebar_left" else (int(pw * (1 - sw * .9)), pw)
+            side = mode(page[int(ph * .3):int(ph * .95), x0:x1])
+            if side:
+                out["sidebar_bg"] = out["page_bg"] if np.linalg.norm(np.array(_rgb(side)) - np.array(_rgb(out["page_bg"]))) < 14 else side
+        # a thin dark vertical line in the body = column divider → its x gives the real column split
+        body = page[int(ph * .3):int(ph * .95)]
+        page_lum = float(np.median(body.mean(-1)))
+        dark_cols = np.where((body.mean(-1) < page_lum - 35).mean(0) >= 0.5)[0]   # clearly darker than the page
+        dark_cols = [x for x in dark_cols if pw * .18 <= x <= pw * .6]
+        if dark_cols and (dark_cols[-1] - dark_cols[0]) < pw * .02:
+            out["_divider_pct"] = round(100 * float(np.mean(dark_cols)) / pw, 1)
+        if spec.get("header") == "full_band" and spec.get("header_shape", "flat") in ("flat", None, ""):
+            band = mode(page[int(ph * .01):int(ph * .12), int(pw * .25):int(pw * .7)])
+            if band and np.linalg.norm(np.array(_rgb(band)) - np.array(_rgb(out["page_bg"]))) >= 8:
+                out["header_bg"] = band
+        return {k: v for k, v in out.items() if v}
+    except Exception as e:
+        print(f"[resume] pixel colours failed: {e}")
+        return {}
 
 
 def _measure_frame(image_path: str, colors: dict) -> list:
@@ -788,6 +849,16 @@ def _analyse_design(image_path: str) -> dict:
         return {"_palette": pal, "_vision_failed": True}
     spec = _apply_layout_answer(spec or {}, lay or {})
     spec["_palette"] = pal
+    px = _pixel_colors(image_path, spec.get("colors") or {}, spec)
+    div = px.pop("_divider_pct", None)
+    if div:                                          # measured split beats the model's "equal columns"
+        spec["column_divider"] = True
+        if 22 <= div <= 44:
+            if spec.get("layout") == "two_column":
+                spec["layout"], px["sidebar_bg"] = "sidebar_left", px.get("page_bg") or (spec.get("colors") or {}).get("page_bg")
+            if spec.get("layout") in ("sidebar_left", "sidebar_right"):
+                spec["sidebar_width"] = int(round(div if spec["layout"] == "sidebar_left" else 100 - div))
+    spec.setdefault("colors", {}).update({k: v for k, v in px.items() if v})
     spec["page_inset"] = _measure_frame(image_path, spec.get("colors") or {})
     spec["band_inset"] = _measure_band(image_path, spec.get("colors") or {}, spec.get("layout", ""))
     if len(spec["band_inset"]) == 4:                 # measured band colour beats the vision guess for near-white tones
@@ -829,6 +900,7 @@ def _merge_design(base: dict, over: dict) -> dict:
         "name_align": {"left", "center"},
         "language_style": {"bars", "dots", "squares", "text"},
         "decor": {"none", "circles", "dots"},
+        "header_accent": {"none", "left_bar"},
     }
     for k, ok in allowed.items():
         v = str(over.get(k) or "").strip().lower()
@@ -836,8 +908,11 @@ def _merge_design(base: dict, over: dict) -> dict:
             d[k] = v
     if isinstance(over.get("timeline"), bool):
         d["timeline"] = over["timeline"]
-    if isinstance(over.get("photo_ring"), bool):
-        d["photo_ring"] = over["photo_ring"]
+    for k in ("photo_ring", "column_divider", "item_rules"):
+        if isinstance(over.get(k), bool):
+            d[k] = over[k]
+    if str(over.get("skills_columns")) in ("1", "2"):
+        d["skills_columns"] = int(over["skills_columns"])
     band = over.get("band_inset")
     if isinstance(band, list) and len(band) in (0, 3):
         try:
@@ -858,7 +933,7 @@ def _merge_design(base: dict, over: dict) -> dict:
         pass
     cols = over.get("colors") or {}
     if isinstance(cols, dict):
-        for k in ("primary", "accent", "heading", "text", "sidebar_bg", "page_bg", "header_text", "track", "band"):
+        for k in ("primary", "accent", "heading", "text", "sidebar_bg", "page_bg", "header_text", "track", "band", "header_bg"):
             if cols.get(k):
                 d["colors"][k] = _hex(cols[k], d["colors"].get(k) or "#888888")
         sc = [_hex(c, "") for c in (cols.get("skill_colors") or []) if _hex(c, "")]
@@ -909,6 +984,9 @@ def _sanitize_design(design: dict) -> dict:
         c["heading"] = c["accent"] if _contrast(c["accent"], c["page_bg"]) >= 2.0 else _readable_on(c["page_bg"])
     if _contrast(c["accent"], c["page_bg"]) < 2.0:      # accent is used for company names / bullets
         c["accent"] = c["heading"]
+    if _contrast(c["primary"], c["page_bg"]) < 1.6 and c.get("header_bg"):
+        c["primary"] = c["heading"]
+        c["accent"] = c["accent"] if _contrast(c["accent"], c["page_bg"]) >= 2.0 else c["heading"]
     venn = []
     for col in c.get("skill_colors") or []:              # white labels sit on these circles
         for _ in range(8):
@@ -1272,7 +1350,7 @@ def _finalize_content(content: dict, details: str, design: dict) -> dict:
 # UPPERCASE headings the user typed ("EXPERIENCE (PROJECTS)", "CERTIFICATIONS & ACHIEVEMENTS") → exact titles + order.
 # Pasted text often loses newlines ("CONTACTEmail:"), so only the known heading word (+ "(…)" / "& WORD") is taken.
 _HEADING_WORDS = {
-    "profile": r"PROFESSIONAL SUMMARY|SUMMARY|PROFILE|ABOUT ME|OBJECTIVE", "highlights": r"CAREER HIGHLIGHTS|HIGHLIGHTS",
+    "profile": r"PROFESSIONAL SUMMARY|SUMMARY|PROFILE|ABOUT ME|OBJECTIVE|OVERVIEW", "highlights": r"CAREER HIGHLIGHTS|HIGHLIGHTS",
     "contact": r"CONTACT(?: DETAILS| INFO)?", "competencies": r"CORE COMPETENCIES|COMPETENCIES|EXPERTISE",
     "skills": r"TECHNICAL SKILLS|SKILLS", "experience": r"WORK EXPERIENCE|PROFESSIONAL EXPERIENCE|EXPERIENCE|EMPLOYMENT",
     "education": r"EDUCATION", "achievements": r"ACHIEVEMENTS|AWARDS|HONOU?RS", "certifications": r"CERTIFICATIONS?|COURSES",
@@ -1564,7 +1642,9 @@ def _effective_design(c: dict, d: dict) -> dict:
     d = json.loads(json.dumps(d))
     lists = [d.setdefault("sidebar_sections", []), d.setdefault("main_sections", []), d.get("bottom_sections") or []]
     swapped = False
-    if c.get("projects") and not c.get("experience") and any("experience" in lst for lst in lists):
+    # (only when the Experience slot comes first — not when it's just an empty placeholder appended after Projects)
+    already_first = any("projects" in lst and "experience" in lst and lst.index("projects") < lst.index("experience") for lst in lists)
+    if c.get("projects") and not c.get("experience") and any("experience" in lst for lst in lists) and not already_first:
         for lst in lists:                            # no real jobs: projects take the Experience slot
             if "projects" in lst:
                 lst.remove("projects")
@@ -1579,7 +1659,8 @@ def _effective_design(c: dict, d: dict) -> dict:
     order = list(c.get("section_order") or [])
     if swapped and "experience" in order and "projects" not in order:
         order[order.index("experience")] = "projects"
-    if order:                                        # the user's section order within each column
+    hint = c.get("layout_hint") or {}
+    if order and (hint.get("sidebar") or hint.get("main")):   # user spelled out a layout → their order; else the design's
         for name in ("sidebar_sections", "main_sections"):
             lst = d[name]
             d[name] = sorted(lst, key=lambda k: (order.index(k), 0) if k in order else (len(order), lst.index(k)))
@@ -1838,6 +1919,19 @@ def _css_extra(d: dict, scale: float) -> str:
                    f".bottom{{margin-top:calc(-{foot_h}mm - 4mm);padding-bottom:calc({foot_h}mm + 6mm)}}")
     if track:
         out.append(f".bars .bar-t{{background:{_mix(track, c['page_bg'], 0.82)}!important}}")
+    if c.get("header_bg"):                       # measured band colour (light band → dark text)
+        out.append(f".hd-band{{background:{c['header_bg']};color:{_readable_on(c['header_bg'], c['heading'])}}}"
+                   f".hd-band .ttl{{color:{_readable_on(c['header_bg'], c['text'])};letter-spacing:2.5px}}")
+    if d.get("header_accent") == "left_bar":
+        out.append(".hd-band.acc-left_bar{position:relative;padding-left:24mm}"
+                   ".hd-band.acc-left_bar::before{content:'';position:absolute;left:0;top:0;bottom:0;width:8mm;background:var(--heading)}")
+    if d.get("column_divider"):
+        side = "left" if d["layout"] != "sidebar_right" else "right"
+        out.append(f"main{{border-{side}:1px solid {_mix(c['heading'], c['page_bg'], 0.25)}}}")
+    if d.get("item_rules"):
+        out.append(f".ct,.ic-list li,.edu{{border-bottom:1px solid {_mix(c['heading'], c['page_bg'], 0.55)};padding-bottom:1.6mm;margin-bottom:1.8mm}}")
+    if d.get("skills_columns") == 2:
+        out.append("main .bars{display:grid;grid-template-columns:1fr 1fr;column-gap:9mm}")
     t, r, b, l = (d.get("page_inset") or [0, 0, 0, 0]) + [0, 0, 0, 0][len(d.get("page_inset") or []):]
     band_in = d.get("band_inset") or []
     if len(band_in) == 3 and any(band_in):
@@ -1877,7 +1971,7 @@ def _header_html(c: dict, d: dict, photo_uri: str) -> str:
     if h == "full_band":
         ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
         avail = 210 - 24 - (40 if ph else 0)
-        return f'<header class="hd-band pos-{d.get("photo_position", "left")}">{ph}<div class="hd-txt">{_name_block(c, d, _name_size(name, avail, 32))}</div></header>'
+        return f'<header class="hd-band pos-{d.get("photo_position", "left")} acc-{d.get("header_accent", "none")}">{ph}<div class="hd-txt">{_name_block(c, d, _name_size(name, avail, 32))}</div></header>'
     if h == "centered":
         ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
         return f'<header class="hd-center">{ph}{_name_block(c, d, _name_size(name, 170, 30))}</header>'
@@ -2663,7 +2757,8 @@ _EDIT_RX = re.compile(r"\b(?:change|update|edit|modify|add|remove|delete|replace
                       r"[^.\n]{0,80}?\b(?:my|the|this|that)\s+" + _NOUN, re.I)
 _MEDIA_RX = re.compile(r"\bresume\s+(?:the\s+|my\s+)?(?:music|song|video|playback|playing|track|spotify|youtube|task|work|"
                        r"download|it|that|this|where|from\s+where|reading|game)\b", re.I)
-_TEMPLATE_RX = re.compile(r"\b(" + "|".join(PRESETS) + r")\b(?:\s+(?:template|format|style|design|layout|theme))?", re.I)
+_TEMPLATE_RX = re.compile(r"\b(" + "|".join(PRESETS) + r")\s+(?:template|format|style|design|layout|theme)\b|"
+                          r"\b(?:template|format|style|theme)\s*[:=-]?\s*(" + "|".join(PRESETS) + r")\b", re.I)
 _COLOR_RX = re.compile(r"\b(" + "|".join(sorted(_NAMED_COLORS, key=len, reverse=True)) + r"|#[0-9a-f]{6})\b"
                        r"(?:\s+(?:colou?r|theme|tone|accent|shade))?", re.I)
 
@@ -2746,12 +2841,12 @@ def detect_resume_request(prompt: str) -> dict | None:
             return None
         state = _load_state()
         ref, photo = _split_images(prompt)
-        tpl_m = _TEMPLATE_RX.search(lower)
-        template = tpl_m.group(1).lower() if tpl_m and (tpl_m.group(0) != tpl_m.group(1) or
-                                                         re.search(r"\b(template|format|style)\b", lower)) else ""
-        col_m = _COLOR_RX.search(lower)
+        head = lower[:220]                           # "tech stack" deep in pasted details must not pick a template
+        tpl_m = _TEMPLATE_RX.search(head)
+        template = (tpl_m.group(1) or tpl_m.group(2)).lower() if tpl_m else ""
+        col_m = _COLOR_RX.search(head)
         color = ""
-        if col_m and re.search(r"\b(colou?r|theme|tone|shade|accent)\b", lower):
+        if col_m and re.search(r"\b(colou?r|theme|tone|shade|accent)\b", head):
             color = col_m.group(1).lower()
         args = {"details": "", "image_path": ref, "photo_path": photo, "template": template, "color": color,
                 "instruction": "", "reuse_photo": bool(re.search(r"\b(same|that|this|existing|original)\s+(photo|pic|picture|image of me)\b|"

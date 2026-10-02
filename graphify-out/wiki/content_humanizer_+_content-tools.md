@@ -33,13 +33,13 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (5 shared connections)
-- [ui_inspector + lru](ui_inspector_+_lru.md) (4 shared connections)
-- [tools](tools.md) (2 shared connections)
-- [persistence + server](persistence_+_server.md) (1 shared connections)
-- [web_search](web_search.md) (1 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (8 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (2 shared connections)
+- [voice_agent](voice_agent.md) (1 shared connections)
+- [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
 
 ## Source Files
 

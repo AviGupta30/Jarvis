@@ -4,7 +4,7 @@
 
 ## Key Concepts
 
-- **Content fidelity & page limits (2026-10-02)** (15 connections) — `docs/features/resume-creator.md`
+- **Content fidelity & page limits (2026-10-02)** (16 connections) — `docs/features/resume-creator.md`
 - **_build_content()** (12 connections) — `app/services/resume_builder.py`
 - **_drop_invented()** (9 connections) — `app/services/resume_builder.py`
 - **Fixed on 2026-10-02 (resume creator)** (9 connections) — `docs/KNOWN_ISSUES.md`
@@ -33,9 +33,9 @@
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (36 shared connections)
+- [resume_builder](resume_builder.md) (37 shared connections)
 - [resume-creator](resume-creator.md) (2 shared connections)
-- [ppt_content + KNOWN_ISSUES](ppt_content_+_KNOWN_ISSUES.md) (1 shared connections)
+- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 
@@ -45,8 +45,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 52 (65%)
-- INFERRED: 28 (35%)
+- EXTRACTED: 52 (64%)
+- INFERRED: 29 (36%)
 - AMBIGUOUS: 0 (0%)
 
 ---

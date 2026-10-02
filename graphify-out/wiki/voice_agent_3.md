@@ -17,10 +17,9 @@
 
 ## Relationships
 
-- [voice_agent](voice_agent.md) (2 shared connections)
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (3 shared connections)
 - [voice](voice.md) (1 shared connections)
-- [voice + context_classifier](voice_+_context_classifier.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
 
 ## Source Files
 

@@ -18,7 +18,7 @@
 
 ## Relationships
 
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (3 shared connections)
+- [server + test_concurrency](server_+_test_concurrency.md) (3 shared connections)
 
 ## Source Files
 

@@ -33,12 +33,12 @@
 
 ## Relationships
 
-- [voice_agent + acoustic_tripwire](voice_agent_+_acoustic_tripwire.md) (2 shared connections)
-- [assignment_tool + safe_executor](assignment_tool_+_safe_executor.md) (2 shared connections)
-- [download_kokoro](download_kokoro.md) (1 shared connections)
-- [message_reader + whatsapp](message_reader_+_whatsapp.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (2 shared connections)
+- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (2 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
+- [whatsapp_call + dump_wa_ui](whatsapp_call_+_dump_wa_ui.md) (1 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
+- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (1 shared connections)
 
 ## Source Files
 
