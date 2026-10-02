@@ -2194,7 +2194,7 @@
       "file_type": "code",
       "norm_label": "_apply_op()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2381"
+      "source_location": "L2386"
     },
     {
       "id": "app_services_resume_builder_data_uri",
@@ -2206,7 +2206,7 @@
       "file_type": "code",
       "norm_label": "_data_uri()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1890"
+      "source_location": "L1895"
     },
     {
       "id": "app_services_resume_builder_edit_content",
@@ -2230,7 +2230,7 @@
       "file_type": "code",
       "norm_label": "editor_page()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2358"
+      "source_location": "L2363"
     },
     {
       "id": "app_services_resume_builder_editor_save",
@@ -2242,7 +2242,7 @@
       "file_type": "code",
       "norm_label": "editor_save()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2403"
+      "source_location": "L2408"
     },
     {
       "id": "app_services_resume_builder_editor_toolbar",
@@ -2254,7 +2254,7 @@
       "file_type": "code",
       "norm_label": "_editor_toolbar()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2332"
+      "source_location": "L2337"
     },
     {
       "id": "app_services_resume_builder_effective_design",
@@ -2266,7 +2266,7 @@
       "file_type": "code",
       "norm_label": "_effective_design()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1417"
+      "source_location": "L1419"
     },
     {
       "id": "app_services_resume_builder_launch",
@@ -2278,7 +2278,7 @@
       "file_type": "code",
       "norm_label": "_launch()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1900"
+      "source_location": "L1905"
     },
     {
       "id": "app_services_resume_builder_normalise_content",
@@ -2302,7 +2302,7 @@
       "file_type": "code",
       "norm_label": "_render_files()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1941"
+      "source_location": "L1946"
     },
     {
       "id": "app_services_resume_builder_render_html",
@@ -2314,7 +2314,7 @@
       "file_type": "code",
       "norm_label": "_render_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1853"
+      "source_location": "L1858"
     },
     {
       "id": "app_services_resume_builder_str_list",
@@ -2362,7 +2362,7 @@
       "file_type": "code",
       "norm_label": "_attachments()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2503"
+      "source_location": "L2508"
     },
     {
       "id": "app_services_resume_builder_create_resume",
@@ -2374,7 +2374,7 @@
       "file_type": "code",
       "norm_label": "create_resume()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2617"
+      "source_location": "L2622"
     },
     {
       "id": "app_services_resume_builder_detect_resume_request",
@@ -2386,7 +2386,7 @@
       "file_type": "code",
       "norm_label": "detect_resume_request()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2557"
+      "source_location": "L2562"
     },
     {
       "id": "app_services_resume_builder_file_hash",
@@ -2410,7 +2410,7 @@
       "file_type": "code",
       "norm_label": "_has_details()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2539"
+      "source_location": "L2544"
     },
     {
       "id": "app_services_resume_builder_load_state",
@@ -2434,7 +2434,7 @@
       "file_type": "code",
       "norm_label": "open_resume_editor()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2468"
+      "source_location": "L2473"
     },
     {
       "id": "app_services_resume_builder_parse_pages",
@@ -2446,7 +2446,7 @@
       "file_type": "code",
       "norm_label": "_parse_pages()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2074"
+      "source_location": "L2079"
     },
     {
       "id": "app_services_resume_builder_resume_awaiting_details",
@@ -2458,7 +2458,7 @@
       "file_type": "code",
       "norm_label": "resume_awaiting_details()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2552"
+      "source_location": "L2557"
     },
     {
       "id": "app_services_resume_builder_resume_tool",
@@ -2470,7 +2470,7 @@
       "file_type": "code",
       "norm_label": "resume_tool()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2713"
+      "source_location": "L2718"
     },
     {
       "id": "app_services_resume_builder_save_state",
@@ -2494,7 +2494,7 @@
       "file_type": "code",
       "norm_label": "_split_images()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2516"
+      "source_location": "L2521"
     },
     {
       "id": "app_services_resume_builder_strip_tags",
@@ -2506,7 +2506,7 @@
       "file_type": "code",
       "norm_label": "_strip_tags()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2534"
+      "source_location": "L2539"
     },
     {
       "id": "neural_cache_tests_test_lru_testbasicops_test_capacity_one",
@@ -2998,7 +2998,7 @@
       "file_type": "code",
       "norm_label": "_css()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1722"
+      "source_location": "L1725"
     },
     {
       "id": "app_services_resume_builder_hex",
@@ -4246,7 +4246,7 @@
       "file_type": "code",
       "norm_label": "_condense_content()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2094"
+      "source_location": "L2099"
     },
     {
       "id": "app_services_resume_builder_content_brief",
@@ -4318,7 +4318,7 @@
       "file_type": "code",
       "norm_label": "_fit_render()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2157"
+      "source_location": "L2162"
     },
     {
       "id": "app_services_resume_builder_guess_name",
@@ -4366,7 +4366,7 @@
       "file_type": "code",
       "norm_label": "_placement()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1841"
+      "source_location": "L1846"
     },
     {
       "id": "app_services_resume_builder_restore_dropped",
@@ -7558,7 +7558,7 @@
       "file_type": "code",
       "norm_label": "list_resume_templates()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2610"
+      "source_location": "L2615"
     },
     {
       "id": "app_services_resume_detector_get_resume_context_string",
@@ -8638,7 +8638,7 @@
       "file_type": "code",
       "norm_label": "_cap()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2126"
+      "source_location": "L2131"
     },
     {
       "id": "app_services_resume_builder_cap_bullets",
@@ -8650,7 +8650,7 @@
       "file_type": "code",
       "norm_label": "_cap_bullets()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2117"
+      "source_location": "L2122"
     },
     {
       "id": "app_services_resume_builder_competencies_html",
@@ -8662,7 +8662,7 @@
       "file_type": "code",
       "norm_label": "_competencies_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1357"
+      "source_location": "L1359"
     },
     {
       "id": "app_services_resume_builder_contact_html",
@@ -8674,7 +8674,7 @@
       "file_type": "code",
       "norm_label": "_contact_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1466"
+      "source_location": "L1468"
     },
     {
       "id": "app_services_resume_builder_education_html",
@@ -8686,7 +8686,7 @@
       "file_type": "code",
       "norm_label": "_education_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1450"
+      "source_location": "L1452"
     },
     {
       "id": "app_services_resume_builder_experience_html",
@@ -8698,7 +8698,7 @@
       "file_type": "code",
       "norm_label": "_experience_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1375"
+      "source_location": "L1377"
     },
     {
       "id": "app_services_resume_builder_f",
@@ -8722,7 +8722,7 @@
       "file_type": "code",
       "norm_label": "_guess_icon()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1349"
+      "source_location": "L1351"
     },
     {
       "id": "app_services_resume_builder_icon",
@@ -8758,7 +8758,7 @@
       "file_type": "code",
       "norm_label": "_languages_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1617"
+      "source_location": "L1619"
     },
     {
       "id": "app_services_resume_builder_list_html",
@@ -8770,7 +8770,7 @@
       "file_type": "code",
       "norm_label": "_list_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1478"
+      "source_location": "L1480"
     },
     {
       "id": "app_services_resume_builder_projects_html",
@@ -8782,7 +8782,7 @@
       "file_type": "code",
       "norm_label": "_projects_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1397"
+      "source_location": "L1399"
     },
     {
       "id": "app_services_resume_builder_ring",
@@ -8818,7 +8818,7 @@
       "file_type": "code",
       "norm_label": "_section_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1489"
+      "source_location": "L1491"
     },
     {
       "id": "app_services_resume_builder_short_profile",
@@ -8830,7 +8830,7 @@
       "file_type": "code",
       "norm_label": "_short_profile()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2133"
+      "source_location": "L2138"
     },
     {
       "id": "app_services_resume_builder_skill_name",
@@ -14146,7 +14146,7 @@
       "file_type": "code",
       "norm_label": "_balance_columns()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1913"
+      "source_location": "L1918"
     },
     {
       "id": "app_services_resume_builder_css_extra",
@@ -14158,7 +14158,7 @@
       "file_type": "code",
       "norm_label": "_css_extra()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1639"
+      "source_location": "L1641"
     },
     {
       "id": "app_services_resume_builder_decor_html",
@@ -14170,7 +14170,7 @@
       "file_type": "code",
       "norm_label": "_decor_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1601"
+      "source_location": "L1603"
     },
     {
       "id": "app_services_resume_builder_e",
@@ -14194,7 +14194,7 @@
       "file_type": "code",
       "norm_label": "_footer_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1587"
+      "source_location": "L1589"
     },
     {
       "id": "app_services_resume_builder_header_html",
@@ -14206,7 +14206,7 @@
       "file_type": "code",
       "norm_label": "_header_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1698"
+      "source_location": "L1701"
     },
     {
       "id": "app_services_resume_builder_initials",
@@ -14218,7 +14218,7 @@
       "file_type": "code",
       "norm_label": "_initials()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1523"
+      "source_location": "L1525"
     },
     {
       "id": "app_services_resume_builder_name_block",
@@ -14230,7 +14230,7 @@
       "file_type": "code",
       "norm_label": "_name_block()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1536"
+      "source_location": "L1538"
     },
     {
       "id": "app_services_resume_builder_name_size",
@@ -14242,7 +14242,7 @@
       "file_type": "code",
       "norm_label": "_name_size()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1548"
+      "source_location": "L1550"
     },
     {
       "id": "app_services_resume_builder_photo_html",
@@ -14254,7 +14254,7 @@
       "file_type": "code",
       "norm_label": "_photo_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1528"
+      "source_location": "L1530"
     },
     {
       "id": "app_services_resume_builder_render_html_inner",
@@ -14266,7 +14266,7 @@
       "file_type": "code",
       "norm_label": "_render_html_inner()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1861"
+      "source_location": "L1866"
     },
     {
       "id": "app_services_resume_builder_shape_svg",
@@ -14278,7 +14278,7 @@
       "file_type": "code",
       "norm_label": "_shape_svg()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1564"
+      "source_location": "L1566"
     },
     {
       "id": "app_services_resume_builder_shaped_header_html",
@@ -14290,7 +14290,7 @@
       "file_type": "code",
       "norm_label": "_shaped_header_html()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1571"
+      "source_location": "L1573"
     },
     {
       "id": "app_services_resume_builder_svg_bg",
@@ -14302,7 +14302,7 @@
       "file_type": "code",
       "norm_label": "_svg_bg()",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1580"
+      "source_location": "L1582"
     },
     {
       "id": "app_services_resume_builder_title_key",
@@ -21371,7 +21371,7 @@
       "node_kind": "heading",
       "norm_label": "visual editor (/resume/editor)",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L32"
+      "source_location": "L34"
     },
     {
       "id": "app_api_resume_router_rationale_1",
@@ -21385,7 +21385,7 @@
       "source_location": "L1"
     },
     {
-      "id": "app_services_resume_builder_rationale_1418",
+      "id": "app_services_resume_builder_rationale_1420",
       "label": "Per-content tweaks: projects take an empty Experience slot; headings the user\u2026",
       "_origin": "ast",
       "community": 101,
@@ -21393,10 +21393,10 @@
       "file_type": "rationale",
       "norm_label": "per-content tweaks: projects take an empty experience slot; headings the user...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1418"
+      "source_location": "L1420"
     },
     {
-      "id": "app_services_resume_builder_rationale_1943",
+      "id": "app_services_resume_builder_rationale_1948",
       "label": "HTML \u2192 PDF (auto-shrinks to avoid a nearly-empty last page) \u2192 PNG previews.",
       "_origin": "ast",
       "community": 101,
@@ -21404,10 +21404,10 @@
       "file_type": "rationale",
       "norm_label": "html \u2192 pdf (auto-shrinks to avoid a nearly-empty last page) \u2192 png previews.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1943"
+      "source_location": "L1948"
     },
     {
-      "id": "app_services_resume_builder_rationale_2359",
+      "id": "app_services_resume_builder_rationale_2364",
       "label": "Full HTML page of the current resume in edit mode.",
       "_origin": "ast",
       "community": 101,
@@ -21415,10 +21415,10 @@
       "file_type": "rationale",
       "norm_label": "full html page of the current resume in edit mode.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2359"
+      "source_location": "L2364"
     },
     {
-      "id": "app_services_resume_builder_rationale_2404",
+      "id": "app_services_resume_builder_rationale_2409",
       "label": "Backend of the editor: apply text edits + one optional action, persist,\u2026",
       "_origin": "ast",
       "community": 101,
@@ -21426,7 +21426,7 @@
       "file_type": "rationale",
       "norm_label": "backend of the editor: apply text edits + one optional action, persist,...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2404"
+      "source_location": "L2409"
     },
     {
       "id": "frontend_package_scripts",
@@ -21495,7 +21495,7 @@
       "source_location": "L1184"
     },
     {
-      "id": "app_services_resume_builder_rationale_2517",
+      "id": "app_services_resume_builder_rationale_2522",
       "label": "\u2192 (reference_image, photo). A photo is labelled as such or is a close-up face.",
       "_origin": "ast",
       "community": 103,
@@ -21503,10 +21503,10 @@
       "file_type": "rationale",
       "norm_label": "\u2192 (reference_image, photo). a photo is labelled as such or is a close-up face.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2517"
+      "source_location": "L2522"
     },
     {
-      "id": "app_services_resume_builder_rationale_2558",
+      "id": "app_services_resume_builder_rationale_2563",
       "label": "Fast regex router \u2192 create_resume kwargs (or {\"_list\": True}), else None.",
       "_origin": "ast",
       "community": 103,
@@ -21514,10 +21514,10 @@
       "file_type": "rationale",
       "norm_label": "fast regex router \u2192 create_resume kwargs (or {\"_list\": true}), else none.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2558"
+      "source_location": "L2563"
     },
     {
-      "id": "app_services_resume_builder_rationale_2619",
+      "id": "app_services_resume_builder_rationale_2624",
       "label": "Generator: progress lines, then markdown with PNG preview(s) + PDF/HTML links.",
       "_origin": "ast",
       "community": 103,
@@ -21525,10 +21525,10 @@
       "file_type": "rationale",
       "norm_label": "generator: progress lines, then markdown with png preview(s) + pdf/html links.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2619"
+      "source_location": "L2624"
     },
     {
-      "id": "app_services_resume_builder_rationale_2715",
+      "id": "app_services_resume_builder_rationale_2720",
       "label": "Registry entry: also handles a bare 'list templates' request.",
       "_origin": "ast",
       "community": 103,
@@ -21536,7 +21536,7 @@
       "file_type": "rationale",
       "norm_label": "registry entry: also handles a bare 'list templates' request.",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2715"
+      "source_location": "L2720"
     },
     {
       "id": "docs_features_prompt_enhancer",
@@ -23053,7 +23053,7 @@
       "node_kind": "heading",
       "norm_label": "gotchas",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L44"
+      "source_location": "L46"
     },
     {
       "id": "docs_known_issues_fixed_on_2026_10_02_resume_creator",
@@ -23101,7 +23101,7 @@
       "source_location": "L1157"
     },
     {
-      "id": "app_services_resume_builder_rationale_1842",
+      "id": "app_services_resume_builder_rationale_1847",
       "label": "Design's column lists + every other section (content or not) appended where it\u2026",
       "_origin": "ast",
       "community": 125,
@@ -23109,10 +23109,10 @@
       "file_type": "rationale",
       "norm_label": "design's column lists + every other section (content or not) appended where it...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1842"
+      "source_location": "L1847"
     },
     {
-      "id": "app_services_resume_builder_rationale_2158",
+      "id": "app_services_resume_builder_rationale_2163",
       "label": "Render; with a page target, shrink \u2192 AI-condense \u2192 trim until it fits. Returns\u2026",
       "_origin": "ast",
       "community": 125,
@@ -23120,7 +23120,7 @@
       "file_type": "rationale",
       "norm_label": "render; with a page target, shrink \u2192 ai-condense \u2192 trim until it fits. returns...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2158"
+      "source_location": "L2163"
     },
     {
       "id": "app_services_resume_builder_rationale_988",
@@ -23443,7 +23443,7 @@
       "node_kind": "heading",
       "norm_label": "data/config",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L41"
+      "source_location": "L43"
     },
     {
       "id": "docs_features_resume_creator_files_symbols_auto_generated_line_numbers_are_current",
@@ -23455,7 +23455,7 @@
       "node_kind": "heading",
       "norm_label": "files & symbols (auto-generated, line numbers are current)",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L57"
+      "source_location": "L59"
     },
     {
       "id": "docs_features_resume_creator_graphify",
@@ -23467,7 +23467,7 @@
       "node_kind": "heading",
       "norm_label": "graphify",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L53"
+      "source_location": "L55"
     },
     {
       "id": "docs_features_resume_creator_purpose",
@@ -23503,7 +23503,7 @@
       "node_kind": "heading",
       "norm_label": "ui",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L38"
+      "source_location": "L40"
     },
     {
       "id": "app_services_resume_builder_rationale_571",
@@ -31373,10 +31373,10 @@
       "node_kind": "heading",
       "norm_label": "design vocabulary (what a reference image can map to)",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L24"
+      "source_location": "L26"
     },
     {
-      "id": "app_services_resume_builder_rationale_1581",
+      "id": "app_services_resume_builder_rationale_1583",
       "label": "CSS background for an SVG. Chromium repeats position:fixed elements on every\u2026",
       "_origin": "ast",
       "community": 58,
@@ -31384,10 +31384,10 @@
       "file_type": "rationale",
       "norm_label": "css background for an svg. chromium repeats position:fixed elements on every...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1581"
+      "source_location": "L1583"
     },
     {
-      "id": "app_services_resume_builder_rationale_1640",
+      "id": "app_services_resume_builder_rationale_1642",
       "label": "CSS for the newer design vocabulary (kept apart from _css so older designs\u2026",
       "_origin": "ast",
       "community": 58,
@@ -31395,10 +31395,10 @@
       "file_type": "rationale",
       "norm_label": "css for the newer design vocabulary (kept apart from _css so older designs...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1640"
+      "source_location": "L1642"
     },
     {
-      "id": "app_services_resume_builder_rationale_1914",
+      "id": "app_services_resume_builder_rationale_1919",
       "label": "Greedy: move the section that most reduces the taller column, until no move\u2026",
       "_origin": "ast",
       "community": 58,
@@ -31406,7 +31406,7 @@
       "file_type": "rationale",
       "norm_label": "greedy: move the section that most reduces the taller column, until no move...",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1914"
+      "source_location": "L1919"
     },
     {
       "id": "app_services_research_scraper",
@@ -53692,7 +53692,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1365",
+      "source_location": "L1367",
       "weight": 1.0
     },
     {
@@ -53704,7 +53704,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1366",
+      "source_location": "L1368",
       "weight": 1.0
     },
     {
@@ -53716,7 +53716,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1369",
+      "source_location": "L1371",
       "weight": 1.0
     },
     {
@@ -53728,7 +53728,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1369",
+      "source_location": "L1371",
       "weight": 1.0
     },
     {
@@ -53740,7 +53740,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2100",
+      "source_location": "L2105",
       "weight": 1.0
     },
     {
@@ -53752,7 +53752,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2104",
+      "source_location": "L2109",
       "weight": 1.0
     },
     {
@@ -53764,7 +53764,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2104",
+      "source_location": "L2109",
       "weight": 1.0
     },
     {
@@ -53776,7 +53776,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1474",
+      "source_location": "L1476",
       "weight": 1.0
     },
     {
@@ -53788,7 +53788,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1475",
+      "source_location": "L1477",
       "weight": 1.0
     },
     {
@@ -53812,7 +53812,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2621",
+      "source_location": "L2626",
       "weight": 1.0
     },
     {
@@ -53824,7 +53824,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2623",
+      "source_location": "L2628",
       "weight": 1.0
     },
     {
@@ -53836,7 +53836,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2624",
+      "source_location": "L2629",
       "weight": 1.0
     },
     {
@@ -53848,7 +53848,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2627",
+      "source_location": "L2632",
       "weight": 1.0
     },
     {
@@ -53860,7 +53860,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2639",
+      "source_location": "L2644",
       "weight": 1.0
     },
     {
@@ -53872,7 +53872,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2645",
+      "source_location": "L2650",
       "weight": 1.0
     },
     {
@@ -53884,7 +53884,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2651",
+      "source_location": "L2656",
       "weight": 1.0
     },
     {
@@ -53896,7 +53896,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2657",
+      "source_location": "L2662",
       "weight": 1.0
     },
     {
@@ -53908,7 +53908,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2658",
+      "source_location": "L2663",
       "weight": 1.0
     },
     {
@@ -53920,7 +53920,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2665",
+      "source_location": "L2670",
       "weight": 1.0
     },
     {
@@ -53932,7 +53932,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2675",
+      "source_location": "L2680",
       "weight": 1.0
     },
     {
@@ -53944,7 +53944,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2684",
+      "source_location": "L2689",
       "weight": 1.0
     },
     {
@@ -53980,7 +53980,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1726",
+      "source_location": "L1729",
       "weight": 1.0
     },
     {
@@ -53992,7 +53992,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1728",
+      "source_location": "L1731",
       "weight": 1.0
     },
     {
@@ -54004,7 +54004,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1746",
+      "source_location": "L1749",
       "weight": 1.0
     },
     {
@@ -54016,7 +54016,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1653",
+      "source_location": "L1655",
       "weight": 1.0
     },
     {
@@ -54028,7 +54028,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1614",
+      "source_location": "L1616",
       "weight": 1.0
     },
     {
@@ -54040,7 +54040,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2560",
+      "source_location": "L2565",
       "weight": 1.0
     },
     {
@@ -54052,7 +54052,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2576",
+      "source_location": "L2581",
       "weight": 1.0
     },
     {
@@ -54064,7 +54064,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2579",
+      "source_location": "L2584",
       "weight": 1.0
     },
     {
@@ -54076,7 +54076,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2580",
+      "source_location": "L2585",
       "weight": 1.0
     },
     {
@@ -54088,7 +54088,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2594",
+      "source_location": "L2599",
       "weight": 1.0
     },
     {
@@ -54100,7 +54100,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2601",
+      "source_location": "L2606",
       "weight": 1.0
     },
     {
@@ -54184,7 +54184,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2361",
+      "source_location": "L2366",
       "weight": 1.0
     },
     {
@@ -54196,7 +54196,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2368",
+      "source_location": "L2373",
       "weight": 1.0
     },
     {
@@ -54208,7 +54208,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2369",
+      "source_location": "L2374",
       "weight": 1.0
     },
     {
@@ -54220,7 +54220,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2372",
+      "source_location": "L2377",
       "weight": 1.0
     },
     {
@@ -54232,7 +54232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2378",
+      "source_location": "L2383",
       "weight": 1.0
     },
     {
@@ -54244,7 +54244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2406",
+      "source_location": "L2411",
       "weight": 1.0
     },
     {
@@ -54256,7 +54256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2410",
+      "source_location": "L2415",
       "weight": 1.0
     },
     {
@@ -54268,7 +54268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2416",
+      "source_location": "L2421",
       "weight": 1.0
     },
     {
@@ -54280,7 +54280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2424",
+      "source_location": "L2429",
       "weight": 1.0
     },
     {
@@ -54292,7 +54292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2427",
+      "source_location": "L2432",
       "weight": 1.0
     },
     {
@@ -54304,7 +54304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2436",
+      "source_location": "L2441",
       "weight": 1.0
     },
     {
@@ -54316,7 +54316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2444",
+      "source_location": "L2449",
       "weight": 1.0
     },
     {
@@ -54328,7 +54328,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2451",
+      "source_location": "L2456",
       "weight": 1.0
     },
     {
@@ -54340,7 +54340,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2461",
+      "source_location": "L2466",
       "weight": 1.0
     },
     {
@@ -54352,7 +54352,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2333",
+      "source_location": "L2338",
       "weight": 1.0
     },
     {
@@ -54364,7 +54364,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1455",
+      "source_location": "L1457",
       "weight": 1.0
     },
     {
@@ -54376,7 +54376,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1462",
+      "source_location": "L1464",
       "weight": 1.0
     },
     {
@@ -54388,7 +54388,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1383",
+      "source_location": "L1385",
       "weight": 1.0
     },
     {
@@ -54400,7 +54400,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1386",
+      "source_location": "L1388",
       "weight": 1.0
     },
     {
@@ -54412,7 +54412,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1388",
+      "source_location": "L1390",
       "weight": 1.0
     },
     {
@@ -54460,7 +54460,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2159",
+      "source_location": "L2164",
       "weight": 1.0
     },
     {
@@ -54472,7 +54472,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2162",
+      "source_location": "L2167",
       "weight": 1.0
     },
     {
@@ -54484,7 +54484,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1598",
+      "source_location": "L1600",
       "weight": 1.0
     },
     {
@@ -54496,7 +54496,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1704",
+      "source_location": "L1707",
       "weight": 1.0
     },
     {
@@ -54508,7 +54508,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1706",
+      "source_location": "L1709",
       "weight": 1.0
     },
     {
@@ -54520,7 +54520,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1710",
+      "source_location": "L1713",
       "weight": 1.0
     },
     {
@@ -54532,7 +54532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1710",
+      "source_location": "L1713",
       "weight": 1.0
     },
     {
@@ -54544,7 +54544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1625",
+      "source_location": "L1627",
       "weight": 1.0
     },
     {
@@ -54556,7 +54556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1625",
+      "source_location": "L1627",
       "weight": 1.0
     },
     {
@@ -54568,7 +54568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1484",
+      "source_location": "L1486",
       "weight": 1.0
     },
     {
@@ -54580,7 +54580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1484",
+      "source_location": "L1486",
       "weight": 1.0
     },
     {
@@ -54592,7 +54592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1484",
+      "source_location": "L1486",
       "weight": 1.0
     },
     {
@@ -54676,7 +54676,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1541",
+      "source_location": "L1543",
       "weight": 1.0
     },
     {
@@ -54688,7 +54688,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1543",
+      "source_location": "L1545",
       "weight": 1.0
     },
     {
@@ -54712,7 +54712,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2469",
+      "source_location": "L2474",
       "weight": 1.0
     },
     {
@@ -54724,7 +54724,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1533",
+      "source_location": "L1535",
       "weight": 1.0
     },
     {
@@ -54736,7 +54736,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1533",
+      "source_location": "L1535",
       "weight": 1.0
     },
     {
@@ -54748,7 +54748,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1403",
+      "source_location": "L1405",
       "weight": 1.0
     },
     {
@@ -54760,7 +54760,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1404",
+      "source_location": "L1406",
       "weight": 1.0
     },
     {
@@ -54796,7 +54796,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1946",
+      "source_location": "L1951",
       "weight": 1.0
     },
     {
@@ -54808,7 +54808,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1950",
+      "source_location": "L1955",
       "weight": 1.0
     },
     {
@@ -54820,7 +54820,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1952",
+      "source_location": "L1957",
       "weight": 1.0
     },
     {
@@ -54832,7 +54832,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1956",
+      "source_location": "L1961",
       "weight": 1.0
     },
     {
@@ -54844,7 +54844,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1965",
+      "source_location": "L1970",
       "weight": 1.0
     },
     {
@@ -54856,7 +54856,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1998",
+      "source_location": "L2003",
       "weight": 1.0
     },
     {
@@ -54868,7 +54868,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2016",
+      "source_location": "L2021",
       "weight": 1.0
     },
     {
@@ -54880,7 +54880,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1856",
+      "source_location": "L1861",
       "weight": 1.0
     },
     {
@@ -54892,7 +54892,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1862",
+      "source_location": "L1867",
       "weight": 1.0
     },
     {
@@ -54904,7 +54904,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1865",
+      "source_location": "L1870",
       "weight": 1.0
     },
     {
@@ -54916,7 +54916,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1866",
+      "source_location": "L1871",
       "weight": 1.0
     },
     {
@@ -54928,7 +54928,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1872",
+      "source_location": "L1877",
       "weight": 1.0
     },
     {
@@ -54940,7 +54940,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1872",
+      "source_location": "L1877",
       "weight": 1.0
     },
     {
@@ -54952,7 +54952,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1872",
+      "source_location": "L1877",
       "weight": 1.0
     },
     {
@@ -54964,7 +54964,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1884",
+      "source_location": "L1889",
       "weight": 1.0
     },
     {
@@ -54976,7 +54976,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1886",
+      "source_location": "L1891",
       "weight": 1.0
     },
     {
@@ -54988,7 +54988,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1886",
+      "source_location": "L1891",
       "weight": 1.0
     },
     {
@@ -55000,7 +55000,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1887",
+      "source_location": "L1892",
       "weight": 1.0
     },
     {
@@ -55012,7 +55012,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1887",
+      "source_location": "L1892",
       "weight": 1.0
     },
     {
@@ -55024,7 +55024,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1887",
+      "source_location": "L1892",
       "weight": 1.0
     },
     {
@@ -55108,7 +55108,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2553",
+      "source_location": "L2558",
       "weight": 1.0
     },
     {
@@ -55120,7 +55120,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2716",
+      "source_location": "L2721",
       "weight": 1.0
     },
     {
@@ -55132,7 +55132,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2717",
+      "source_location": "L2722",
       "weight": 1.0
     },
     {
@@ -55144,7 +55144,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2719",
+      "source_location": "L2724",
       "weight": 1.0
     },
     {
@@ -55240,7 +55240,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1492",
+      "source_location": "L1494",
       "weight": 1.0
     },
     {
@@ -55252,7 +55252,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1492",
+      "source_location": "L1494",
       "weight": 1.0
     },
     {
@@ -55264,7 +55264,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1494",
+      "source_location": "L1496",
       "weight": 1.0
     },
     {
@@ -55276,7 +55276,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1496",
+      "source_location": "L1498",
       "weight": 1.0
     },
     {
@@ -55288,7 +55288,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1498",
+      "source_location": "L1500",
       "weight": 1.0
     },
     {
@@ -55300,7 +55300,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1500",
+      "source_location": "L1502",
       "weight": 1.0
     },
     {
@@ -55312,7 +55312,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1502",
+      "source_location": "L1504",
       "weight": 1.0
     },
     {
@@ -55324,7 +55324,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1504",
+      "source_location": "L1506",
       "weight": 1.0
     },
     {
@@ -55336,7 +55336,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1510",
+      "source_location": "L1512",
       "weight": 1.0
     },
     {
@@ -55348,7 +55348,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1515",
+      "source_location": "L1517",
       "weight": 1.0
     },
     {
@@ -55360,7 +55360,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1520",
+      "source_location": "L1522",
       "weight": 1.0
     },
     {
@@ -55372,7 +55372,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1573",
+      "source_location": "L1575",
       "weight": 1.0
     },
     {
@@ -55384,7 +55384,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1576",
+      "source_location": "L1578",
       "weight": 1.0
     },
     {
@@ -55396,7 +55396,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1577",
+      "source_location": "L1579",
       "weight": 1.0
     },
     {
@@ -55408,7 +55408,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1577",
+      "source_location": "L1579",
       "weight": 1.0
     },
     {
@@ -55528,7 +55528,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2518",
+      "source_location": "L2523",
       "weight": 1.0
     },
     {
@@ -55540,7 +55540,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2524",
+      "source_location": "L2529",
       "weight": 1.0
     },
     {
@@ -85380,7 +85380,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1349",
+      "source_location": "L1351",
       "weight": 1.0
     },
     {
@@ -85391,7 +85391,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1357",
+      "source_location": "L1359",
       "weight": 1.0
     },
     {
@@ -85402,7 +85402,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1375",
+      "source_location": "L1377",
       "weight": 1.0
     },
     {
@@ -85413,7 +85413,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1397",
+      "source_location": "L1399",
       "weight": 1.0
     },
     {
@@ -85424,7 +85424,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1417",
+      "source_location": "L1419",
       "weight": 1.0
     },
     {
@@ -85435,7 +85435,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1450",
+      "source_location": "L1452",
       "weight": 1.0
     },
     {
@@ -85446,7 +85446,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1466",
+      "source_location": "L1468",
       "weight": 1.0
     },
     {
@@ -85457,7 +85457,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1478",
+      "source_location": "L1480",
       "weight": 1.0
     },
     {
@@ -85468,7 +85468,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1489",
+      "source_location": "L1491",
       "weight": 1.0
     },
     {
@@ -85479,7 +85479,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1523",
+      "source_location": "L1525",
       "weight": 1.0
     },
     {
@@ -85490,7 +85490,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1528",
+      "source_location": "L1530",
       "weight": 1.0
     },
     {
@@ -85501,7 +85501,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1536",
+      "source_location": "L1538",
       "weight": 1.0
     },
     {
@@ -85512,7 +85512,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1548",
+      "source_location": "L1550",
       "weight": 1.0
     },
     {
@@ -85523,7 +85523,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1564",
+      "source_location": "L1566",
       "weight": 1.0
     },
     {
@@ -85534,7 +85534,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1571",
+      "source_location": "L1573",
       "weight": 1.0
     },
     {
@@ -85545,7 +85545,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1580",
+      "source_location": "L1582",
       "weight": 1.0
     },
     {
@@ -85556,7 +85556,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1587",
+      "source_location": "L1589",
       "weight": 1.0
     },
     {
@@ -85567,7 +85567,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1601",
+      "source_location": "L1603",
       "weight": 1.0
     },
     {
@@ -85578,7 +85578,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1617",
+      "source_location": "L1619",
       "weight": 1.0
     },
     {
@@ -85589,7 +85589,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1639",
+      "source_location": "L1641",
       "weight": 1.0
     },
     {
@@ -85600,7 +85600,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1698",
+      "source_location": "L1701",
       "weight": 1.0
     },
     {
@@ -85611,7 +85611,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1722",
+      "source_location": "L1725",
       "weight": 1.0
     },
     {
@@ -85622,7 +85622,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1841",
+      "source_location": "L1846",
       "weight": 1.0
     },
     {
@@ -85633,7 +85633,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1853",
+      "source_location": "L1858",
       "weight": 1.0
     },
     {
@@ -85644,7 +85644,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1861",
+      "source_location": "L1866",
       "weight": 1.0
     },
     {
@@ -85655,7 +85655,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1890",
+      "source_location": "L1895",
       "weight": 1.0
     },
     {
@@ -85666,7 +85666,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1900",
+      "source_location": "L1905",
       "weight": 1.0
     },
     {
@@ -85677,7 +85677,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1913",
+      "source_location": "L1918",
       "weight": 1.0
     },
     {
@@ -85688,7 +85688,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1941",
+      "source_location": "L1946",
       "weight": 1.0
     },
     {
@@ -85710,7 +85710,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2074",
+      "source_location": "L2079",
       "weight": 1.0
     },
     {
@@ -85721,7 +85721,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2094",
+      "source_location": "L2099",
       "weight": 1.0
     },
     {
@@ -85743,7 +85743,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2117",
+      "source_location": "L2122",
       "weight": 1.0
     },
     {
@@ -85754,7 +85754,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2126",
+      "source_location": "L2131",
       "weight": 1.0
     },
     {
@@ -85765,7 +85765,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2133",
+      "source_location": "L2138",
       "weight": 1.0
     },
     {
@@ -85787,7 +85787,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2157",
+      "source_location": "L2162",
       "weight": 1.0
     },
     {
@@ -85820,7 +85820,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2332",
+      "source_location": "L2337",
       "weight": 1.0
     },
     {
@@ -85831,7 +85831,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2358",
+      "source_location": "L2363",
       "weight": 1.0
     },
     {
@@ -85842,7 +85842,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2381",
+      "source_location": "L2386",
       "weight": 1.0
     },
     {
@@ -85864,18 +85864,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2403",
-      "weight": 1.0
-    },
-    {
-      "source": "app_services_resume_builder",
-      "target": "app_services_resume_builder_open_resume_editor",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app/services/resume_builder.py",
-      "source_location": "L2468",
+      "source_location": "L2408",
       "weight": 1.0
     },
     {
@@ -85891,24 +85880,24 @@
     },
     {
       "source": "app_services_resume_builder",
+      "target": "app_services_resume_builder_open_resume_editor",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/services/resume_builder.py",
+      "source_location": "L2473",
+      "weight": 1.0
+    },
+    {
+      "source": "app_services_resume_builder",
       "target": "app_services_resume_builder_attachments",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2503",
-      "weight": 1.0
-    },
-    {
-      "source": "app_services_resume_builder",
-      "target": "app_services_resume_builder_split_images",
-      "relation": "contains",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "app/services/resume_builder.py",
-      "source_location": "L2516",
+      "source_location": "L2508",
       "weight": 1.0
     },
     {
@@ -85924,18 +85913,18 @@
     },
     {
       "source": "app_services_resume_builder",
-      "target": "app_services_resume_builder_strip_tags",
+      "target": "app_services_resume_builder_split_images",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2534",
+      "source_location": "L2521",
       "weight": 1.0
     },
     {
       "source": "app_services_resume_builder",
-      "target": "app_services_resume_builder_has_details",
+      "target": "app_services_resume_builder_strip_tags",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -85946,13 +85935,24 @@
     },
     {
       "source": "app_services_resume_builder",
+      "target": "app_services_resume_builder_has_details",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/services/resume_builder.py",
+      "source_location": "L2544",
+      "weight": 1.0
+    },
+    {
+      "source": "app_services_resume_builder",
       "target": "app_services_resume_builder_resume_awaiting_details",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2552",
+      "source_location": "L2557",
       "weight": 1.0
     },
     {
@@ -85963,7 +85963,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2557",
+      "source_location": "L2562",
       "weight": 1.0
     },
     {
@@ -85985,7 +85985,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2610",
+      "source_location": "L2615",
       "weight": 1.0
     },
     {
@@ -85996,7 +85996,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2617",
+      "source_location": "L2622",
       "weight": 1.0
     },
     {
@@ -86018,7 +86018,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2713",
+      "source_location": "L2718",
       "weight": 1.0
     },
     {
@@ -91166,7 +91166,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L24",
+      "source_location": "L26",
       "weight": 1.0
     },
     {
@@ -91188,7 +91188,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L32",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -91199,7 +91199,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L38",
+      "source_location": "L40",
       "weight": 1.0
     },
     {
@@ -91210,7 +91210,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L41",
+      "source_location": "L43",
       "weight": 1.0
     },
     {
@@ -91221,7 +91221,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L44",
+      "source_location": "L46",
       "weight": 1.0
     },
     {
@@ -91232,7 +91232,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L53",
+      "source_location": "L55",
       "weight": 1.0
     },
     {
@@ -91243,7 +91243,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L57",
+      "source_location": "L59",
       "weight": 1.0
     },
     {
@@ -103182,146 +103182,146 @@
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1418",
+      "source": "app_services_resume_builder_rationale_1420",
       "target": "app_services_resume_builder_effective_design",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1418",
+      "source_location": "L1420",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1581",
+      "source": "app_services_resume_builder_rationale_1583",
       "target": "app_services_resume_builder_svg_bg",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1581",
+      "source_location": "L1583",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1640",
+      "source": "app_services_resume_builder_rationale_1642",
       "target": "app_services_resume_builder_css_extra",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1640",
+      "source_location": "L1642",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1842",
+      "source": "app_services_resume_builder_rationale_1847",
       "target": "app_services_resume_builder_placement",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1842",
+      "source_location": "L1847",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1914",
+      "source": "app_services_resume_builder_rationale_1919",
       "target": "app_services_resume_builder_balance_columns",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1914",
+      "source_location": "L1919",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_1943",
+      "source": "app_services_resume_builder_rationale_1948",
       "target": "app_services_resume_builder_render_files",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L1943",
+      "source_location": "L1948",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2158",
+      "source": "app_services_resume_builder_rationale_2163",
       "target": "app_services_resume_builder_fit_render",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2158",
+      "source_location": "L2163",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2359",
+      "source": "app_services_resume_builder_rationale_2364",
       "target": "app_services_resume_builder_editor_page",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2359",
+      "source_location": "L2364",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2404",
+      "source": "app_services_resume_builder_rationale_2409",
       "target": "app_services_resume_builder_editor_save",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2404",
+      "source_location": "L2409",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2517",
+      "source": "app_services_resume_builder_rationale_2522",
       "target": "app_services_resume_builder_split_images",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2517",
+      "source_location": "L2522",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2558",
+      "source": "app_services_resume_builder_rationale_2563",
       "target": "app_services_resume_builder_detect_resume_request",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2558",
+      "source_location": "L2563",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2619",
+      "source": "app_services_resume_builder_rationale_2624",
       "target": "app_services_resume_builder_create_resume",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2619",
+      "source_location": "L2624",
       "weight": 1.0
     },
     {
-      "source": "app_services_resume_builder_rationale_2715",
+      "source": "app_services_resume_builder_rationale_2720",
       "target": "app_services_resume_builder_resume_tool",
       "relation": "rationale_for",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "app/services/resume_builder.py",
-      "source_location": "L2715",
+      "source_location": "L2720",
       "weight": 1.0
     },
     {
@@ -110258,7 +110258,7 @@
       "confidence_score": 0.95,
       "context": "_apply_layout_answer",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0
     },
     {
@@ -110294,7 +110294,7 @@
       "confidence_score": 0.95,
       "context": "_apply_op",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L35",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -110318,7 +110318,7 @@
       "confidence_score": 0.95,
       "context": "_balance_columns",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0
     },
     {
@@ -110462,7 +110462,7 @@
       "confidence_score": 0.95,
       "context": "_css_extra",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -110702,7 +110702,7 @@
       "confidence_score": 0.95,
       "context": "_guess_name",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -110726,7 +110726,7 @@
       "confidence_score": 0.95,
       "context": "_guess_title",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L46",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -110786,7 +110786,7 @@
       "confidence_score": 0.95,
       "context": "_image_b64",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L42",
+      "source_location": "L44",
       "weight": 1.0
     },
     {
@@ -111074,7 +111074,7 @@
       "confidence_score": 0.95,
       "context": "_normalise_content",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L36",
+      "source_location": "L38",
       "weight": 1.0
     },
     {
@@ -111170,7 +111170,7 @@
       "confidence_score": 0.95,
       "context": "_placement",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L47",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -111266,7 +111266,7 @@
       "confidence_score": 0.95,
       "context": "_render_files",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L47",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -111278,7 +111278,7 @@
       "confidence_score": 0.95,
       "context": "_render_files",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L35",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -111410,7 +111410,7 @@
       "confidence_score": 0.95,
       "context": "_sanitize_design",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L28",
+      "source_location": "L30",
       "weight": 1.0
     },
     {
@@ -111470,7 +111470,7 @@
       "confidence_score": 0.95,
       "context": "_shaped_header_html",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L26",
+      "source_location": "L28",
       "weight": 1.0
     },
     {
@@ -111506,7 +111506,7 @@
       "confidence_score": 0.95,
       "context": "_svg_bg",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L27",
+      "source_location": "L29",
       "weight": 1.0
     },
     {
@@ -112706,7 +112706,7 @@
       "confidence_score": 0.95,
       "context": "detect_resume_request",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L39",
+      "source_location": "L41",
       "weight": 1.0
     },
     {
@@ -112718,7 +112718,7 @@
       "confidence_score": 0.95,
       "context": "detect_resume_request",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L33",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -112898,7 +112898,7 @@
       "confidence_score": 0.95,
       "context": "editor_page()",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L34",
+      "source_location": "L36",
       "weight": 1.0
     },
     {
@@ -112910,7 +112910,7 @@
       "confidence_score": 0.95,
       "context": "editor_save",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L35",
+      "source_location": "L37",
       "weight": 1.0
     },
     {
@@ -114470,7 +114470,7 @@
       "confidence_score": 0.95,
       "context": "open_resume_editor()",
       "source_file": "docs/features/resume-creator.md",
-      "source_location": "L33",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -116883,5 +116883,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "7fd21515c1533b08ac12cbac97a95c078b47c83a"
+  "built_at_commit": "52021770b6b188624b3b7da5abc55d2f1e2c6360"
 }

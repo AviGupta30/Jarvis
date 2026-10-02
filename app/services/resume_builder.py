@@ -1330,6 +1330,8 @@ def _skills_html(c: dict, d: dict, side: bool) -> str:
     else:  # chips (also used for leftovers)
         extra_items = [(f"skills.{i}.name", s["name"], "skill", f"skills.{i}") for i, s in enumerate(skills)] + extra_items
     if extra_items:
+        if parts:                                    # don't let tags silently continue a bar list
+            parts.append('<div class="sub-h">Other technologies</div>')
         parts.append('<div class="chips">' + "".join(
             f'<span{_it(item)}>{_f(p, x, ph)}</span>' for p, x, ph, item in extra_items) + "</div>")
     return "".join(parts)
@@ -1455,10 +1457,10 @@ def _education_html(c: dict, d: dict, side: bool) -> str:
         parts = [f'<div class="edu-deg">{_f(p + ".degree", x["degree"], "degree")}</div>']
         if x["institution"] or edit:
             parts.append(f'<div class="edu-inst">{_f(p + ".institution", x["institution"], "institution")}</div>')
-        if x["period"] or edit:
-            parts.append(f'<div class="edu-meta">{_f(p + ".period", x["period"], "period")}</div>')
-        if x["details"] or edit:
-            parts.append(f'<div class="edu-meta">{_f(p + ".details", x["details"], "details (grade, honours)")}</div>')
+        meta = [m for m in ((x["period"] or edit) and _f(p + ".period", x["period"], "period"),
+                            (x["details"] or edit) and _f(p + ".details", x["details"], "details (grade, honours)")) if m]
+        if meta:                                     # "2024 – 2028 · CGPA: 8.139" on one spaced line
+            parts.append(f'<div class="edu-meta">{"<span class=sep>·</span>".join(meta)}</div>')
         out.append(f'<div class="edu"{_it(p)}>{"".join(parts)}</div>')
     return "".join(out)
 
@@ -1668,6 +1670,7 @@ def _css_extra(d: dict, scale: float) -> str:
 .rb-foot-bar{{background:var(--primary)}}
 .rb-decor{{position:fixed;inset:0;z-index:0;pointer-events:none}}
 .lay-two_column aside{{padding:7mm 6mm 10mm 13mm}} .lay-two_column main{{padding:7mm 13mm 10mm 6mm}}
+.lay-sidebar_right .main-top{{margin:-7mm -8mm 5.5mm -12mm}}
 .lay-two_column .side-bg{{display:none}}
 .bottom{{position:relative;z-index:1;padding:2mm 13mm 6mm}}
 .bottom .sec{{margin-bottom:3mm}}
@@ -1680,11 +1683,11 @@ def _css_extra(d: dict, scale: float) -> str:
 .lang-txt{{margin-bottom:1.6mm}}
 .dot-set.sq i{{border-radius:1px}}
 .proj-d{{margin-bottom:1mm}}
-.main-top{{margin:-8mm -9mm 7mm;padding:10mm 9mm 8mm;background:{band};text-align:center}}
+.main-top{{margin:-7mm -12mm 5.5mm -8mm;padding:6.5mm 10mm 5.5mm;background:{band};text-align:center}}
 .main-top .nm{{color:var(--heading)}}
-.main-top .ttl{{color:var(--text);letter-spacing:2.2px;font-weight:500;margin-top:3.5mm;font-size:calc(10.5pt*var(--s))}}
-.side-top.photo-only{{margin-bottom:8mm}}
-.side-top.photo-only .hd-avatar{{width:38mm;height:38mm;border:2.5mm solid #ffffff;margin:0 auto}}
+.main-top .ttl{{color:var(--text);letter-spacing:2px;font-weight:500;margin-top:1.8mm;font-size:calc(10pt*var(--s))}}
+.side-top.photo-only{{margin-bottom:5.5mm}}
+.side-top.photo-only .hd-avatar{{width:29mm;height:29mm;border:1.6mm solid #ffffff;margin:0 auto}}
 """.replace("{band}", band))
     if foot_h:   # keep text clear of the footer shape on every page
         # columns always keep footer clearance (cloned at every page break); a bottom strip is pulled up into it
@@ -1757,9 +1760,10 @@ body{{width:210mm;font-family:{body_font};color:var(--text);font-size:calc(9.6pt
 header,.cols{{position:relative;z-index:1}}
 .cols{{display:flex;align-items:flex-start}}
 .lay-sidebar_right .cols{{flex-direction:row-reverse}}
-aside{{width:var(--sw);flex:none;padding:8mm 5.5mm 10mm 8mm;color:var(--side-text);-webkit-box-decoration-break:clone;box-decoration-break:clone}}
-.lay-sidebar_right aside{{padding:8mm 8mm 10mm 6mm}}
-main{{flex:1;min-width:0;padding:8mm 9mm 10mm 9mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}}
+aside{{width:var(--sw);flex:none;padding:7mm 6mm 10mm 8mm;color:var(--side-text);-webkit-box-decoration-break:clone;box-decoration-break:clone}}
+.lay-sidebar_right aside{{padding:7mm 8mm 10mm 6mm}}
+main{{flex:1;min-width:0;padding:7mm 12mm 10mm 8mm;-webkit-box-decoration-break:clone;box-decoration-break:clone}}
+.lay-sidebar_right main{{padding:7mm 8mm 10mm 12mm}}
 .lay-single_column main{{padding:8mm 15mm 12mm}}
 h2,.nm,.ttl,.comp-t,.job-role{{font-family:{head_font}}}
 .sec{{margin-bottom:calc(6.5mm*var(--s))}}
@@ -1767,17 +1771,17 @@ h2,.nm,.ttl,.comp-t,.job-role{{font-family:{head_font}}}
 letter-spacing:.3px;break-after:avoid;{h2}}}
 aside .sec h2{{color:var(--side-heading)}}
 {side_h2_fix}
-.sec p{{margin:0 0 2.4mm}}
+.sec p{{margin:0 0 2.4mm;line-height:1.6}}
 aside .sec{{font-size:calc(9.2pt*var(--s))}}
 ul{{margin:0;padding-left:4.2mm}}
-li{{margin-bottom:1mm}}
+li{{margin-bottom:1.2mm;line-height:1.5}}
 .bul li::marker{{color:var(--accent)}}
 aside .bul{{font-size:calc(8.6pt*var(--s))}}
 .ic-list{{list-style:none;padding:0}}
 .ic-list li{{display:flex;gap:2.4mm;align-items:flex-start}}
-.li-ic{{flex:none;padding-top:.5mm}}
-.ct{{display:flex;gap:3mm;align-items:center;margin-bottom:2.2mm;font-size:calc(8.8pt*var(--s))}}
-.ct-ic{{flex:none;display:flex}} .ct-v{{word-break:break-word}}
+.li-ic{{flex:none;height:1.5em;display:flex;align-items:center}} .li-ic svg{{display:block}}
+.ct{{display:flex;gap:2.6mm;align-items:flex-start;margin-bottom:2.2mm;font-size:calc(8.8pt*var(--s));line-height:1.45}}
+.ct-ic{{flex:none;display:flex;align-items:center;justify-content:center;width:1.2em;height:1.45em}} .ct-ic svg{{display:block;width:1.05em;height:1.05em}} .ct-v{{word-break:break-word;min-width:0}}
 .venn{{width:100%;max-width:calc(95mm*var(--s));display:block;margin:0 auto 1mm;font-family:{head_font}}}
 .addl{{text-align:center;margin-top:1mm}}
 .addl-h{{font-family:{head_font};font-weight:700;color:var(--heading);font-size:calc(12.5pt*var(--s));margin-bottom:1mm}}
@@ -1792,6 +1796,7 @@ aside .addl-h{{color:var(--side-heading)}}
 .lay-single_column .rings{{grid-template-columns:repeat(6,1fr)}}
 .ring{{width:13mm;height:13mm;display:block;margin:0 auto .8mm}}
 .chips{{display:flex;flex-wrap:wrap;gap:1.6mm;margin-top:1.5mm}}
+.sub-h{{font-family:{head_font};font-weight:700;font-size:calc(9pt*var(--s));letter-spacing:.6px;text-transform:uppercase;color:var(--heading);margin:3.2mm 0 .5mm;opacity:.9}} aside .sub-h{{color:var(--side-heading)}}
 .chips>span{{border:1px solid var(--rule);background:var(--tint);color:var(--text);padding:.7mm 2.4mm;border-radius:3mm;font-size:calc(8.4pt*var(--s))}}
 aside .chips>span{{background:transparent;border-color:var(--side-rule);color:var(--side-text)}}
 .comp-grid{{display:grid;grid-template-columns:1fr 1fr;column-gap:6mm;row-gap:3.6mm}}
@@ -1810,7 +1815,7 @@ border:2px solid var(--heading)}}
 .job-period{{font-weight:700;font-size:calc(8.8pt*var(--s));white-space:nowrap}}
 .job-co{{color:var(--accent);font-weight:600;font-size:calc(9.2pt*var(--s));margin-bottom:1mm}}
 .job ul{{font-size:calc(9pt*var(--s))}}
-.edu{{margin-bottom:2.6mm;break-inside:avoid}} .edu-deg{{font-weight:700}} .edu-inst{{font-weight:500}} .edu-meta{{color:var(--muted);font-size:.92em}}
+.edu{{margin-bottom:3.6mm;break-inside:avoid;line-height:1.4}} .edu-deg{{font-weight:700;margin-bottom:.6mm}} .edu-inst{{font-weight:500;margin-bottom:.9mm}} .edu-meta{{color:var(--muted);font-size:.92em}} .edu-meta .sep{{padding:0 1.6mm;opacity:.7}}
 aside .edu-meta{{color:var(--side-text);opacity:.8}}
 .proj{{margin-bottom:2.4mm}} .proj b{{color:var(--heading)}}
 .nm{{font-weight:800;line-height:1.02;letter-spacing:.4px}} .up{{text-transform:uppercase}}
@@ -1829,8 +1834,8 @@ aside .edu-meta{{color:var(--side-text);opacity:.8}}
 .hd-avatar{{flex:none;width:32mm;height:32mm;background-size:cover;background-position:center 20%;border-radius:{photo_radius};
 border:2.5px solid var(--on-primary)}}
 .hd-center .hd-avatar{{margin:0 auto 4mm;border-color:var(--primary)}} .hd-left .hd-avatar{{border-color:var(--primary)}}
-.side-top{{text-align:center;margin-bottom:7mm}}
-.side-top .hd-avatar{{margin:0 auto 5mm;width:38mm;height:38mm;border-color:var(--side-accent)}}
+.side-top{{text-align:center;margin-bottom:5.5mm}}
+.side-top .hd-avatar{{margin:0 auto 4mm;width:31mm;height:31mm;border-color:var(--side-accent)}}
 .side-top .nm{{color:var(--side-heading)}} .side-top .ttl{{color:var(--side-accent)}}
 .ph-empty{{display:flex;align-items:center;justify-content:center;background:{_mix(c['primary'], '#000000', 0.25)};color:#fff;
 font-family:{head_font};font-weight:700;font-size:26pt}}
@@ -1875,7 +1880,7 @@ def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
         ph = _photo_html(photo_uri, name, d["photo"], "hd-avatar")
         top = f'<div class="side-top photo-only">{ph}</div>' if ph else ""
         avail = 210 * (100 - d.get("sidebar_width", 32)) / 100 - 24
-        main_html = f'<div class="main-top">{_name_block(c, d, _name_size(name, avail, 26))}</div>' + main_html
+        main_html = f'<div class="main-top">{_name_block(c, d, _name_size(name, avail, 24))}</div>' + main_html
     body = (f'<div class="cols"><main>{main_html}</main></div>' if lay == "single_column" else
             f'<div class="side-bg"></div><div class="cols"><aside>{top}{side_html}</aside><main>{main_html}</main></div>')
     bottom_html = "".join(_section_html(k, c, d, False) for k in d.get("bottom_sections") or [])
