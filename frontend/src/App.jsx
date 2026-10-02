@@ -872,6 +872,15 @@ function App() {
                       >
                         <span>🧑</span> Resume Photo
                       </button>
+                      <a
+                        href={`${API_BASE}/resume/editor`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setIsUploadMenuOpen(false)}
+                        className="block w-full text-left px-4 py-3 text-xs text-amber-300 hover:bg-amber-900/40 hover:text-white transition-colors font-mono tracking-wide border-t border-cyan-900/30"
+                      >
+                        <span>✏️</span> Edit Last Resume
+                      </a>
                     </div>
                   </>
                 )}

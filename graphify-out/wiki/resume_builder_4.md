@@ -1,20 +1,24 @@
 # resume_builder
 
-> 7 nodes · cohesion 0.29
+> 11 nodes · cohesion 0.35
 
 ## Key Concepts
 
-- **_crop_photo()** (6 connections) — `app/services/resume_builder.py`
-- **_grow_photo_box()** (5 connections) — `app/services/resume_builder.py`
-- **_face_ratio()** (3 connections) — `app/services/resume_builder.py`
-- **_faces()** (3 connections) — `app/services/resume_builder.py`
-- **flat()** (1 connections) — `app/services/resume_builder.py`
-- **Grow from the face outwards until each edge hits a flat (uniform) line = the…** (1 connections) — `app/services/resume_builder.py`
-- **Cut the portrait out of the reference resume: face-anchored edge growth → VLM…** (1 connections) — `app/services/resume_builder.py`
+- **_apply_color()** (8 connections) — `app/services/resume_builder.py`
+- **_sanitize_design()** (8 connections) — `app/services/resume_builder.py`
+- **_contrast()** (6 connections) — `app/services/resume_builder.py`
+- **_lum()** (6 connections) — `app/services/resume_builder.py`
+- **_mix()** (6 connections) — `app/services/resume_builder.py`
+- **_readable_on()** (6 connections) — `app/services/resume_builder.py`
+- **_css()** (5 connections) — `app/services/resume_builder.py`
+- **_hex()** (4 connections) — `app/services/resume_builder.py`
+- **_rgb()** (4 connections) — `app/services/resume_builder.py`
+- **ch()** (1 connections) — `app/services/resume_builder.py`
+- **Make sure colours stay readable and every section has a home.** (1 connections) — `app/services/resume_builder.py`
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (8 shared connections)
+- [resume_builder](resume_builder.md) (17 shared connections)
 
 ## Source Files
 
@@ -22,8 +26,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 12 (86%)
-- INFERRED: 2 (14%)
+- EXTRACTED: 35 (97%)
+- INFERRED: 1 (3%)
 - AMBIGUOUS: 0 (0%)
 
 ---

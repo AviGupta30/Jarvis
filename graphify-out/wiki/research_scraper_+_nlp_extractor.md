@@ -23,7 +23,7 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (4 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (4 shared connections)
 - [tools](tools.md) (2 shared connections)
 - [web_search + tools](web_search_+_tools.md) (2 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)

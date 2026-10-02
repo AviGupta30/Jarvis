@@ -1,33 +1,38 @@
 # voice
 
-> 8 nodes · cohesion 0.25
+> 14 nodes · cohesion 0.18
 
 ## Key Concepts
 
-- **Voice: STT, TTS, wake word, clap wake, overlay** (12 connections) — `docs/features/voice.md`
-- **voice.md** (1 connections) — `docs/features/voice.md`
-- **Config (`app/core/config.py` + env)** (1 connections) — `docs/features/voice.md`
-- **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/voice.md`
-- **Graphify** (1 connections) — `docs/features/voice.md`
-- **Measured (2026-09-30/10-01, i9-13900H, no GPU)** (1 connections) — `docs/features/voice.md`
-- **Purpose** (1 connections) — `docs/features/voice.md`
-- **Server-side tripwire** (1 connections) — `docs/features/voice.md`
+- **_Player** (12 connections) — `app/services/voice.py`
+- **.play()** (6 connections) — `app/services/voice.py`
+- **get_player()** (4 connections) — `app/services/voice.py`
+- **.output_level()** (3 connections) — `app/services/voice.py`
+- **._push()** (3 connections) — `app/services/voice.py`
+- **.clear()** (2 connections) — `app/services/voice.py`
+- **._ensure()** (2 connections) — `app/services/voice.py`
+- **.__init__()** (2 connections) — `app/services/voice.py`
+- **._callback()** (1 connections) — `app/services/voice.py`
+- **.__init__()** (1 connections) — `app/services/voice.py`
+- **.pending()** (1 connections) — `app/services/voice.py`
+- **One persistent 24 kHz output stream driven by a callback that pulls from a…** (1 connections) — `app/services/voice.py`
+- **Loudest output RMS in the last `window` s — the voice agent's echo reference.** (1 connections) — `app/services/voice.py`
+- **Play a clip as it arrives. Returns False if interrupted.** (1 connections) — `app/services/voice.py`
 
 ## Relationships
 
-- [voice](voice.md) (2 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [voice](voice.md) (6 shared connections)
 - [voice + tools](voice_+_tools.md) (1 shared connections)
-- [context_classifier + personality](context_classifier_+_personality.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (1 shared connections)
 
 ## Source Files
 
-- `docs/features/voice.md`
+- `app/services/voice.py`
 
 ## Audit Trail
 
-- EXTRACTED: 12 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 22 (92%)
+- INFERRED: 2 (8%)
 - AMBIGUOUS: 0 (0%)
 
 ---

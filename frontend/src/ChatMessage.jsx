@@ -83,7 +83,9 @@ export default function ChatMessage({ msg }) {
             ul: ({ node, ...props }) => <ul className="list-disc ml-5 mb-3 space-y-1 text-gray-300" {...props} />,
             ol: ({ node, ...props }) => <ol className="list-decimal ml-5 mb-3 space-y-1 text-gray-300" {...props} />,
             li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
-            a: ({ node, ...props }) => <a className="text-cyan-400 hover:text-cyan-300 hover:shadow-[0_0_5px_rgba(0,243,255,0.5)] transition-all underline decoration-cyan-500/50" target="_blank" rel="noopener noreferrer" {...props} />,
+            a: ({ node, ...props }) => (props.href || '').includes('/resume/editor')
+              ? <a className="inline-block my-1 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/60 text-amber-200 hover:bg-amber-500/40 hover:text-white no-underline font-mono text-sm transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
+              : <a className="text-cyan-400 hover:text-cyan-300 hover:shadow-[0_0_5px_rgba(0,243,255,0.5)] transition-all underline decoration-cyan-500/50" target="_blank" rel="noopener noreferrer" {...props} />,
             
             // Custom Table styling for sci-fi look
             table: ({ node, ...props }) => (

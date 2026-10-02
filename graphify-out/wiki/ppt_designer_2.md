@@ -1,60 +1,57 @@
 # ppt_designer
 
-> 30 nodes · cohesion 0.09
+> 36 nodes · cohesion 0.08
 
 ## Key Concepts
 
 - **ppt_designer.py** (63 connections) — `app/services/ppt_designer.py`
-- **line_h()** (17 connections) — `app/services/ppt_designer.py`
+- **on_color()** (14 connections) — `app/services/ppt_designer.py`
 - **count_lines()** (11 connections) — `app/services/ppt_designer.py`
 - **E()** (11 connections) — `app/services/ppt_designer.py`
 - **_rgb()** (11 connections) — `app/services/ppt_designer.py`
-- **.render()** (7 connections) — `app/services/ppt_designer.py`
+- **_finish_theme()** (10 connections) — `app/services/ppt_designer.py`
+- **_contrast()** (9 connections) — `app/services/ppt_designer.py`
+- **theme_from_palette()** (8 connections) — `app/services/ppt_designer.py`
 - **._tl_block()** (7 connections) — `app/services/ppt_designer.py`
-- **_deep_plain()** (7 connections) — `app/services/ppt_designer.py`
-- **_lead_h()** (6 connections) — `app/services/ppt_composer.py`
+- **justified_rows()** (7 connections) — `app/services/ppt_designer.py`
 - **gradient_box()** (6 connections) — `app/services/ppt_designer.py`
 - **line_shape()** (6 connections) — `app/services/ppt_designer.py`
+- **_justified_fixed()** (5 connections) — `app/services/ppt_designer.py`
+- **_lum()** (5 connections) — `app/services/ppt_designer.py`
 - **_word_w()** (5 connections) — `app/services/ppt_designer.py`
-- **_as_plain_content()** (4 connections) — `app/services/ppt_designer.py`
 - **_line_factor()** (4 connections) — `app/services/ppt_designer.py`
+- **pptx_enum_shapes** (4 connections)
+- **pptx_util** (4 connections)
 - **.__init__()** (3 connections) — `app/services/ppt_designer.py`
 - **_pil_font()** (3 connections) — `app/services/ppt_designer.py`
+- **_runs_for()** (3 connections) — `app/services/ppt_designer.py`
 - **pptx_enum_text** (3 connections)
-- **._notes()** (2 connections) — `app/services/ppt_designer.py`
-- **functools** (2 connections)
-- **Leads are drawn entirely in the semibold heading font — measure them that way.** (1 connections) — `app/services/ppt_composer.py`
+- **_set_alpha()** (2 connections) — `app/services/ppt_designer.py`
 - **list_themes()** (1 connections) — `app/services/ppt_designer.py`
 - **RGBColor** (1 connections)
-- **ppt_designer.py — Adaptive Design Engine (PPT v6)…** (1 connections) — `app/services/ppt_designer.py`
-- **Last-resort fallback: every word of a composite slide as plain bullets (never…** (1 connections) — `app/services/ppt_designer.py`
-- **Single-spacing line height / em, from OS/2 win metrics (what PowerPoint uses).** (1 connections) — `app/services/ppt_designer.py`
-- *... and 5 more nodes in this community*
+- *... and 11 more nodes in this community*
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (48 shared connections)
-- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (35 shared connections)
+- [ppt_designer](ppt_designer.md) (44 shared connections)
+- [ppt_composer](ppt_composer.md) (41 shared connections)
 - [ppt_template](ppt_template.md) (10 shared connections)
-- [ppt_content + ppt_designer](ppt_content_+_ppt_designer.md) (5 shared connections)
-- [ppt_tool](ppt_tool.md) (2 shared connections)
+- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (10 shared connections)
+- [ppt_tool](ppt_tool.md) (4 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (2 shared connections)
 - [memory](memory.md) (1 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (1 shared connections)
-- [server + protocol](server_+_protocol.md) (1 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
-- [ppt_studio](ppt_studio.md) (1 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [chat + rag_memory](chat_+_rag_memory.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
 
 ## Source Files
 
-- `app/services/ppt_composer.py`
 - `app/services/ppt_designer.py`
 
 ## Audit Trail
 
-- EXTRACTED: 147 (99%)
-- INFERRED: 1 (1%)
+- EXTRACTED: 166 (100%)
+- INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
 ---

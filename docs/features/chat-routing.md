@@ -35,12 +35,12 @@ Related: tool-registry.md, agents.md, llm-personality.md
 <!-- AUTO:BEGIN (scripts/refresh_docs.py) -->
 ## Files & symbols (auto-generated, line numbers are current)
 
-- `app/api/chat.py` (1929 lines)
-  L24 class ChatRequest · L36 _clean_yt_query() · L46 detect_whatsapp_call() · L74 detect_whatsapp_send() · L95 detect_note_intent() · L109 _named_app() · L118 _media_target() · L143 keyword_detect_tool() · L1242 _run_media() · L1247 _run_direct_tool() · L1263 _media_intent_for() · L1281 _explicit_platform() · L1293 _to_platform() · L1320 _media_compound() · L1379 _run_direct_tools() · L1398 chat_endpoint() · L1925 clear_history()
+- `app/api/chat.py` (1934 lines)
+  L24 class ChatRequest · L36 _clean_yt_query() · L46 detect_whatsapp_call() · L74 detect_whatsapp_send() · L95 detect_note_intent() · L109 _named_app() · L118 _media_target() · L143 keyword_detect_tool() · L1242 _run_media() · L1247 _run_direct_tool() · L1263 _media_intent_for() · L1281 _explicit_platform() · L1293 _to_platform() · L1320 _media_compound() · L1379 _run_direct_tools() · L1398 chat_endpoint() · L1930 clear_history()
 - `app/services/llm.py` (366 lines): llm.py — Jarvis LLM Brain  *(filtered to this feature)*
   L182 check_for_tool_intent()
 - `app/services/personality.py` (264 lines): personality.py — Jarvis Character & Personality Engine
   L13 JARVIS_SYSTEM_PROMPT · L72 TOOL_ROUTER_PROMPT · L212 get_context_aware_prompt()
-- `app/main.py` (273 lines)
-  L42 read_root() · L47 upload_file() · L81 _on_screen_alert() · L94 startup_event() · L182 shutdown_event() · L204 get_alerts() · L226 tripwire_status() · L236 tripwire_enable() · L250 tripwire_disable() · L261 tripwire_calibrate()
+- `app/main.py` (275 lines)
+  L44 read_root() · L49 upload_file() · L83 _on_screen_alert() · L96 startup_event() · L184 shutdown_event() · L206 get_alerts() · L228 tripwire_status() · L238 tripwire_enable() · L252 tripwire_disable() · L263 tripwire_calibrate()
 <!-- AUTO:END -->

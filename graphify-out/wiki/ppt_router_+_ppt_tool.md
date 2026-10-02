@@ -1,6 +1,6 @@
 # ppt_router + ppt_tool
 
-> 26 nodes · cohesion 0.11
+> 25 nodes · cohesion 0.11
 
 ## Key Concepts
 
@@ -20,7 +20,6 @@
 - **_ppt_create()** (3 connections) — `app/services/tools.py`
 - **generate()** (2 connections) — `app/api/ppt_router.py`
 - **PPTStylesResponse** (2 connections) — `app/api/ppt_router.py`
-- **fastapi_responses** (2 connections)
 - **get** (1 connections)
 - **ppt_router.py — FastAPI router for the PPT AI build endpoint…** (1 connections) — `app/api/ppt_router.py`
 - **End-to-end PPT generation using Groq on the backend. Optionally accepts a…** (1 connections) — `app/api/ppt_router.py`
@@ -29,21 +28,22 @@
 - **Build a PPTX from a pre-generated slide plan (JSON). Streams live per-slide…** (1 connections) — `app/api/ppt_router.py`
 - **PPT v6 entry point → ppt_studio.create (adaptive layouts, strict user content,…** (1 connections) — `app/services/ppt_tool.py`
 - **Intelligently pick a palette based on the presentation topic.** (1 connections) — `app/services/ppt_tool.py`
-- *... and 1 more nodes in this community*
+- **Generator wrapper — streams live progress to the frontend via chat.py's…** (1 connections) — `app/services/tools.py`
 
 ## Relationships
 
 - [ppt_tool](ppt_tool.md) (8 shared connections)
-- [tools](tools.md) (7 shared connections)
-- [ppt_content + ppt_designer](ppt_content_+_ppt_designer.md) (2 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (1 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
-- [main](main.md) (1 shared connections)
+- [tools](tools.md) (5 shared connections)
+- [resume_router](resume_router.md) (2 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (1 shared connections)
+- [memory + memory](memory_+_memory.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
+- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
+- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (1 shared connections)
 - [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (1 shared connections)
-- [ppt_content](ppt_content.md) (1 shared connections)
-- [email-calendar + tools](email-calendar_+_tools.md) (1 shared connections)
-- [agentic_web](agentic_web.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [ppt_research](ppt_research.md) (1 shared connections)
+- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
 
 ## Source Files
 
@@ -53,7 +53,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 53 (87%)
+- EXTRACTED: 52 (87%)
 - INFERRED: 8 (13%)
 - AMBIGUOUS: 0 (0%)
 

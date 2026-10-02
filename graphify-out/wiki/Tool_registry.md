@@ -15,8 +15,8 @@
 - create_resume() `INFERRED`
 - ppt_create() `INFERRED`
 - youtube_channel() `INFERRED`
-- recall_memory() `INFERRED`
 - detect_resume_request() `INFERRED`
+- recall_memory() `INFERRED`
 - run_tool() `INFERRED`
 - youtube_search() `INFERRED`
 - extract_questions() `INFERRED`

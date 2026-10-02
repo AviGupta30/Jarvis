@@ -33,10 +33,9 @@
 
 ## Relationships
 
-- [server + protocol](server_+_protocol.md) (2 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (3 shared connections)
 - [client](client.md) (1 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (1 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (1 shared connections)
 
 ## Source Files
 

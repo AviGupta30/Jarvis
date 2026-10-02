@@ -1,33 +1,26 @@
 # README
 
-> 10 nodes · cohesion 0.20
+> 4 nodes · cohesion 0.50
 
 ## Key Concepts
 
-- **Neural Cache** (10 connections) — `neural_cache/README.md`
-- **Files** (2 connections) — `neural_cache/README.md`
-- **neural_cache/README.md** (1 connections) — `neural_cache/README.md`
-- **Architecture** (1 connections) — `neural_cache/README.md`
-- **Benchmark** (1 connections) — `neural_cache/README.md`
-- **LRU Cache Design** (1 connections) — `neural_cache/README.md`
-- **Persistence** (1 connections) — `neural_cache/README.md`
-- **Running** (1 connections) — `neural_cache/README.md`
-- **Tests** (1 connections) — `neural_cache/README.md`
-- **Wire Protocol** (1 connections) — `neural_cache/README.md`
+- **React + Vite** (3 connections) — `frontend/README.md`
+- **frontend/README.md** (1 connections) — `frontend/README.md`
+- **Expanding the ESLint configuration** (1 connections) — `frontend/README.md`
+- **React Compiler** (1 connections) — `frontend/README.md`
 
 ## Relationships
 
-- [lru](lru.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
+- No strong cross-community connections detected
 
 ## Source Files
 
-- `neural_cache/README.md`
+- `frontend/README.md`
 
 ## Audit Trail
 
-- EXTRACTED: 10 (91%)
-- INFERRED: 1 (9%)
+- EXTRACTED: 3 (100%)
+- INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
 ---

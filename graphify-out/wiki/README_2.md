@@ -1,13 +1,11 @@
 # README
 
-> 4 nodes · cohesion 0.50
+> 2 nodes · cohesion 1.00
 
 ## Key Concepts
 
-- **React + Vite** (3 connections) — `frontend/README.md`
-- **frontend/README.md** (1 connections) — `frontend/README.md`
-- **Expanding the ESLint configuration** (1 connections) — `frontend/README.md`
-- **React Compiler** (1 connections) — `frontend/README.md`
+- **README.md** (1 connections) — `README.md`
+- **Jarvis** (1 connections) — `README.md`
 
 ## Relationships
 
@@ -15,11 +13,11 @@
 
 ## Source Files
 
-- `frontend/README.md`
+- `README.md`
 
 ## Audit Trail
 
-- EXTRACTED: 3 (100%)
+- EXTRACTED: 1 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

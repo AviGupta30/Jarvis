@@ -20,7 +20,7 @@
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (7 shared connections)
 - [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (3 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [chat-routing + CLAUDE](chat-routing_+_CLAUDE.md) (1 shared connections)
 
 ## Source Files
 

@@ -33,11 +33,9 @@
 
 ## Relationships
 
-- [server + protocol](server_+_protocol.md) (17 shared connections)
-- [persistence](persistence.md) (4 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (3 shared connections)
+- [persistence + server](persistence_+_server.md) (13 shared connections)
+- [test_lru + lru](test_lru_+_lru.md) (12 shared connections)
 - [neural-cache](neural-cache.md) (1 shared connections)
-- [lru](lru.md) (1 shared connections)
 
 ## Source Files
 

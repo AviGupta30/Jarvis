@@ -27,7 +27,7 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (1 shared connections)
+- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
 - [tools + ui_inspector](tools_+_ui_inspector.md) (1 shared connections)
 
 ## Source Files

@@ -135,7 +135,7 @@ To add a tool, follow the checklist in `CLAUDE.md` → "Adding / changing a tool
 | `deactivate_dsa_mode` | dsa_enforcer.get_dsa_enforcer().stop_mode |  |  | ✓ |
 | `dsa_status` | tools.py:get_dsa_cache_status (L1061) |  |  | ✓ |
 | `enhance_media` | media_enhancement.enhance_media | file_path | "enhance/fix … image/video/dark" + attachment | ✓ |
-| `create_resume` | resume_builder.resume_tool → create_resume (generator) | details, image_path, photo_path, template, color, instruction, reuse_photo | "make my resume like this" + resume image, "create a CV in modern template", "change the resume colour to navy", "add X to my resume", "list resume templates"; early intercept in chat_endpoint via `detect_resume_request` | ✓ |
+| `create_resume` | resume_builder.resume_tool → create_resume (generator) | details, image_path, photo_path, template, color, instruction, reuse_photo | "make my resume like this" + resume image, "create a CV in modern template", "change the resume colour to navy", "add X to my resume", "list resume templates", "edit my resume" (opens the visual editor at `/resume/editor`); early intercept in chat_endpoint via `detect_resume_request` | ✓ |
 | `generate_social_content` | social_content_manager.generate_social_content | idea, platform, tone, creativity, formality, smart_emojis, auto_hashtag, contextual_suggestions, target_audience | "linkedin post", "caption for …" (asks tone first) | ✓ |
 | `refine_social_content` | social_content_manager.refine_social_content | original_content, refinement_instruction, platform |  | ✓ |
 | `recall_memory` | async: chat.py / tool_runner.run_tool → rag_memory.recall (registry entry is a placeholder) | query | "do you remember", "what did I say" | ✓ |

@@ -1496,11 +1496,16 @@ async def chat_endpoint(request: ChatRequest):
     # ── Resume creator: "make my resume like this" (+ image), edits, or details after "send me your details" ──
     # Runs before media/DAG/complex-task checks: pasted resume details are long multi-clause text.
     try:
-        from app.services.resume_builder import detect_resume_request, create_resume, list_resume_templates
+        from app.services.resume_builder import detect_resume_request, create_resume, list_resume_templates, open_resume_editor
         _resume_args = detect_resume_request(request.prompt)
         if _resume_args is not None:
             from starlette.concurrency import iterate_in_threadpool
-            _gen = iter([list_resume_templates()]) if _resume_args.pop("_list", False) else create_resume(**_resume_args)
+            if _resume_args.pop("_list", False):
+                _gen = iter([list_resume_templates()])
+            elif _resume_args.pop("_editor", False):
+                _gen = iter([open_resume_editor()])
+            else:
+                _gen = create_resume(**_resume_args)
             async def resume_stream():
                 _last = ""
                 async for _chunk in iterate_in_threadpool(_gen):

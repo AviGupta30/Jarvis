@@ -1,9 +1,10 @@
 # syllabus_auditor
 
-> 41 nodes · cohesion 0.05
+> 44 nodes · cohesion 0.07
 
 ## Key Concepts
 
+- **syllabus_auditor.py** (25 connections) — `app/services/syllabus_auditor.py`
 - **audit_playlist_syllabus()** (11 connections) — `app/services/syllabus_auditor.py`
 - **Syllabus auditor (YouTube playlist vs syllabus)** (7 connections) — `docs/features/syllabus-auditor.md`
 - **_llm_verify_topic()** (6 connections) — `app/services/syllabus_auditor.py`
@@ -23,18 +24,19 @@
 - **_fetch_transcript()** (3 connections) — `app/services/syllabus_auditor.py`
 - **_get_embed_model()** (3 connections) — `app/services/syllabus_auditor.py`
 - **_load_image_as_b64()** (3 connections) — `app/services/syllabus_auditor.py`
+- **uuid** (3 connections)
+- **syllabus_auditor.py — YouTube Playlist Syllabus Auditor (Jarvis Skill)…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Extract the playlist ID from any standard YouTube playlist URL.** (1 connections) — `app/services/syllabus_auditor.py`
 - **Retrieve all video IDs (and titles where available) from a YouTube playlist.…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Fetch auto-generated or manual captions for a single YouTube video. Tries…** (1 connections) — `app/services/syllabus_auditor.py`
-- **Approximate token count: ~0.75 tokens per word (safe undercount for chunking).** (1 connections) — `app/services/syllabus_auditor.py`
-- **Split a transcript into overlapping chunks for semantic search. Strategy: -…** (1 connections) — `app/services/syllabus_auditor.py`
-- **Return a Groq client using the shared GROQ_API_KEY from Jarvis settings.** (1 connections) — `app/services/syllabus_auditor.py`
-- *... and 16 more nodes in this community*
+- *... and 19 more nodes in this community*
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (17 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (4 shared connections)
+- [persistence + server](persistence_+_server.md) (3 shared connections)
 - [tools](tools.md) (1 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
 
 ## Source Files
 
@@ -43,8 +45,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 59 (94%)
-- INFERRED: 4 (6%)
+- EXTRACTED: 69 (95%)
+- INFERRED: 4 (5%)
 - AMBIGUOUS: 0 (0%)
 
 ---

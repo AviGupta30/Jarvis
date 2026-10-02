@@ -17,11 +17,10 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (2 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (3 shared connections)
 - [tools](tools.md) (2 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [server + protocol](server_+_protocol.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
 
 ## Source Files
 

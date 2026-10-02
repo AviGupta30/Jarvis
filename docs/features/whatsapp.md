@@ -35,7 +35,7 @@ Control WhatsApp **Desktop** (not web): search contacts, send with confirmation,
   L58 _empty_profile() · L72 _now() · L80 _load_profile() · L105 _save_profile() · L126 _safe_filename() · L135 _parse_whatsapp_export() · L188 _compute_profile_stats() · L260 record_sent_reply() · L298 mark_contact_formal() · L311 add_deflection_phrase() · L331 build_style_profile() · L375 get_profile() · L383 get_profile_summary()
 - `app/services/whatsapp_intelligence/reply_generator.py` (404 lines): reply_generator.py — Jarvis WhatsApp Intelligence: Reply Generator
   L54 _get_groq_api_key() · L76 _call_groq() · L106 _build_system_prompt() · L178 _build_user_prompt() · L202 _parse_drafts_from_response() · L242 generate_reply_draft() · L334 get_cached_drafts() · L342 get_cached_contact() · L347 get_cached_incoming() · L352 send_style_reply()
-- `app/api/chat.py` (1929 lines)  *(filtered to this feature)*
+- `app/api/chat.py` (1934 lines)  *(filtered to this feature)*
   L46 detect_whatsapp_call() · L74 detect_whatsapp_send() · L1398 chat_endpoint()
 - `app/services/tools.py` (1217 lines): Jarvis Tool Registry — All callable actions Jarvis can perform.  *(filtered to this feature)*
   L872 read_whatsapp_thread() · L885 build_style_profile() · L899 generate_reply_draft() · L913 send_style_reply()

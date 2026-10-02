@@ -18,8 +18,8 @@
 ## Relationships
 
 - [voice_agent](voice_agent.md) (3 shared connections)
+- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
-- [context_classifier + personality](context_classifier_+_personality.md) (1 shared connections)
 
 ## Source Files
 

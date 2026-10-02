@@ -19,7 +19,7 @@
 ## Relationships
 
 - [client](client.md) (5 shared connections)
-- [server + protocol](server_+_protocol.md) (2 shared connections)
+- [persistence + server](persistence_+_server.md) (2 shared connections)
 
 ## Source Files
 

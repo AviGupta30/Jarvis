@@ -1,55 +1,61 @@
 # ppt_content
 
-> 31 nodes · cohesion 0.10
+> 30 nodes · cohesion 0.11
 
 ## Key Concepts
 
-- **generate_deck()** (18 connections) — `app/services/ppt_content.py`
-- **ground_slides()** (16 connections) — `app/services/ppt_content.py`
-- **_llm_json()** (15 connections) — `app/services/ppt_content.py`
-- **normalize_slide()** (10 connections) — `app/services/ppt_content.py`
-- **Anti-hallucination for AI-written decks (`ppt_research.py` + `ppt_content.ground_slides`)** (9 connections) — `docs/features/ppt.md`
-- **_flatten()** (8 connections) — `app/services/ppt_content.py`
-- **_llm_edit()** (8 connections) — `app/services/ppt_content.py`
-- **_s()** (7 connections) — `app/services/ppt_content.py`
-- **_llm_new_slide()** (6 connections) — `app/services/ppt_content.py`
-- **take()** (5 connections) — `app/services/ppt_content.py`
-- **slide_has_content()** (5 connections) — `app/services/ppt_content.py`
-- **strip_fact_ids()** (5 connections) — `app/services/ppt_research.py`
-- **_content_prompt()** (4 connections) — `app/services/ppt_content.py`
-- **_compact()** (3 connections) — `app/services/ppt_content.py`
-- **_gemini_json()** (3 connections) — `app/services/ppt_content.py`
+- **Flow — create (`ppt_tool.ppt_create` → `ppt_studio.create`, a generator)** (27 connections) — `docs/features/ppt.md`
+- **architect_slides()** (13 connections) — `app/services/ppt_content.py`
+- **_complete_from_source()** (9 connections) — `app/services/ppt_content.py`
+- **_missing_parts()** (8 connections) — `app/services/ppt_content.py`
+- **Fixed on 2026-10-01 (PPT)** (8 connections) — `docs/KNOWN_ISSUES.md`
+- **Known issues** (8 connections) — `docs/KNOWN_ISSUES.md`
+- **extractive_ok()** (7 connections) — `app/services/ppt_content.py`
+- **repair_text()** (6 connections) — `app/services/ppt_content.py`
+- **split_instructions()** (6 connections) — `app/services/ppt_content.py`
+- **_is_instruction()** (5 connections) — `app/services/ppt_content.py`
+- **sections_fallback()** (5 connections) — `app/services/ppt_content.py`
+- **_tok()** (5 connections) — `app/services/ppt_content.py`
+- **ask()** (4 connections) — `app/services/ppt_content.py`
+- **_retry()** (4 connections) — `app/services/ppt_content.py`
+- **deck_facts()** (4 connections) — `app/services/ppt_content.py`
+- **plain_md()** (4 connections) — `app/services/ppt_content.py`
 - **run()** (3 connections) — `app/services/ppt_content.py`
-- **repair()** (3 connections) — `app/services/ppt_content.py`
-- **_outline_prompt()** (3 connections) — `app/services/ppt_content.py`
-- **_reserve()** (3 connections) — `app/services/ppt_content.py`
-- **_schema_for()** (3 connections) — `app/services/ppt_content.py`
-- **_budget_left()** (2 connections) — `app/services/ppt_content.py`
-- **_is_note()** (2 connections) — `app/services/ppt_content.py`
-- **_groq()** (2 connections) — `app/services/ppt_content.py`
-- **JSON completion with pacing + fallback. fast=True → 20b first (copy/extraction…** (1 connections) — `app/services/ppt_content.py`
-- **Only the schema lines for the kinds in this chunk (saves ~400 tokens per call…** (1 connections) — `app/services/ppt_content.py`
-- *... and 6 more nodes in this community*
+- **_spec_texts()** (3 connections) — `app/services/ppt_content.py`
+- **_copy_sec()** (1 connections) — `app/services/ppt_content.py`
+- **True if the slide only re-uses the user's words (≥ min_ratio of tokens) and…** (1 connections) — `app/services/ppt_content.py`
+- **Deterministic structure: 'Label:' lines start sections, 'Head: text' lines…** (1 connections) — `app/services/ppt_content.py`
+- **Names worth knowing on every slide (product, team, event) — pulled verbatim…** (1 connections) — `app/services/ppt_content.py`
+- **Labelled parts of the user's content ('Skill Gaps: …', 'Before vs. After …:')…** (1 connections) — `app/services/ppt_content.py`
+- **Guarantee no content loss: labelled parts of the user's text that the designed…** (1 connections) — `app/services/ppt_content.py`
+- **LLM restructures each slide's raw content (wording kept, verified);…** (1 connections) — `app/services/ppt_content.py`
+- *... and 5 more nodes in this community*
 
 ## Relationships
 
-- [ppt_content](ppt_content.md) (27 shared connections)
-- [ppt_research](ppt_research.md) (15 shared connections)
-- [ppt_content + ppt_designer](ppt_content_+_ppt_designer.md) (6 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (2 shared connections)
-- [ppt_studio](ppt_studio.md) (2 shared connections)
+- [ppt_content](ppt_content.md) (21 shared connections)
+- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (10 shared connections)
+- [youtube_control](youtube_control.md) (2 shared connections)
+- [ppt](ppt.md) (1 shared connections)
+- [ppt_designer](ppt_designer.md) (1 shared connections)
+- [ppt_studio](ppt_studio.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (1 shared connections)
+- [ppt_template](ppt_template.md) (1 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)
+- [ppt_composer](ppt_composer.md) (1 shared connections)
+- [ppt_research](ppt_research.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/ppt_content.py`
-- `app/services/ppt_research.py`
+- `docs/KNOWN_ISSUES.md`
 - `docs/features/ppt.md`
 
 ## Audit Trail
 
-- EXTRACTED: 87 (85%)
-- INFERRED: 15 (15%)
+- EXTRACTED: 55 (59%)
+- INFERRED: 38 (41%)
 - AMBIGUOUS: 0 (0%)
 
 ---

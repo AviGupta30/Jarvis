@@ -4,20 +4,20 @@
 
 ## Key Concepts
 
-- **TestEviction** (6 connections) — `neural_cache/tests/test_lru.py`
-- **.test_access_prevents_eviction()** (2 connections) — `neural_cache/tests/test_lru.py`
-- **.test_lru_eviction_basic()** (2 connections) — `neural_cache/tests/test_lru.py`
-- **.test_map_stays_in_sync()** (2 connections) — `neural_cache/tests/test_lru.py`
-- **.test_update_moves_to_mru()** (2 connections) — `neural_cache/tests/test_lru.py`
-- **Accessing 'a' should move it to MRU and save it from eviction.** (1 connections) — `neural_cache/tests/test_lru.py`
-- **Re-setting an existing key should move it to MRU.** (1 connections) — `neural_cache/tests/test_lru.py`
-- **len(cache.map) must never exceed capacity.** (1 connections) — `neural_cache/tests/test_lru.py`
-- **Fill to capacity+1. The first key inserted (LRU) should be evicted.** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_eviction_count()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **TestBasicOps** (11 connections) — `neural_cache/tests/test_lru.py`
+- **.test_capacity_one()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_contains()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_delete_existing()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_delete_missing()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_get_missing_key()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_invalid_capacity()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_len()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_overwrite_value()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_set_and_get()** (1 connections) — `neural_cache/tests/test_lru.py`
 
 ## Relationships
 
-- [server + protocol](server_+_protocol.md) (1 shared connections)
+- [test_lru + lru](test_lru_+_lru.md) (2 shared connections)
 
 ## Source Files
 
@@ -25,8 +25,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 10 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 10 (91%)
+- INFERRED: 1 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

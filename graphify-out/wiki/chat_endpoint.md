@@ -1,8 +1,8 @@
 # chat_endpoint()
 
-> God node · 49 connections · `app/api/chat.py`
+> God node · 50 connections · `app/api/chat.py`
 
-**Community:** [chat + youtube_control](chat_+_youtube_control.md)
+**Community:** [chat + rag_memory](chat_+_rag_memory.md)
 
 ## Connections by Relation
 
@@ -27,7 +27,7 @@
 - get_task_ledger_for_prompt() `EXTRACTED`
 - _run_direct_tools() `EXTRACTED`
 - youtube_session_active() `EXTRACTED`
-- *…and 11 more `calls` connection(s) not listed (lowest-degree first to go)*
+- *…and 12 more `calls` connection(s) not listed (lowest-degree first to go)*
 
 ### contains
 - chat.py `EXTRACTED`

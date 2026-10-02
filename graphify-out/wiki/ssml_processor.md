@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (1 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (1 shared connections)
 
 ## Source Files
 

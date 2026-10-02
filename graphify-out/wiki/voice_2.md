@@ -1,6 +1,6 @@
 # voice
 
-> 24 nodes · cohesion 0.11
+> 25 nodes · cohesion 0.11
 
 ## Key Concepts
 
@@ -10,6 +10,7 @@
 - **TTS (`voice.Speaker`, `start_clip`, `_Player`)** (6 connections) — `docs/features/voice.md`
 - **.is_echo()** (5 connections) — `app/services/voice.py`
 - **._take()** (5 connections) — `app/services/voice.py`
+- **_norm_words()** (4 connections) — `app/services/voice.py`
 - **.run()** (4 connections) — `app/services/voice.py`
 - **.stop_all()** (4 connections) — `app/services/voice.py`
 - **Fixed on 2026-09-30 (voice)** (4 connections) — `docs/KNOWN_ISSUES.md`
@@ -31,12 +32,12 @@
 
 ## Relationships
 
-- [voice](voice.md) (13 shared connections)
-- [context_classifier + personality](context_classifier_+_personality.md) (2 shared connections)
+- [voice](voice.md) (9 shared connections)
+- [hinglish_normalizer + voice](hinglish_normalizer_+_voice.md) (4 shared connections)
+- [voice_agent](voice_agent.md) (3 shared connections)
 - [voice + tools](voice_+_tools.md) (1 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
+- [youtube_control](youtube_control.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files
 
@@ -47,7 +48,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 38 (78%)
+- EXTRACTED: 40 (78%)
 - INFERRED: 11 (22%)
 - AMBIGUOUS: 0 (0%)
 

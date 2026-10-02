@@ -1,38 +1,39 @@
 # resume_builder
 
-> 16 nodes · cohesion 0.17
+> 13 nodes · cohesion 0.21
 
 ## Key Concepts
 
+- **_render_files()** (12 connections) — `app/services/resume_builder.py`
 - **_build_content()** (9 connections) — `app/services/resume_builder.py`
-- **_drop_invented()** (8 connections) — `app/services/resume_builder.py`
-- **_llm_json()** (6 connections) — `app/services/resume_builder.py`
-- **_edit_content()** (5 connections) — `app/services/resume_builder.py`
-- **_normalise_content()** (5 connections) — `app/services/resume_builder.py`
-- **_vision()** (5 connections) — `app/services/resume_builder.py`
-- **_gemini()** (4 connections) — `app/services/resume_builder.py`
-- **ok()** (3 connections) — `app/services/resume_builder.py`
-- **_groq()** (3 connections) — `app/services/resume_builder.py`
-- **_nums()** (3 connections) — `app/services/resume_builder.py`
-- **_parse_json()** (3 connections) — `app/services/resume_builder.py`
+- **_placement()** (6 connections) — `app/services/resume_builder.py`
+- **_guess_name()** (5 connections) — `app/services/resume_builder.py`
+- **Gotchas** (5 connections) — `docs/features/resume-creator.md`
+- **Fixed on 2026-10-02 (resume creator)** (5 connections) — `docs/KNOWN_ISSUES.md`
+- **_guess_title()** (4 connections) — `app/services/resume_builder.py`
+- **_data_uri()** (3 connections) — `app/services/resume_builder.py`
 - **_content_brief()** (2 connections) — `app/services/resume_builder.py`
-- **clean_text()** (2 connections) — `app/services/resume_builder.py`
-- **_str_list()** (2 connections) — `app/services/resume_builder.py`
-- **Fallback when Groq is rate-limited (its vision model has a 200k tokens/DAY cap).** (1 connections) — `app/services/resume_builder.py`
-- **The LLM likes to 'improve' bullets with made-up metrics. Drop any…** (1 connections) — `app/services/resume_builder.py`
+- **_launch()** (2 connections) — `app/services/resume_builder.py`
+- **Design's column lists + every other section (content or not) appended where it…** (1 connections) — `app/services/resume_builder.py`
+- **HTML → PDF (auto-shrinks to avoid a nearly-empty last page) → PNG previews.** (1 connections) — `app/services/resume_builder.py`
+- **Smaller fallback models sometimes drop the name; recover it from the user's own…** (1 connections) — `app/services/resume_builder.py`
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (20 shared connections)
+- [resume_builder](resume_builder.md) (22 shared connections)
+- [resume-creator](resume-creator.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/resume_builder.py`
+- `docs/KNOWN_ISSUES.md`
+- `docs/features/resume-creator.md`
 
 ## Audit Trail
 
-- EXTRACTED: 37 (90%)
-- INFERRED: 4 (10%)
+- EXTRACTED: 29 (72%)
+- INFERRED: 11 (28%)
 - AMBIGUOUS: 0 (0%)
 
 ---

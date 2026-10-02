@@ -159,6 +159,7 @@ FEATURES = {
     }),
     "resume-creator": ("Resume creator (copy a resume design from an image / fixed formats)", {
         "app/services/resume_builder.py": None,
+        "app/api/resume_router.py": None,
         "app/api/chat.py": ["chat_endpoint"],
     }),
     "dsa-mode": ("DSA / LeetCode enforcer mode", {

@@ -1,31 +1,37 @@
 # resume_builder
 
-> 16 nodes · cohesion 0.23
+> 20 nodes · cohesion 0.17
 
 ## Key Concepts
 
-- **Flow** (16 connections) — `docs/features/resume-creator.md`
-- **_resolve_design()** (9 connections) — `app/services/resume_builder.py`
-- **_apply_color()** (7 connections) — `app/services/resume_builder.py`
-- **_sanitize_design()** (7 connections) — `app/services/resume_builder.py`
-- **_contrast()** (6 connections) — `app/services/resume_builder.py`
-- **_lum()** (6 connections) — `app/services/resume_builder.py`
-- **_mix()** (6 connections) — `app/services/resume_builder.py`
-- **_readable_on()** (6 connections) — `app/services/resume_builder.py`
-- **_css()** (5 connections) — `app/services/resume_builder.py`
-- **_hex()** (4 connections) — `app/services/resume_builder.py`
-- **_merge_design()** (4 connections) — `app/services/resume_builder.py`
-- **_rgb()** (4 connections) — `app/services/resume_builder.py`
-- **_closest_preset()** (2 connections) — `app/services/resume_builder.py`
-- **ch()** (1 connections) — `app/services/resume_builder.py`
-- **Make sure colours stay readable and every section has a home.** (1 connections) — `app/services/resume_builder.py`
-- **Returns (design, note) — note is a human line about where the design came from.** (1 connections) — `app/services/resume_builder.py`
+- **create_resume()** (16 connections) — `app/services/resume_builder.py`
+- **detect_resume_request()** (14 connections) — `app/services/resume_builder.py`
+- **editor_save()** (13 connections) — `app/services/resume_builder.py`
+- **_load_state()** (10 connections) — `app/services/resume_builder.py`
+- **Visual editor (/resume/editor)** (8 connections) — `docs/features/resume-creator.md`
+- **_normalise_content()** (7 connections) — `app/services/resume_builder.py`
+- **_edit_content()** (6 connections) — `app/services/resume_builder.py`
+- **_split_images()** (6 connections) — `app/services/resume_builder.py`
+- **open_resume_editor()** (5 connections) — `app/services/resume_builder.py`
+- **_save_state()** (5 connections) — `app/services/resume_builder.py`
+- **_has_details()** (4 connections) — `app/services/resume_builder.py`
+- **_apply_op()** (3 connections) — `app/services/resume_builder.py`
+- **_attachments()** (3 connections) — `app/services/resume_builder.py`
+- **resume_awaiting_details()** (3 connections) — `app/services/resume_builder.py`
+- **_strip_tags()** (3 connections) — `app/services/resume_builder.py`
+- **_str_list()** (2 connections) — `app/services/resume_builder.py`
+- **Backend of the editor: apply text edits + one optional action, persist,…** (1 connections) — `app/services/resume_builder.py`
+- **→ (reference_image, photo). A photo is labelled as such or is a close-up face.** (1 connections) — `app/services/resume_builder.py`
+- **Fast regex router → create_resume kwargs (or {"_list": True}), else None.** (1 connections) — `app/services/resume_builder.py`
+- **Generator: progress lines, then markdown with PNG preview(s) + PDF/HTML links.** (1 connections) — `app/services/resume_builder.py`
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (27 shared connections)
-- [resume-creator](resume-creator.md) (1 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (36 shared connections)
+- [chat + rag_memory](chat_+_rag_memory.md) (6 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [resume-creator](resume-creator.md) (2 shared connections)
+- [resume_router](resume_router.md) (2 shared connections)
 
 ## Source Files
 
@@ -34,8 +40,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 42 (74%)
-- INFERRED: 15 (26%)
+- EXTRACTED: 67 (84%)
+- INFERRED: 13 (16%)
 - AMBIGUOUS: 0 (0%)
 
 ---

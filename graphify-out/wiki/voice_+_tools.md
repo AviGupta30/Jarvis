@@ -1,6 +1,6 @@
 # voice + tools
 
-> 18 nodes · cohesion 0.12
+> 19 nodes · cohesion 0.12
 
 ## Key Concepts
 
@@ -10,6 +10,7 @@
 - **speak_stream()** (5 connections) — `app/services/voice.py`
 - **Gotchas** (5 connections) — `docs/features/voice.md`
 - **preload_local_stt()** (4 connections) — `app/services/voice.py`
+- **_load_whisper_model()** (3 connections) — `app/services/voice.py`
 - **split_sentences()** (3 connections) — `app/services/voice.py`
 - **_load()** (2 connections) — `app/services/voice.py`
 - **main()** (2 connections) — `scripts/test_hindi_tts.py`
@@ -27,10 +28,10 @@
 
 - [voice](voice.md) (10 shared connections)
 - [tools](tools.md) (3 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (2 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [context_classifier + personality](context_classifier_+_personality.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (2 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (2 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
+- [hinglish_normalizer + voice](hinglish_normalizer_+_voice.md) (1 shared connections)
 
 ## Source Files
 
@@ -41,8 +42,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 27 (73%)
-- INFERRED: 10 (27%)
+- EXTRACTED: 29 (74%)
+- INFERRED: 10 (26%)
 - AMBIGUOUS: 0 (0%)
 
 ---

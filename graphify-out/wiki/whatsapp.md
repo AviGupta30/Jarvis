@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (3 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (3 shared connections)
 - [tools](tools.md) (3 shared connections)
 
 ## Source Files

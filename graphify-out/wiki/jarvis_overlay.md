@@ -18,7 +18,7 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (3 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (3 shared connections)
 
 ## Source Files
 

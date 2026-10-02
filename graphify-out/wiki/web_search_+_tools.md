@@ -34,17 +34,17 @@
 ## Relationships
 
 - [tools](tools.md) (12 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (4 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (3 shared connections)
 - [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (2 shared connections)
-- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [tools + ui_inspector](tools_+_ui_inspector.md) (2 shared connections)
 - [browser_tool](browser_tool.md) (2 shared connections)
 - [ppt_research](ppt_research.md) (2 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
-- [agentic_web](agentic_web.md) (1 shared connections)
+- [chat + rag_memory](chat_+_rag_memory.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
+- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
 - [content_humanizer + content-tools](content_humanizer_+_content-tools.md) (1 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
 - [browser_mail](browser_mail.md) (1 shared connections)
-- [spotify_service](spotify_service.md) (1 shared connections)
 
 ## Source Files
 

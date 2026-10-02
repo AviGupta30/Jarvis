@@ -33,12 +33,13 @@
 
 ## Relationships
 
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (1 shared connections)
+- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
 
 ## Source Files
 

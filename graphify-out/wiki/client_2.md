@@ -19,7 +19,7 @@
 
 - [client](client.md) (8 shared connections)
 - [test_concurrency](test_concurrency.md) (5 shared connections)
-- [server + protocol](server_+_protocol.md) (4 shared connections)
+- [persistence + server](persistence_+_server.md) (4 shared connections)
 - [benchmark](benchmark.md) (1 shared connections)
 - [dsa_enforcer + dsa-mode](dsa_enforcer_+_dsa-mode.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)

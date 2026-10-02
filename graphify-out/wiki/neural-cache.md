@@ -17,7 +17,7 @@
 
 - [client](client.md) (1 shared connections)
 - [test_protocol + engine](test_protocol_+_engine.md) (1 shared connections)
-- [lru](lru.md) (1 shared connections)
+- [test_lru + lru](test_lru_+_lru.md) (1 shared connections)
 
 ## Source Files
 

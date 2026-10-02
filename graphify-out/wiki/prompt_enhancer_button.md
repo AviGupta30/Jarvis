@@ -35,14 +35,13 @@
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (14 shared connections)
 - [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (6 shared connections)
-- [social_content_manager + ui_inspector](social_content_manager_+_ui_inspector.md) (5 shared connections)
-- [server + protocol](server_+_protocol.md) (4 shared connections)
-- [message_reader + reply_generator](message_reader_+_reply_generator.md) (1 shared connections)
+- [assignment_tool + assignment_humanizer](assignment_tool_+_assignment_humanizer.md) (5 shared connections)
+- [persistence + server](persistence_+_server.md) (3 shared connections)
+- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (2 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (2 shared connections)
 - [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (1 shared connections)
-- [style_profiler + refresh_docs](style_profiler_+_refresh_docs.md) (1 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [window_layout + tools](window_layout_+_tools.md) (1 shared connections)
+- [window_layout](window_layout.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
 
 ## Source Files

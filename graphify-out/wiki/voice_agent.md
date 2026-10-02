@@ -28,9 +28,9 @@
 
 ## Relationships
 
-- [voice_agent](voice_agent.md) (6 shared connections)
-- [context_classifier + personality](context_classifier_+_personality.md) (2 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (5 shared connections)
+- [voice_agent + ui_inspector](voice_agent_+_ui_inspector.md) (3 shared connections)
+- [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files
 

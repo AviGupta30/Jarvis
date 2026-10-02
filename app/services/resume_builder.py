@@ -15,6 +15,7 @@ State (last design/content, "waiting for details") lives in app/memory/resume_st
 from __future__ import annotations
 
 import base64
+import contextvars
 import html as _html
 import json
 import os
@@ -1006,42 +1007,70 @@ def _ring(level: int, color: str, track: str) -> str:
             f'<text x="18" y="21" text-anchor="middle" font-size="8.5" font-weight="700" fill="{color}">{level}%</text></svg>')
 
 
+# ── Editor mode: every text value can be tagged with its JSON path (contenteditable in /resume/editor) ──
+_EDIT = contextvars.ContextVar("resume_edit_mode", default=False)
+
+
+def _f(path: str, value, ph: str = "") -> str:
+    """Escaped text; in editor mode an editable span carrying the content JSON path it maps back to."""
+    if not _EDIT.get():
+        return _e(value)
+    return (f'<span data-f="{path}" data-ph="{_e(ph or path.split(".")[-1])}" contenteditable="true" '
+            f'spellcheck="true">{_e(value)}</span>')
+
+
+def _it(path: str) -> str:
+    """Attribute marking a list item (editor shows + / up / x controls on hover)."""
+    return f' data-item="{path}"' if _EDIT.get() else ""
+
+
+def _skill_name(c: dict, i: int) -> str:
+    return _f(f"skills.{i}.name", c["skills"][i]["name"], "skill")
+
+
 def _skills_html(c: dict, d: dict, side: bool) -> str:
     skills, extra = c["skills"], c["additional_skills"]
     if not skills and not extra:
         return ""
+    edit = _EDIT.get()
     style = d["skills_style"]
     cols = d["colors"]
     fg = "var(--side-accent)" if side else "var(--primary)"
     track = "var(--side-track)" if side else "var(--track)"
     parts = []
+    extra_items = [(f"additional_skills.{j}", x, "skill", f"additional_skills.{j}") for j, x in enumerate(extra)]
     if style == "venn" and skills:
         parts.append(_venn(skills, cols["skill_colors"]))
-        rest = [s["name"] for s in skills[3:]] + extra
+        if edit:   # SVG labels can't be typed into: editable copies of the circle skills, editor-only
+            parts.append('<div class="edit-only ed-venn"><small>Circle skills:</small> ' + "".join(
+                f'<span class="ed-chip"{_it(f"skills.{i}")}>{_skill_name(c, i)}</span>' for i in range(min(3, len(skills)))) + "</div>")
+        rest = [(f"skills.{i}.name", skills[i]["name"], "skill", f"skills.{i}") for i in range(3, len(skills))] + extra_items
         if rest:
-            parts.append(f'<div class="addl"><div class="addl-h">Additional Skills:</div>'
-                         f'<div class="addl-list">{" <span class=dot>•</span> ".join(_e(x) for x in rest)}</div></div>')
+            sep = " <span class=dot>•</span> "
+            listing = sep.join(f'<span{_it(item)}>{_f(p, x, ph)}</span>' if edit else _e(x) for p, x, ph, item in rest)
+            parts.append(f'<div class="addl"><div class="addl-h">Additional Skills:</div><div class="addl-list">{listing}</div></div>')
         return "".join(parts)
     if style == "bars":
         parts.append('<div class="bars">' + "".join(
-            f'<div class="bar-row"><div class="bar-l">{_e(s["name"])}</div><div class="bar-t" style="background:{track}">'
-            f'<div class="bar-f" style="width:{s["level"]}%;background:{fg}"></div></div></div>' for s in skills) + "</div>")
+            f'<div class="bar-row"{_it(f"skills.{i}")}><div class="bar-l">{_skill_name(c, i)}</div><div class="bar-t" style="background:{track}">'
+            f'<div class="bar-f" style="width:{s["level"]}%;background:{fg}"></div></div></div>' for i, s in enumerate(skills)) + "</div>")
     elif style == "dots":
         parts.append('<div class="dots">' + "".join(
-            f'<div class="dot-row"><span>{_e(s["name"])}</span><span class="dot-set">' +
+            f'<div class="dot-row"{_it(f"skills.{i}")}><span>{_skill_name(c, i)}</span><span class="dot-set">' +
             "".join(f'<i style="background:{fg if k < round(s["level"] / 20) else track}"></i>' for k in range(5)) +
-            "</span></div>" for s in skills) + "</div>")
+            "</span></div>" for i, s in enumerate(skills)) + "</div>")
     elif style == "circles":
         ring_col = cols["accent"]
         parts.append('<div class="rings">' + "".join(
-            f'<div class="ring-cell">{_ring(s["level"], ring_col, _mix(ring_col, "#ffffff", 0.75))}<div>{_e(s["name"])}</div></div>'
-            for s in skills[:9]) + "</div>")
+            f'<div class="ring-cell"{_it(f"skills.{i}")}>{_ring(s["level"], ring_col, _mix(ring_col, "#ffffff", 0.75))}<div>{_skill_name(c, i)}</div></div>'
+            for i, s in enumerate(skills[:9])) + "</div>")
     elif style == "list":
-        parts.append('<ul class="plain">' + "".join(f"<li>{_e(s['name'])}</li>" for s in skills) + "</ul>")
+        parts.append('<ul class="plain">' + "".join(f'<li{_it(f"skills.{i}")}>{_skill_name(c, i)}</li>' for i in range(len(skills))) + "</ul>")
     else:  # chips (also used for leftovers)
-        extra = [s["name"] for s in skills] + extra
-    if extra:
-        parts.append('<div class="chips">' + "".join(f"<span>{_e(x)}</span>" for x in extra) + "</div>")
+        extra_items = [(f"skills.{i}.name", s["name"], "skill", f"skills.{i}") for i, s in enumerate(skills)] + extra_items
+    if extra_items:
+        parts.append('<div class="chips">' + "".join(
+            f'<span{_it(item)}>{_f(p, x, ph)}</span>' for p, x, ph, item in extra_items) + "</div>")
     return "".join(parts)
 
 
@@ -1068,62 +1097,85 @@ def _competencies_html(c: dict, d: dict, side: bool) -> str:
     items = c["competencies"]
     if not items:
         return ""
+    edit = _EDIT.get()
     if d["competency_style"] == "list" or side:
-        return '<ul class="comp-list">' + "".join(
-            f'<li><b>{_e(x["title"])}</b>{" — " + _e(x["description"]) if x["description"] else ""}</li>' for x in items) + "</ul>"
+        out = []
+        for i, x in enumerate(items):
+            desc = (" — " + _f(f"competencies.{i}.description", x["description"], "description")) if (x["description"] or edit) else ""
+            out.append(f'<li{_it(f"competencies.{i}")}><b>{_f(f"competencies.{i}.title", x["title"], "title")}</b>{desc}</li>')
+        return '<ul class="comp-list">' + "".join(out) + "</ul>"
     return '<div class="comp-grid">' + "".join(
-        f'<div class="comp"><div class="comp-ic">{_icon(x["icon"] or _guess_icon(x["title"]), "var(--heading)")}</div>'
-        f'<div><div class="comp-t">{_e(x["title"])}</div><div class="comp-d">{_e(x["description"])}</div></div></div>'
-        for x in items) + "</div>"
+        f'<div class="comp"{_it(f"competencies.{i}")}><div class="comp-ic">{_icon(x["icon"] or _guess_icon(x["title"]), "var(--heading)")}</div>'
+        f'<div><div class="comp-t">{_f(f"competencies.{i}.title", x["title"], "title")}</div>'
+        f'<div class="comp-d">{_f(f"competencies.{i}.description", x["description"], "description")}</div></div></div>'
+        for i, x in enumerate(items)) + "</div>"
 
 
 def _experience_html(c: dict, d: dict, side: bool) -> str:
     if not c["experience"]:
         return ""
+    edit = _EDIT.get()
     rows = []
-    for x in c["experience"]:
-        sub = " · ".join(_e(v) for v in (x["company"], x["location"]) if v)
-        bullets = "".join(f"<li>{_e(b)}</li>" for b in x["bullets"])
-        rows.append(f'<div class="job"><div class="job-top"><div class="job-role">{_e(x["role"] or x["company"])}</div>'
-                    f'<div class="job-period">{_e(x["period"])}</div></div>'
-                    f'{f"<div class=job-co>{sub}</div>" if sub and x["role"] else ""}'
-                    f'{f"<ul>{bullets}</ul>" if bullets else ""}</div>')
+    for i, x in enumerate(c["experience"]):
+        p = f"experience.{i}"
+        if edit:
+            sub = _f(p + ".company", x["company"], "company") + " · " + _f(p + ".location", x["location"], "location")
+            role = _f(p + ".role", x["role"], "role")
+        else:
+            sub = " · ".join(_e(v) for v in (x["company"], x["location"]) if v)
+            role = _e(x["role"] or x["company"])
+        bullets = "".join(f'<li{_it(f"{p}.bullets.{j}")}>{_f(f"{p}.bullets.{j}", b, "achievement")}</li>'
+                          for j, b in enumerate(x["bullets"]))
+        co = f"<div class=job-co>{sub}</div>" if sub and (x["role"] or edit) else ""
+        ul = f"<ul>{bullets}</ul>" if bullets else ""
+        rows.append(f'<div class="job"{_it(p)}><div class="job-top"><div class="job-role">{role}</div>'
+                    f'<div class="job-period">{_f(p + ".period", x["period"], "period")}</div></div>{co}{ul}</div>')
     return f'<div class="{"timeline" if d.get("timeline") else "jobs"}">{"".join(rows)}</div>'
 
 
 def _education_html(c: dict, d: dict, side: bool) -> str:
-    return "".join(
-        f'<div class="edu"><div class="edu-deg">{_e(x["degree"])}</div>'
-        f'{f"<div class=edu-inst>{_e(x["institution"])}</div>" if x["institution"] else ""}'
-        f'{f"<div class=edu-meta>{_e(x["period"])}</div>" if x["period"] else ""}'
-        f'{f"<div class=edu-meta>{_e(x["details"])}</div>" if x["details"] else ""}</div>' for x in c["education"])
+    edit = _EDIT.get()
+    out = []
+    for i, x in enumerate(c["education"]):
+        p = f"education.{i}"
+        parts = [f'<div class="edu-deg">{_f(p + ".degree", x["degree"], "degree")}</div>']
+        if x["institution"] or edit:
+            parts.append(f'<div class="edu-inst">{_f(p + ".institution", x["institution"], "institution")}</div>')
+        if x["period"] or edit:
+            parts.append(f'<div class="edu-meta">{_f(p + ".period", x["period"], "period")}</div>')
+        if x["details"] or edit:
+            parts.append(f'<div class="edu-meta">{_f(p + ".details", x["details"], "details (grade, honours)")}</div>')
+        out.append(f'<div class="edu"{_it(p)}>{"".join(parts)}</div>')
+    return "".join(out)
 
 
 def _contact_html(c: dict, d: dict, side: bool) -> str:
     ct = c["contact"]
+    edit = _EDIT.get()
     col = "var(--side-heading)" if side else "var(--heading)"
     rows = [(k, ic) for k, ic in (("phone", "phone"), ("email", "mail"), ("location", "pin"),
-                                  ("linkedin", "linkedin"), ("website", "link")) if ct.get(k)]
+                                  ("linkedin", "linkedin"), ("website", "link")) if ct.get(k) or edit]
     return "".join(f'<div class="ct"><span class="ct-ic">{_icon(ic, col, fill=col if ic == "phone" else "none")}</span>'
-                   f'<span class="ct-v">{_e(ct[k])}</span></div>' for k, ic in rows)
+                   f'<span class="ct-v">{_f("contact." + k, ct[k], k)}</span></div>' for k, ic in rows)
 
 
-def _list_html(items: list[str], icon: str | None, side: bool) -> str:
+def _list_html(key: str, items: list[str], icon: str | None, side: bool) -> str:
     if not items:
         return ""
     if icon:
         col = "var(--side-heading)" if side else "var(--heading)"
         return '<ul class="ic-list">' + "".join(
-            f'<li><span class="li-ic">{_icon(icon, col, fill=col if icon == "trophy" else "none")}</span>{_e(x)}</li>'
-            for x in items) + "</ul>"
-    return '<ul class="bul">' + "".join(f"<li>{_e(x)}</li>" for x in items) + "</ul>"
+            f'<li{_it(f"{key}.{i}")}><span class="li-ic">{_icon(icon, col, fill=col if icon == "trophy" else "none")}</span>{_f(f"{key}.{i}", x)}</li>'
+            for i, x in enumerate(items)) + "</ul>"
+    return '<ul class="bul">' + "".join(f'<li{_it(f"{key}.{i}")}>{_f(f"{key}.{i}", x)}</li>' for i, x in enumerate(items)) + "</ul>"
 
 
 def _section_html(key: str, c: dict, d: dict, side: bool) -> str:
+    edit = _EDIT.get()
     if key == "profile":
-        inner = "".join(f"<p>{_e(p)}</p>" for p in c["profile"])
+        inner = "".join(f'<p{_it(f"profile.{i}")}>{_f(f"profile.{i}", p, "profile paragraph")}</p>' for i, p in enumerate(c["profile"]))
     elif key == "highlights":
-        inner = _list_html(c["highlights"], None, side)
+        inner = _list_html("highlights", c["highlights"], None, side)
     elif key == "contact":
         inner = _contact_html(c, d, side)
     elif key == "skills":
@@ -1135,21 +1187,25 @@ def _section_html(key: str, c: dict, d: dict, side: bool) -> str:
     elif key == "education":
         inner = _education_html(c, d, side)
     elif key == "achievements":
-        inner = _list_html(c["achievements"], "trophy", side)
+        inner = _list_html("achievements", c["achievements"], "trophy", side)
     elif key == "certifications":
-        inner = _list_html(c["certifications"], "award", side)
+        inner = _list_html("certifications", c["certifications"], "award", side)
     elif key == "languages":
         inner = "".join(
-            f'<div class="dot-row"><span>{_e(x["name"])}</span><span class="dot-set">' +
+            f'<div class="dot-row"{_it(f"languages.{i}")}><span>{_f(f"languages.{i}.name", x["name"], "language")}</span><span class="dot-set">' +
             "".join(f'<i class="{"on" if k < x["level"] else ""}"></i>' for k in range(5)) + "</span></div>"
-            for x in c["languages"])
+            for i, x in enumerate(c["languages"]))
     elif key == "interests":
-        inner = ('<div class="chips">' + "".join(f"<span>{_e(x)}</span>" for x in c["interests"]) + "</div>") if c["interests"] else ""
+        inner = ('<div class="chips">' + "".join(f'<span{_it(f"interests.{i}")}>{_f(f"interests.{i}", x, "interest")}</span>'
+                                                 for i, x in enumerate(c["interests"])) + "</div>") if c["interests"] else ""
     elif key == "projects":
-        inner = "".join(f'<div class="proj"><b>{_e(x["name"])}</b>{f"<div>{_e(x["description"])}</div>" if x["description"] else ""}</div>'
-                        for x in c["projects"])
+        out = []
+        for i, x in enumerate(c["projects"]):
+            desc = f'<div>{_f(f"projects.{i}.description", x["description"], "description")}</div>' if (x["description"] or edit) else ""
+            out.append(f'<div class="proj"{_it(f"projects.{i}")}><b>{_f(f"projects.{i}.name", x["name"], "project")}</b>{desc}</div>')
+        inner = "".join(out)
     elif key == "references":
-        inner = _list_html(c["references"], None, side)
+        inner = _list_html("references", c["references"], None, side)
     else:
         inner = ""
     return _sec(d, key, inner) if inner else ""
@@ -1169,14 +1225,15 @@ def _photo_html(photo_uri: str, name: str, shape: str, cls: str) -> str:
 
 
 def _name_block(c: dict, d: dict, size_pt: float) -> str:
-    name = c["name"] or "Your Name"
-    name = name.upper() if d["name_case"] == "upper" else name
-    title = c["title"].upper() if d["name_case"] == "upper" else c["title"]
-    title_html = _e(title)
-    if len(title) > 30 and " & " in title:          # "CHIEF BRANCH MANAGER &<br>MARKETING PROFESSIONAL"
+    edit = _EDIT.get()
+    up = " up" if d["name_case"] == "upper" else ""          # CSS uppercase: the stored text keeps its real case
+    name = c["name"] or ("" if edit else "Your Name")
+    title = c["title"]
+    title_html = _f("title", title, "headline / job title")
+    if not edit and len(title) > 30 and " & " in title:      # "CHIEF BRANCH MANAGER &<br>MARKETING PROFESSIONAL"
         title_html = _e(title).replace(" &amp; ", " &amp;<br>", 1)
-    return (f'<div class="nm" style="font-size:{size_pt:.1f}pt">{_e(name)}</div>'
-            f'{f"<div class=ttl>{title_html}</div>" if title else ""}')
+    title_div = f'<div class="ttl{up}">{title_html}</div>' if (title or edit) else ""
+    return f'<div class="nm{up}" style="font-size:{size_pt:.1f}pt">{_f("name", name, "Your Name")}</div>{title_div}'
 
 
 def _name_size(name: str, avail_mm: float, max_pt: float) -> float:
@@ -1279,8 +1336,8 @@ aside .addl-h{{color:var(--side-heading)}}
 .lay-single_column .rings{{grid-template-columns:repeat(6,1fr)}}
 .ring{{width:13mm;height:13mm;display:block;margin:0 auto .8mm}}
 .chips{{display:flex;flex-wrap:wrap;gap:1.6mm;margin-top:1.5mm}}
-.chips span{{border:1px solid var(--rule);background:var(--tint);color:var(--text);padding:.7mm 2.4mm;border-radius:3mm;font-size:calc(8.4pt*var(--s))}}
-aside .chips span{{background:transparent;border-color:var(--side-rule);color:var(--side-text)}}
+.chips>span{{border:1px solid var(--rule);background:var(--tint);color:var(--text);padding:.7mm 2.4mm;border-radius:3mm;font-size:calc(8.4pt*var(--s))}}
+aside .chips>span{{background:transparent;border-color:var(--side-rule);color:var(--side-text)}}
 .comp-grid{{display:grid;grid-template-columns:1fr 1fr;column-gap:6mm;row-gap:3.6mm}}
 .comp{{display:flex;gap:2.6mm;break-inside:avoid}}
 .comp-ic{{flex:none;width:9.5mm;height:9.5mm;border-radius:50%;border:1.6px solid var(--heading);background:var(--tint);display:flex;
@@ -1300,7 +1357,7 @@ border:2px solid var(--heading)}}
 .edu{{margin-bottom:2.6mm;break-inside:avoid}} .edu-deg{{font-weight:700}} .edu-inst{{font-weight:500}} .edu-meta{{color:var(--muted);font-size:.92em}}
 aside .edu-meta{{color:var(--side-text);opacity:.8}}
 .proj{{margin-bottom:2.4mm}} .proj b{{color:var(--heading)}}
-.nm{{font-weight:800;line-height:1.02;letter-spacing:.4px}}
+.nm{{font-weight:800;line-height:1.02;letter-spacing:.4px}} .up{{text-transform:uppercase}}
 .ttl{{font-weight:600;font-size:calc(12.5pt*var(--s));line-height:1.18;margin-top:2.2mm;letter-spacing:.3px}}
 .hd-diag{{display:flex;height:calc(84mm*(0.4 + 0.6*var(--s)));clip-path:polygon(0 0,100% 0,100% 62%,0 100%)}}
 .hd-photo{{width:var(--pw);flex:none;height:100%;background-size:cover;background-position:center 20%}}
@@ -1337,7 +1394,15 @@ def _placement(d: dict) -> tuple[list[str], list[str]]:
     return side_secs, main_secs
 
 
-def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0) -> str:
+def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: bool = False) -> str:
+    token = _EDIT.set(edit)
+    try:
+        return _render_html_inner(c, d, photo_uri, scale)
+    finally:
+        _EDIT.reset(token)
+
+
+def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
     _, _, gfont = _FONTS.get(d["font"], _FONTS["sans"])
     lay = d["layout"]
     side_secs, main_secs = _placement(d)
@@ -1459,6 +1524,288 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str) -> dict:
     return {"pdf": pdf_path, "html": html_path, "pngs": pngs, "pages": n_pages}
 
 
+# ── Visual editor (/resume/editor) ───────────────────────────────────────────────────────────────
+# The resume is rendered with every text value as a contenteditable span tagged with its JSON path
+# (_f / _it above). The page posts the edited content back to /resume/save (editor_save), which also
+# handles list operations, template/colour/photo changes, AI rewrites and PDF export.
+EDITOR_URL = "http://127.0.0.1:8000/resume/editor"
+
+_ITEM_TEMPLATES = {
+    "bullets": "New point: what you did and the result",
+    "profile": "Write a short profile paragraph here.",
+    "highlights": "New highlight", "achievements": "New achievement", "certifications": "New certification",
+    "references": "Available on request", "interests": "New interest", "additional_skills": "New skill",
+    "skills": {"name": "New skill", "level": 80},
+    "competencies": {"title": "New competency", "description": "Describe this strength in one line.", "icon": ""},
+    "experience": {"role": "Job title", "company": "Company", "period": "Start – End", "location": "",
+                   "bullets": ["What you achieved there"]},
+    "education": {"degree": "Degree / course", "institution": "Institution", "period": "", "details": ""},
+    "languages": {"name": "Language", "level": 4},
+    "projects": {"name": "Project name", "description": "What it does and your role."},
+}
+_ADDABLE = ["profile", "highlights", "skills", "competencies", "experience", "education", "projects",
+            "achievements", "certifications", "languages", "interests", "references"]
+
+_EDITOR_CSS = """
+<style id="rb-editor-css">
+html{background:#2f333b!important}
+body{position:relative;margin:76px auto 60px!important;box-shadow:0 8px 44px rgba(0,0,0,.5);min-height:297mm}
+.side-bg{position:absolute!important}
+body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:40;
+ background:repeating-linear-gradient(to bottom,transparent 0,transparent calc(297mm - 2px),rgba(239,68,68,.8) calc(297mm - 2px),rgba(239,68,68,.8) 297mm)}
+[data-f]{outline:none;border-radius:2px;cursor:text;transition:background .12s,box-shadow .12s;display:inline;padding:0 1px}
+[data-f]:hover{background:rgba(59,130,246,.10);box-shadow:0 0 0 1px rgba(59,130,246,.45)}
+[data-f]:focus{background:rgba(59,130,246,.15);box-shadow:0 0 0 2px rgba(59,130,246,.8)}
+[data-f]:empty::before{content:attr(data-ph);color:#9ca3af;font-style:italic;font-weight:400;text-transform:none;letter-spacing:0}
+[data-item]{position:relative}
+[data-item].rb-hot{box-shadow:0 0 0 1px dashed rgba(16,185,129,.6);outline:1px dashed rgba(16,185,129,.7);outline-offset:1px}
+.ed-venn{text-align:center;font-size:8pt;margin:-1mm 0 2.5mm;color:#6b7280}
+.ed-chip{display:inline-block;border:1px dashed #9ca3af;border-radius:3mm;padding:.4mm 2.2mm;margin:0 .8mm;color:#374151}
+#rb-bar{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+ padding:10px 14px;background:#0b1220;color:#e5e7eb;font:13px 'Segoe UI',Arial,sans-serif;box-shadow:0 2px 14px rgba(0,0,0,.5)}
+#rb-bar b{color:#67e8f9;margin-right:4px}
+#rb-bar select,#rb-bar input[type=text]{background:#111a2e;color:#e5e7eb;border:1px solid #334155;border-radius:6px;padding:6px 8px;font:inherit}
+#rb-bar input[type=text]{width:230px}
+#rb-bar input[type=color]{width:34px;height:30px;border:1px solid #334155;border-radius:6px;background:#111a2e;padding:2px;cursor:pointer}
+#rb-bar button,#rb-bar label.btn{background:#1e293b;color:#e5e7eb;border:1px solid #334155;border-radius:6px;padding:6px 10px;font:inherit;cursor:pointer}
+#rb-bar button:hover,#rb-bar label.btn:hover{background:#334155}
+#rb-bar button.primary{background:#0891b2;border-color:#06b6d4;color:#fff;font-weight:600}
+#rb-bar button.primary:hover{background:#06b6d4}
+#rb-status{margin-left:auto;color:#a5f3fc;max-width:420px}
+#rb-status a{color:#fde68a}
+#rb-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:1000;background:#0b1220e6;color:#cbd5e1;
+ font:12px 'Segoe UI',Arial;padding:6px 12px;border-radius:20px}
+#rb-ctl{position:absolute;display:none;z-index:1001;gap:3px;background:#0b1220;border-radius:6px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#rb-ctl button{background:#1e293b;color:#fff;border:0;border-radius:4px;width:24px;height:22px;cursor:pointer;font:13px Arial;line-height:22px;padding:0}
+#rb-ctl button:hover{background:#0891b2} #rb-ctl button[data-a=del]:hover{background:#dc2626}
+@media print{#rb-bar,#rb-ctl,#rb-hint,.edit-only{display:none!important}}
+</style>
+"""
+
+_EDITOR_JS = """
+<script>
+(function(){
+  const RB = window.__RB__;
+  let dirty = false, hot = null;
+  const $ = s => document.querySelector(s);
+  const status = (h) => { $('#rb-status').innerHTML = h; };
+  try { const y = sessionStorage.getItem('rbScroll'); if (y) { window.scrollTo(0, +y); sessionStorage.removeItem('rbScroll'); } } catch(e) {}
+
+  function collect(){
+    const c = JSON.parse(JSON.stringify(RB.content));
+    document.querySelectorAll('[data-f]').forEach(el => {
+      const path = el.dataset.f.split('.');
+      let o = c;
+      for (let i = 0; i < path.length - 1; i++) {
+        const k = /^\\d+$/.test(path[i]) ? +path[i] : path[i];
+        if (o[k] === undefined || o[k] === null) return;
+        o = o[k];
+      }
+      const last = path[path.length - 1];
+      o[/^\\d+$/.test(last) ? +last : last] = el.textContent.replace(/\\s+/g, ' ').trim();
+    });
+    return c;
+  }
+
+  async function send(extra, reload){
+    status('⏳ Working…');
+    try {
+      const r = await fetch('/resume/save', {method:'POST', headers:{'Content-Type':'application/json'},
+                                             body: JSON.stringify(Object.assign({content: collect()}, extra))});
+      const j = await r.json();
+      if (!j.ok) { status('⚠️ ' + (j.message || 'Failed')); return j; }
+      dirty = false;
+      if (reload) { try { sessionStorage.setItem('rbScroll', String(window.scrollY)); } catch(e) {} location.reload(); return j; }
+      status(j.message_html || j.message || 'Saved');
+      return j;
+    } catch (e) { status('⚠️ ' + e); }
+  }
+
+  document.querySelectorAll('[data-f]').forEach(el => {
+    el.addEventListener('input', () => { dirty = true; status('✏️ Unsaved changes — press <b>Save &amp; export PDF</b> (Ctrl+S)'); });
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+    el.addEventListener('paste', e => { e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text/plain')); });
+  });
+
+  // hover controls for list items: add after / move up / delete
+  const ctl = $('#rb-ctl');
+  document.addEventListener('mouseover', e => {
+    if (ctl.contains(e.target)) return;
+    const it = e.target.closest('[data-item]');
+    if (!it) return;
+    if (hot) hot.classList.remove('rb-hot');
+    hot = it; it.classList.add('rb-hot');
+    const r = it.getBoundingClientRect();
+    ctl.style.display = 'flex';
+    ctl.style.top = (window.scrollY + r.top - 26) + 'px';
+    ctl.style.left = (window.scrollX + r.right - 84) + 'px';
+  });
+  ctl.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !hot) return;
+    send({op: {action: b.dataset.a, path: hot.dataset.item}}, true);
+  });
+
+  $('#rb-save').onclick = () => send({export: true}, false);
+  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); send({export: true}, false); } });
+  $('#rb-tpl').onchange = e => { if (e.target.value) send({template: e.target.value}, true); };
+  $('#rb-color').onchange = e => send({color: e.target.value}, true);
+  $('#rb-add').onchange = e => { if (e.target.value) send({add_section: e.target.value}, true); };
+  $('#rb-nophoto').onclick = () => send({remove_photo: true}, true);
+  $('#rb-photo').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    status('⏳ Uploading photo…');
+    const fd = new FormData(); fd.append('file', f);
+    const j = await (await fetch('/upload', {method:'POST', body: fd})).json();
+    if (j.status !== 'success') { status('⚠️ Upload failed'); return; }
+    send({photo: j.path}, true);
+  };
+  const ai = () => { const v = $('#rb-ai').value.trim(); if (v) send({instruction: v}, true); };
+  $('#rb-ai-go').onclick = ai;
+  $('#rb-ai').addEventListener('keydown', e => { if (e.key === 'Enter') ai(); });
+  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+"""
+
+
+def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
+    tpl = "".join(f'<option value="{k}" title="{_e(v)}">{k.title()}</option>' for k, v in PRESET_BLURBS.items())
+    empty = [k for k in _ADDABLE if not content.get(k)]
+    add = "".join(f'<option value="{k}">{_e(DEFAULT_TITLES[k])}</option>' for k in empty)
+    pdf = state.get("last_pdf") or ""
+    last = (f'Last PDF: <a href="{MEDIA_URL}/{_e(os.path.basename(pdf))}" target="_blank">open</a>'
+            if pdf and os.path.exists(pdf) else "Click any text to edit it")
+    return (f'<div id="rb-bar"><b>✏️ Resume editor</b>'
+            f'<select id="rb-tpl" title="Switch format"><option value="">Template…</option>{tpl}</select>'
+            f'<input type="color" id="rb-color" value="{_e(design["colors"]["primary"])}" title="Main colour">'
+            f'<select id="rb-add" title="Add a section"><option value="">＋ Add section…</option>{add}</select>'
+            f'<label class="btn" title="Upload a photo">📷 Photo<input type="file" id="rb-photo" accept="image/*" hidden></label>'
+            f'<button id="rb-nophoto" title="Remove the photo block">No photo</button>'
+            f'<input type="text" id="rb-ai" placeholder="Ask AI, e.g. make bullets punchier">'
+            f'<button id="rb-ai-go">✨ Apply</button>'
+            f'<button id="rb-save" class="primary">💾 Save &amp; export PDF</button>'
+            f'<span id="rb-status">{last}</span></div>'
+            f'<div id="rb-ctl"><button data-a="add" title="Add an item below">＋</button>'
+            f'<button data-a="up" title="Move up">↑</button><button data-a="del" title="Delete">✕</button></div>'
+            f'<div id="rb-hint">Click text to type · hover an item for ＋ ↑ ✕ · red line = page break · Ctrl+S saves</div>')
+
+
+def editor_page() -> str:
+    """Full HTML page of the current resume in edit mode."""
+    try:
+        st = _load_state()
+        content, design = st.get("content"), st.get("design")
+        if not content or not design:
+            return ("<!doctype html><meta charset=utf-8><title>Resume editor</title><body style='font:16px Segoe UI;"
+                    "background:#0b1220;color:#e5e7eb;padding:60px;text-align:center'><h2>No resume yet</h2>"
+                    "<p>Ask Jarvis to create one first, e.g. <i>“make my resume like this”</i> with a design image and your details.</p>")
+        photo = st.get("photo") or ""
+        photo_uri = _data_uri(photo) if photo and os.path.exists(photo) else ""
+        html = _render_html(content, design, photo_uri, 1.0, edit=True)
+        data = json.dumps({"content": content}, ensure_ascii=False).replace("</", "<\\/")
+        html = html.replace("</head>", _EDITOR_CSS + "</head>", 1)
+        html = html.replace("</body>", _editor_toolbar(content, design, st) +
+                            f"<script>window.__RB__ = {data};</script>" + _EDITOR_JS + "</body>", 1)
+        return html
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return f"<!doctype html><meta charset=utf-8><body style='font:15px Segoe UI;padding:40px'>Editor error: {_e(e)}"
+
+
+def _apply_op(content: dict, action: str, path: str) -> None:
+    parts = [p for p in str(path or "").split(".") if p]
+    if len(parts) < 2 or not parts[-1].isdigit():
+        return
+    idx, key = int(parts[-1]), parts[-2]
+    lst = content
+    for k in parts[:-1]:
+        lst = lst[int(k)] if (k.isdigit() and isinstance(lst, list)) else (lst.get(k) if isinstance(lst, dict) else None)
+        if lst is None:
+            return
+    if not isinstance(lst, list) or not 0 <= idx < len(lst):
+        return
+    if action == "del":
+        lst.pop(idx)
+    elif action == "add":
+        lst.insert(idx + 1, json.loads(json.dumps(_ITEM_TEMPLATES.get(key, "New item"))))
+    elif action == "up" and idx > 0:
+        lst[idx - 1], lst[idx] = lst[idx], lst[idx - 1]
+    elif action == "down" and idx < len(lst) - 1:
+        lst[idx + 1], lst[idx] = lst[idx], lst[idx + 1]
+
+
+def editor_save(payload: dict) -> dict:
+    """Backend of the editor: apply text edits + one optional action, persist, optionally export the PDF."""
+    try:
+        st = _load_state()
+        if not st.get("content") or not st.get("design"):
+            return {"ok": False, "message": "No resume yet — create one in Jarvis first."}
+        raw = payload.get("content") if isinstance(payload.get("content"), dict) else st["content"]
+        content = _normalise_content(json.loads(json.dumps(raw)))
+        design = st["design"]
+        note = "Saved."
+
+        op = payload.get("op") or {}
+        if isinstance(op, dict) and op.get("action") in ("add", "del", "up", "down"):
+            _apply_op(content, op["action"], op.get("path", ""))
+            content = _normalise_content(content)
+        sec = str(payload.get("add_section") or "")
+        if sec in _ITEM_TEMPLATES and not content.get(sec):
+            content[sec] = [json.loads(json.dumps(_ITEM_TEMPLATES[sec]))]
+            content = _normalise_content(content)
+        tpl = str(payload.get("template") or "").lower()
+        if tpl in PRESETS:
+            design = _sanitize_design(json.loads(json.dumps(PRESETS[tpl])) | {"source": tpl})
+            note = f"Switched to the {tpl} format."
+        if payload.get("color"):
+            design = _sanitize_design(_apply_color(design, str(payload["color"])))
+        if payload.get("photo") and os.path.exists(str(payload["photo"])):
+            st["photo"] = str(payload["photo"])
+            if design.get("photo") == "none":
+                design["photo"] = "square" if design.get("header") == "diagonal_banner" else "circle"
+        if payload.get("remove_photo"):
+            st["photo"] = ""
+            design["photo"] = "none"
+        if payload.get("instruction"):
+            content = _edit_content(content, str(payload["instruction"]))
+            note = "AI edit applied."
+
+        st.update({"content": content, "design": design, "awaiting_details": False, "updated": time.time()})
+        _save_state(st)
+        if not payload.get("export"):
+            return {"ok": True, "reload": True, "message": note}
+
+        slug = re.sub(r"[^a-z0-9]+", "_", (content.get("name") or "resume").lower()).strip("_")[:30] or "resume"
+        photo = st.get("photo") if st.get("photo") and os.path.exists(st["photo"]) else ""
+        files = _render_files(content, design, photo, f"resume_{slug}_{int(time.time())}")
+        st["last_pdf"] = files["pdf"]
+        _save_state(st)
+        pdf_url = f"{MEDIA_URL}/{os.path.basename(files['pdf'])}"
+        return {"ok": True, "reload": False, "pdf_url": pdf_url,
+                "png_urls": [f"{MEDIA_URL}/{os.path.basename(p)}" for p in files["pngs"]],
+                "message": f"PDF exported ({files['pages']} page(s)).",
+                "message_html": f'✅ PDF exported ({files["pages"]} page(s)) — <a href="{pdf_url}" target="_blank">open PDF</a>'}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"ok": False, "message": f"Save failed: {e}"}
+
+
+def open_resume_editor() -> str:
+    if not _load_state().get("content"):
+        return "There's no resume to edit yet, Sir. Ask me to create one first."
+    try:
+        import webbrowser
+        webbrowser.open(EDITOR_URL)
+    except Exception:
+        pass
+    return (f"Opening the resume editor, Sir: ✏️ [Edit your resume]({EDITOR_URL})\n\n"
+            "Click any text on the resume to change it. Hover an item for ＋ / ↑ / ✕. Use the toolbar to switch "
+            "template, colour or photo, add a section, or ask the AI to rewrite something. Then press "
+            "**Save & export PDF**.")
+
+
 # ── Routing helpers (used by chat.py) ───────────────────────────────────────────────────────────
 _NOUN = r"(?:r[eé]sum[eé]s?|\bcv\b|curriculum\s+vitae|bio-?data)"
 _CREATE_RX = re.compile(r"\b(?:create|make|build|generate|design|prepare|write|draft|craft|recreate|replicate|copy|redo|"
@@ -1541,6 +1888,13 @@ def detect_resume_request(prompt: str) -> dict | None:
         lower = text.lower()
         if re.search(r"\b(?:list|show|what|which)\b[^.\n]{0,30}" + _NOUN + r"\s+(?:templates?|formats?|styles?|designs?)", lower):
             return {"_list": True}
+        # bare "edit my resume" / "open the resume editor" (no concrete change) → visual editor
+        if re.fullmatch(r"(?:(?:please|jarvis|hey jarvis|ok)[,\s]+)?(?:i\s+(?:want|need)\s+to\s+|let\s+me\s+|can\s+i\s+|"
+                        r"how\s+(?:do|can)\s+i\s+)?(?:open\s+(?:the\s+|my\s+)?)?(?:edit|modify|change|tweak|fix|update)?\s*"
+                        r"(?:my\s+|the\s+|this\s+)?" + _NOUN + r"(?:\s+(?:editor|manually|myself|content|text|details))?"
+                        r"(?:\s+(?:please|now|myself|manually))?\s*[.!?]*", lower.strip()) and \
+                re.search(r"\b(edit|modify|change|tweak|fix|update|editor)\b", lower):
+            return {"_editor": True}
         noun_m = re.search(_NOUN, lower)
         other_m = _OTHER_ARTIFACT_RX.search(lower)
         if other_m and (not noun_m or other_m.start() < noun_m.start()):
@@ -1668,7 +2022,8 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
             missing.append("attach a photo (or say *\"use the same photo\"*) to replace the initials block")
         tips = ("\n\n_" + "; ".join(missing) + "._") if missing else ""
         yield (f"Your resume is ready, Sir. {design_note} {files['pages']} page(s).\n\n{previews}\n\n"
-               f"📄 [Download PDF]({MEDIA_URL}/{name(files['pdf'])}) · 🌐 [Editable HTML]({MEDIA_URL}/{name(files['html'])})\n\n"
+               f"✏️ [Edit text, sections & layout]({EDITOR_URL}) · 📄 [Download PDF]({MEDIA_URL}/{name(files['pdf'])}) · "
+               f"🌐 [HTML]({MEDIA_URL}/{name(files['html'])})\n\n"
                f"Saved to `{files['pdf']}`. Say things like *\"change the resume colour to navy\"*, *\"use the modern template\"* "
                f"or *\"add AWS certification to my resume\"* to tweak it.{tips}")
     except Exception as e:
