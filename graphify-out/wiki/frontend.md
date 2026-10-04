@@ -17,7 +17,7 @@
 ## Relationships
 
 - [package + App](package_+_App.md) (2 shared connections)
-- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
+- [llm-personality + ARCHITECTURE](llm-personality_+_ARCHITECTURE.md) (1 shared connections)
 
 ## Source Files
 

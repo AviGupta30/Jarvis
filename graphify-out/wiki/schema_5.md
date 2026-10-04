@@ -1,15 +1,17 @@
 # schema
 
-> 2 nodes · cohesion 1.00
+> 4 nodes · cohesion 0.50
 
 ## Key Concepts
 
-- **make_radial_fill()** (2 connections) — `app/services/resume_replica/schema.py`
-- **Returns {"type": "gradient_radial", "cx_pct": ..., "cy_pct": ..., "stops":…** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_image_node()** (3 connections) — `app/services/resume_replica/schema.py`
+- **make_size()** (3 connections) — `app/services/resume_replica/schema.py`
+- **Returns a complete IMAGE node.** (1 connections) — `app/services/resume_replica/schema.py`
+- **Returns size dict, only including non-None values.** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 
-- [schema](schema.md) (1 shared connections)
+- [schema](schema.md) (2 shared connections)
 
 ## Source Files
 
@@ -17,7 +19,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 2 (100%)
+- EXTRACTED: 5 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

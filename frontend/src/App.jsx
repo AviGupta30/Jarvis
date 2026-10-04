@@ -15,6 +15,7 @@ function App() {
   const [pptThemeImage, setPptThemeImage] = useState(null); // { name, path, url }
   const [resumeDesignImage, setResumeDesignImage] = useState(null); // resume picture whose design gets copied
   const [resumePhoto, setResumePhoto] = useState(null);             // headshot placed on the resume
+  const [resumeLogo, setResumeLogo] = useState(null);               // institute / company logo for the resume
   const [isAirDrawingOpen, setIsAirDrawingOpen] = useState(false);
 
   // ── Acoustic Tripwire state ────────────────────────────────────────
@@ -126,6 +127,8 @@ function App() {
             setResumeDesignImage({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
           } else if (uploadType === 'resume_photo') {
             setResumePhoto({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
+          } else if (uploadType === 'resume_logo') {
+            setResumeLogo({ name: file.name, path: data.path, url: URL.createObjectURL(file) });
           } else {
             if (uploadType === 'assignment') {
               setInputValue(prev => prev ? `${prev} | do my assignment from ${data.filename}` : `do my assignment from ${data.filename}`);
@@ -191,7 +194,7 @@ function App() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     const prompt = inputValue.trim();
-    const hasResumeUploads = !!(resumeDesignImage || resumePhoto);
+    const hasResumeUploads = !!(resumeDesignImage || resumePhoto || resumeLogo);
     if (!prompt && uploadedFiles.length === 0 && !hasResumeUploads && !isLoading) return;
 
     setInputValue('');
@@ -205,6 +208,7 @@ function App() {
     const resumeTags = [];
     if (resumeDesignImage) resumeTags.push(`[ATTACHED_FILE: ${resumeDesignImage.path.replace(/\\/g, '/')} | DESCRIPTION: resume design reference]`);
     if (resumePhoto) resumeTags.push(`[ATTACHED_FILE: ${resumePhoto.path.replace(/\\/g, '/')} | DESCRIPTION: my photo for the resume]`);
+    if (resumeLogo) resumeTags.push(`[ATTACHED_FILE: ${resumeLogo.path.replace(/\\/g, '/')} | DESCRIPTION: logo for the resume]`);
     // Make the intent explicit when the user only pasted details next to a resume design image
     const promptText = hasResumeUploads && !isResumeRequest(prompt)
       ? `Create my resume${resumeDesignImage ? ' exactly like this design' : ''} using these details: ${prompt}`.trim()
@@ -216,7 +220,7 @@ function App() {
     }).concat(resumeTags).join("\n");
     const promptToSend = attachedTags ? `${promptText}\n\n${attachedTags}`.trim() : promptText;
     const uiDisplayMessage = prompt || (resumeDesignImage ? '📄 Create my resume in this design' : '📄 Resume photo');
-    const attachedFiles = [...uploadedFiles, ...[resumeDesignImage, resumePhoto].filter(Boolean)];
+    const attachedFiles = [...uploadedFiles, ...[resumeDesignImage, resumePhoto, resumeLogo].filter(Boolean)];
 
     setMessages((prev) => [
       ...prev,
@@ -227,6 +231,7 @@ function App() {
     setUploadedFiles([]);
     setResumeDesignImage(null);
     setResumePhoto(null);
+    setResumeLogo(null);
 
     try {
       if (!resumeMode && isPPTRequest(prompt)) {
@@ -776,7 +781,7 @@ function App() {
               </div>
             )}
 
-            {(resumeDesignImage || resumePhoto) && (
+            {(resumeDesignImage || resumePhoto || resumeLogo) && (
               <div className="relative flex flex-wrap items-center gap-3 px-4 py-2 mb-2 w-full bg-amber-950/50 border border-amber-500/50 rounded-2xl z-10 shadow-[0_0_12px_rgba(245,158,11,0.2)]">
                 {resumeDesignImage && (
                   <div className="flex items-center gap-2">
@@ -791,6 +796,14 @@ function App() {
                     <span className="text-amber-300 text-xs font-mono tracking-wide">🧑 Photo:</span>
                     <img src={resumePhoto.url} alt="resume photo" className="h-12 w-10 object-cover rounded-md border border-amber-400/40" />
                     <button type="button" onClick={() => setResumePhoto(null)}
+                      className="text-amber-400 hover:text-white text-xs font-mono bg-amber-900/40 px-2 py-1 rounded-full hover:bg-amber-700/60 transition-colors">✕</button>
+                  </div>
+                )}
+                {resumeLogo && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-300 text-xs font-mono tracking-wide">🏛 Logo:</span>
+                    <img src={resumeLogo.url} alt="resume logo" className="h-12 w-12 object-contain rounded-md border border-amber-400/40 bg-white" />
+                    <button type="button" onClick={() => setResumeLogo(null)}
                       className="text-amber-400 hover:text-white text-xs font-mono bg-amber-900/40 px-2 py-1 rounded-full hover:bg-amber-700/60 transition-colors">✕</button>
                   </div>
                 )}
@@ -872,6 +885,17 @@ function App() {
                       >
                         <span>🧑</span> Resume Photo
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsUploadMenuOpen(false);
+                          fileInputRef.current.dataset.uploadType = 'resume_logo';
+                          fileInputRef.current?.click();
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs text-amber-300 hover:bg-amber-900/40 hover:text-white transition-colors font-mono flex items-center gap-2 tracking-wide border-t border-cyan-900/30"
+                      >
+                        <span>🏛</span> Resume Logo (college / company)
+                      </button>
                       <a
                         href={`${API_BASE}/resume/editor`}
                         target="_blank"
@@ -923,7 +947,7 @@ function App() {
               <button
                 id="jarvis-send-btn"
                 type="submit"
-                disabled={(!inputValue.trim() && uploadedFiles.length === 0 && !resumeDesignImage && !resumePhoto) || isLoading}
+                disabled={(!inputValue.trim() && uploadedFiles.length === 0 && !resumeDesignImage && !resumePhoto && !resumeLogo) || isLoading}
                 className="p-2.5 rounded-full text-cyan-300 hover:text-white hover:bg-cyan-600/80 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center bg-cyan-900/40 shrink-0 mb-1 mr-1 border border-cyan-500/30 shadow-[0_0_10px_rgba(0,243,255,0.1)]"
               >
                 {isLoading

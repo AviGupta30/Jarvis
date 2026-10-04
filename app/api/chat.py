@@ -1497,7 +1497,8 @@ async def chat_endpoint(request: ChatRequest):
     # Runs before media/DAG/complex-task checks: pasted resume details are long multi-clause text.
     try:
         from app.services.resume_builder import detect_resume_request, create_resume, list_resume_templates, open_resume_editor
-        _resume_args = detect_resume_request(request.prompt)
+        _recent = [m.get("content", "") for m in list(conversation_history)[-4:] if m.get("role") == "assistant"]
+        _resume_args = detect_resume_request(request.prompt, _recent)
         if _resume_args is not None:
             from starlette.concurrency import iterate_in_threadpool
             if _resume_args.pop("_list", False):

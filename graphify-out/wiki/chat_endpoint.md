@@ -2,18 +2,18 @@
 
 > God node · 50 connections · `app/api/chat.py`
 
-**Community:** [chat + youtube_control](chat_+_youtube_control.md)
+**Community:** [chat](chat.md)
 
 ## Connections by Relation
 
 ### calls
-- create_resume() `EXTRACTED`
+- [create_resume()](create_resume.md) `EXTRACTED`
 - keyword_detect_tool() `EXTRACTED`
 - store_turn() `EXTRACTED`
 - run_dynamic_skill() `EXTRACTED`
+- detect_resume_request() `EXTRACTED`
 - parse_youtube_followup() `EXTRACTED`
 - recall() `EXTRACTED`
-- detect_resume_request() `EXTRACTED`
 - check_for_tool_intent() `EXTRACTED`
 - read_file() `EXTRACTED`
 - _media_compound() `EXTRACTED`

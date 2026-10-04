@@ -1,0 +1,43 @@
+# assignment_humanizer
+
+> 17 nodes · cohesion 0.15
+
+## Key Concepts
+
+- **_humanize_via_browser()** (8 connections) — `app/services/assignment_humanizer.py`
+- **humanize_text()** (7 connections) — `app/services/assignment_humanizer.py`
+- **_humanize_via_llm()** (7 connections) — `app/services/assignment_humanizer.py`
+- **humanize_all_answers()** (5 connections) — `app/services/assignment_humanizer.py`
+- **_protect_technical()** (5 connections) — `app/services/assignment_humanizer.py`
+- **_restore_technical()** (4 connections) — `app/services/assignment_humanizer.py`
+- **_split_into_chunks()** (4 connections) — `app/services/assignment_humanizer.py`
+- **_get_browser_page()** (3 connections) — `app/services/assignment_humanizer.py`
+- **make_placeholder()** (1 connections) — `app/services/assignment_humanizer.py`
+- **Replace technical content with numbered placeholders. Returns (modified_text,…** (1 connections) — `app/services/assignment_humanizer.py`
+- **Restore original technical content from placeholders.** (1 connections) — `app/services/assignment_humanizer.py`
+- **Split text into chunks at sentence boundaries, each ≤ max_chars. Ensures no…** (1 connections) — `app/services/assignment_humanizer.py`
+- **Get a persistent browser page (non-headless, saves session).** (1 connections) — `app/services/assignment_humanizer.py`
+- **Open a humanizer site in browser, process text in chunks, return humanized…** (1 connections) — `app/services/assignment_humanizer.py`
+- **Humanize text using Groq LLM with 'write like a student' prompt. Model fallback…** (1 connections) — `app/services/assignment_humanizer.py`
+- **Humanize a single block of AI-generated text to sound like a student wrote it.…** (1 connections) — `app/services/assignment_humanizer.py`
+- **Humanize ALL answers in a QA_JSON block from Phase 2 (generate_answers). Each…** (1 connections) — `app/services/assignment_humanizer.py`
+
+## Relationships
+
+- [assignment_humanizer](assignment_humanizer.md) (9 shared connections)
+- [tools + window_layout](tools_+_window_layout.md) (2 shared connections)
+- [assignment_tool + assignment](assignment_tool_+_assignment.md) (1 shared connections)
+
+## Source Files
+
+- `app/services/assignment_humanizer.py`
+
+## Audit Trail
+
+- EXTRACTED: 29 (91%)
+- INFERRED: 3 (9%)
+- AMBIGUOUS: 0 (0%)
+
+---
+
+*Part of the graphify knowledge wiki. See [index](index.md) to navigate.*

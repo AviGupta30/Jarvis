@@ -21,8 +21,8 @@
 ## Relationships
 
 - [voice](voice.md) (12 shared connections)
-- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
-- [voice + voice](voice_+_voice.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [voice + tools](voice_+_tools.md) (1 shared connections)
 
 ## Source Files
 

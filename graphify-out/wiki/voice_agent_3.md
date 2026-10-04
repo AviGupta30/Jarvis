@@ -19,7 +19,7 @@
 
 - [voice_agent](voice_agent.md) (3 shared connections)
 - [voice](voice.md) (1 shared connections)
-- [voice + voice](voice_+_voice.md) (1 shared connections)
+- [voice + context_classifier](voice_+_context_classifier.md) (1 shared connections)
 
 ## Source Files
 

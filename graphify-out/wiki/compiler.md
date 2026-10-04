@@ -29,11 +29,10 @@
 ## Relationships
 
 - [compiler](compiler.md) (37 shared connections)
-- [repair](repair.md) (2 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (1 shared connections)
-- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (1 shared connections)
-- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
-- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
+- [orchestrator + renderer](orchestrator_+_renderer.md) (2 shared connections)
+- [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
 - [exact_render](exact_render.md) (1 shared connections)
 

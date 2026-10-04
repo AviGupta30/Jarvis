@@ -2,7 +2,7 @@
 
 > God node · 123 connections · `docs/TOOLS.md`
 
-**Community:** [tools](tools.md)
+**Community:** [tools + window_layout](tools_+_window_layout.md)
 
 ## Connections by Relation
 
@@ -10,12 +10,12 @@
 - TOOLS.md `EXTRACTED`
 
 ### references
-- create_resume() `INFERRED`
+- [create_resume()](create_resume.md) `INFERRED`
 - keyword_detect_tool() `INFERRED`
 - youtube_play_result() `INFERRED`
+- detect_resume_request() `INFERRED`
 - ppt_create() `INFERRED`
 - youtube_channel() `INFERRED`
-- detect_resume_request() `INFERRED`
 - recall_memory() `INFERRED`
 - run_tool() `INFERRED`
 - youtube_search() `INFERRED`

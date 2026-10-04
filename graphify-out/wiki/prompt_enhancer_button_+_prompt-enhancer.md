@@ -22,7 +22,7 @@
 ## Relationships
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (8 shared connections)
-- [chat-routing + chat](chat-routing_+_chat.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
 - [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (2 shared connections)
 
 ## Source Files

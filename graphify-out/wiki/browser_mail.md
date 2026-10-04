@@ -17,11 +17,11 @@
 
 ## Relationships
 
-- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
-- [tools](tools.md) (2 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
+- [tools + window_layout](tools_+_window_layout.md) (2 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
+- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [youtube_control](youtube_control.md) (1 shared connections)
 
 ## Source Files
 

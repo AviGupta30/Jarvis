@@ -33,18 +33,18 @@
 
 ## Relationships
 
-- [tools](tools.md) (12 shared connections)
-- [nlp_extractor + research_scraper](nlp_extractor_+_research_scraper.md) (3 shared connections)
-- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [tools + window_layout](tools_+_window_layout.md) (12 shared connections)
+- [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (3 shared connections)
+- [tools + ui_inspector](tools_+_ui_inspector.md) (2 shared connections)
+- [browser_tool](browser_tool.md) (2 shared connections)
 - [ppt_research](ppt_research.md) (2 shared connections)
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (2 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
-- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
-- [browser_tool](browser_tool.md) (1 shared connections)
-- [web](web.md) (1 shared connections)
-- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
-- [content_humanizer](content_humanizer.md) (1 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
+- [memory + tool_runner](memory_+_tool_runner.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
+- [content_humanizer + content-tools](content_humanizer_+_content-tools.md) (1 shared connections)
+- [browser_mail](browser_mail.md) (1 shared connections)
 
 ## Source Files
 

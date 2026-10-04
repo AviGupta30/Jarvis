@@ -16,9 +16,10 @@
 
 ## Relationships
 
-- [repair](repair.md) (3 shared connections)
 - [bindings](bindings.md) (2 shared connections)
 - [schema](schema.md) (2 shared connections)
+- [repair](repair.md) (2 shared connections)
+- [orchestrator + renderer](orchestrator_+_renderer.md) (1 shared connections)
 
 ## Source Files
 

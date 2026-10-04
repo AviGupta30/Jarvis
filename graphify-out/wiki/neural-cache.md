@@ -15,8 +15,8 @@
 
 ## Relationships
 
-- [client + test_concurrency](client_+_test_concurrency.md) (1 shared connections)
-- [engine + test_protocol](engine_+_test_protocol.md) (1 shared connections)
+- [client](client.md) (1 shared connections)
+- [test_protocol + engine](test_protocol_+_engine.md) (1 shared connections)
 - [lru](lru.md) (1 shared connections)
 
 ## Source Files

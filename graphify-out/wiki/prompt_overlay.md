@@ -28,7 +28,7 @@
 
 ## Relationships
 
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (2 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
 
 ## Source Files
 

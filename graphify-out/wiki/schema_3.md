@@ -4,8 +4,8 @@
 
 ## Key Concepts
 
-- **make_parametric_geometry()** (2 connections) — `app/services/resume_replica/schema.py`
-- **Returns a PATH_GEOMETRY with type='parametric'. parametric_type: one of PARAM_*…** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_commands_geometry()** (2 connections) — `app/services/resume_replica/schema.py`
+- **Returns a PATH_GEOMETRY with type='commands'. commands: list of ["M",x,y],…** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 

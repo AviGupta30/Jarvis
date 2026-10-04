@@ -34,11 +34,11 @@
 ## Relationships
 
 - [fontmatch + fonts](fontmatch_+_fonts.md) (2 shared connections)
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (2 shared connections)
-- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
+- [gmail_tool](gmail_tool.md) (1 shared connections)
+- [dump_wa_ui + find_call_btn](dump_wa_ui_+_find_call_btn.md) (1 shared connections)
+- [llm-personality + ARCHITECTURE](llm-personality_+_ARCHITECTURE.md) (1 shared connections)
+- [tools + window_layout](tools_+_window_layout.md) (1 shared connections)
 
 ## Source Files
 

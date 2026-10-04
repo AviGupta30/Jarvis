@@ -21,8 +21,8 @@ React 19 + Vite + Tailwind 4 chat UI. Run: `cd frontend && npm run dev`.
 <!-- AUTO:BEGIN (scripts/refresh_docs.py) -->
 ## Files & symbols (auto-generated, line numbers are current)
 
-- `frontend/src/App.jsx` (942 lines)
-  L8 App · L44 handleTripwireToggle · L55 handleTripwireCalibrate · L105 handleFileUpload · L167 isResumeRequest · L174 isPPTRequest · L182 appendMsg · L191 handleSendMessage · L376 handleDagEvent
+- `frontend/src/App.jsx` (966 lines)
+  L8 App · L45 handleTripwireToggle · L56 handleTripwireCalibrate · L106 handleFileUpload · L170 isResumeRequest · L177 isPPTRequest · L185 appendMsg · L194 handleSendMessage · L381 handleDagEvent
 - `frontend/src/DagPlanPanel.jsx` (259 lines)
   L16 DagPlanPanel · L33 getDisplayWaves · L67 getNodeStatus · L102 toolIcon
 - `frontend/src/MemorySidebar.jsx` (157 lines)

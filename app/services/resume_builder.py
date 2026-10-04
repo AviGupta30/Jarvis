@@ -132,7 +132,11 @@ PRESETS: dict[str, dict] = {
         "bottom_sections": [],
     },
 }
+from app.services import resume_campus as _campus   # renderer helper (not a tool)
+
+PRESETS["campus"] = _campus.PRESET
 PRESET_BLURBS = {
+    "campus": _campus.BLURB,
     "elegant": "gold diagonal banner + photo, light sidebar, Venn skills, icon competencies",
     "modern": "dark navy sidebar with photo & name, skill bars, clean timeline",
     "minimal": "single column, serif, centred name, ATS-friendly",
@@ -1166,6 +1170,8 @@ RULES
   from nothing. Skip placeholder text without real values (e.g. "Links: LinkedIn / Portfolio / GitHub" with no URLs).
 - If the user wrote section headings or said which column a section goes in (e.g. "LEFT COLUMN: Contact, Skills"), copy
   them into "section_titles" / "layout_hint" (keys from the shape below).
+- If the user grouped skills under labels ("Languages: ...", "Frameworks & Tools: ..."), copy those groups into
+  "skill_groups" exactly (labels and items), besides the flat "skills" list.
 - Keep all of the user's real content; wording should be tight (bullets <= 22 words). Omit a field when there is nothing true for it.
 Return exactly this JSON shape:
 {
@@ -1174,6 +1180,7 @@ Return exactly this JSON shape:
  "contact": {"phone": "", "email": "", "location": "", "linkedin": "", "website": ""},
  "highlights": ["<career highlight, max 12 words>"],
  "skills": [{"name": "<skill, 1-2 words>", "level": <50-100>}],
+ "skill_groups": [{"label": "<a skill category the USER wrote, e.g. 'Languages'>", "items": "<that category's skills, comma-separated>"}],
  "additional_skills": ["<short skill>"],
  "competencies": [{"title": "<1-3 words>", "description": "<10-16 words>", "icon": "<icon key>"}],
  "experience": [{"role": "", "company": "", "period": "", "location": "", "bullets": [""]}],
@@ -1201,6 +1208,9 @@ def _content_brief(design: dict) -> str:
         lines.append("The design has a competencies block: write 4-6 competencies from the user's real work (only if it doesn't just repeat other sections).")
     if "highlights" in secs:
         lines.append("The design has career highlights: 3-4, but only facts not already shown elsewhere.")
+    if design.get("source") == "campus":
+        lines.append("Campus format: fill 'skill_groups' when the user's skills are grouped; never invent highlights or "
+                     "competencies; a one-line summary paragraph is enough.")
     if "experience" in secs and "projects" not in secs:
         lines.append("The design has an Experience slot but no Projects slot: still put projects in 'projects' (they are shown in that slot).")
     return " ".join(lines)
@@ -1240,6 +1250,12 @@ def _normalise_content(c: dict) -> dict:
             skills.append({"name": str(s["name"]).strip(), "level": max(20, min(100, lvl))})
     out["skills"] = skills[:12]
     out["additional_skills"] = _str_list(c.get("additional_skills"), 14)
+    groups = []
+    for g in (c.get("skill_groups") or []):
+        if isinstance(g, dict) and str(g.get("label") or "").strip() and str(g.get("items") or "").strip():
+            items = g["items"] if isinstance(g["items"], str) else ", ".join(str(x) for x in g["items"])
+            groups.append({"label": str(g["label"]).strip().rstrip(":")[:40], "items": items.strip()[:400]})
+    out["skill_groups"] = groups[:8]
     comps = []
     for x in (c.get("competencies") or []):
         if isinstance(x, str):
@@ -2683,6 +2699,8 @@ def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: boo
         if d.get("replica"):                 # exact copy of an uploaded design (app/services/resume_replica)
             from app.services.resume_replica.exact_render import render_replica_html
             return render_replica_html(c, d, photo_uri, scale)
+        if d.get("source") == "campus":      # campus / placement-cell format (app/services/resume_campus.py)
+            return _campus.render(c, d, scale * float(free.get("text_scale") or 1))
         return _render_html_inner(c, d, photo_uri, scale)
     finally:
         _EDIT.reset(token)
@@ -3037,6 +3055,7 @@ _ITEM_TEMPLATES = {
     "highlights": "New highlight", "achievements": "New achievement", "certifications": "New certification",
     "references": "Available on request", "interests": "New interest", "additional_skills": "New skill",
     "skills": {"name": "New skill", "level": 80},
+    "skill_groups": {"label": "Category", "items": "Skill, Skill"},
     "competencies": {"title": "New competency", "description": "Describe this strength in one line.", "icon": ""},
     "experience": {"role": "Job title", "company": "Company", "period": "Start – End", "location": "",
                    "bullets": ["What you achieved there"]},
@@ -3295,6 +3314,15 @@ _EDITOR_JS = r"""
     const j = await (await fetch('/upload', {method:'POST', body: fd})).json();
     return j.status === 'success' ? j.path : null;
   }
+  const lg = $('#rb-logo');
+  if (lg) lg.onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    status('⏳ Uploading logo…');
+    const p = await upload(f);
+    if (!p) { status('⚠️ Upload failed'); return; }
+    send({logo: p}, true);
+  };
+  if ($('#rb-nologo')) $('#rb-nologo').onclick = () => send({remove_logo: true}, true);
   $('#rb-photo').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
     status('⏳ Uploading photo…');
@@ -4395,6 +4423,8 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
             f'<select id="rb-add" title="Add a section"><option value="">＋ Add section…</option>{add}'
             f'<option value="__custom">✚ Your own section…</option></select>'
             f'<label class="btn" title="Upload a photo">📷 Photo<input type="file" id="rb-photo" accept="image/*" hidden></label>'
+            + (f'<label class="btn" title="Upload your institute / company logo">🏛 Logo<input type="file" id="rb-logo" accept="image/*" hidden></label>'
+               f'<button id="rb-nologo" title="Remove the logo">No logo</button>' if design.get("source") == "campus" or design.get("logo") else "") +
             f'<button id="rb-nophoto" title="Remove the photo block">No photo</button>'
             f'<input type="text" id="rb-ai" placeholder="Ask AI, e.g. make bullets punchier">'
             f'<button id="rb-ai-go">✨ Apply</button>'
@@ -4633,6 +4663,12 @@ def editor_save(payload: dict) -> dict:
             st["photo"] = str(payload["photo"])
             if design.get("photo") == "none":
                 design["photo"] = "square" if design.get("header") == "diagonal_banner" else "circle"
+        if payload.get("logo") and os.path.isfile(str(payload["logo"])):
+            design["logo"] = str(payload["logo"])
+            note = "Logo updated."
+        if payload.get("remove_logo"):
+            design.pop("logo", None)
+            note = "Logo removed."
         if payload.get("remove_photo"):
             st["photo"] = ""
             design["photo"] = "none"
@@ -4726,9 +4762,22 @@ def _attachments(prompt: str) -> list[tuple[str, str]]:
     return out
 
 
+def _is_logo_label(label: str) -> bool:
+    return bool(re.search(r"(?i)\blogo\b|\bemblem\b|\bcrest\b|\binsignia\b", label or ""))
+
+
+def _logo_image(prompt: str) -> str:
+    """An attachment labelled as a (college/company) logo → its path."""
+    for p, d in _attachments(prompt):
+        if p.lower().endswith(_IMG_EXTS) and os.path.exists(p) and _is_logo_label(f"{d} {os.path.basename(p)}"):
+            return p
+    return ""
+
+
 def _split_images(prompt: str) -> tuple[str, str]:
     """→ (reference_image, photo). A photo is labelled as such or is a close-up face."""
-    imgs = [(p, d) for p, d in _attachments(prompt) if p.lower().endswith(_IMG_EXTS) and os.path.exists(p)]
+    imgs = [(p, d) for p, d in _attachments(prompt) if p.lower().endswith(_IMG_EXTS) and os.path.exists(p)
+            and not _is_logo_label(f"{d} {os.path.basename(p)}")]
     ref, photo = "", ""
     for p, d in imgs:
         label = f"{d} {os.path.basename(p)}".lower()
@@ -4767,8 +4816,25 @@ def resume_awaiting_details() -> bool:
     return bool(st.get("awaiting_details")) and time.time() - float(st.get("awaiting_since") or 0) < _AWAIT_TTL
 
 
-def detect_resume_request(prompt: str) -> dict | None:
-    """Fast regex router → create_resume kwargs (or {"_list": True}), else None."""
+# a follow-up that changes "it" (the resume just made): page count, layout/design match, style, sections
+_FOLLOW_RX = re.compile(
+    r"\b(?:one|single|1|two|2|three|3)[\s-]*pages?\b|\bfit\b[^.\n]{0,30}\bpages?\b|"
+    r"\b(?:make|change|update|edit|fix|shorten|trim|reduce|condense|match|align|redo|use|add|remove|delete|replace|put|"
+    r"move|increase|decrease|enlarge|rewrite|improve|recreate|copy)\b[^.\n]{0,60}"
+    r"\b(?:it|this|that|the\s+(?:design|template|layout|format|theme|image|reference)|colou?rs?|fonts?|photo|logo|"
+    r"sections?|bullets?|summary|profile|skills?|projects?|education|headings?|spacing|margins?)\b", re.I)
+
+
+def _recent_resume(recent: list[str] | None, state: dict) -> bool:
+    """The last thing Jarvis produced was this resume (its reply links the files / editor), not long ago."""
+    if not state.get("content") or time.time() - float(state.get("updated") or 0) > 3 * 3600:
+        return False
+    return any(re.search(r"/media/resumes/|/resume/editor|\br[eé]sum[eé]\b", r or "", re.I) for r in (recent or [])[-2:])
+
+
+def detect_resume_request(prompt: str, recent: list[str] | None = None) -> dict | None:
+    """Fast regex router → create_resume kwargs (or {"_list": True}), else None.
+    recent = the last assistant replies: a pronoun follow-up ("make it single page") right after a resume is an edit."""
     try:
         text = _strip_tags(prompt)
         lower = text.lower()
@@ -4804,6 +4870,8 @@ def detect_resume_request(prompt: str) -> dict | None:
         create = bool(labelled or _CREATE_RX.search(lower) or _LIKE_RX.search(lower) or _TOOL_RX.search(lower)
                       or ((template or color) and re.search(_NOUN, lower)))
         edit = bool(_EDIT_RX.search(lower)) and bool(state.get("content"))
+        if not edit and not other_m and len(text) < 400 and _FOLLOW_RX.search(lower) and _recent_resume(recent, state):
+            edit = True
         if create and not (edit and not ref and not _has_details(text) and re.search(r"\b(my|the|this)\s+" + _NOUN, lower)
                            and not re.search(r"\b(new|another|fresh)\b", lower)):
             args["details"] = text
@@ -4835,6 +4903,7 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         # "single page resume" / "fit it in 2 pages" -> strict page target (looked for in the request part only)
         pages = pages or _parse_pages((details or instruction or "")[:300])
         tags_img, tags_photo = _split_images(details or instruction or "")
+        logo_path = _logo_image(details or instruction or "")
         image_path = image_path or tags_img
         photo_path = photo_path or tags_photo
         details = _strip_tags(details or "")
@@ -4850,6 +4919,20 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         design, design_note, replica_err = None, "", ""
         tpl_req = (template or "").lower() in PRESETS
         if image_path and not tpl_req:
+            yield "🎓 Checking the format of your reference…\n\n"
+            camp = _campus.detect(image_path, os.path.join(OUT_DIR, "logos"))
+            if camp:
+                design = _sanitize_design(json.loads(json.dumps(PRESETS["campus"])) | {"source": "campus"})
+                design["campus"] = {**design["campus"], "order": camp["order"], "titles": camp["titles"],
+                                    "band": camp["band"], "edu_head": camp["edu_head"], "name_upper": camp["name_upper"]}
+                if camp["order"]:
+                    design["main_sections"] = list(dict.fromkeys(camp["order"] + ["experience", "projects"]))
+                if camp.get("logo"):
+                    design["logo"] = camp["logo"]
+                design_note = ("Recognised a campus / placement-cell format: same header with your institute logo, "
+                               "education table, section bands and order. Replace the logo from the editor (🏛 Logo) "
+                               "or send one labelled *logo*.")
+        if image_path and not tpl_req and design is None:
             from app.services.resume_replica.integrate import (analyse_with_progress, replica_design, replica_enabled,
                                                                replica_note)
             if replica_enabled():
@@ -4882,6 +4965,9 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
             design_note += (" (Colour requests don't apply to an exact copy — it keeps the reference's colours. "
                             "Say *use the modern template* for a format I can recolour.)")
 
+        if logo_path:                                   # "use this logo" (an attachment labelled logo)
+            design["logo"] = logo_path
+            design_note = (design_note + " " if design_note else "") + "Logo updated."
         # 2) Content
         content = None
         clean_details = re.sub(r"(?i)^.*?\b(?:create|make|build|generate|design|prepare|write|recreate)\b[^.\n:]{0,80}?" + _NOUN +
@@ -4900,7 +4986,8 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
             yield "✍️ Structuring your details into resume sections…\n\n"
             content = _build_content(clean_details or details, design)
             design = _apply_layout_hint(design, content)        # "LEFT COLUMN: Contact, Skills" beats the picture
-        elif state.get("content") and (image_path or template or color or re.search(r"\b(again|same|my)\b", details.lower())):
+        elif state.get("content") and (image_path or template or color or logo_path
+                                       or re.search(r"\b(again|same|my)\b", details.lower())):
             content = state["content"]
         if not content or not (content.get("name") or content.get("experience") or content.get("profile")):
             _stash_design(state, design)

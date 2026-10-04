@@ -34,7 +34,7 @@
 ## Relationships
 
 - [ppt_tool](ppt_tool.md) (26 shared connections)
-- [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (3 shared connections)
+- [ppt_router + resume_router](ppt_router_+_resume_router.md) (3 shared connections)
 - [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
 - [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)

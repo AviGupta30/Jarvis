@@ -1,51 +1,61 @@
 # resume_builder
 
-> 23 nodes · cohesion 0.13
+> 31 nodes · cohesion 0.11
 
 ## Key Concepts
 
-- **_build_content()** (12 connections) — `app/services/resume_builder.py`
-- **_drop_invented()** (9 connections) — `app/services/resume_builder.py`
-- **_fit_render()** (9 connections) — `app/services/resume_builder.py`
-- **Gotchas** (9 connections) — `docs/features/resume-creator.md`
-- **Fixed on 2026-10-02 (resume creator)** (9 connections) — `docs/KNOWN_ISSUES.md`
-- **_condense_content()** (8 connections) — `app/services/resume_builder.py`
-- **_restore_dropped()** (7 connections) — `app/services/resume_builder.py`
-- **_finalize_content()** (6 connections) — `app/services/resume_builder.py`
-- **_guess_name()** (5 connections) — `app/services/resume_builder.py`
-- **_similar()** (5 connections) — `app/services/resume_builder.py`
-- **_guess_title()** (4 connections) — `app/services/resume_builder.py`
-- **_nums()** (4 connections) — `app/services/resume_builder.py`
-- **_user_headings()** (4 connections) — `app/services/resume_builder.py`
-- **ok()** (3 connections) — `app/services/resume_builder.py`
-- **_content_brief()** (2 connections) — `app/services/resume_builder.py`
-- **clean_text()** (2 connections) — `app/services/resume_builder.py`
-- **_words()** (2 connections) — `app/services/resume_builder.py`
-- **The LLM likes to 'improve' bullets with made-up metrics. Drop any…** (1 connections) — `app/services/resume_builder.py`
-- **Smaller fallback models sometimes drop the name; recover it from the user's own…** (1 connections) — `app/services/resume_builder.py`
-- **Deterministic clean-up after the LLM: invented job entries, repeated facts,…** (1 connections) — `app/services/resume_builder.py`
-- **Fallback models sometimes silently drop a project's/job's points. Re-add any…** (1 connections) — `app/services/resume_builder.py`
-- **Render; with a page target, shrink → AI-condense → trim until it fits. Returns…** (1 connections) — `app/services/resume_builder.py`
-- **where()** (1 connections) — `app/services/resume_builder.py`
+- **editor_save()** (29 connections) — `app/services/resume_builder.py`
+- **Visual editor (/resume/editor)** (16 connections) — `docs/features/resume-creator.md`
+- **editor_page()** (15 connections) — `app/services/resume_builder.py`
+- **_normalise_content()** (10 connections) — `app/services/resume_builder.py`
+- **_ref_copy_design()** (9 connections) — `app/services/resume_builder.py`
+- **_tpl_key()** (7 connections) — `app/services/resume_builder.py`
+- **5. Integration in Jarvis** (7 connections) — `docs/plans/resume-exact-replica.md`
+- **_custom_sections()** (6 connections) — `app/services/resume_builder.py`
+- **_raster_palette()** (6 connections) — `app/services/resume_builder.py`
+- **_stash_design()** (6 connections) — `app/services/resume_builder.py`
+- **_state_rev()** (6 connections) — `app/services/resume_builder.py`
+- **asset_files()** (6 connections) — `app/services/resume_replica/exact_render.py`
+- **load_spec()** (6 connections) — `app/services/resume_replica/exact_render.py`
+- **_editor_toolbar()** (5 connections) — `app/services/resume_builder.py`
+- **_undo_push()** (5 connections) — `app/services/resume_builder.py`
+- **_apply_op()** (4 connections) — `app/services/resume_builder.py`
+- **undo_id()** (3 connections) — `app/services/resume_builder.py`
+- **_str_list()** (3 connections) — `app/services/resume_builder.py`
+- **_undo_snap()** (3 connections) — `app/services/resume_builder.py`
+- **walk()** (3 connections) — `app/services/resume_replica/exact_render.py`
+- **_undo_get()** (2 connections) — `app/services/resume_builder.py`
+- **User-made sections from the editor: {id: custom_N, title, style, items}. Kept…** (1 connections) — `app/services/resume_builder.py`
+- **Which template a design is: a preset name, 'copy:<sha>' for an exact copy,…** (1 connections) — `app/services/resume_builder.py`
+- **A template switch keeps the outgoing design (its own shapes, text boxes,…** (1 connections) — `app/services/resume_builder.py`
+- **The exact copy of the last reference image, rebuilt from its cached analysis…** (1 connections) — `app/services/resume_builder.py`
+- *... and 6 more nodes in this community*
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (18 shared connections)
-- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (13 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (8 shared connections)
-- [analyzer](analyzer.md) (2 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (35 shared connections)
+- [resume_builder + integrate](resume_builder_+_integrate.md) (12 shared connections)
+- [ppt_router + resume_router](ppt_router_+_resume_router.md) (4 shared connections)
+- [resume_builder + resume-creator](resume_builder_+_resume-creator.md) (4 shared connections)
+- [exact_render](exact_render.md) (4 shared connections)
+- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (3 shared connections)
+- [analyzer](analyzer.md) (1 shared connections)
+- [youtube_player](youtube_player.md) (1 shared connections)
+- [pipeline](pipeline.md) (1 shared connections)
+- [lru](lru.md) (1 shared connections)
+- [compiler](compiler.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/resume_builder.py`
-- `docs/KNOWN_ISSUES.md`
+- `app/services/resume_replica/exact_render.py`
 - `docs/features/resume-creator.md`
+- `docs/plans/resume-exact-replica.md`
 
 ## Audit Trail
 
-- EXTRACTED: 47 (64%)
-- INFERRED: 27 (36%)
+- EXTRACTED: 91 (78%)
+- INFERRED: 26 (22%)
 - AMBIGUOUS: 0 (0%)
 
 ---

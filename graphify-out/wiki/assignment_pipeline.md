@@ -25,13 +25,10 @@
 
 ## Relationships
 
-- [assignment_tool + assignment_pipeline](assignment_tool_+_assignment_pipeline.md) (4 shared connections)
-- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
-- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
-- [server](server.md) (1 shared connections)
-- [assignment_assembler](assignment_assembler.md) (1 shared connections)
+- [assignment_tool + assignment](assignment_tool_+_assignment.md) (4 shared connections)
+- [server + persistence](server_+_persistence.md) (3 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
 
 ## Source Files
 

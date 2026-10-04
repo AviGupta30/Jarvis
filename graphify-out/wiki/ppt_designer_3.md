@@ -1,18 +1,22 @@
 # ppt_designer
 
-> 3 nodes · cohesion 0.67
+> 8 nodes · cohesion 0.29
 
 ## Key Concepts
 
-- **count_lines()** (11 connections) — `app/services/ppt_designer.py`
-- **._tl_block()** (7 connections) — `app/services/ppt_designer.py`
-- **runs: str or list of (text, bold). Greedy word wrap like PowerPoint.** (1 connections) — `app/services/ppt_designer.py`
+- **_rgb()** (11 connections) — `app/services/ppt_designer.py`
+- **.render()** (7 connections) — `app/services/ppt_designer.py`
+- **_deep_plain()** (7 connections) — `app/services/ppt_designer.py`
+- **._bg()** (5 connections) — `app/services/ppt_designer.py`
+- **_as_plain_content()** (4 connections) — `app/services/ppt_designer.py`
+- **._notes()** (2 connections) — `app/services/ppt_designer.py`
+- **RGBColor** (1 connections)
+- **Last-resort fallback: every word of a composite slide as plain bullets (never…** (1 connections) — `app/services/ppt_designer.py`
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (7 shared connections)
-- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (6 shared connections)
-- [ppt_template](ppt_template.md) (2 shared connections)
+- [ppt_designer](ppt_designer.md) (15 shared connections)
+- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (5 shared connections)
 
 ## Source Files
 
@@ -20,8 +24,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 17 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 28 (97%)
+- INFERRED: 1 (3%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -1,11 +1,10 @@
 # acoustic_tripwire
 
-> 44 nodes · cohesion 0.05
+> 38 nodes · cohesion 0.07
 
 ## Key Concepts
 
 - **AcousticWakeEngine** (16 connections) — `app/services/acoustic_tripwire.py`
-- **Architecture** (8 connections) — `docs/ARCHITECTURE.md`
 - **._run()** (7 connections) — `app/services/acoustic_tripwire.py`
 - **._is_clap()** (6 connections) — `app/services/acoustic_tripwire.py`
 - **._rms()** (6 connections) — `app/services/acoustic_tripwire.py`
@@ -25,19 +24,18 @@
 - **.set_volume_threshold()** (2 connections) — `app/services/acoustic_tripwire.py`
 - **.start()** (2 connections) — `app/services/acoustic_tripwire.py`
 - **.stop()** (2 connections) — `app/services/acoustic_tripwire.py`
-- **HTTP endpoints** (2 connections) — `docs/ARCHITECTURE.md`
 - **Event** (2 connections)
 - **Background thread that watches the microphone for a double-clap pattern. Usage…** (1 connections) — `app/services/acoustic_tripwire.py`
 - **Start the background listening thread.** (1 connections) — `app/services/acoustic_tripwire.py`
-- *... and 19 more nodes in this community*
+- **Signal the background thread to exit and wait for it.** (1 connections) — `app/services/acoustic_tripwire.py`
+- **Resume detection after a disable().** (1 connections) — `app/services/acoustic_tripwire.py`
+- *... and 13 more nodes in this community*
 
 ## Relationships
 
-- [server](server.md) (5 shared connections)
-- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [frontend](frontend.md) (1 shared connections)
-- [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (1 shared connections)
+- [server + persistence](server_+_persistence.md) (5 shared connections)
+- [main](main.md) (1 shared connections)
+- [llm-personality + ARCHITECTURE](llm-personality_+_ARCHITECTURE.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 
 ## Source Files
@@ -47,8 +45,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 57 (92%)
-- INFERRED: 5 (8%)
+- EXTRACTED: 50 (93%)
+- INFERRED: 4 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -5,7 +5,7 @@
 ## Key Concepts
 
 - **ingest.py** (12 connections) — `app/services/resume_replica/ingest.py`
-- **load_reference()** (7 connections) — `app/services/resume_replica/ingest.py`
+- **load_reference()** (9 connections) — `app/services/resume_replica/ingest.py`
 - **_trim()** (6 connections) — `app/services/resume_replica/ingest.py`
 - **ndarray** (4 connections)
 - **_remove_viewer_overlays()** (4 connections) — `app/services/resume_replica/ingest.py`
@@ -21,10 +21,12 @@
 ## Relationships
 
 - [pipeline](pipeline.md) (3 shared connections)
-- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
 - [fontmatch + fonts](fontmatch_+_fonts.md) (1 shared connections)
 - [measure](measure.md) (1 shared connections)
 - [plate](plate.md) (1 shared connections)
+- [resume_builder + integrate](resume_builder_+_integrate.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 
@@ -32,7 +34,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 27 (100%)
+- EXTRACTED: 29 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 
