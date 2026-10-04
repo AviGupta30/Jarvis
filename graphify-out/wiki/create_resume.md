@@ -1,6 +1,6 @@
 # create_resume()
 
-> God node · 32 connections · `app/services/resume_builder.py`
+> God node · 31 connections · `app/services/resume_builder.py`
 
 **Community:** [resume_builder + integrate](resume_builder_+_integrate.md)
 
@@ -8,18 +8,17 @@
 
 ### calls
 - [chat_endpoint()](chat_endpoint.md) `EXTRACTED`
+- _build_content() `EXTRACTED`
 - _sanitize_design() `EXTRACTED`
 - _resolve_design() `EXTRACTED`
-- _build_content() `EXTRACTED`
 - _load_state() `EXTRACTED`
 - _apply_color() `EXTRACTED`
-- _fit_render() `EXTRACTED`
+- _edit_content() `EXTRACTED`
 - replica_design() `EXTRACTED`
 - _split_images() `EXTRACTED`
 - detect() `EXTRACTED`
 - analyse_with_progress() `EXTRACTED`
 - _tpl_key() `EXTRACTED`
-- _edit_content() `EXTRACTED`
 - _logo_image() `EXTRACTED`
 - _stash_design() `EXTRACTED`
 - _crop_photo() `EXTRACTED`
@@ -27,7 +26,8 @@
 - resume_tool() `EXTRACTED`
 - replica_note() `EXTRACTED`
 - _has_details() `EXTRACTED`
-- *…and 4 more `calls` connection(s) not listed (lowest-degree first to go)*
+- _apply_layout_hint() `EXTRACTED`
+- *…and 3 more `calls` connection(s) not listed (lowest-degree first to go)*
 
 ### contains
 - resume_builder.py `EXTRACTED`

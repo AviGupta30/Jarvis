@@ -1,0 +1,837 @@
+{
+ "v": 8,
+ "sha1": "acedb1c4e9c46675bc30952ab689c9a44593f7dd",
+ "source": "Screenshot_2026-10-04_173144_1791115323.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_173144_1791115323.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 293.0,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\acedb1c4e9c46675\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\acedb1c4e9c46675\\plate2.png",
+  "src_dpi": 89.0,
+  "partial": false,
+  "letter": false,
+  "ornaments": []
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 16.14,
+   "family": "Catamaran",
+   "weight": 700,
+   "size": 21.529,
+   "ls": 0.0042,
+   "color": "#231f20",
+   "upper": true,
+   "asc": 1.1,
+   "desc": 0.54,
+   "ink_asc": 0.68,
+   "n": 1,
+   "pitch": 28.418
+  },
+  "title": {
+   "ref_contrast": 9.38,
+   "family": "Catamaran",
+   "weight": 600,
+   "size": 4.938,
+   "ls": -0.0169,
+   "color": "#284868",
+   "upper": true,
+   "asc": 1.1,
+   "desc": 0.54,
+   "ink_asc": 0.7,
+   "n": 1,
+   "pitch": 6.518
+  },
+  "head0": {
+   "ref_contrast": 10.76,
+   "family": "Merriweather Sans",
+   "weight": 500,
+   "size": 5.68,
+   "ls": 0.0049,
+   "color": "#f8f9f8",
+   "upper": true,
+   "asc": 0.98,
+   "desc": 0.27,
+   "ink_asc": 0.76,
+   "n": 3,
+   "pitch": 7.498
+  },
+  "head1": {
+   "ref_contrast": 10.77,
+   "family": "Catamaran",
+   "weight": 700,
+   "size": 6.172,
+   "ls": -0.0041,
+   "color": "#f8f9f9",
+   "upper": true,
+   "asc": 1.1,
+   "desc": 0.54,
+   "ink_asc": 0.7,
+   "n": 3,
+   "pitch": 8.147
+  },
+  "contact0": {
+   "ref_contrast": 5.82,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 2.96,
+   "ls": 0.0,
+   "color": "#b2bac5",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.825,
+   "n": 6,
+   "pitch": 4.444
+  },
+  "body1": {
+   "ref_contrast": 6.29,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 3.14,
+   "ls": 0.0,
+   "color": "#615f5e",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 18,
+   "pitch": 4.952
+  },
+  "item_title1": {
+   "ref_contrast": 10.47,
+   "family": "BIZ UDPGothic",
+   "weight": 400,
+   "size": 3.159,
+   "ls": 0.0,
+   "color": "#413e3f",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 3,
+   "pitch": 4.17
+  },
+  "meta_left1": {
+   "ref_contrast": 9.73,
+   "family": "Catamaran",
+   "weight": 700,
+   "size": 3.703,
+   "ls": 0.0,
+   "color": "#454343",
+   "upper": false,
+   "asc": 1.1,
+   "desc": 0.54,
+   "ink_asc": 0.65,
+   "n": 5,
+   "pitch": 4.888
+  },
+  "list0": {
+   "ref_contrast": 5.73,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 2.755,
+   "ls": 0.0,
+   "color": "#b0b9c5",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 9,
+   "pitch": 3.637
+  },
+  "subhead0": {
+   "ref_contrast": 10.69,
+   "family": "Merriweather Sans",
+   "weight": 500,
+   "size": 5.771,
+   "ls": 0.0081,
+   "color": "#f8f8f7",
+   "upper": true,
+   "asc": 0.98,
+   "desc": 0.27,
+   "ink_asc": 0.76,
+   "n": 1,
+   "pitch": 7.618
+  }
+ },
+ "created": 1791117669.411405,
+ "fonts": {
+  "Catamaran": [
+   600,
+   700
+  ],
+  "Merriweather Sans": [
+   500
+  ],
+  "BIZ UDPGothic": [
+   400,
+   700
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 81.51,
+    "y": 28.57,
+    "x1": 158.33,
+    "y1": 43.42,
+    "key": "name",
+    "text": "MARTIN",
+    "fs": 21.529,
+    "room": null,
+    "bg": "#fffef9",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 81.77,
+    "y": 49.77,
+    "x1": 123.92,
+    "y1": 53.33,
+    "key": "title",
+    "text": "GRAPHIC DESIGNER",
+    "fs": 4.938,
+    "room": null,
+    "bg": "#fffef9",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   0.0,
+   9.01,
+   74.66,
+   70.47
+  ],
+  "radius": 0.0,
+  "circle": false,
+  "overlays": []
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 7.62,
+   "x1": 62.34,
+   "top": 74.02,
+   "bottom": 249.99,
+   "text_x": 8.51,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      23.11,
+      74.4,
+      49.9,
+      78.97
+     ],
+     "top": 74.4,
+     "head_bottom": 78.97,
+     "tokens": {
+      "head_first": 8.76,
+      "wrap": 11.81
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.81,
+       "x1": 62.47,
+       "y": 87.73,
+       "lead": false,
+       "text": "tanymay@email.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.93,
+       "x1": 56.5,
+       "y": 101.32,
+       "lead": false,
+       "text": "0123456789000"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.93,
+       "x1": 56.5,
+       "y": 107.54,
+       "lead": false,
+       "text": "012 345 678 9999"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 28.31,
+       "x1": 69.45,
+       "y": 119.35,
+       "lead": false,
+       "text": "162 Glory Road, Nashville"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 28.57,
+       "x1": 46.6,
+       "y": 123.79,
+       "lead": false,
+       "text": "Tennessee"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.17,
+       "x1": 60.82,
+       "y": 138.14,
+       "lead": false,
+       "text": "martdesignfolio.com"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      27.17,
+      155.28,
+      45.96,
+      159.59
+     ],
+     "top": 155.28,
+     "head_bottom": 159.59,
+     "tokens": {
+      "head_first": 3.81,
+      "wrap": 8.89,
+      "sec_gap": 17.14,
+      "prev_key": "contact0"
+     },
+     "subhead": {
+      "text": "SOFTWARES",
+      "key": "subhead0",
+      "x": 19.43,
+      "after": 7.37
+     },
+     "graphics": {
+      "bars": {
+       "place": "right",
+       "h_mm": 2.79,
+       "columns": 1,
+       "label_dx_mm": 28.82,
+       "col_x_mm": [
+        8.51
+       ],
+       "w_mm": 35.04,
+       "x0_mm": 37.33,
+       "fill": "#fffffe",
+       "track": "#1a2235",
+       "gap_mm": 1.0,
+       "radius_mm": 1.4,
+       "levels": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 26.92,
+       "y": 163.4,
+       "lead": false,
+       "text": "Web Design"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 32.0,
+       "y": 172.29,
+       "lead": false,
+       "text": "Graphic Design"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 22.98,
+       "y": 180.93,
+       "lead": false,
+       "text": "Digital Art"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 20.95,
+       "y": 190.32,
+       "lead": false,
+       "text": "Drawing"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 24.0,
+       "y": 198.95,
+       "lead": false,
+       "text": "Animation"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead0",
+       "x": 19.43,
+       "x1": 53.83,
+       "y": 213.17,
+       "lead": false,
+       "text": "SOFTWARES"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 24.89,
+       "y": 220.54,
+       "lead": false,
+       "text": "Photoshop"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 22.6,
+       "y": 229.68,
+       "lead": false,
+       "text": "illustrator"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 21.2,
+       "y": 238.57,
+       "lead": false,
+       "text": "Indesign"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 8.51,
+       "x1": 16.38,
+       "y": 247.96,
+       "lead": false,
+       "text": "Flash"
+      }
+     ]
+    },
+    {
+     "key": "interests",
+     "title": "HOBBIES",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      24.25,
+      261.67,
+      48.88,
+      265.99
+     ],
+     "top": 261.67,
+     "head_bottom": 265.99,
+     "tokens": {
+      "sec_gap": 13.71,
+      "prev_key": "list0"
+     },
+     "graphics": {},
+     "roles": []
+    }
+   ]
+  },
+  {
+   "x0": 81.13,
+   "x1": 196.54,
+   "top": 77.45,
+   "bottom": 275.39,
+   "text_x": 107.41,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "PERSONAL INFORMATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      85.45,
+      77.58,
+      157.82,
+      82.02
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\acedb1c4e9c46675\\crops\\head_profile_1_610.png",
+      "box": [
+       81.51,
+       74.91,
+       161.75,
+       84.81
+      ],
+      "text": [
+       3.94,
+       2.67,
+       76.31,
+       7.11
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 74.91,
+     "head_bottom": 84.81,
+     "tokens": {
+      "head_first": 8.13,
+      "wrap": 5.84
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.51,
+       "x1": 186.0,
+       "y": 92.94,
+       "lead": false,
+       "text": "Working gives me a lot of skills and experience that I belie"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.89,
+       "x1": 187.15,
+       "y": 98.78,
+       "lead": false,
+       "text": "make me best suited for the job position that is being offer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.51,
+       "x1": 143.22,
+       "y": 104.62,
+       "lead": false,
+       "text": "with a position of Graphic Designer."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.89,
+       "x1": 196.29,
+       "y": 111.86,
+       "lead": false,
+       "text": "Highly creative and multitalented Graphic Designer with exte"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.64,
+       "x1": 180.04,
+       "y": 117.7,
+       "lead": false,
+       "text": "experience in print design. Exceptional collaborative and"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.89,
+       "x1": 114.52,
+       "y": 123.54,
+       "lead": false,
+       "text": "interpersonal skills."
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      85.32,
+      136.74,
+      118.33,
+      141.31
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\acedb1c4e9c46675\\crops\\head_education_1_1078.png",
+      "box": [
+       81.51,
+       134.07,
+       122.14,
+       144.23
+      ],
+      "text": [
+       3.81,
+       2.67,
+       36.82,
+       7.24
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 134.07,
+     "head_bottom": 144.23,
+     "tokens": {
+      "head_first": 7.62,
+      "head_body": 7.045,
+      "wrap": 8.059999999999999,
+      "item_gap": 9.4,
+      "sec_gap": 10.53,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 107.54,
+       "x1": 164.42,
+       "y": 151.85,
+       "lead": false,
+       "text": "Master Of Arts in Graphic Design"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 81.64,
+       "x1": 100.94,
+       "y": 152.36,
+       "lead": false,
+       "text": "2006-2008"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.29,
+       "x1": 153.25,
+       "y": 158.83,
+       "lead": false,
+       "text": "Suffolk University, Boston"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.67,
+       "x1": 135.85,
+       "y": 168.36,
+       "lead": false,
+       "text": "Bachelor of Arts"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 81.51,
+       "x1": 100.81,
+       "y": 168.48,
+       "lead": false,
+       "text": "2002-2006"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.54,
+       "x1": 153.5,
+       "y": 174.96,
+       "lead": false,
+       "text": "Suffolk University, Boston"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 107.67,
+       "x1": 128.49,
+       "y": 184.35,
+       "lead": false,
+       "text": "High School"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 81.64,
+       "x1": 99.54,
+       "y": 184.61,
+       "lead": false,
+       "text": "1998-2002"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.41,
+       "x1": 156.93,
+       "y": 191.46,
+       "lead": false,
+       "text": "Tennis High School, Boston"
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "WORK EXPERIENCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      84.43,
+      204.41,
+      139.66,
+      208.73
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\acedb1c4e9c46675\\crops\\head_experience_1_1609.png",
+      "box": [
+       81.51,
+       201.87,
+       142.71,
+       211.52
+      ],
+      "text": [
+       2.92,
+       2.54,
+       58.15,
+       6.86
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 201.87,
+     "head_bottom": 211.52,
+     "tokens": {
+      "head_first": 8.64,
+      "head_body": 6.98,
+      "wrap": 6.86,
+      "sec_gap": 10.41,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 107.41,
+       "x1": 149.06,
+       "y": 220.16,
+       "lead": false,
+       "text": "Digital Fx Design Studio"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 81.64,
+       "x1": 104.49,
+       "y": 220.28,
+       "lead": false,
+       "text": "2014-Present"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.41,
+       "x1": 139.28,
+       "y": 227.14,
+       "lead": false,
+       "text": "Graphic Designer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.54,
+       "x1": 188.16,
+       "y": 234.38,
+       "lead": false,
+       "text": "Maintained project management schedules,"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.41,
+       "x1": 152.99,
+       "y": 239.2,
+       "lead": false,
+       "text": "databases, and forecast."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.41,
+       "x1": 140.3,
+       "y": 248.72,
+       "lead": false,
+       "text": "Spin Design Studio"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 81.64,
+       "x1": 99.92,
+       "y": 248.98,
+       "lead": false,
+       "text": "2008-2014"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.54,
+       "x1": 139.41,
+       "y": 255.58,
+       "lead": false,
+       "text": "Graphic Designer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.54,
+       "x1": 189.56,
+       "y": 262.56,
+       "lead": false,
+       "text": "Utilize large format printing for billboards and"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.29,
+       "x1": 174.96,
+       "y": 267.52,
+       "lead": false,
+       "text": "trade shows and digital photography"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 107.41,
+       "x1": 156.55,
+       "y": 272.97,
+       "lead": false,
+       "text": "to enhance proposed work"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 68.1
+}

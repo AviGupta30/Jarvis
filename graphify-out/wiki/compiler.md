@@ -29,10 +29,9 @@
 ## Relationships
 
 - [compiler](compiler.md) (37 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
-- [orchestrator + renderer](orchestrator_+_renderer.md) (2 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
 - [exact_render](exact_render.md) (1 shared connections)
 

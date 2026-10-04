@@ -1,21 +1,17 @@
 # schema
 
-> 8 nodes · cohesion 0.25
+> 4 nodes · cohesion 0.50
 
 ## Key Concepts
 
-- **make_frame_node()** (4 connections) — `app/services/resume_replica/schema.py`
-- **make_no_fill()** (4 connections) — `app/services/resume_replica/schema.py`
-- **make_padding()** (3 connections) — `app/services/resume_replica/schema.py`
-- **make_path_node()** (3 connections) — `app/services/resume_replica/schema.py`
-- **Returns {"type": "none"}** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete FRAME node.** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete PATH node.** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns {"top_mm": ..., "right_mm": ..., "bottom_mm": ..., "left_mm": ...}** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_image_node()** (3 connections) — `app/services/resume_replica/schema.py`
+- **make_size()** (3 connections) — `app/services/resume_replica/schema.py`
+- **Returns a complete IMAGE node.** (1 connections) — `app/services/resume_replica/schema.py`
+- **Returns size dict, only including non-None values.** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 
-- [schema](schema.md) (4 shared connections)
+- [schema](schema.md) (2 shared connections)
 
 ## Source Files
 
@@ -23,7 +19,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 11 (100%)
+- EXTRACTED: 5 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

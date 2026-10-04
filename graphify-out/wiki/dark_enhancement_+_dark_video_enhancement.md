@@ -33,12 +33,10 @@
 
 ## Relationships
 
-- [fontmatch + fonts](fontmatch_+_fonts.md) (2 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
-- [gmail_tool](gmail_tool.md) (1 shared connections)
-- [dump_wa_ui + find_call_btn](dump_wa_ui_+_find_call_btn.md) (1 shared connections)
-- [llm-personality + ARCHITECTURE](llm-personality_+_ARCHITECTURE.md) (1 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (5 shared connections)
+- [refresh_docs + whatsapp](refresh_docs_+_whatsapp.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 

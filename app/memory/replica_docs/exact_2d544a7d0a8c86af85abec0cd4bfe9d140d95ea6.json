@@ -1,5 +1,5 @@
 {
- "v": 5,
+ "v": 6,
  "sha1": "2d544a7d0a8c86af85abec0cd4bfe9d140d95ea6",
  "source": "Screenshot_2026-10-04_122644_1791098945.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_122644_1791098945.png",
@@ -242,7 +242,7 @@
    "pitch": 4.633
   }
  },
- "created": 1791099128.3783314,
+ "created": 1791111468.365101,
  "fonts": {
   "Poppins": [
    300,
@@ -282,10 +282,10 @@
     "key": "name",
     "text": "name",
     "fs": 13.791,
-    "room": 81.0,
-    "bg": "#efe9e6",
-    "room_kind": "rule",
-    "room_hard": null
+    "room": null,
+    "bg": "#efe8e6",
+    "room_kind": null,
+    "room_hard": 86.84
    }
   ]
  },
@@ -300,10 +300,10 @@
     "key": "title",
     "text": "GRAPHIC DESIGNER",
     "fs": 5.771,
-    "room": 62.21,
+    "room": null,
     "bg": "#efe9e6",
-    "room_kind": "rule",
-    "room_hard": null
+    "room_kind": null,
+    "room_hard": 86.84
    }
   ]
  },
@@ -408,18 +408,9 @@
      "tokens": {
       "head_first": 6.48,
       "head_body": 5.21,
-      "wrap": 7.62,
-      "new_item": 5.015000000000001,
+      "wrap": 5.08,
       "sec_gap": 35.3,
       "prev_key": "body0"
-     },
-     "lead": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_experience_0_42.png",
-      "w": 0.25,
-      "h": 0.25,
-      "dx": 0.64,
-      "dy": 3.05,
-      "all_same": false
      },
      "graphics": {},
      "roles": [
@@ -519,7 +510,7 @@
        "x": 38.22,
        "x1": 104.11,
        "y": 221.68,
-       "lead": true,
+       "lead": false,
        "text": "dignor aignat pajen:t, from concept"
       },
       {
@@ -528,7 +519,7 @@
        "x": 38.22,
        "x1": 65.01,
        "y": 226.51,
-       "lead": true,
+       "lead": false,
        "text": "of complection."
       },
       {
@@ -537,7 +528,7 @@
        "x": 38.34,
        "x1": 70.21,
        "y": 236.41,
-       "lead": true,
+       "lead": false,
        "text": "Workplace name"
       },
       {
@@ -555,7 +546,7 @@
        "x": 38.22,
        "x1": 68.69,
        "y": 241.61,
-       "lead": true,
+       "lead": false,
        "text": "Graphic Designer"
       },
       {
@@ -573,7 +564,7 @@
        "x": 38.34,
        "x1": 104.11,
        "y": 254.18,
-       "lead": true,
+       "lead": false,
        "text": "visuals palisency instruclanis vatch"
       },
       {
@@ -582,14 +573,12 @@
        "x": 38.34,
        "x1": 92.81,
        "y": 259.14,
-       "lead": true,
+       "lead": false,
        "text": "visuals and compsiting Gycais."
       }
      ]
     }
-   ],
-   "bullet_x": 37.2,
-   "bullet_text_x": 38.28
+   ]
   },
   {
    "x0": 130.9,
@@ -641,19 +630,7 @@
        "dy": -0.76
       }
      ],
-     "graphics": {
-      "chips": {
-       "h_mm": 4.32,
-       "pad_x_mm": 0.63,
-       "radius_mm": 0.0,
-       "border": "#122c29",
-       "fill": "#143230",
-       "border_w_mm": 3.94,
-       "gap_x_mm": 2.0,
-       "gap_y_mm": 6.98,
-       "text_color": "#d2d8d6"
-      }
-     },
+     "graphics": {},
      "roles": [
       {
        "role": "contact",
@@ -794,38 +771,21 @@
       165.94,
       216.35
      ],
-     "deco": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\head_competencies_1_1667.png",
-      "box": [
-       125.44,
-       203.52,
-       192.99,
-       223.33
-      ],
-      "text": [
-       6.09,
-       8.13,
-       40.5,
-       12.82
-      ],
-      "kind": "full",
-      "on_box": true
-     },
-     "top": 203.52,
-     "head_bottom": 223.33,
+     "top": 211.65,
+     "head_bottom": 216.35,
      "tokens": {
-      "head_first": 6.73,
+      "head_first": 13.71,
       "wrap": 0.63,
       "new_item": 4.7,
-      "sec_gap": 3.42,
+      "sec_gap": 11.55,
       "prev_key": "meta1"
      },
      "lead": {
       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_competencies_1_38.png",
       "w": 7.62,
-      "h": 8.89,
+      "h": 11.43,
       "dx": 14.73,
-      "dy": -2.92,
+      "dy": -4.19,
       "all_same": true
      },
      "graphics": {},
@@ -871,5 +831,5 @@
    ]
   }
  ],
- "analysis_s": 180.8
+ "analysis_s": 83.9
 }

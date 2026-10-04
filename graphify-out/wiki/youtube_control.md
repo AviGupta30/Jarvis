@@ -35,16 +35,12 @@
 
 - [youtube_player](youtube_player.md) (33 shared connections)
 - [chat + youtube_control](chat_+_youtube_control.md) (13 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (6 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (3 shared connections)
+- [tools](tools.md) (8 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (6 shared connections)
 - [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [browser_mail](browser_mail.md) (1 shared connections)
+- [os-control + youtube_control](os-control_+_youtube_control.md) (2 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [gmail_tool](gmail_tool.md) (1 shared connections)
-- [file_ops](file_ops.md) (1 shared connections)
 
 ## Source Files
 

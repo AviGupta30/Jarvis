@@ -2,7 +2,7 @@
 
 > God node · 123 connections · `docs/TOOLS.md`
 
-**Community:** [tools + window_layout](tools_+_window_layout.md)
+**Community:** [tools](tools.md)
 
 ## Connections by Relation
 

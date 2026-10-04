@@ -20,7 +20,7 @@
 ## Relationships
 
 - [compiler](compiler.md) (28 shared connections)
-- [resume_builder](resume_builder.md) (1 shared connections)
+- [resume_builder + exact_render](resume_builder_+_exact_render.md) (1 shared connections)
 
 ## Source Files
 

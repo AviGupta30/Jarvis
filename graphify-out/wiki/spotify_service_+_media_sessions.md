@@ -1,6 +1,6 @@
 # spotify_service + media_sessions
 
-> 61 nodes · cohesion 0.06
+> 59 nodes · cohesion 0.06
 
 ## Key Concepts
 
@@ -23,40 +23,38 @@
 - **_mark_last()** (4 connections) — `app/services/spotify_service.py`
 - **_restore()** (4 connections) — `app/services/spotify_service.py`
 - **_title_match()** (4 connections) — `app/services/spotify_service.py`
-- **play_music()** (4 connections) — `app/services/tools.py`
 - **run()** (3 connections) — `app/services/media_sessions.py`
 - **_filter()** (3 connections) — `app/services/media_sessions.py`
 - **_sessions_async()** (3 connections) — `app/services/media_sessions.py`
 - **_content_play_buttons()** (3 connections) — `app/services/spotify_service.py`
 - **_is_playing()** (3 connections) — `app/services/spotify_service.py`
-- *... and 36 more nodes in this community*
+- **_now_playing_title()** (3 connections) — `app/services/spotify_service.py`
+- *... and 34 more nodes in this community*
 
 ## Relationships
 
 - [youtube_player](youtube_player.md) (7 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (5 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (4 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (3 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (6 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (3 shared connections)
+- [tools](tools.md) (3 shared connections)
 - [youtube_control](youtube_control.md) (2 shared connections)
-- [dump_wa_ui + find_call_btn](dump_wa_ui_+_find_call_btn.md) (2 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [os-control + youtube_control](os-control_+_youtube_control.md) (2 shared connections)
+- [rag_memory + tool_runner](rag_memory_+_tool_runner.md) (1 shared connections)
+- [window_layout](window_layout.md) (1 shared connections)
+- [refresh_docs + whatsapp](refresh_docs_+_whatsapp.md) (1 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [file_ops](file_ops.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/media_sessions.py`
 - `app/services/media_state.py`
 - `app/services/spotify_service.py`
-- `app/services/tools.py`
 
 ## Audit Trail
 
-- EXTRACTED: 123 (91%)
-- INFERRED: 12 (9%)
+- EXTRACTED: 122 (92%)
+- INFERRED: 10 (8%)
 - AMBIGUOUS: 0 (0%)
 
 ---

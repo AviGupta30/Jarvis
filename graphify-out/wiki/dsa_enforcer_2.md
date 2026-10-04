@@ -16,9 +16,9 @@
 ## Relationships
 
 - [dsa_enforcer](dsa_enforcer.md) (4 shared connections)
-- [server + persistence](server_+_persistence.md) (3 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
 - [client](client.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
 
 ## Source Files
 

@@ -1,5 +1,5 @@
 {
- "v": 4,
+ "v": 8,
  "sha1": "63a6c55f05547b7bade07218632672796020dac2",
  "source": "Screenshot_2026-10-03_120914_1791009559.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-03_120914_1791009559.png",
@@ -10,7 +10,8 @@
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\plate2.png",
   "src_dpi": 76.0,
   "partial": false,
-  "letter": false
+  "letter": false,
+  "ornaments": []
  },
  "styles": {
   "name": {
@@ -84,18 +85,18 @@
    "pitch": 4.434
   },
   "meta_right1": {
-   "ref_contrast": 9.86,
-   "family": "Inter Tight",
-   "weight": 500,
-   "size": 2.835,
+   "ref_contrast": 9.85,
+   "family": "Heebo",
+   "weight": 700,
+   "size": 2.854,
    "ls": 0.0,
    "color": "#424340",
    "upper": false,
-   "asc": 0.97,
-   "desc": 0.24,
-   "ink_asc": 0.74,
-   "n": 2,
-   "pitch": 3.742
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.75,
+   "n": 3,
+   "pitch": 3.767
   },
   "sub1": {
    "ref_contrast": 8.61,
@@ -210,21 +211,35 @@
    "pitch": 4.022
   },
   "body0": {
-   "ref_contrast": 8.92,
+   "ref_contrast": 10.2,
    "family": "Inter Tight",
    "weight": 400,
-   "size": 3.068,
+   "size": 3.121,
    "ls": 0.0,
-   "color": "#3c3d41",
+   "color": "#333438",
    "upper": false,
    "asc": 0.97,
    "desc": 0.24,
-   "ink_asc": 0.74,
-   "n": 3,
-   "pitch": 5.333
+   "ink_asc": 0.745,
+   "n": 2,
+   "pitch": 4.12
+  },
+  "body0c": {
+   "ref_contrast": 3.63,
+   "family": "Inter Tight",
+   "weight": 500,
+   "size": 2.803,
+   "ls": 0.0,
+   "color": "#76787e",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.75,
+   "n": 1,
+   "pitch": 3.7
   }
  },
- "created": 1791091511.9438007,
+ "created": 1791117520.410986,
  "fonts": {
   "Heebo": [
    700,
@@ -287,7 +302,8 @@
    36.44
   ],
   "radius": 2.17,
-  "circle": false
+  "circle": false,
+  "overlays": []
  },
  "hcontact": [],
  "columns": [
@@ -452,8 +468,8 @@
        ],
        "w_mm": 59.67,
        "x0_mm": 7.62,
-       "fill": "#002d60",
-       "track": "#dee4e5",
+       "fill": "#183865",
+       "track": "#dee4e4",
        "gap_mm": 1.65,
        "radius_mm": 1.27,
        "levels": [
@@ -598,12 +614,12 @@
       "prev_key": "list0"
      },
      "lead": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_certifications_0_57.png",
-      "w": 3.05,
-      "h": 3.3,
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_certifications_0_58.png",
+      "w": 2.54,
+      "h": 3.56,
       "dx": 5.59,
       "dy": -0.38,
-      "all_same": false
+      "all_same": true
      },
      "graphics": {},
      "roles": [
@@ -708,7 +724,7 @@
       "sub_meta": 5.08,
       "head_body": 9.65,
       "item_gap": 4.57,
-      "wrap": 5.33,
+      "new_item": 5.33,
       "sec_gap": 9.14,
       "prev_key": "list0"
      },
@@ -779,7 +795,7 @@
       },
       {
        "role": "body",
-       "key": "body0",
+       "key": "body0c",
        "x": 7.62,
        "x1": 19.81,
        "y": 281.86,
@@ -836,7 +852,7 @@
       "item_gap": 6.285
      },
      "lead": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_experience_1_31.png",
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_experience_1_32.png",
       "w": 1.27,
       "h": 1.52,
       "dx": 3.55,
@@ -1008,10 +1024,19 @@
        "role": "meta_right",
        "key": "meta_right1",
        "x": 162.13,
-       "x1": 197.56,
+       "x1": 179.15,
        "y": 118.08,
        "lead": false,
-       "text": "January 2021 - March 2022"
+       "text": "January 2021"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 182.32,
+       "x1": 197.56,
+       "y": 118.08,
+       "lead": true,
+       "text": "March 2022"
       },
       {
        "role": "sub",
@@ -1276,5 +1301,5 @@
    "bullet_text_x": 91.54
   }
  ],
- "analysis_s": 103.8
+ "analysis_s": 86.7
 }

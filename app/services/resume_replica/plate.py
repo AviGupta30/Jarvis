@@ -151,6 +151,7 @@ def build(img: np.ndarray, s: dict, out_dir: str, page_h_mm: float, overlays: li
             cv2.circle(shape, (cx, cy), r, 1, -1)
         erase |= shape.astype(bool)
         info["photo"] = {k: v for k, v in photo.items()}
+        info["photo"]["overlays"] = _photo_overlays(img, photo["box"])
         # text lines inside the photo are not text (OCR noise on the picture)
 
     # ── per section: decoration crops, leading glyphs, graphics, then erase the section area ──
@@ -275,6 +276,10 @@ def build(img: np.ndarray, s: dict, out_dir: str, page_h_mm: float, overlays: li
     plate = (local_bg.astype(np.float32) * soft + img.astype(np.float32) * (1 - soft)).round().astype(np.uint8)
     plate[erase] = local_bg[erase]
     plate, n_left = _ocr_verify(plate, local_bg, protect + orn_boxes)    # whatever text is still readable goes too
+    # flat backgrounds become the clean model everywhere they are within a few levels of it: otherwise each erased
+    # patch (model) shows as a faint box against the reference's paper/JPEG texture around it
+    near = bg & (np.abs(plate.astype(np.int16) - local_bg.astype(np.int16)).sum(-1) < 9) & ~orn
+    plate[near] = local_bg[near]
     info["erase_frac"] = round(float(erase.mean()), 3)
     info["ocr_leftovers_removed"] = n_left
     # room to the right of the name/title. A thin rule beside it ("Accountant ———") is "soft": a longer title
@@ -422,8 +427,17 @@ def _ornaments(img: np.ndarray, local_bg: np.ndarray, lines: list, protect: list
             y0 = min(st[i, 1] for i in run)
             x1 = max(st[i, 0] + st[i, 2] for i in run)
             y1 = max(st[i, 1] + st[i, 3] for i in run)
-            if any(b[1] < y1 and b[3] > y0 and b[0] < x1 + 12 * MM and b[2] > x0 - 12 * MM for b in text_boxes):
-                continue                           # beside text: rating dots, leaders, bullets → content
+            rh = max(1, y1 - y0)
+            if any(min(b[3], y1) - max(b[1], y0) > 0.5 * min(rh, b[3] - b[1]) and b[0] < x1 + 45 * MM and b[2] > x0 - 45 * MM
+                   for b in text_boxes):
+                continue                           # text on the same row: rating dots/squares, leaders → content
+            members = set(run)
+            pad = 2 * rh
+            amed = float(np.median([st[i, 4] for i in run]))
+            mixed = sum(1 for i in range(1, n) if i not in members and st[i, 4] >= 0.3 * amed and st[i, 3] >= 0.5 * rh
+                        and x0 - pad <= st[i, 0] + st[i, 2] / 2 <= x1 + pad and y0 <= st[i, 1] + st[i, 3] / 2 <= y1)
+            if mixed >= 0.5 * len(run):
+                continue                           # other, different marks in between: letters of a word (OCR missed it)
             if any(not (x1 < b[0] or x0 > b[2] or y1 < b[1] or y0 > b[3]) for b in protect):
                 continue
             for i in run:
@@ -685,6 +699,8 @@ def _find_photo(img: np.ndarray, s: dict, bg: np.ndarray | None = None) -> dict 
         x0, y0, x1, y1 = blob["box"]
     elif fit:
         x0, y0, x1, y1 = fit["box"]
+    elif _straight_edges(img, face):
+        x0, y0, x1, y1 = _straight_edges(img, face)
     else:
         x0, y0, x1, y1 = _grow_photo_box(gray, face)
         # a grown box much wider/taller than a portrait ran into something else: clamp around the face
@@ -712,6 +728,147 @@ def _find_photo(img: np.ndarray, s: dict, bg: np.ndarray | None = None) -> dict 
     return {"box": [int(x0), int(y0), int(x1), int(y1)], "radius_px": int(min(min(w, h) / 2, radius)),
             "circle": bool(circle), "box_mm": [round(v / MM, 2) for v in (x0, y0, x1, y1)],
             "radius_mm": round(min(min(w, h) / 2, radius) / MM, 2), "blob": blob}
+
+
+def _photo_overlays(img: np.ndarray, box) -> list[dict]:
+    """A band of flat colour beside the photo that continues *over* it, see-through (a translucent strip across
+    the picture). For each flat run just outside the photo's left/right edge, the photo's rows just inside that run
+    are compared with the rows just outside it: pixel = α·band + (1−α)·picture. A consistent α in (0.15, 0.95)
+    → an overlay {x0, y0, x1, y1 (mm), color, alpha}."""
+    H, W = img.shape[:2]
+    x0, y0, x1, y1 = box
+    im = img.astype(np.float32)
+    out = []
+    sides = ([x0 - int(1.5 * MM)] if x0 > 2 * MM else []) + ([x1 + int(1.5 * MM)] if x1 < W - 2 * MM else [])
+    xs_in = np.arange(x0 + int(2 * MM), x1 - int(2 * MM), max(1, int(0.5 * MM)))
+    if len(xs_in) < 6:
+        return out
+    for sx in sides:
+        col = im[y0:y1, max(0, sx - 2):sx + 3].mean(1)
+        runs, a = [], 0
+        for i in range(1, len(col) + 1):
+            if i == len(col) or np.abs(col[i] - col[i - 1]).sum() > 18:
+                if i - a > 4 * MM:
+                    runs.append((y0 + a, y0 + i, np.median(col[a:i], axis=0)))
+                a = i
+        for ra, rb_, C in runs:
+            if rb_ - ra > 0.9 * (y1 - y0):
+                continue                                   # the page itself beside the whole photo
+            fits = {"normal": [], "multiply": []}
+            for edge, sgn in ((ra, 1), (rb_, -1)):          # top edge (band below it), bottom edge (band above it)
+                if not (y0 + 2 * MM < edge < y1 - 2 * MM):
+                    continue
+                o = int(1.2 * MM)
+                outside = im[edge - sgn * o - 2:edge - sgn * o + 3][:, xs_in].mean(0)
+                inside = im[edge + sgn * o - 2:edge + sgn * o + 3][:, xs_in].mean(0)
+                # normal: in = out + α·(C − out)     multiply: in = out − α·out·(1 − C/255)
+                for mode, v in (("normal", C - outside), ("multiply", -outside * (1 - C / 255.0))):
+                    nv = (v * v).sum(1)
+                    ok = nv > 30 ** 2
+                    if ok.sum() < 0.5 * len(xs_in):
+                        continue
+                    al = ((inside - outside) * v).sum(1)[ok] / nv[ok]
+                    res = np.abs(inside[ok] - (outside[ok] + al[:, None] * v[ok])).sum(1)
+                    good = res < 36
+                    if good.sum() >= 0.4 * len(xs_in):
+                        fits[mode].append((float(np.median(al[good])), float(np.median(res[good])), int(good.sum())))
+            best = None
+            for mode, fl in fits.items():
+                if not fl:
+                    continue
+                a = float(np.median([f[0] for f in fl]))
+                score = (sum(f[2] for f in fl), -float(np.median([f[1] for f in fl])))   # most columns fit, then lowest error
+                if 0.15 < a < 0.98 and (best is None or score > best[2]):
+                    best = (mode, a, score)
+            if best:
+                out.append({"x0": round(x0 / MM, 2), "x1": round(x1 / MM, 2), "y0": round(ra / MM, 2),
+                            "y1": round(rb_ / MM, 2), "color": _hex(C), "alpha": round(best[1], 3), "blend": best[0]})
+        if out:
+            break
+    return out
+
+
+def _band_extent(sm: np.ndarray, face):
+    """The photo's width from the flat bands that border it above and below (their run through the face's column):
+    for a photo whose own side edges vanish into the page. → (x0, x1) or None."""
+    H, W = sm.shape[:2]
+    fx, fy, fw, fh = face
+    cx = fx + fw // 2
+    gy = np.abs(sm[1:, cx].astype(np.int32) - sm[:-1, cx].astype(np.int32)).sum(-1)
+    ends = []
+    for ys, step in ((range(fy - int(0.2 * fh), 0, -1), -1), (range(fy + fh + int(0.3 * fh), H - 2), 1)):
+        for y in ys:
+            if gy[min(H - 2, max(0, y))] > 60:              # the photo's top / bottom edge in the face's column
+                yb = y + step * int(1.5 * MM)
+                if not 0 <= yb < H:
+                    break
+                row, c = sm[yb].astype(np.int32), sm[yb, cx].astype(np.int32)
+                same = np.abs(row - c).sum(-1) < 24
+                a = cx
+                while a > 0 and same[a - 1]:
+                    a -= 1
+                b = cx
+                while b < W - 1 and same[b + 1]:
+                    b += 1
+                if b - a > 1.2 * fw:
+                    ends.append((a, b + 1))
+                break
+    if not ends:
+        return None
+    return max(e[0] for e in ends), min(e[1] for e in ends)
+
+
+def _straight_edges(img: np.ndarray, face):
+    """Rectangular photo whose frame the ray fit can't see (a translucent band across it, a photo bleeding off the
+    page): the vertical edge beside the face that most rows agree on; the photo's top/bottom are where that edge
+    starts/ends; a side without an edge is the page border. Returns (x0, y0, x1, y1) or None."""
+    import cv2
+    H, W = img.shape[:2]
+    fx, fy, fw, fh = face
+    sm = cv2.GaussianBlur(img, (3, 3), 0).astype(np.int16)
+    gx = np.zeros((H, W), np.int16)
+    gx[:, 1:] = np.abs(sm[:, 1:] - sm[:, :-1]).sum(-1)
+    rows = np.arange(max(0, fy - fh // 2), min(H, fy + fh + fh // 2))
+
+    def vertical(xs):
+        for x in xs:
+            col = gx[rows, max(0, x - 1):x + 2].max(1)
+            if (col > 40).mean() >= 0.6:
+                return x
+        return None
+    xl = vertical(range(fx - int(0.3 * fw), max(0, fx - 3 * fw), -1))
+    xr = vertical(range(fx + fw + int(0.3 * fw), min(W - 1, fx + fw + 3 * fw)))
+    x0 = xl if xl is not None else (0 if fx < 3 * fw else None)
+    x1 = xr if xr is not None else (W if W - (fx + fw) < 3 * fw else None)
+    if x0 is None or x1 is None or (xl is None and xr is None):
+        band = _band_extent(sm, face)
+        if band is None:
+            return None
+        x0 = xl if xl is not None else band[0]
+        x1 = xr if xr is not None else band[1]
+    # top / bottom: the first edge across the photo's whole width with a FLAT area beyond it (a panel, the page);
+    # a translucent band over the photo still has picture texture beyond its edge, so it doesn't end the photo
+    gy = np.zeros((H, W), np.int16)
+    gy[1:] = np.abs(sm[1:] - sm[:-1]).sum(-1)
+    cx0, cx1 = int(x0) + 2, int(x1) - 2
+    depth = int(2.5 * MM)
+
+    def flat(ya, yb):
+        ya, yb = max(0, ya), min(H, yb)
+        return yb - ya > 3 and float(sm[ya:yb, cx0:cx1].reshape(-1, 3).std(0).mean()) < 12
+
+    def horizontal(ys, beyond):
+        for y in ys:
+            if (gy[y, cx0:cx1] > 40).mean() >= 0.7 and flat(*sorted((y + beyond * 3, y + beyond * (3 + depth)))):
+                return y
+        return None
+    y1 = horizontal(range(fy + fh + int(0.3 * fh), H - 1), 1)
+    y0 = horizontal(range(fy - int(0.2 * fh), 0, -1), -1)
+    y1 = H if y1 is None and H - (fy + fh) < 2.5 * fh else y1
+    y0 = 0 if y0 is None and fy < 2.5 * fh else y0
+    if y0 is None or y1 is None or y1 - y0 < 1.3 * fh or x1 - x0 < 1.2 * fw:
+        return None
+    return int(x0), int(y0), int(x1), int(y1)
 
 
 def _skin_face(img: np.ndarray, bg: np.ndarray | None):
@@ -805,7 +962,7 @@ def _photo_edges(img: np.ndarray, face) -> dict | None:
         best = max(scored, key=lambda t: t[0])    # inside a larger round shape has fewer, inner edge points)
         inner = np.linalg.norm(P - best[1], axis=1) < best[2] - 2 * MM
         scored += [(support_circle(c, r), c, r) for c, r in sample_circles(P[inner], K[inner], 600)]
-    circle = None
+    circle, inner = None, None
     if scored:
         top = max(s for s, _, _ in scored)
         if top >= 0.5 * nr:
@@ -814,12 +971,10 @@ def _photo_edges(img: np.ndarray, face) -> dict | None:
             # a photo inside a larger round shape (a band ending in a circle, a ring): the picture's own edge is
             # often less supported (a light shirt melts into the frame), so an inner circle with fair support whose
             # outside is flat (frame / ring / background, not more picture) is the photo edge
-            fair = sorted((t for t in scored if t[0] >= max(0.6 * top, 0.4 * nr) and t[2] < circle[2] - 2 * MM),
+            fair = sorted((t for t in scored if t[0] >= max(0.6 * top, 0.4 * nr) and t[2] < circle[2] - 2 * MM
+                           and float(np.hypot(*(t[1] - circle[1]))) < 0.2 * t[2]),       # a ring: same centre
                           key=lambda t: t[2])
-            for t in fair:
-                if _flat_outside(img, t[1], t[2]):
-                    circle = t
-                    break
+            inner = next((t for t in fair if _flat_outside(img, t[1], t[2])), None)
     # rectangle: per side, the x (or y) most rays near that direction agree on
     def side(sel, axis, limit, outward):
         """Innermost edge position (beyond `limit` in the `outward` direction) that most rays agree on."""
@@ -844,8 +999,13 @@ def _photo_edges(img: np.ndarray, face) -> dict | None:
     T, st = side(lambda t: abs(ang(t) + np.pi / 2) < 0.6, 1, fy - m, -1)
     B, sb = side(lambda t: abs(ang(t) - np.pi / 2) < 0.6, 1, fy + fh + m, 1)
     rect_support = min(sl, sr, st, sb) if None not in (L, R, T, B) else 0
+    if circle and _ring_contrast(img, circle[1][0], circle[1][1], circle[2]) < 50:
+        circle = None                         # no colour change all round: not a frame (e.g. a head's outline)
     circ_support = circle[0] / nr if circle else 0
     if circle and circ_support >= rect_support:
+        # the frame is round: inside a concentric larger round shape, the inner circle is the picture's edge
+        if scored and top >= 0.5 * nr and inner is not None:
+            circle = inner
         _, (cx, cy), r = circle
         x0, y0, x1, y1 = int(cx - r), int(cy - r), int(cx + r), int(cy + r)
         return {"box": [x0, y0, x1, y1], "radius_px": int(r), "circle": True,
@@ -1044,8 +1204,9 @@ def _lead_of(l, nonbg, text_mask, comps_in, stats, W, others=None):
         return None
     ix0, iy0, ix1, iy1 = l["ink"]
     ih = max(4, iy1 - iy0)
-    ids = comps_in(ix0 - 4.6 * ih, iy0 - 0.9 * ih, ix0 - 1, iy1 + 0.9 * ih, 0.85)
-    ids = [i for i in ids if stats[i, 3] < 2.2 * ih and stats[i, 2] < 2.6 * ih]
+    # boxed icons (a glyph in a coloured square/circle) are often ~3× the text height
+    ids = comps_in(ix0 - 4.6 * ih, iy0 - 1.3 * ih, ix0 - 1, iy1 + 1.3 * ih, 0.85)
+    ids = [i for i in ids if stats[i, 3] < 3.2 * ih and stats[i, 2] < 3.2 * ih]
     if others:
         def in_other(i):
             cx, cy = stats[i, 0] + stats[i, 2] / 2, stats[i, 1] + stats[i, 3] / 2
@@ -1196,11 +1357,20 @@ def _section_graphics(img, sec, sec_lines, nonbg, text_mask, cc, stats, comps_in
             x1 = max(stats[i, 0] + stats[i, 2] for i in grp)
             y0 = min(stats[i, 1] for i in grp)
             y1 = max(stats[i, 1] + stats[i, 3] for i in grp)
-            ym = (y0 + y1) // 2
+            # the bar's own pixels decide: the row where it is most solid, its colour from its pixels (a box taller
+            # than a thin bar would otherwise mix the bar with the background)
+            gm = np.isin(cc[y0:y1, x0:x1], grp)
+            if gm.any():                     # the middle of the rows where the bar is (nearly) full width
+                cnt = gm.sum(1)
+                full = np.nonzero(cnt >= 0.95 * cnt.max())[0]
+                ym = y0 + int(full[len(full) // 2])
+            else:
+                ym = (y0 + y1) // 2
             row = img[ym].astype(np.int16)
             span = max(4, x1 - x0)
             k = max(2, span // 12)
-            fill = np.median(row[x0 + 1:x0 + 1 + k], axis=0)
+            own = img[y0:y1, x0 + 1:x0 + 1 + k][gm[:, 1:1 + k]]
+            fill = np.median(own, axis=0).astype(np.int16) if len(own) else np.median(row[x0 + 1:x0 + 1 + k], axis=0)
             # the bar may continue in a light track that blends with the background: extend while it differs
             if x0 - 2 > ax0:
                 bgc = np.median(row[max(ax0, x0 - int(3 * MM)):x0 - 2], axis=0)
@@ -1258,13 +1428,20 @@ def _section_graphics(img, sec, sec_lines, nonbg, text_mask, cc, stats, comps_in
                 if side_l:
                     dxs.append(b_["x0"] - max(side_l, key=lambda l: l["ink"][0])["ink"][0])
             label_dx = float(np.median(dxs)) if dxs else 0.0
+            # colours by majority: a stray piece (a bar's rounded end, a rule) must not decide fill or track
+            def _rgb(h):
+                return np.array([int(h[i:i + 2], 16) for i in (1, 3, 5)])
+            fills = [b["fill"] for b in bars]
+            fill_m = max(set(fills), key=lambda f: sum(np.abs(_rgb(f) - _rgb(g)).sum() < 60 for g in fills))
+            good = [b for b in bars if np.abs(_rgb(b["fill"]) - _rgb(fill_m)).sum() < 60]
+            tracks = [b["track"] for b in good if b["track"]]
             res["bars"] = {"place": "below" if below >= len(bars) / 2 else "right", "h_mm": round(hgt / MM, 2),
                            "columns": len(clusters), "label_dx_mm": round(label_dx / MM, 2),
                            "col_x_mm": [round((min(c) - label_dx) / MM, 2) for c in clusters],
                            "w_mm": round(float(np.median(widths)) / MM, 2),
                            "x0_mm": round(float(np.median([b["x0"] for b in bars])) / MM, 2),
-                           "fill": max(set(b["fill"] for b in bars), key=[b["fill"] for b in bars].count),
-                           "track": next((b["track"] for b in bars if b["track"]), None),
+                           "fill": fill_m,
+                           "track": max(set(tracks), key=tracks.count) if tracks else None,
                            "gap_mm": round(float(np.median(gaps)) / MM, 2) if gaps else 1.0,
                            "radius_mm": round(radius / MM, 2),
                            "levels": [round(b["level"], 2) for b in bars]}

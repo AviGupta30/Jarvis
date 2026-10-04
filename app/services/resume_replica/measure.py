@@ -663,6 +663,10 @@ def analyse(img: np.ndarray) -> dict:
                   and l is not h and l["id"] not in strip]
             if h.get("key") == "contact":
                 sl += [l for l in lines if strip.get(l["id"]) == h["key"] and l["role"] == "" and l not in sl]
+            if not sl and i + 1 == len(hs):
+                # a last section with no text (icon tiles, a picture grid): its sample graphics sit below the
+                # heading, down to the page end — the area must cover them so they leave the background
+                y1 = H - int(4 * PX_PER_MM)
             # lines further right that belong to this column's rows (right-aligned dates) are in col already
             for l in sl:
                 l["sec"] = h["key"]
@@ -731,10 +735,24 @@ def _item_roles(sec: dict) -> None:
             if right:
                 l["role"] = "meta_left"
                 l["meta_of"] = min(right, key=lambda o: o["box"][0])["id"]
-    first = next((l for l in ls if l["role"] != "meta_left"), ls[0])
+    for l in ls:                                   # the rest of a stacked date ("2010" / "2014") or a date above
+        if l["role"] or not _DATE_ONLY.match(l["text"]):
+            continue
+        h = max(1, l["box"][3] - l["box"][1])
+        up = [o for o in ls if o["role"] == "meta_left" and 0 <= l["box"][1] - o["box"][3] < 1.2 * h
+              and abs(o["box"][0] - l["box"][0]) < 1.5 * h]
+        if up:
+            l["role"] = "meta_left"
+            l["meta_of"] = up[0].get("meta_of")
+            continue
+        down = [o for o in ls if o is not l and 0 <= o["box"][1] - l["box"][3] < 1.2 * h
+                and o["box"][0] < l["box"][2] and o["box"][2] > l["box"][0] and not _DATE_ONLY.match(o["text"])]
+        if down:
+            l["role"] = "meta_above"
+    first = next((l for l in ls if l["role"] not in ("meta_left", "meta_above")), ls[0])
     title_style = first if not _same_style(first, body, 0.12, 35) or first["words"] <= 8 else None
     for l in ls:
-        if l["role"] == "meta_left":
+        if l["role"] in ("meta_left", "meta_above"):
             continue
         if title_style is not None and _same_style(l, title_style, 0.12, 40) and                 not (_same_style(l, body, 0.08, 25) and l["words"] > 8):
             l["role"] = "item_title"

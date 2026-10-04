@@ -1,11 +1,12 @@
 # assignment_pipeline
 
-> 18 nodes · cohesion 0.20
+> 20 nodes · cohesion 0.18
 
 ## Key Concepts
 
 - **assignment_pipeline.py** (22 connections) — `app/services/assignment_pipeline.py`
 - **_browser_thread()** (13 connections) — `app/services/assignment_pipeline.py`
+- **do_assignment()** (10 connections) — `app/services/assignment_pipeline.py`
 - **_find_el()** (4 connections) — `app/services/assignment_pipeline.py`
 - **_get_browser_ctx()** (4 connections) — `app/services/assignment_pipeline.py`
 - **_humanize_browser()** (4 connections) — `app/services/assignment_pipeline.py`
@@ -22,13 +23,18 @@
 - **Groq API humanization fallback.** (1 connections) — `app/services/assignment_pipeline.py`
 - **Runs all Playwright browser automation in a separate thread. Puts status…** (1 connections) — `app/services/assignment_pipeline.py`
 - **Try to use Edge Default profile, then Chrome, fallback to Jarvis custom profile.** (1 connections) — `app/services/assignment_pipeline.py`
+- **Master orchestrator. Uses a background thread for all Playwright code. Yields…** (1 connections) — `app/services/assignment_pipeline.py`
 
 ## Relationships
 
-- [assignment_tool + assignment](assignment_tool_+_assignment.md) (4 shared connections)
-- [server + persistence](server_+_persistence.md) (3 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
+- [assignment_tool](assignment_tool.md) (4 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
+- [assignment_assembler](assignment_assembler.md) (2 shared connections)
+- [assignment](assignment.md) (1 shared connections)
+- [tool-registry + tools](tool-registry_+_tools.md) (1 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -36,8 +42,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 41 (98%)
-- INFERRED: 1 (2%)
+- EXTRACTED: 45 (90%)
+- INFERRED: 5 (10%)
 - AMBIGUOUS: 0 (0%)
 
 ---

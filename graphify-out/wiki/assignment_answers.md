@@ -33,13 +33,13 @@
 
 ## Relationships
 
-- [server + persistence](server_+_persistence.md) (3 shared connections)
-- [assignment_tool + assignment](assignment_tool_+_assignment.md) (3 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
-- [assignment_humanizer](assignment_humanizer.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [assignment_tool](assignment_tool.md) (2 shared connections)
+- [dynamic_skill + planner](dynamic_skill_+_planner.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
+- [assignment](assignment.md) (1 shared connections)
 
 ## Source Files
 

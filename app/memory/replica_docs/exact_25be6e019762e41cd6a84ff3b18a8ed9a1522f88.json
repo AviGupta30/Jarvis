@@ -1,8 +1,8 @@
 {
- "v": 4,
+ "v": 6,
  "sha1": "25be6e019762e41cd6a84ff3b18a8ed9a1522f88",
- "source": "Screenshot_2026-10-04_003501_1791054316.png",
- "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_003501_1791054316.png",
+ "source": "Screenshot_2026-10-04_003501_1791054669.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_003501_1791054669.png",
  "page": {
   "h_mm": 297.0,
   "ref_h_mm": 288.5,
@@ -10,7 +10,8 @@
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\plate2.png",
   "src_dpi": 42.1,
   "partial": false,
-  "letter": false
+  "letter": false,
+  "ornaments": []
  },
  "styles": {
   "name": {
@@ -56,18 +57,18 @@
    "pitch": 7.482
   },
   "item_title1": {
-   "ref_contrast": 6.69,
+   "ref_contrast": 6.67,
    "family": "Montserrat",
    "weight": 700,
-   "size": 4.976,
+   "size": 4.727,
    "ls": 0.0,
    "color": "#5c5c5c",
    "upper": false,
    "asc": 0.97,
    "desc": 0.25,
-   "ink_asc": 0.72,
-   "n": 7,
-   "pitch": 6.568
+   "ink_asc": 0.755,
+   "n": 6,
+   "pitch": 6.24
   },
   "sub1": {
    "ref_contrast": 5.66,
@@ -84,24 +85,24 @@
    "pitch": 5.837
   },
   "head0": {
-   "ref_contrast": 8.84,
-   "family": "Bahnschrift",
-   "weight": 400,
-   "size": 6.757,
+   "ref_contrast": 10.24,
+   "family": "Montserrat",
+   "weight": 800,
+   "size": 5.53,
    "ls": 0.0,
-   "color": "#bbc3c9",
+   "color": "#cad0d4",
    "upper": false,
-   "asc": 0.79,
-   "desc": 0.21,
-   "ink_asc": 0.71,
-   "n": 3,
-   "pitch": 8.919
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.735,
+   "n": 2,
+   "pitch": 7.3
   },
   "contact0": {
    "ref_contrast": 5.34,
    "family": "Montserrat",
    "weight": 700,
-   "size": 3.614,
+   "size": 3.996,
    "ls": 0.0,
    "color": "#8d97a4",
    "upper": false,
@@ -109,7 +110,7 @@
    "desc": 0.25,
    "ink_asc": 0.77,
    "n": 4,
-   "pitch": 4.77
+   "pitch": 5.275
   },
   "body0": {
    "ref_contrast": 3.76,
@@ -124,6 +125,20 @@
    "ink_asc": 0.71,
    "n": 5,
    "pitch": 6.348
+  },
+  "meta_above1": {
+   "ref_contrast": 6.69,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 4.976,
+   "ls": 0.0,
+   "color": "#5c5c5c",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 6.568
   },
   "list1": {
    "ref_contrast": 3.3,
@@ -140,25 +155,69 @@
    "pitch": 4.707
   },
   "list0": {
-   "ref_contrast": 4.73,
+   "ref_contrast": 2.88,
    "family": "Montserrat",
-   "weight": 400,
-   "size": 3.906,
+   "weight": 600,
+   "size": 4.13,
    "ls": 0.0,
-   "color": "#7a7a7a",
+   "color": "#989898",
    "upper": false,
    "asc": 0.97,
    "desc": 0.25,
-   "ink_asc": 0.75,
-   "n": 4,
-   "pitch": 7.237
+   "ink_asc": 0.78,
+   "n": 3,
+   "pitch": 6.666
+  },
+  "head0c": {
+   "ref_contrast": 5.83,
+   "family": "Bahnschrift",
+   "weight": 400,
+   "size": 6.757,
+   "ls": 0.0,
+   "color": "#656565",
+   "upper": false,
+   "asc": 0.79,
+   "desc": 0.21,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 8.919
+  },
+  "body1c": {
+   "ref_contrast": 7.57,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 4.441,
+   "ls": 0.0,
+   "color": "#545454",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 5.862
+  },
+  "list0c": {
+   "ref_contrast": 11.73,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 5.334,
+   "ls": 0.0,
+   "color": "#383838",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.7,
+   "n": 1,
+   "pitch": 7.041
   }
  },
- "created": 1791091400.6038005,
+ "created": 1791111928.5425828,
  "fonts": {
   "Montserrat": [
    400,
-   700
+   600,
+   700,
+   800
   ],
   "Khula": [
    400
@@ -346,10 +405,10 @@
       155.79
      ],
      "rule": {
-      "color": "#363e61",
+      "color": "#353b61",
       "h": 1.22,
-      "gap": 3.3,
-      "len": 24.12,
+      "gap": 3.05,
+      "len": 24.38,
       "to_edge": true,
       "dy": 3.68
      },
@@ -414,7 +473,7 @@
      "key": "references",
      "title": "Reference.",
      "implicit": false,
-     "head_key": "head0",
+     "head_key": "head0c",
      "head_ink": [
       12.06,
       252.41,
@@ -427,13 +486,14 @@
       "gap": 4.06,
       "len": 21.58,
       "to_edge": true,
-      "dy": 3.43
+      "dy": 3.56
      },
      "top": 252.41,
      "head_bottom": 256.98,
      "tokens": {
       "head_first": 5.46,
-      "wrap": 7.24,
+      "new_item": 7.24,
+      "wrap": 6.665,
       "sec_gap": 60.95,
       "prev_key": "body0"
      },
@@ -441,7 +501,7 @@
      "roles": [
       {
        "role": "list",
-       "key": "list0",
+       "key": "list0c",
        "x": 11.55,
        "x1": 45.96,
        "y": 262.44,
@@ -689,8 +749,8 @@
       "item_gap": 5.65,
       "title_sub": 6.35,
       "sub_meta": 8.0,
-      "head_body": 0.51,
-      "wrap": 6.6,
+      "new_item": 6.6,
+      "wrap": 5.65,
       "sec_gap": 14.47,
       "prev_key": "body1"
      },
@@ -742,8 +802,8 @@
        "text": "jobandcarr"
       },
       {
-       "role": "item_title",
-       "key": "item_title1",
+       "role": "meta_above",
+       "key": "meta_above1",
        "x": 174.96,
        "x1": 198.83,
        "y": 206.57,
@@ -752,7 +812,7 @@
       },
       {
        "role": "body",
-       "key": "body1",
+       "key": "body1c",
        "x": 92.81,
        "x1": 125.31,
        "y": 207.08,
@@ -827,12 +887,12 @@
        ],
        "w_mm": 21.08,
        "x0_mm": 119.09,
-       "fill": "#101b46",
-       "track": "#c6c5c7",
+       "fill": "#727992",
+       "track": "#c5c4c7",
        "gap_mm": 1.0,
        "radius_mm": 0.0,
        "levels": [
-        1.0,
+        0.01,
         0.0,
         0.0,
         0.0,
@@ -902,5 +962,5 @@
    ]
   }
  ],
- "analysis_s": 81.3
+ "analysis_s": 74.6
 }

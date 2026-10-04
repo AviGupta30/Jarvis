@@ -1,42 +1,26 @@
 # assignment_tool
 
-> 24 nodes · cohesion 0.12
+> 8 nodes · cohesion 0.29
 
 ## Key Concepts
 
-- **assignment_tool.py** (25 connections) — `app/services/assignment_tool.py`
-- **_split_with_subquestions()** (7 connections) — `app/services/assignment_tool.py`
+- **extract_questions()** (12 connections) — `app/services/assignment_tool.py`
+- **_resolve_pdf_path()** (8 connections) — `app/services/assignment_tool.py`
 - **_extract_via_llm_text()** (5 connections) — `app/services/assignment_tool.py`
-- **_extract_via_vision()** (5 connections) — `app/services/assignment_tool.py`
-- **_parse_llm_json_response()** (5 connections) — `app/services/assignment_tool.py`
-- **_regex_extract_questions()** (5 connections) — `app/services/assignment_tool.py`
-- **_classify_question_type()** (4 connections) — `app/services/assignment_tool.py`
-- **_clean_text()** (4 connections) — `app/services/assignment_tool.py`
 - **_pdf_pages_to_text()** (4 connections) — `app/services/assignment_tool.py`
-- **_extract_marks()** (3 connections) — `app/services/assignment_tool.py`
-- **_has_figure_reference()** (3 connections) — `app/services/assignment_tool.py`
-- **_pdf_pages_to_images()** (3 connections) — `app/services/assignment_tool.py`
-- **Jarvis Assignment Tool — Phase 1: Smart Question Extractor…** (1 connections) — `app/services/assignment_tool.py`
 - **Extract text from each PDF page separately. Returns list of page strings.** (1 connections) — `app/services/assignment_tool.py`
-- **Render each PDF page to a base64-encoded JPEG using PyMuPDF.** (1 connections) — `app/services/assignment_tool.py`
-- **Heuristically classify a question type based on its text.** (1 connections) — `app/services/assignment_tool.py`
-- **Clean up PDF text extraction artifacts.** (1 connections) — `app/services/assignment_tool.py`
-- **Smart regex-based question extractor for structured, numbered assignments.…** (1 connections) — `app/services/assignment_tool.py`
-- **Given a parent question body, split out sub-questions (i, ii, iii, a, b, c) and…** (1 connections) — `app/services/assignment_tool.py`
-- **Extract marks from question text if mentioned.** (1 connections) — `app/services/assignment_tool.py`
-- **Check if question references a figure or diagram.** (1 connections) — `app/services/assignment_tool.py`
-- **Render each PDF page as an image and extract questions using Groq Vision. Best…** (1 connections) — `app/services/assignment_tool.py`
 - **LLM-based text extraction as fallback for when regex fails.** (1 connections) — `app/services/assignment_tool.py`
-- **Robustly parse an LLM response expected to be a JSON array of question dicts.** (1 connections) — `app/services/assignment_tool.py`
+- **Extract ALL questions from an assignment PDF using a 3-track hybrid system.…** (1 connections) — `app/services/assignment_tool.py`
+- **Resolve PDF path: handles full paths, filenames, partial names.** (1 connections) — `app/services/assignment_tool.py`
 
 ## Relationships
 
-- [assignment_tool + assignment](assignment_tool_+_assignment.md) (8 shared connections)
-- [server + persistence](server_+_persistence.md) (3 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (2 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [assignment_humanizer](assignment_humanizer.md) (1 shared connections)
+- [assignment_tool](assignment_tool.md) (7 shared connections)
+- [assignment_pipeline](assignment_pipeline.md) (4 shared connections)
+- [assignment_humanizer](assignment_humanizer.md) (2 shared connections)
+- [assignment_answers](assignment_answers.md) (2 shared connections)
+- [assignment](assignment.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -44,8 +28,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 51 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 22 (88%)
+- INFERRED: 3 (12%)
 - AMBIGUOUS: 0 (0%)
 
 ---

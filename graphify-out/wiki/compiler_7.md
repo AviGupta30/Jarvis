@@ -10,7 +10,7 @@
 
 ## Relationships
 
-- [orchestrator + renderer](orchestrator_+_renderer.md) (1 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
 - [compiler](compiler.md) (1 shared connections)
 
 ## Source Files

@@ -17,7 +17,7 @@
 
 ## Relationships
 
-- [orchestrator + renderer](orchestrator_+_renderer.md) (4 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (4 shared connections)
 - [schema](schema.md) (2 shared connections)
 - [schema + bindings](schema_+_bindings.md) (2 shared connections)
 

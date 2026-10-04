@@ -27,9 +27,9 @@
 ## Relationships
 
 - [ppt_tool](ppt_tool.md) (5 shared connections)
-- [server + persistence](server_+_persistence.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 
 ## Source Files

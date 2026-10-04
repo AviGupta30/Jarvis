@@ -1,12 +1,13 @@
 # prompt_enhancement_library + skill_prompt_enhancer
 
-> 22 nodes · cohesion 0.17
+> 24 nodes · cohesion 0.16
 
 ## Key Concepts
 
 - **skill_prompt_enhancer.py** (15 connections) — `app/services/skill_prompt_enhancer.py`
 - **enhance_prompt_text()** (14 connections) — `app/services/skill_prompt_enhancer.py`
 - **prompt_enhancement_library.py** (9 connections) — `app/services/prompt_enhancement_library.py`
+- **enhance_prompt()** (9 connections) — `app/services/skill_prompt_enhancer.py`
 - **Pipeline (`skill_prompt_enhancer.enhance_prompt_text`)** (8 connections) — `docs/features/prompt-enhancer.md`
 - **protect_blocks()** (6 connections) — `app/services/prompt_enhancement_library.py`
 - **check_for_hallucination()** (5 connections) — `app/services/prompt_enhancement_library.py`
@@ -25,15 +26,17 @@
 - **True if the output looks like a chatbot reply rather than a rewritten prompt.…** (1 connections) — `app/services/prompt_enhancement_library.py`
 - **True if the rewrite is far longer than the input warrants.** (1 connections) — `app/services/prompt_enhancement_library.py`
 - **skill_prompt_enhancer.py…** (1 connections) — `app/services/skill_prompt_enhancer.py`
+- **Enhance a prompt and return it under an **ENHANCED PROMPT (DOMAIN)** header.** (1 connections) — `app/services/skill_prompt_enhancer.py`
 - **Return the enhanced prompt as plain text (no header). Raises on Groq/API…** (1 connections) — `app/services/skill_prompt_enhancer.py`
 
 ## Relationships
 
-- [chat + youtube_control](chat_+_youtube_control.md) (4 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
+- [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (3 shared connections)
+- [dynamic_skill + planner](dynamic_skill_+_planner.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
 - [prompt_enhancer_button](prompt_enhancer_button.md) (2 shared connections)
-- [prompt_enhancer_button + prompt-enhancer](prompt_enhancer_button_+_prompt-enhancer.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -43,8 +46,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 42 (82%)
-- INFERRED: 9 (18%)
+- EXTRACTED: 45 (80%)
+- INFERRED: 11 (20%)
 - AMBIGUOUS: 0 (0%)
 
 ---

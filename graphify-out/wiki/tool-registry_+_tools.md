@@ -18,17 +18,14 @@
 
 ## Relationships
 
-- [memory + tool_runner](memory_+_tool_runner.md) (2 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [file_ops](file_ops.md) (1 shared connections)
-- [calendar_tool + email-calendar](calendar_tool_+_email-calendar.md) (1 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
-- [chat](chat.md) (1 shared connections)
-- [agentic_web](agentic_web.md) (1 shared connections)
-- [assignment_tool + assignment](assignment_tool_+_assignment.md) (1 shared connections)
-- [ppt_content](ppt_content.md) (1 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (4 shared connections)
+- [memory](memory.md) (2 shared connections)
+- [tools](tools.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [gmail_tool + memory_tool](gmail_tool_+_memory_tool.md) (1 shared connections)
+- [assignment_pipeline](assignment_pipeline.md) (1 shared connections)
+- [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)
+- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
 
 ## Source Files
 

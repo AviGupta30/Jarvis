@@ -1,12 +1,12 @@
 {
- "v": 5,
+ "v": 7,
  "sha1": "8fe783847a3abd2147bea10de5c2f2cf30457066",
  "source": "Screenshot_2026-10-04_121617_1791096398.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_121617_1791096398.png",
  "page": {
   "h_mm": 297.0,
   "ref_h_mm": 281.7,
-  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8fe783847a3abd21\\plate.jpg",
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8fe783847a3abd21\\plate.png",
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8fe783847a3abd21\\plate2.png",
   "src_dpi": 81.4,
   "partial": false,
@@ -252,7 +252,7 @@
    "pitch": 4.59
   }
  },
- "created": 1791098764.3464909,
+ "created": 1791116816.465552,
  "fonts": {
   "Oxanium": [
    700
@@ -325,7 +325,8 @@
    138.65
   ],
   "radius": 27.89,
-  "circle": true
+  "circle": true,
+  "overlays": []
  },
  "hcontact": [],
  "columns": [
@@ -642,19 +643,7 @@
        "dy": -0.77
       }
      ],
-     "graphics": {
-      "chips": {
-       "h_mm": 4.32,
-       "pad_x_mm": 0.76,
-       "radius_mm": 0.0,
-       "border": "#132d2a",
-       "fill": "#143230",
-       "border_w_mm": 3.81,
-       "gap_x_mm": 2.0,
-       "gap_y_mm": 1.27,
-       "text_color": "#d9dddc"
-      }
-     },
+     "graphics": {},
      "roles": [
       {
        "role": "contact",
@@ -696,30 +685,13 @@
       169.37,
       166.96
      ],
-     "deco": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8fe783847a3abd21\\crops\\head_education_1_1277.png",
-      "box": [
-       131.03,
-       161.37,
-       210.0,
-       172.04
-      ],
-      "text": [
-       0.63,
-       1.02,
-       38.34,
-       5.59
-      ],
-      "kind": "full",
-      "on_box": true
-     },
-     "top": 161.37,
-     "head_bottom": 172.04,
+     "top": 162.39,
+     "head_bottom": 166.96,
      "tokens": {
-      "head_first": 0.51,
+      "head_first": 5.59,
       "title_sub": 4.635,
       "item_gap": 4.95,
-      "sec_gap": 110.96,
+      "sec_gap": 111.98,
       "prev_key": "contact1"
      },
      "graphics": {},
@@ -809,42 +781,15 @@
       166.07,
       216.98
      ],
-     "deco": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8fe783847a3abd21\\crops\\head_competencies_1_1671.png",
-      "box": [
-       126.2,
-       204.29,
-       192.99,
-       223.84
-      ],
-      "text": [
-       5.59,
-       8.0,
-       39.87,
-       12.7
-      ],
-      "kind": "full",
-      "on_box": true
-     },
-     "top": 204.29,
-     "head_bottom": 223.84,
+     "top": 212.29,
+     "head_bottom": 216.98,
      "tokens": {
-      "head_first": 6.73,
+      "head_first": 13.59,
       "wrap": 0.63,
-      "sec_gap": 3.56,
+      "sec_gap": 11.56,
       "prev_key": "item_title1"
      },
-     "graphics": {
-      "dots": {
-       "d_mm": 1.27,
-       "pitch_mm": 14.47,
-       "on": "#102d2b",
-       "off": "#11302d",
-       "n": 3,
-       "x0_mm": 156.17,
-       "place": "right"
-      }
-     },
+     "graphics": {},
      "roles": [
       {
        "role": "list",
@@ -887,5 +832,5 @@
    ]
   }
  ],
- "analysis_s": 67.3
+ "analysis_s": 66.5
 }

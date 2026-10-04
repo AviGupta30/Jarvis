@@ -1154,13 +1154,13 @@ def _resolve_design(image_path: str, template: str, color: str, previous: dict |
 
 
 # ── Content ─────────────────────────────────────────────────────────────────────────────────────
-_CONTENT_SYSTEM = """You are an expert resume writer and typesetter. Turn the user's raw details into polished resume content as JSON.
+_CONTENT_SYSTEM = """You are a resume TYPESETTER. Sort the user's own text into the resume JSON fields below. You do not write.
 RULES
+- COPY THE USER'S TEXT VERBATIM: every sentence, bullet, name, title, date and number exactly as written (same words, same
+  order, same spelling and punctuation). Never rephrase, polish, shorten, expand, summarise, merge or split their sentences.
+- Never write text the user didn't write: no headline, profile, description, highlight or competency of your own. A field
+  the user gave nothing for stays empty ("title" too, unless they wrote a headline).
 - Use ONLY facts the user gave. Never invent employers, job titles, dates, degrees, numbers, awards, phone, email or links.
-- NEVER add metrics, percentages or figures the user did not write (no "increased revenue by 30%").
-- Write in standard resume voice with NO pronouns (no I/he/she/they/his/her) and don't start the profile with the person's name.
-  e.g. "B.Tech CSE student at DTU building AI assistants..." — never guess gender.
-- You MAY polish wording, fix grammar, make bullets punchy and action-led, and write short descriptions that restate the user's facts.
 - PROJECTS ARE NOT JOBS. Put projects in "projects" with their REAL names (e.g. "SmartFlex – AI-Powered Smart Classroom System"),
   the tech line in "tech" and their points in "bullets" — even if the user lists them under an "Experience" heading.
   "experience" is only for real jobs/internships the user states, with the role and organisation exactly as written.
@@ -1172,11 +1172,12 @@ RULES
   them into "section_titles" / "layout_hint" (keys from the shape below).
 - If the user grouped skills under labels ("Languages: ...", "Frameworks & Tools: ..."), copy those groups into
   "skill_groups" exactly (labels and items), besides the flat "skills" list.
-- Keep all of the user's real content; wording should be tight (bullets <= 22 words). Omit a field when there is nothing true for it.
+- Keep ALL of the user's content, in their words. Omit a field when there is nothing for it.
+- Skill "level": only a level the user stated (e.g. "Python (expert)" → 90); otherwise 80 for every skill.
 Return exactly this JSON shape:
 {
- "name": "", "title": "<headline, e.g. 'Chief Branch Manager & Marketing Professional'>",
- "profile": ["<paragraph 1, 35-55 words>", "<optional paragraph 2>"],
+ "name": "", "title": "<the user's own headline, verbatim, or empty>",
+ "profile": ["<the user's summary/objective paragraph, verbatim>"],
  "contact": {"phone": "", "email": "", "location": "", "linkedin": "", "website": ""},
  "highlights": ["<career highlight, max 12 words>"],
  "skills": [{"name": "<skill, 1-2 words>", "level": <50-100>}],
@@ -1197,17 +1198,29 @@ languages, interests, projects, references.
 Icon keys: target, users, user, pie, bars, trending, refresh, handshake, compass, presentation, lightbulb, gear, book, megaphone, shield, star, clipboard, code, globe, money, briefcase, award, chat, clock, heart, cap."""
 
 
+def _design_slots(design: dict) -> list[str]:
+    """Sections the design actually shows. An exact copy lists every key (so any user section has a home), but only
+    the reference's own slots are its design — the rest must come from the user, never be written to fill space."""
+    rep_ = design.get("replica") or {}
+    if rep_.get("sha1"):
+        try:
+            from app.services.resume_replica.exact_render import load_spec
+            spec = load_spec(rep_["sha1"])
+            if spec:
+                keys = [sec["key"] for col in spec.get("columns") or [] for sec in col.get("sections") or []
+                        if sec["key"] in SECTION_KEYS]
+                if keys:
+                    return list(dict.fromkeys(keys))
+        except Exception as e:
+            print(f"[resume] slots of the copy unavailable: {e}")
+    return list(dict.fromkeys(design.get("sidebar_sections", []) + design.get("main_sections", [])
+                              + (design.get("bottom_sections") or [])))
+
+
 def _content_brief(design: dict) -> str:
-    secs = design.get("sidebar_sections", []) + design.get("main_sections", [])
-    lines = [f"Design sections (in order): {', '.join(secs)}."]
-    if design.get("skills_style") == "venn":
-        lines.append("The skills graphic is a 3-circle Venn: the FIRST 3 skills must be single words of <= 11 letters (e.g. SALES, LEADERSHIP); put the rest in additional_skills.")
-    else:
-        lines.append("List 5-8 skills with honest relative levels; extra ones go to additional_skills.")
-    if "competencies" in secs:
-        lines.append("The design has a competencies block: write 4-6 competencies from the user's real work (only if it doesn't just repeat other sections).")
-    if "highlights" in secs:
-        lines.append("The design has career highlights: 3-4, but only facts not already shown elsewhere.")
+    secs = _design_slots(design)
+    lines = [f"Design sections (in order): {', '.join(secs)}. Fill only those the user gave text for; never write any."]
+    lines.append("Skills: the first 5-8 the user listed go to 'skills', the rest (in their order) to additional_skills.")
     if design.get("source") == "campus":
         lines.append("Campus format: fill 'skill_groups' when the user's skills are grouped; never invent highlights or "
                      "competencies; a one-line summary paragraph is enough.")
@@ -1249,7 +1262,7 @@ def _normalise_content(c: dict) -> dict:
                 lvl = 80
             skills.append({"name": str(s["name"]).strip(), "level": max(20, min(100, lvl))})
     out["skills"] = skills[:12]
-    out["additional_skills"] = _str_list(c.get("additional_skills"), 14)
+    out["additional_skills"] = _str_list(c.get("additional_skills"), 24)
     groups = []
     for g in (c.get("skill_groups") or []):
         if isinstance(g, dict) and str(g.get("label") or "").strip() and str(g.get("items") or "").strip():
@@ -1461,7 +1474,7 @@ def _finalize_content(content: dict, details: str, design: dict) -> dict:
         content["projects"].append({"name": job["role"], "tech": "", "period": job["period"], "bullets": job["bullets"], "description": ""})
     content["experience"] = kept
     # drop sections that neither the design nor the user's text has
-    design_secs = set(design.get("sidebar_sections", [])) | set(design.get("main_sections", [])) | set(design.get("bottom_sections") or [])
+    design_secs = set(_design_slots(design))
     for key, rx in _EXPLICIT_RX.items():
         if content.get(key) and key not in design_secs and not re.search(rx, src):
             content[key] = []
@@ -1571,9 +1584,185 @@ def _apply_layout_hint(design: dict, content: dict) -> dict:
     return d
 
 
+_DASHES = "-\u2010\u2011\u2012\u2013\u2014\u2212"
+_SEC_MARK = "\u2029"            # a section boundary found in the person's text (never crossed by one field)
+_VOCAB = "|".join(v for v in _HEADING_WORDS.values())
+_GLUED_HEAD = re.compile(r"(?i:(?:" + _VOCAB + r"|contact\s+information|courses))(?:\s+(?:&|and|of|[A-Z][\w/-]*))*")
+
+
+def _unglue(text: str, mark: str = "\n") -> str:
+    """Pasted resumes often lose their line breaks, gluing a heading to the next word ("SkillsLanguages:",
+    "ProjectsSmartFlex", "Achievements & Problem SolvingSecured"). A heading phrase (section vocabulary first, then
+    title-case words) right before such a glue point gets its own line, so no field can run across sections.
+    Ordinary camel-case words (JavaScript, LeetCode) are left alone: no heading phrase ends at their glue point."""
+    text = text or ""
+    cuts = []
+    for g in re.finditer(r"(?<=[a-z)%])(?=[A-Z])", text):
+        p = g.start()
+        left = text[max(0, p - 90):p]
+        for k in range(5, 0, -1):                     # the longest heading phrase ending here
+            m = re.search(r"((?:\S+[ \t]+){%d}\S+)$" % (k - 1), left)
+            if not m or re.search(r"[.,:;|()]", m.group(1)):
+                continue
+            if _GLUED_HEAD.fullmatch(m.group(1)):
+                cuts.append((p - len(m.group(1)), p))
+                break
+    for a, b in reversed(cuts):
+        text = text[:a].rstrip() + mark + text[a:b] + mark + text[b:]
+    return text
+
+
+def _region_keys(src: str) -> list[tuple[int, str]]:
+    """(position, section key) of every heading line marked in the person's text."""
+    out, pos = [], 0
+    for part in src.split(_SEC_MARK):
+        t = part.strip()
+        if t and len(t) <= 45 and _GLUED_HEAD.fullmatch(t):
+            from app.services.resume_replica.measure import title_key
+            k = title_key(t)
+            if k:
+                out.append((pos, k))
+        pos += len(part) + 1
+    return out
+
+
+def _src_span(v: str, src: str, where: list | None = None) -> str | None:
+    """The exact source text of v (case, dashes, quotes and spacing may differ), or None. A match that runs across
+    a section boundary keeps only its first part (the rest belongs to the next section)."""
+    toks = re.findall(r"\w+|[^\w\s]", v or "")
+    if not toks or len(toks) > 400:
+        return None
+    parts = []
+    for t in toks:
+        if t in _DASHES:
+            parts.append(f"[{re.escape(_DASHES)}]")
+        elif t in "'\u2018\u2019":
+            parts.append("['\u2018\u2019]")
+        elif t in '"\u201c\u201d':
+            parts.append('["\u201c\u201d]')
+        else:
+            parts.append(re.escape(t))
+    m = re.search(r"\s*".join(parts), src, re.I)
+    if not m:
+        return None
+    t = m.group(0).split(_SEC_MARK)[0].strip()
+    if where is not None:
+        where.append(m.start())
+    return t if len(t) >= 2 else None
+
+
+def _segments(src: str) -> tuple[list[str], list[str]]:
+    """The person's own pieces of text: lines/bullets/cells (coarse) and their sentences (fine)."""
+    coarse = [x.strip(" \t•▪●◦*·|:-–—") for x in re.split(r"\n|\u2029|[•▪●◦]|\s{2,}|\s\|\s", src or "")]
+    coarse = [x for x in coarse if len(x) >= 3]
+    fine = [y.strip() for x in coarse for y in re.split(r"(?<=[.!?])\s+(?=[A-Z])", x)]
+    return coarse, [y for y in fine if len(y) >= 3]
+
+
+def _verbatim(c: dict, src: str) -> dict:
+    """The resume shows the person's own words only. Every sentence-like field is replaced by its exact source text
+    (the LLM may have changed a dash, a capital, a word…); a field that can't be traced to the source is dropped.
+    Short fields (names, degrees, dates, tech, skills) must consist of the person's words."""
+    from difflib import SequenceMatcher
+    coarse, fine = _segments(src)
+    words = set(re.findall(r"\w+", (src or "").lower()))
+    regions = _region_keys(src)
+    allowed = {"projects": {"projects", "experience"}, "experience": {"experience", "projects"},
+               "achievements": {"achievements", "highlights"}, "highlights": {"highlights", "achievements", "profile"},
+               "certifications": {"certifications"}, "profile": {"profile"}}
+
+    def region_at(i: int) -> str:
+        k = ""
+        for pos, key in regions:
+            if pos <= i:
+                k = key
+        return k
+
+    def own(sec: str, v: str) -> bool:
+        """v sits in the person's text under a heading of this section (or under no heading at all)."""
+        if sec not in allowed or not regions:
+            return True
+        at: list = []
+        if not _src_span(v, src, at) or not at:
+            return True
+        r = region_at(at[0])
+        return not r or r in allowed[sec]
+    norm = lambda t: re.sub(r"\s+", " ", re.sub(f"[{_DASHES}]", "-", (t or "").lower())).strip()
+
+    def text(v: str) -> str | None:                 # sentence/bullet/paragraph
+        v = str(v or "").strip()
+        if not v:
+            return None
+        sp = _src_span(v, src)
+        if sp:
+            return sp
+        nv = norm(v)
+        best, score = None, 0.0
+        for seg in coarse + fine:
+            r = SequenceMatcher(None, nv, norm(seg)).ratio()
+            if r > score:
+                best, score = seg, r
+        return best if score >= 0.6 else None
+
+    def short(v: str) -> str:                       # a name/degree/date/tech/skill: the person's words only
+        v = str(v or "").strip()
+        if not v:
+            return ""
+        sp = _src_span(v, src)
+        if sp:
+            return sp
+        toks = [t for t in re.findall(r"\w+", v.lower()) if len(t) > 1]
+        return v if toks and all(t in words for t in toks) else ""
+
+    def texts(lst, sec: str = ""):
+        out = []
+        for x in lst or []:
+            t = text(x)
+            if t and t not in out and (not sec or own(sec, t)) and not _GLUED_HEAD.fullmatch(t.strip(" :")):
+                out.append(t)
+        return out
+    c["name"] = short(c.get("name")) or c.get("name", "")
+    c["title"] = short(c.get("title"))
+    c["profile"] = texts(c.get("profile"), "profile")
+    for k in ("highlights", "achievements", "certifications", "interests", "references"):
+        c[k] = texts(c.get(k), k)
+    for x in c.get("projects") or []:
+        x["name"], x["tech"], x["period"] = short(x.get("name")), short(x.get("tech")), short(x.get("period"))
+        x["bullets"] = texts(x.get("bullets"), "projects")
+        x["description"] = text(x.get("description")) or ""
+    c["projects"] = [x for x in c.get("projects") or [] if x["name"]]
+    for x in c.get("experience") or []:
+        for f in ("role", "company", "period", "location"):
+            x[f] = short(x.get(f))
+        x["bullets"] = texts(x.get("bullets"), "experience")
+    c["experience"] = [x for x in c.get("experience") or [] if x["role"] or x["company"]]
+    for x in c.get("education") or []:
+        for f in ("degree", "institution", "period", "details"):
+            x[f] = short(x.get(f))
+    c["education"] = [x for x in c.get("education") or [] if x["degree"] or x["institution"]]
+    c["skills"] = [x for x in c.get("skills") or [] if short(x.get("name"))]
+    for x in c["skills"]:
+        x["name"] = short(x["name"])
+    c["additional_skills"] = [short(x) for x in c.get("additional_skills") or [] if short(x)]
+    for g in c.get("skill_groups") or []:
+        g["label"], g["items"] = short(g.get("label")), short(g.get("items")) or g.get("items", "")
+    c["skill_groups"] = [g for g in c.get("skill_groups") or [] if g["label"] and g["items"]]
+    comps = []
+    for x in c.get("competencies") or []:
+        t = short(x.get("title"))
+        if t:
+            comps.append({**x, "title": t, "description": text(x.get("description")) or ""})
+    c["competencies"] = comps
+    c["languages"] = [x for x in c.get("languages") or [] if short(x.get("name"))]
+    return c
+
+
 def _build_content(details: str, design: dict) -> dict:
+    marked = _unglue(details, _SEC_MARK)
+    details = marked.replace(_SEC_MARK, "\n")
     user = f"{_content_brief(design)}\n\nUSER DETAILS:\n{details.strip()[:12000]}"
     content = _drop_invented(_normalise_content(_llm_json(_CONTENT_SYSTEM, user)), details)
+    content = _verbatim(content, marked)
     titles, order = _user_headings(details)
     if len(order) >= 2:                              # the user's own headings & order are authoritative
         content["section_titles"], content["section_order"] = titles, order
@@ -1582,8 +1771,20 @@ def _build_content(details: str, design: dict) -> dict:
     if not content["name"]:
         content["name"] = _guess_name(details)
     if not content["title"]:
-        content["title"] = _guess_title(details)
-    return content
+        content["title"] = _guess_title(details) or fact_title(content)
+    return _verbatim(content, marked) if content.get("name") else content
+
+
+def fact_title(c: dict) -> str:
+    """A headline taken from the person's own facts (latest role, else latest degree) for designs with a headline
+    line, when the user wrote none. Nothing is invented: it's a field the resume already shows."""
+    for x in c.get("experience") or []:
+        if (x.get("role") or "").strip():
+            return x["role"].strip()
+    for x in c.get("education") or []:
+        if (x.get("degree") or "").strip():
+            return x["degree"].strip()
+    return ""
 
 
 _EDIT_SYSTEM = """You edit an existing resume. Apply the user's instruction to the resume JSON and return the FULL updated JSON
@@ -1593,11 +1794,60 @@ Shape reference (use these exact keys for any list you add to):
 """ + _CONTENT_SYSTEM.split("Return exactly this JSON shape:", 1)[1]
 
 
+_REMOVE_RX = re.compile(r"\b(remove|delete|drop|cut|omit|exclude|without|get\s+rid|take\s+out|hide|replace|merge|"
+                        r"combine|only\s+(?:keep|show)|keep\s+only)\b", re.I)
+_RESTORE_RX = re.compile(r"\b(?:removed|deleted|dropped|missed|missing|lost|skipped|left\s+out|cut)\b[^.\n]{0,60}"
+                         r"\b(?:content|details|projects?|sections?|everything|info|information|bullets?|points?|"
+                         r"experience|achievements?|certifications?|skills?)\b|"
+                         r"\b(?:use|keep|include|add|put|show)\b[^.\n]{0,20}\b(?:full|complete|all|whole|entire)\b[^.\n]{0,30}"
+                         r"\b(?:content|details|data|info|information|resume)\b", re.I)
+# page-count / design-match requests: the fit loop and the design do that; the content stays as it is
+_LAYOUT_ONLY_RX = re.compile(r"(?i)^\W*(?:yes|ok|okay|please|now|and|also|jarvis|sir)?\W*(?:make|fit|keep|create|do|put|"
+                             r"format|set)?\b[^.\n]{0,25}\b(?:exactly\s+|strictly\s+|only\s+)?(?:a\s+)?"
+                             r"(?:one|single|1|two|2|three|3)[\s-]*pages?\b(?:[^.\n]{0,15}\b(?:resume|cv|long|only|max))?"
+                             r"(?:\W+(?:and\s+)?(?:match|align|copy)\b[^.\n]{0,40}\b(?:design|template|image|reference|layout))?\W*$")
+
+
+def _keep_content(old: dict, new: dict, instruction: str = "") -> dict:
+    """An LLM rewrite may shorten wording, never lose the person's facts: entries that vanished (a project, a
+    degree, an award…) come back unless the instruction asked for a removal, and sections the person never had
+    (highlights / competencies built out of their projects) aren't added unless the instruction names them."""
+    asked_remove = bool(_REMOVE_RX.search(instruction or ""))
+    low = (instruction or "").lower()
+
+    def ident(k, x):
+        if isinstance(x, dict):
+            x = x.get("name") or x.get("role") or x.get("degree") or x.get("institution") or x.get("title") or ""
+        return re.sub(r"[^a-z0-9]+", " ", str(x).lower()).strip()[:40]
+    for k in ("experience", "projects", "education", "achievements", "certifications", "languages", "skills",
+              "competencies", "highlights", "interests", "references"):
+        o, n = old.get(k) or [], new.get(k) or []
+        if not o and n and k in ("highlights", "competencies", "interests", "references") and \
+                not re.search(_EXPLICIT_RX.get(k, k), low):
+            new[k] = []                                  # not the person's: built from other sections
+            continue
+        if asked_remove or not o:
+            continue
+        have = [ident(k, x) for x in n]
+        out = list(n)
+        for i, x in enumerate(o):
+            idx = ident(k, x)
+            if idx and not any(idx == h or (len(idx) > 8 and (idx in h or h in idx)) or _similar(idx, h) > 0.8 for h in have):
+                out.insert(min(i, len(out)), json.loads(json.dumps(x)))     # back where it was
+        new[k] = out
+    if not asked_remove and old.get("profile") and not new.get("profile"):
+        new["profile"] = old["profile"]
+    return new
+
+
 def _edit_content(old: dict, instruction: str) -> dict:
+    if _LAYOUT_ONLY_RX.match(instruction or ""):
+        return old                                       # "make it single page": the fit loop's job, not a rewrite
     user = f"INSTRUCTION: {instruction}\n\nCURRENT RESUME JSON:\n{json.dumps(old, ensure_ascii=False)}"
     data = _llm_json(_EDIT_SYSTEM, user)
     data.pop("design_request", None)
     merged = _drop_invented(_normalise_content(data), json.dumps(old, ensure_ascii=False) + "\n" + instruction)
+    merged = _keep_content(old, merged, instruction)
     if "custom_sections" not in data and old.get("custom_sections"):     # model dropped the editor's own sections
         merged["custom_sections"] = old["custom_sections"]
     return merged if (merged.get("name") or merged.get("experience")) else old
@@ -2948,7 +3198,8 @@ _CONDENSE_SYSTEM = """You shorten resumes to fit a page limit. Return the FULL r
 - When a bullet must go, drop the most generic one; keep bullets with results, numbers or awards.
 - Copy every number exactly as written (30,000+, 99.05, 5%) — never abbreviate or round them.
 - Bullets: at most 3 per entry, each <= 14 words. Profile: one paragraph <= 40 words. Descriptions <= 18 words.
-- If it still can't fit, drop the least important items first (extra skills, minor bullets, duplicate points).
+- NEVER delete a job, project, degree, award, certification or section, and never move facts into another section
+  (no new highlights/competencies). Shorten wording and drop minor bullets only; Jarvis removes items itself if needed.
 - NEVER invent anything or add numbers that aren't already in the JSON. Keep section_titles and layout_hint unchanged."""
 
 
@@ -2962,7 +3213,7 @@ def _condense_content(content: dict, target: int, pages: int, long_keys: list | 
     except Exception as e:
         print(f"[resume] condense failed: {e}")
         return content
-    out = _drop_invented(_normalise_content(data), json.dumps(content, ensure_ascii=False))
+    out = _keep_content(content, _drop_invented(_normalise_content(data), json.dumps(content, ensure_ascii=False)))
     for k in ("section_titles", "layout_hint", "custom_sections"):
         out[k] = content.get(k) or out.get(k)
     for k in SECTION_KEYS:                       # columns that weren't overflowing stay untouched
@@ -3016,7 +3267,17 @@ _TRIM_STEPS = [
 
 
 def _fit_render(content: dict, design: dict, photo: str, stem: str, target: int | None):
-    """Render; with a page target, shrink → AI-condense → trim until it fits. Returns (files, content, note)."""
+    """Render; with a page target the layout adapts (type size, spacing, column balance) — the person's text is
+    never rewritten or cut. Returns (files, content, note)."""
+    files = _render_files(content, design, photo, stem, target)
+    if not target or files["pages"] <= target:
+        return files, content, ""
+    return files, content, (f"your full text needs {files['pages']} pages in this design even at the smallest "
+                            f"readable size — I kept every word. Say *shorten it* if you want me to cut something")
+
+
+def _fit_render_condensing(content: dict, design: dict, photo: str, stem: str, target: int | None):
+    """Only on an explicit request to shorten: shrink → AI-condense → trim until it fits."""
     files = _render_files(content, design, photo, stem, target)
     if not target or files["pages"] <= target:
         return files, content, ""
@@ -4681,6 +4942,8 @@ def editor_save(payload: dict) -> dict:
             note = f"Page target: {st['target_pages'] or 'auto'}."
 
         st.update({"content": content, "design": design, "awaiting_details": False, "updated": time.time()})
+        if isinstance(payload.get("op"), dict) or payload.get("instruction") or payload.get("add_section")                 or payload.get("add_custom") or (payload.get("content") is not None and content != before["content"]):
+            st["content_full"] = json.loads(json.dumps(content))      # edited by hand: that's the person's version now
         _save_state(st)
 
         def undo_id() -> str:                      # a structural change becomes one step of the editor's Ctrl+Z
@@ -4870,7 +5133,8 @@ def detect_resume_request(prompt: str, recent: list[str] | None = None) -> dict 
         create = bool(labelled or _CREATE_RX.search(lower) or _LIKE_RX.search(lower) or _TOOL_RX.search(lower)
                       or ((template or color) and re.search(_NOUN, lower)))
         edit = bool(_EDIT_RX.search(lower)) and bool(state.get("content"))
-        if not edit and not other_m and len(text) < 400 and _FOLLOW_RX.search(lower) and _recent_resume(recent, state):
+        if not edit and not other_m and len(text) < 400 and (_FOLLOW_RX.search(lower) or _RESTORE_RX.search(lower)) \
+                and _recent_resume(recent, state):
             edit = True
         if create and not (edit and not ref and not _has_details(text) and re.search(r"\b(my|the|this)\s+" + _NOUN, lower)
                            and not re.search(r"\b(new|another|fresh)\b", lower)):
@@ -4973,22 +5237,26 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         clean_details = re.sub(r"(?i)^.*?\b(?:create|make|build|generate|design|prepare|write|recreate)\b[^.\n:]{0,80}?" + _NOUN +
                                r"[^.\n:]{0,60}[:.\-]?\s*", "", details, count=1).strip() if details else ""
         has_new_details = _has_details(clean_details) or len(clean_details) > 120
-        if instruction and state.get("content") and not has_new_details:
+        if instruction and state.get("content_full") and _RESTORE_RX.search(instruction) and not has_new_details:
+            content = json.loads(json.dumps(state["content_full"]))     # everything the person gave, unfitted
+            yield "♻️ Restoring your full content…\n\n"
+        elif instruction and state.get("content") and not has_new_details:
+            base = state.get("content_full") or state["content"]      # edits start from the full, unfitted content
             if image_path or template or color:
-                content = state["content"]
+                content = base
                 if not re.fullmatch(r"[^.\n]{0,40}\b(colou?r|template|format|style|design|theme)\b[^.\n]{0,60}", instruction.lower()):
                     yield "✍️ Applying your changes…\n\n"
-                    content = _edit_content(state["content"], instruction)
+                    content = _edit_content(base, instruction)
             else:
                 yield "✍️ Applying your changes…\n\n"
-                content = _edit_content(state["content"], instruction)
+                content = _edit_content(base, instruction)
         elif has_new_details:
             yield "✍️ Structuring your details into resume sections…\n\n"
             content = _build_content(clean_details or details, design)
             design = _apply_layout_hint(design, content)        # "LEFT COLUMN: Contact, Skills" beats the picture
         elif state.get("content") and (image_path or template or color or logo_path
                                        or re.search(r"\b(again|same|my)\b", details.lower())):
-            content = state["content"]
+            content = state.get("content_full") or state["content"]
         if not content or not (content.get("name") or content.get("experience") or content.get("profile")):
             _stash_design(state, design)
             state.update({"design": design, "awaiting_details": True, "awaiting_since": time.time(),
@@ -5013,9 +5281,14 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         yield ("🖨️ Typesetting and rendering the PDF" + (f" (strictly {target} page{'s' if target > 1 else ''})" if target else "") + "…\n\n")
         slug = re.sub(r"[^a-z0-9]+", "_", (content.get("name") or "resume").lower()).strip("_")[:30] or "resume"
         stem = f"resume_{slug}_{int(time.time())}"
-        files, content, fit_note = _fit_render(content, design, photo, stem, target)
+        full = json.loads(json.dumps(content))
+        # the words are the person's: only an explicit "shorten / trim / condense" lets Jarvis cut text to fit
+        shorten = bool(re.search(r"(?i)\b(shorten|trim|condense|cut\s+(?:it|down|the)|make\s+(?:it\s+)?(?:shorter|concise|brief))\b",
+                                 instruction or ""))
+        files, content, fit_note = (_fit_render_condensing if shorten else _fit_render)(content, design, photo, stem, target)
 
         _stash_design(state, design)
+        state["content_full"] = full                    # before fitting: a later "use my full content" brings it back
         state.update({"design": design, "content": content, "awaiting_details": False, "photo": photo, "target_pages": target,
                       "ref_image": ref_for_photo, "reuse_photo": False, "last_pdf": files["pdf"], "updated": time.time(),
                       "render_scale": files.get("scale", 1.0)})

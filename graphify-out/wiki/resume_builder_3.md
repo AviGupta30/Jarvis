@@ -1,60 +1,43 @@
 # resume_builder
 
-> 39 nodes · cohesion 0.13
+> 16 nodes · cohesion 0.17
 
 ## Key Concepts
 
-- **resume_builder.py** (151 connections) — `app/services/resume_builder.py`
-- **_f()** (27 connections) — `app/services/resume_builder.py`
-- **_it()** (17 connections) — `app/services/resume_builder.py`
-- **_section_html()** (17 connections) — `app/services/resume_builder.py`
-- **_render_html_inner()** (16 connections) — `app/services/resume_builder.py`
-- **_e()** (13 connections) — `app/services/resume_builder.py`
-- **_skills_html()** (8 connections) — `app/services/resume_builder.py`
-- **_shaped_header_html()** (7 connections) — `app/services/resume_builder.py`
-- **_competencies_html()** (6 connections) — `app/services/resume_builder.py`
-- **_header_html()** (6 connections) — `app/services/resume_builder.py`
-- **_photo_html()** (6 connections) — `app/services/resume_builder.py`
-- **_svg_bg()** (6 connections) — `app/services/resume_builder.py`
-- **_experience_html()** (5 connections) — `app/services/resume_builder.py`
-- **_icon()** (5 connections) — `app/services/resume_builder.py`
-- **_list_html()** (5 connections) — `app/services/resume_builder.py`
-- **_name_block()** (5 connections) — `app/services/resume_builder.py`
-- **_projects_html()** (5 connections) — `app/services/resume_builder.py`
-- **_sec()** (5 connections) — `app/services/resume_builder.py`
-- **_contact_html()** (4 connections) — `app/services/resume_builder.py`
-- **_custom_section_html()** (4 connections) — `app/services/resume_builder.py`
-- **_education_html()** (4 connections) — `app/services/resume_builder.py`
-- **_languages_html()** (4 connections) — `app/services/resume_builder.py`
-- **_name_size()** (4 connections) — `app/services/resume_builder.py`
-- **_decor_html()** (3 connections) — `app/services/resume_builder.py`
-- **_footer_html()** (3 connections) — `app/services/resume_builder.py`
-- *... and 14 more nodes in this community*
+- **_verbatim()** (11 connections) — `app/services/resume_builder.py`
+- **Round 8 fixes (2026-10-04, `SPEC_VERSION` 7 → 8)** (7 connections) — `docs/features/resume-creator.md`
+- **_src_span()** (6 connections) — `app/services/resume_builder.py`
+- **_region_keys()** (5 connections) — `app/services/resume_builder.py`
+- **_segments()** (4 connections) — `app/services/resume_builder.py`
+- **_unglue()** (4 connections) — `app/services/resume_builder.py`
+- **own()** (4 connections) — `app/services/resume_builder.py`
+- **text()** (3 connections) — `app/services/resume_builder.py`
+- **texts()** (3 connections) — `app/services/resume_builder.py`
+- **region_at()** (2 connections) — `app/services/resume_builder.py`
+- **short()** (2 connections) — `app/services/resume_builder.py`
+- **Pasted resumes often lose their line breaks, gluing a heading to the next word…** (1 connections) — `app/services/resume_builder.py`
+- **(position, section key) of every heading line marked in the person's text.** (1 connections) — `app/services/resume_builder.py`
+- **The exact source text of v (case, dashes, quotes and spacing may differ), or…** (1 connections) — `app/services/resume_builder.py`
+- **The person's own pieces of text: lines/bullets/cells (coarse) and their…** (1 connections) — `app/services/resume_builder.py`
+- **The resume shows the person's own words only. Every sentence-like field is…** (1 connections) — `app/services/resume_builder.py`
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (64 shared connections)
-- [exact_render](exact_render.md) (23 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (22 shared connections)
-- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (21 shared connections)
-- [resume_builder + resume-creator](resume_builder_+_resume-creator.md) (11 shared connections)
-- [analyzer](analyzer.md) (7 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (4 shared connections)
-- [assignment_humanizer](assignment_humanizer.md) (1 shared connections)
-- [compiler](compiler.md) (1 shared connections)
-- [memory + tools](memory_+_tools.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (9 shared connections)
+- [plate](plate.md) (2 shared connections)
+- [measure](measure.md) (1 shared connections)
+- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (1 shared connections)
+- [exact_render](exact_render.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/resume_builder.py`
-- `docs/plans/resume-exact-replica.md`
+- `docs/features/resume-creator.md`
 
 ## Audit Trail
 
-- EXTRACTED: 253 (97%)
-- INFERRED: 7 (3%)
+- EXTRACTED: 27 (77%)
+- INFERRED: 8 (23%)
 - AMBIGUOUS: 0 (0%)
 
 ---

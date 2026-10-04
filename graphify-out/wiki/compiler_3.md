@@ -22,7 +22,7 @@
 ## Relationships
 
 - [compiler](compiler.md) (17 shared connections)
-- [orchestrator + renderer](orchestrator_+_renderer.md) (1 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
 
 ## Source Files
 

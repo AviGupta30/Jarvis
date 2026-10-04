@@ -16,11 +16,9 @@
 
 ## Relationships
 
-- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
-- [memory + tool_runner](memory_+_tool_runner.md) (2 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [file_ops](file_ops.md) (1 shared connections)
-- [chat](chat.md) (1 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (4 shared connections)
+- [memory](memory.md) (2 shared connections)
+- [dynamic_skill + planner](dynamic_skill_+_planner.md) (1 shared connections)
 
 ## Source Files
 

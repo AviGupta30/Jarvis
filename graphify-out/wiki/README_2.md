@@ -1,24 +1,33 @@
 # README
 
-> 2 nodes · cohesion 1.00
+> 10 nodes · cohesion 0.20
 
 ## Key Concepts
 
-- **README.md** (1 connections) — `README.md`
-- **Jarvis** (1 connections) — `README.md`
+- **Neural Cache** (10 connections) — `neural_cache/README.md`
+- **Files** (2 connections) — `neural_cache/README.md`
+- **neural_cache/README.md** (1 connections) — `neural_cache/README.md`
+- **Architecture** (1 connections) — `neural_cache/README.md`
+- **Benchmark** (1 connections) — `neural_cache/README.md`
+- **LRU Cache Design** (1 connections) — `neural_cache/README.md`
+- **Persistence** (1 connections) — `neural_cache/README.md`
+- **Running** (1 connections) — `neural_cache/README.md`
+- **Tests** (1 connections) — `neural_cache/README.md`
+- **Wire Protocol** (1 connections) — `neural_cache/README.md`
 
 ## Relationships
 
-- No strong cross-community connections detected
+- [lru](lru.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
-- `README.md`
+- `neural_cache/README.md`
 
 ## Audit Trail
 
-- EXTRACTED: 1 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 10 (91%)
+- INFERRED: 1 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -20,7 +20,7 @@ import numpy as np
 
 from .ingest import PX_PER_MM, load_reference
 
-SPEC_VERSION = 5
+SPEC_VERSION = 8
 _BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 SPEC_DIR = os.path.join(_BASE, "app", "memory", "replica_docs")
 ASSET_DIR = os.path.join(_BASE, "data", "uploads", "resumes", "replica")
@@ -64,7 +64,7 @@ def _style_key(l: dict) -> str | None:
         return r
     if r == "heading":
         return f"head{c}"
-    if r in ("item_title", "sub", "meta", "meta_right", "meta_left"):
+    if r in ("item_title", "sub", "meta", "meta_right", "meta_left", "meta_above"):
         return f"{r}{c}"
     if r in ("body", "list"):
         return f"{r}{c}"
@@ -93,6 +93,21 @@ def _font_styles(ref: dict, s: dict, log) -> dict:
         if k and l.get("ink"):
             l["skey"] = k
             groups.setdefault(k, []).append(l)
+    # one role in one column can be drawn in clearly different colours (white text on a band vs grey text on the
+    # page): those lines are their own style, so each keeps its colour (and its own font match)
+    for k in list(groups):
+        ls = groups[k]
+        if len(ls) < 2 or k in ("name", "title"):
+            continue
+        rgb = np.array([[int(l["fg"][i:i + 2], 16) for i in (1, 3, 5)] for l in ls], float)
+        med = np.median(rgb, axis=0)
+        far = [l for l, c in zip(ls, rgb) if np.abs(c - med).sum() > 150]
+        if far and len(far) < len(ls):
+            nk = k + "c"
+            for l in far:
+                l["skey"] = nk
+            groups[nk] = far
+            groups[k] = [l for l in ls if l not in far]
     samples, owners = [], []
     for k, ls in groups.items():
         good = [l for l in ls if l["conf"] >= 0.8 and 3 <= len(l["text"]) <= 44 and not l.get("inner_bullet")]
@@ -193,6 +208,7 @@ def _font_styles(ref: dict, s: dict, log) -> dict:
     return styles
 
 
+
 def _choose_families(per_key: dict, max_fams: int = 3) -> dict:
     """Designs use 1–3 families: pick the family set that best explains every text role together, then the
     best weight per role within it (look-alike faces at low resolution otherwise scatter across families)."""
@@ -275,6 +291,15 @@ def _section_tokens(sec: dict, lines_sorted: list, deco_bottom_mm: float | None)
         prev = None
         for l in lines_sorted:
             if l["role"] in ("meta_right", "meta_left"):
+                continue
+            if l["role"] == "meta_above":                 # a date above its title: the item starts here
+                if prev is not None:
+                    add("item_gap", _ink_top(l) - _ink_top(prev))
+                prev = l
+                continue
+            if prev is not None and prev["role"] == "meta_above" and l["role"] == "item_title":
+                add("date_title", _ink_top(l) - _ink_top(prev))
+                prev = l
                 continue
             if prev is not None:
                 d = _ink_top(l) - _ink_top(prev)
@@ -365,7 +390,8 @@ def analyse_reference(image_path: str, log=_safe_print, force: bool = False) -> 
         spec["title"] = {"align": al, "lines": [line_box(l) for l in s["title_lines"]]}
     if info.get("photo"):
         p = info["photo"]
-        spec["photo"] = {"box": p["box_mm"], "radius": p["radius_mm"], "circle": p["circle"]}
+        spec["photo"] = {"box": p["box_mm"], "radius": p["radius_mm"], "circle": p["circle"],
+                         "overlays": p.get("overlays") or []}
     hc = []
     for l in lines:
         if l["role"] == "header_contact":

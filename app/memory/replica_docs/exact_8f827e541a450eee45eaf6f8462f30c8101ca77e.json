@@ -1,8 +1,8 @@
 {
- "v": 4,
+ "v": 8,
  "sha1": "8f827e541a450eee45eaf6f8462f30c8101ca77e",
- "source": "Screenshot_2026-10-04_102007_1791089515.png",
- "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_102007_1791089515.png",
+ "source": "Screenshot_2026-10-04_102007_1791118150.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_102007_1791118150.png",
  "page": {
   "h_mm": 297.0,
   "ref_h_mm": 296.8,
@@ -10,7 +10,8 @@
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\plate2.png",
   "src_dpi": 88.1,
   "partial": false,
-  "letter": false
+  "letter": false,
+  "ornaments": []
  },
  "styles": {
   "name": {
@@ -81,7 +82,7 @@
    "desc": 0.12,
    "ink_asc": 0.83,
    "n": 17,
-   "pitch": 4.761
+   "pitch": 4.19
   },
   "list0": {
    "ref_contrast": 6.04,
@@ -126,7 +127,7 @@
    "pitch": 4.571
   }
  },
- "created": 1791091268.929038,
+ "created": 1791118304.7075381,
  "fonts": {
   "BIZ UDPGothic": [
    400,
@@ -166,7 +167,8 @@
    62.09
   ],
   "radius": 24.98,
-  "circle": true
+  "circle": true,
+  "overlays": []
  },
  "hcontact": [],
  "columns": [
@@ -175,7 +177,7 @@
    "x1": 70.59,
    "top": 75.29,
    "bottom": 279.32,
-   "text_x": 24.31,
+   "text_x": 24.25,
    "sections": [
     {
      "key": "contact",
@@ -317,14 +319,14 @@
      "head_bottom": 135.09,
      "tokens": {
       "head_first": 4.83,
-      "new_item": 8.76,
+      "new_item": 8.695,
       "wrap": 4.57,
       "sec_gap": 17.4,
       "prev_key": "contact0"
      },
      "lead": {
-      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_skills_0_21.png",
-      "w": 1.78,
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_skills_0_30.png",
+      "w": 1.52,
       "h": 1.52,
       "dx": 4.19,
       "dy": 0.77,
@@ -452,7 +454,7 @@
        "x": 24.63,
        "x1": 66.02,
        "y": 229.93,
-       "lead": false,
+       "lead": true,
        "text": "in World Environment Day"
       }
      ]
@@ -583,8 +585,8 @@
      "head_bottom": 86.08,
      "tokens": {
       "head_first": 10.03,
-      "new_item": 3.94,
-      "wrap": 4.19
+      "wrap": 4.065,
+      "new_item": 3.94
      },
      "lead": {
       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_profile_1_9.png",
@@ -611,7 +613,7 @@
        "x": 92.56,
        "x1": 193.37,
        "y": 100.05,
-       "lead": true,
+       "lead": false,
        "text": "level position in the marketing department where I can utili"
       },
       {
@@ -883,5 +885,5 @@
    "bullet_text_x": 98.46
   }
  ],
- "analysis_s": 80.6
+ "analysis_s": 118.8
 }

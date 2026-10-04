@@ -224,6 +224,9 @@ def detect_resume_intent(user_text: str, recent_tasks: list) -> dict | None:
         # GATE 1: Immediately bail if this looks like a fresh task
         if _has_fresh_task_indicator(user_text):
             return None
+        # GATE 1b: "résumé" the document (a CV), not "resume" the action ("use full content given in resume")
+        if re.search(r"(?i)\b(?:in|on|to|for|of|my|the|a|this|your|our)\s+r[eé]sum[eé]s?\b|\bcv\b", user_text):
+            return None
 
         # GATE 2: Must have either a reference phrase OR a continuation verb
         has_ref  = _has_reference_phrase(user_text)

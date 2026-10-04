@@ -18,7 +18,7 @@
 
 ## Relationships
 
-- [tools + window_layout](tools_+_window_layout.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 - [gestureController + gestureInterpreter](gestureController_+_gestureInterpreter.md) (1 shared connections)
 - [package + App](package_+_App.md) (1 shared connections)
 - [ControlPanel + HandSkeleton](ControlPanel_+_HandSkeleton.md) (1 shared connections)

@@ -34,12 +34,13 @@
 ## Relationships
 
 - [test_concurrency](test_concurrency.md) (5 shared connections)
-- [server + persistence](server_+_persistence.md) (4 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (2 shared connections)
-- [reply_generator](reply_generator.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
 - [benchmark](benchmark.md) (1 shared connections)
 - [dsa_enforcer](dsa_enforcer.md) (1 shared connections)
 - [neural-cache](neural-cache.md) (1 shared connections)
+- [persistence + server](persistence_+_server.md) (1 shared connections)
 
 ## Source Files
 

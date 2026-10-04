@@ -2,7 +2,7 @@
 
 > God node · 50 connections · `app/api/chat.py`
 
-**Community:** [chat](chat.md)
+**Community:** [chat + youtube_control](chat_+_youtube_control.md)
 
 ## Connections by Relation
 
@@ -14,10 +14,10 @@
 - detect_resume_request() `EXTRACTED`
 - parse_youtube_followup() `EXTRACTED`
 - recall() `EXTRACTED`
+- detect_resume_intent() `EXTRACTED`
 - check_for_tool_intent() `EXTRACTED`
 - read_file() `EXTRACTED`
 - _media_compound() `EXTRACTED`
-- detect_resume_intent() `EXTRACTED`
 - _save_session() `EXTRACTED`
 - is_complex_task() `EXTRACTED`
 - format_recall_for_prompt() `EXTRACTED`

@@ -39,8 +39,8 @@ fastembed `BAAI/bge-small-en-v1.5` (384-d) → FAISS `IndexFlatIP`. `store_turn`
   L22 _ensure_memory_file() · L27 _load_memory() · L34 _save_memory() · L40 _fuzzy_match_topics() · L52 save_fact() · L74 recall_facts() · L105 update_fact() · L130 forget_fact() · L143 get_all_facts_as_context() · L159 get_morning_brief()
 - `app/services/task_ledger.py` (288 lines): task_ledger.py — Jarvis Task Context Ledger
   L36 _MAX_ENTRIES · L50 _ensure_ledger_file() · L57 _load_ledger() · L66 _save_ledger() · L79 log_task() · L118 get_recent_tasks() · L143 get_recent_tasks_raw() · L158 find_resumable_task() · L218 update_task() · L243 get_task_ledger_for_prompt()
-- `app/services/resume_detector.py` (321 lines): resume_detector.py — Jarvis Resume Intent Classifier
-  L25 _REFERENCE_PATTERNS · L75 _FRESH_TASK_INDICATORS · L84 _TASK_RESUME_ACTIONS · L105 _CONTEXT_PATH_KEYS · L110 _has_reference_phrase() · L119 _has_fresh_task_indicator() · L128 _has_continuation_verb() · L134 _extract_task_resource() · L149 _find_best_task_match() · L197 detect_resume_intent() · L272 get_resume_context_string()
+- `app/services/resume_detector.py` (324 lines): resume_detector.py — Jarvis Resume Intent Classifier
+  L25 _REFERENCE_PATTERNS · L75 _FRESH_TASK_INDICATORS · L84 _TASK_RESUME_ACTIONS · L105 _CONTEXT_PATH_KEYS · L110 _has_reference_phrase() · L119 _has_fresh_task_indicator() · L128 _has_continuation_verb() · L134 _extract_task_resource() · L149 _find_best_task_match() · L197 detect_resume_intent() · L275 get_resume_context_string()
 - `app/memory/memory.py` (110 lines): Jarvis Vector Memory — ChromaDB-based long-term memory engine.
   L32 _uid() · L39 save_skill() · L50 find_skill() · L74 list_skills() · L84 save_preference() · L94 get_all_preferences() · L103 format_preferences_for_prompt()
 - `app/services/embeddings.py` (21 lines)

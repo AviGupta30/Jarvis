@@ -377,10 +377,16 @@ if(gl>0&&e.scrollWidth>max){const ex=Math.min(gl,e.scrollWidth-max+1);e.style.le
 const fs0=parseFloat(getComputedStyle(e).fontSize),mn=parseFloat(e.dataset.min||'0.3');let fs=fs0,i=0;
 while(e.scrollWidth>max&&fs>fs0*mn&&i++<40){fs*=0.97;e.style.fontSize=fs+'px';}
 if(e.scrollWidth>max){e.style.whiteSpace='normal';e.style.width=(max/P)+'mm';e.style.lineHeight='1.15';}});
+const fg={};document.querySelectorAll('[data-fitgroup]').forEach(e=>{const k=e.dataset.fitgroup,f=parseFloat(getComputedStyle(e).fontSize);fg[k]=Math.min(fg[k]||1e9,f);});
+document.querySelectorAll('[data-fitgroup]').forEach(e=>{e.style.fontSize=fg[e.dataset.fitgroup]+'px';});
 const BR=document.body.getBoundingClientRect(),B=BR.top,G=window.__RBG__;
 const at=(x,y)=>{if(!G)return null;const cx=Math.min(G.w-1,Math.max(0,Math.floor(x/G.c))),cy=Math.min(G.h-1,Math.max(0,Math.floor(y/G.c)));const i=(cy*G.w+cx)*3;return [G.p1[i],G.p1[i+1],G.p1[i+2]];};
 const differ=(a,b)=>!a||!b||Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])>60;
 const PH=(document.body.dataset.photo||'').split(',').filter(Boolean).map(parseFloat);
+// text that would run under the photo wraps before it (the reference's text stops at the photo too)
+if(PH.length===4)for(let k=0;k<2;k++)document.querySelectorAll('.cols .blk,.cols .row').forEach(e=>{if(e.closest('.chips,.bargrid'))return;
+ const r=e.getBoundingClientRect(),x0=(r.left-BR.left)/P,x1=(r.right-BR.left)/P,y0=(r.top-B)/P,y1=(r.bottom-B)/P;
+ if(x0<PH[0]-6&&x1>PH[0]-1.5&&y0<PH[3]&&y1>PH[1])e.style.maxWidth=(PH[0]-2-x0)+'mm';});
 document.querySelectorAll('section[data-mintop]').forEach(sc=>{const h=sc.firstElementChild;if(!h)return;
  const r=h.getBoundingClientRect(),sr=sc.getBoundingClientRect(),top=(r.top-B)/P,min=parseFloat(sc.dataset.mintop);
  if(!(top<297&&top<min-0.3))return;
@@ -443,6 +449,8 @@ def _header_html(ctx, photo_uri: str) -> str:
             txt = rb._f("name", name, "your name") if len(lines) == 1 else rb._e(part)
             out.append(_abs_text(ctx, ln, nm["align"], txt, maxw, ln.get("key") or "name"))
     tt = spec.get("title")
+    if tt and tt.get("lines") and not c.get("title") and rb.fact_title(c):
+        c = {**c, "title": rb.fact_title(c)}      # the design has a headline line: fill it from the person's facts
     if tt and tt.get("lines") and c.get("title"):
         ln0 = tt["lines"][0]
         if len(tt["lines"]) == 1:
@@ -474,8 +482,17 @@ def _header_html(ctx, photo_uri: str) -> str:
         rad = "50%" if ph.get("circle") else _m(ph.get("radius") or 0)
         style = f"left:{_m(x0)};top:{_m(y0)};width:{_m(x1 - x0)};height:{_m(y1 - y0)};border-radius:{rad}"
         if photo_uri:
-            out.append(f'<div class="ph hd-avatar" style="{style};background-image:url(\'{photo_uri}\');'
-                       f'background-position:{_face_pos(photo_uri)}"></div>')
+            # a see-through band of the design crossing the photo: drawn over the new photo the same way
+            # (positions in % of the photo box, so it follows the photo when it is moved/resized in the editor)
+            ov = "".join(
+                f'<i style="position:absolute;pointer-events:none;left:{(o["x0"] - x0) / (x1 - x0) * 100:.2f}%;'
+                f'width:{(o["x1"] - o["x0"]) / (x1 - x0) * 100:.2f}%;top:{(o["y0"] - y0) / (y1 - y0) * 100:.2f}%;'
+                f'height:{(o["y1"] - o["y0"]) / (y1 - y0) * 100:.2f}%;background:{o["color"]};opacity:{o["alpha"]};'
+                f'mix-blend-mode:{o.get("blend") or "normal"}"></i>'
+                for o in ph.get("overlays") or [])
+            clip = ";overflow:hidden" if ov else ""
+            out.append(f'<div class="ph hd-avatar" style="{style}{clip};background-image:url(\'{photo_uri}\');'
+                       f'background-position:{_face_pos(photo_uri)}">{ov}</div>')
         else:
             col = (ctx["S"].st.get("name") or {}).get("color", "#334155")
             out.append(f'<div class="ph ph-empty hd-avatar" style="{style};background:{col}22;color:{col}">'
@@ -709,14 +726,33 @@ def _keys_for(S: Styles, ci: int):
     return {
         "head": S.pick(f"head{ci}", f"head{o}"),
         "title": S.pick(f"item_title{ci}", f"item_title{o}", f"sub{ci}", f"body{ci}"),
-        "sub": S.pick(f"sub{ci}", f"sub{o}", f"body{ci}"),
-        "meta": S.pick(f"meta{ci}", f"meta_right{ci}", f"meta{o}", f"meta_right{o}", f"body{ci}"),
+        # a missing role takes this column's own style first (the other column may sit on another background)
+        "sub": S.pick(f"sub{ci}", f"body{ci}", f"sub{o}"),
+        "meta": S.pick(f"meta{ci}", f"meta_right{ci}", f"meta_above{ci}", f"meta_left{ci}", f"body{ci}", f"meta{o}"),
+        "meta_a": S.pick(f"meta_above{ci}", f"meta{ci}", f"meta_left{ci}", f"body{ci}"),
         "meta_r": S.pick(f"meta_right{ci}", f"meta{ci}", f"meta_right{o}", f"body{ci}"),
         "meta_l": S.pick(f"meta_left{ci}", f"meta_left{o}", f"item_title{ci}", f"meta{ci}", f"body{ci}"),
         "body": S.pick(f"body{ci}", f"list{ci}", f"body{o}"),
         "list": S.pick(f"list{ci}", f"body{ci}", f"list{o}"),
         "contact": S.pick(f"contact{ci}", f"list{ci}", f"body{ci}", "hcontact"),
     }
+
+
+_ROLE_K = {"body": "body", "list": "list", "item_title": "title", "sub": "sub", "meta": "meta", "meta_right": "meta_r",
+           "meta_left": "meta_l", "meta_above": "meta_a", "contact": "contact"}
+
+
+def _own_keys(S: Styles, sec: dict, K: dict) -> dict:
+    """This section's own measured styles (a profile on a coloured band keeps its own text colour)."""
+    K = dict(K)
+    seen: dict[str, dict[str, int]] = {}
+    for r in sec.get("roles") or []:
+        if r.get("key") and r["role"] in _ROLE_K and r["key"] in S.st:
+            d = seen.setdefault(_ROLE_K[r["role"]], {})
+            d[r["key"]] = d.get(r["key"], 0) + 1
+    for name, d in seen.items():
+        K[name] = max(d, key=d.get)
+    return K
 
 
 def _margin(S: Styles, delta: float | None, prev_key: str | None, next_key: str, default_extra: float = 0.0) -> float:
@@ -760,12 +796,16 @@ def _heading_html(ctx, ci: int, col: dict, sec: dict, key: str, title: str, marg
                  f"height:{_m(Hc - max(0.0, top_pad))};padding-top:{_m(max(0.0, top_pad))};{width}")
         cls = "hd hd-full" if deco["kind"] == "full" else "hd hd-hug"
         nc = ' data-nc="1"' if deco.get("on_box") else ""
-        h2 = f'<h2 class="{cls}"{nc} style="{style}"><span class="t k-{hk}" style="line-height:1">{text}</span></h2>'
+        room = max(10.0, col["x1"] + 4.0 - col["text_x"] - x_off - L - R)
+        h2 = (f'<h2 class="{cls}"{nc} style="{style}"><span class="t k-{hk}" data-fit="{room:.1f}" data-min="0.55" '
+              f'style="line-height:1;display:inline-block;white-space:nowrap">{text}</span></h2>')
         return _with_rule(S, sec, h2, ty0 * S.s, margin_top, x_off), 0.0
     # plain heading: no decoration in the reference → just the text, positioned by its ink
     hx = (sec.get("head_ink") or [col["text_x"]])[0] - col["text_x"]
+    room = max(10.0, col["x1"] + 4.0 - col["text_x"] - hx)
     h2 = (f'<h2 class="hd" style="margin-top:{_m(margin_top)};margin-left:{_m(hx)}">'
-          f'<span class="t k-{hk}" style="line-height:{_m(S.pitch(hk))}">{text}</span></h2>')
+          f'<span class="t k-{hk}" data-fit="{room:.1f}" data-min="0.55" style="line-height:{_m(S.pitch(hk))};'
+          f'display:inline-block;white-space:nowrap">{text}</span></h2>')
     return _with_rule(S, sec, h2, S.lead(hk), margin_top, hx), None
 
 
@@ -786,7 +826,7 @@ def _with_rule(S, sec: dict, h2: str, ink_top: float, margin_top: float, margin_
 
 def _section_html(ctx, ci, col, sec, key, title, is_ref, prev, first) -> tuple[str, str | None]:
     S, c, rb = ctx["S"], ctx["c"], ctx["rb"]
-    K = _keys_for(S, ci)
+    K = _own_keys(S, sec, _keys_for(S, ci))
     # gap above the heading: ink-top of the previous section's last line → heading decoration top
     hk = sec.get("head_key") or K["head"]
     if first:
@@ -809,7 +849,7 @@ def _section_html(ctx, ci, col, sec, key, title, is_ref, prev, first) -> tuple[s
             mt = 4.0 * S.s * S.g
     if sec.get("implicit") and is_ref and not (ctx["c"].get("section_titles") or {}).get(key):
         # the reference shows this text without a heading (e.g. a profile paragraph under the name)
-        body, last = _content_html(ctx, ci, col, sec, key, _keys_for(S, ci), lambda nk: mt - S.lead(nk))
+        body, last = _content_html(ctx, ci, col, sec, key, K, lambda nk: mt - S.lead(nk))
         return (f'<section class="sec sec-{key}">{body}</section>', last) if body else ("", None)
     head_html, _ = _heading_html(ctx, ci, col, sec, key, title, mt)
     has_deco = bool(sec.get("deco"))
@@ -931,11 +971,13 @@ def _items_html(ctx, ci, col, sec, key, K, hfirst) -> tuple[str, str | None]:
     if "meta" not in roles and roles:          # no meta line in the reference: align it with the sub / title text
         xm = xs_ if "sub" in roles else xt
     has_meta_l = "meta_left" in roles
+    has_meta_a = "meta_above" in roles and not has_meta_l
+    kma, xma = K["meta_a"], _role_x(sec, "meta_above", col)
     kml, xml = K["meta_l"], _role_x(sec, "meta_left", col)
     # education in the reference's order: titles that name a school ("University name") → institution first
-    inst_first = key == "education" and any(
-        re.search(r"(?i)univ|college|school|institut|academy|campus", r.get("text") or "")
-        for r in sec.get("roles") or [] if r["role"] == "item_title")
+    _tt = [r.get("text") or "" for r in sec.get("roles") or [] if r["role"] == "item_title"]
+    inst_first = key == "education" and bool(_tt) and sum(
+        bool(re.search(r"(?i)univ|college|school|institut|academy|campus", t)) for t in _tt) > len(_tt) / 2
     lead = sec.get("lead")
     own = sorted(r["x"] for r in sec.get("roles") or [] if r.get("lead") and r["role"] == "body")
     if lead and own:
@@ -982,7 +1024,14 @@ def _items_html(ctx, ci, col, sec, key, K, hfirst) -> tuple[str, str | None]:
             ny = S.lead(kt) + (nd.get("dy_mm") or 0) * S.s - nd["h_mm"] * S.s / 2
             node = (f'<img class="gl" src="{_uri(nd["file"])}" style="left:{_m(nd["cx_mm"] - nd["w_mm"] / 2 - col["text_x"] - xt)};'
                     f'top:{_m(ny)};width:{_m(nd["w_mm"] * S.s)};height:{_m(nd["h_mm"] * S.s)};z-index:2">')
-        if has_meta_l and it.get(pf):
+        if has_meta_a and it.get(pf):
+            blocks.append(f'<div class="blk k-{kma}" style="margin-top:{_m(mt)};margin-left:{_m(xma)}">{rb._f(f"{p}.{pf}", it[pf])}</div>')
+            blocks.append(f'<div class="blk k-{kt}" style="margin-top:{_m(_margin(S, _tok(sec, "date_title"), kma, kt))};'
+                          f'margin-left:{_m(xt)}">{node}{rb._f(f"{p}.{tf}", t)}</div>')
+            per_done = True
+            if key == "education" and it.get("details"):
+                per, per_html, per_done = it["details"], rb._f(f"{p}.details", it["details"].strip()), False
+        elif has_meta_l and it.get(pf):
             room = max(6.0, xt - xml - 1.5)
             # a longer date ("2024–2028") may grow left into the free space before this column, then shrink
             prev_x1 = max([c_["x1"] for c_ in ctx["spec"]["columns"] if c_["x1"] < col["text_x"] + xml] or [2.0])
@@ -1085,6 +1134,55 @@ def _contact_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
     return "".join(out), prev
 
 
+def _split_items(text: str) -> list[str]:
+    """'Python, Java, PostgreSQL (Supabase, Neon)' → items (commas inside brackets don't split)."""
+    out, depth, cur = [], 0, ""
+    for ch in text or "":
+        depth += ch in "([{"
+        depth -= ch in ")]}"
+        if ch in ",;" and depth <= 0:
+            out.append(cur.strip())
+            cur = ""
+        else:
+            cur += ch
+    out.append(cur.strip())
+    return [x for x in out if x]
+
+
+def _skill_groups_html(ctx, ci, col, sec, K, hfirst, groups) -> tuple[str, str | None]:
+    """The person grouped their skills ("Languages: …", "Frameworks & Tools: …"): the design's skill graphic (bars /
+    dots) shows the first group's items, and every other group follows under its own label, in their own words."""
+    S, c, rb = ctx["S"], ctx["c"], ctx["rb"]
+    g = sec.get("graphics") or {}
+    k = K["list"]
+    levels = {str(x.get("name", "")).lower(): x.get("level", 80) for x in c.get("skills") or []}
+    html, last, start = "", None, 0
+    if g.get("bars") or g.get("dots"):
+        first = _split_items(groups[0]["items"])
+        html, last = _rated_html(ctx, col, sec, K, hfirst,
+                                 [(f"skill_groups.0.part{j}", x, levels.get(x.lower(), 80)) for j, x in enumerate(first)],
+                                 "skills")
+        start = 1
+    sh = sec.get("subhead")
+    shk = sh["key"] if sh and sh.get("key") in S.st else None
+    for i, grp in enumerate(groups[start:], start):
+        mt = hfirst(shk or k) if last is None else _margin(S, None, last, shk or k, 2.6)
+        if shk:
+            room = max(10.0, col["x1"] + 4.0 - sh["x"])
+            html += (f'<div class="blk k-{shk}" style="margin-top:{_m(mt)};margin-left:{_m(sh["x"] - col["text_x"])}">'
+                     f'<span data-fit="{room:.1f}" data-min="0.55" data-fitgroup="sgl-{sec["key"]}" '
+                     f'style="display:inline-block;white-space:nowrap">'
+                     f'{rb._f(f"skill_groups.{i}.label", grp["label"], "category")}</span></div>')
+            html += (f'<div class="blk k-{k}" style="margin-top:{_m(_margin(S, sh.get("after"), shk, k, 1.0))};'
+                     f'margin-left:{_m(_text_x(sec, col, "list"))}">{rb._f(f"skill_groups.{i}.items", grp["items"], "skills")}</div>')
+        else:
+            html += (f'<div class="blk k-{k}" style="margin-top:{_m(mt)};margin-left:{_m(_text_x(sec, col, "list"))}">'
+                     f'<b>{rb._f(f"skill_groups.{i}.label", grp["label"], "category")}:</b> '
+                     f'{rb._f(f"skill_groups.{i}.items", grp["items"], "skills")}</div>')
+        last = k
+    return html, last
+
+
 def _skills_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
     S, c, rb = ctx["S"], ctx["c"], ctx["rb"]
     g = sec.get("graphics") or {}
@@ -1092,6 +1190,9 @@ def _skills_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
     extra = c.get("additional_skills") or []
     k = K["list"]
     html, last = "", None
+    groups = [x for x in c.get("skill_groups") or [] if x.get("label") and x.get("items")]
+    if len(groups) >= 2:
+        return _skill_groups_html(ctx, ci, col, sec, K, hfirst, groups)
     if (g.get("bars") or g.get("dots")) and skills:
         html, last = _rated_html(ctx, col, sec, K, hfirst, [(f"skills.{i}", s["name"], s.get("level", 80))
                                                            for i, s in enumerate(skills)], "skills")
@@ -1104,8 +1205,10 @@ def _skills_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
         shk = sh["key"]
         from app.services.resume_builder import _e
         title = (ctx["c"].get("section_titles") or {}).get("additional_skills") or "Other Technologies"
+        room = max(10.0, col["x1"] + 4.0 - sh["x"])
         html += (f'<div class="blk k-{shk}" style="margin-top:{_m(_margin(S, None, last, shk, 2.6))};'
-                 f'margin-left:{_m(sh["x"] - col["text_x"])}">{_e(title)}</div>')
+                 f'margin-left:{_m(sh["x"] - col["text_x"])}"><span data-fit="{room:.1f}" data-min="0.55" '
+                 f'style="display:inline-block;white-space:nowrap">{_e(title)}</span></div>')
         last = shk
         after = sh.get("after")
     else:

@@ -33,12 +33,11 @@
 
 ## Relationships
 
-- [server + persistence](server_+_persistence.md) (3 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [assignment_humanizer](assignment_humanizer.md) (1 shared connections)
-- [task_ledger + resume_detector](task_ledger_+_resume_detector.md) (1 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
+- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
+- [task_ledger + rag_memory](task_ledger_+_rag_memory.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 

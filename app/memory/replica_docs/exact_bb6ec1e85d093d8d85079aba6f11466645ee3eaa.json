@@ -1,5 +1,5 @@
 {
- "v": 5,
+ "v": 6,
  "sha1": "bb6ec1e85d093d8d85079aba6f11466645ee3eaa",
  "source": "Screenshot_2026-10-04_130729_1791099470.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_130729_1791099470.png",
@@ -113,7 +113,7 @@
    "pitch": 4.317
   }
  },
- "created": 1791099685.332544,
+ "created": 1791111380.0690594,
  "fonts": {
   "Amiri": [
    400,
@@ -895,5 +895,5 @@
    "bullet_text_x": 15.24
   }
  ],
- "analysis_s": 210.9
+ "analysis_s": 85.2
 }

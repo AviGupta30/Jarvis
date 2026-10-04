@@ -33,11 +33,11 @@
 
 ## Relationships
 
-- [server + persistence](server_+_persistence.md) (15 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (3 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (10 shared connections)
+- [persistence + server](persistence_+_server.md) (5 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (4 shared connections)
 - [neural-cache](neural-cache.md) (1 shared connections)
 - [lru](lru.md) (1 shared connections)
-- [test_lru](test_lru.md) (1 shared connections)
 
 ## Source Files
 

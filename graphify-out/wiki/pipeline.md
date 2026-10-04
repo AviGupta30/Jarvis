@@ -33,18 +33,16 @@
 
 ## Relationships
 
-- [fontmatch + fonts](fontmatch_+_fonts.md) (7 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (5 shared connections)
+- [fontmatch + fonts](fontmatch_+_fonts.md) (8 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (5 shared connections)
+- [resume_builder + integrate](resume_builder_+_integrate.md) (4 shared connections)
+- [resume_builder + exact_render](resume_builder_+_exact_render.md) (4 shared connections)
 - [exact_render](exact_render.md) (4 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (3 shared connections)
 - [ingest](ingest.md) (3 shared connections)
 - [plate](plate.md) (3 shared connections)
-- [fontmatch](fontmatch.md) (2 shared connections)
 - [measure](measure.md) (2 shared connections)
-- [resume_builder + resume-creator](resume_builder_+_resume-creator.md) (2 shared connections)
-- [resume_builder](resume_builder.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 

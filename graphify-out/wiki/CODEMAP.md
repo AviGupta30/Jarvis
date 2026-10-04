@@ -16,7 +16,7 @@
 
 ## Relationships
 
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 
 ## Source Files
 

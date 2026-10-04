@@ -33,11 +33,11 @@
 ## Relationships
 
 - [voice](voice.md) (10 shared connections)
-- [hinglish_normalizer](hinglish_normalizer.md) (3 shared connections)
-- [voice + context_classifier](voice_+_context_classifier.md) (2 shared connections)
+- [hinglish_normalizer](hinglish_normalizer.md) (2 shared connections)
+- [voice + voice](voice_+_voice.md) (2 shared connections)
+- [voice_agent + voice](voice_agent_+_voice.md) (2 shared connections)
 - [youtube_player](youtube_player.md) (1 shared connections)
-- [voice + tools](voice_+_tools.md) (1 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [voice_agent + KNOWN_ISSUES](voice_agent_+_KNOWN_ISSUES.md) (1 shared connections)
 - [voice_agent](voice_agent.md) (1 shared connections)
 
 ## Source Files

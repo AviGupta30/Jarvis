@@ -1,0 +1,959 @@
+{
+ "v": 7,
+ "sha1": "27a78878f8794fc00be4998d9e676557f6f9e42f",
+ "source": "Modern_Teal_Resume_Template_1791109579.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Modern_Teal_Resume_Template_1791109579.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 301.8,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\plate2.png",
+  "src_dpi": 126.4,
+  "partial": false,
+  "letter": false,
+  "ornaments": []
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 15.94,
+   "family": "Raleway",
+   "weight": 700,
+   "size": 11.305,
+   "ls": 0.1268,
+   "color": "#1f2128",
+   "upper": true,
+   "asc": 0.94,
+   "desc": 0.23,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 14.923
+  },
+  "title": {
+   "ref_contrast": 12.65,
+   "family": "Heebo",
+   "weight": 400,
+   "size": 4.0,
+   "ls": 0.1677,
+   "color": "#303136",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 5.28
+  },
+  "head0": {
+   "ref_contrast": 9.98,
+   "family": "Raleway",
+   "weight": 700,
+   "size": 4.87,
+   "ls": 0.1355,
+   "color": "#888b8f",
+   "upper": true,
+   "asc": 0.94,
+   "desc": 0.23,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 6.428
+  },
+  "body0": {
+   "ref_contrast": 7.86,
+   "family": "Heebo",
+   "weight": 500,
+   "size": 2.665,
+   "ls": 0.0,
+   "color": "#515152",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.76,
+   "n": 19,
+   "pitch": 3.518
+  },
+  "head1": {
+   "ref_contrast": 12.35,
+   "family": "Raleway",
+   "weight": 700,
+   "size": 4.87,
+   "ls": 0.1332,
+   "color": "#fafafb",
+   "upper": true,
+   "asc": 0.94,
+   "desc": 0.23,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 6.428
+  },
+  "meta_left0": {
+   "ref_contrast": 11.93,
+   "family": "Heebo",
+   "weight": 400,
+   "size": 3.652,
+   "ls": 0.0,
+   "color": "#36363a",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 4.821
+  },
+  "item_title0": {
+   "ref_contrast": 17.32,
+   "family": "Heebo",
+   "weight": 500,
+   "size": 4.174,
+   "ls": -0.0162,
+   "color": "#16171b",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 5.51
+  },
+  "contact1": {
+   "ref_contrast": 9.06,
+   "family": "Heebo",
+   "weight": 400,
+   "size": 3.05,
+   "ls": 0.0,
+   "color": "#d7d8dc",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.75,
+   "n": 4,
+   "pitch": 4.026
+  },
+  "meta_above1": {
+   "ref_contrast": 9.0,
+   "family": "Heebo",
+   "weight": 400,
+   "size": 3.392,
+   "ls": -0.0452,
+   "color": "#d6d6d9",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 4.477
+  },
+  "item_title1": {
+   "ref_contrast": 11.76,
+   "family": "Heebo",
+   "weight": 600,
+   "size": 3.826,
+   "ls": 0.0,
+   "color": "#f3f4f5",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 5.05
+  },
+  "body1": {
+   "ref_contrast": 9.08,
+   "family": "Heebo",
+   "weight": 600,
+   "size": 3.063,
+   "ls": 0.0,
+   "color": "#d7d8da",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.76,
+   "n": 2,
+   "pitch": 4.043
+  },
+  "list1": {
+   "ref_contrast": 9.53,
+   "family": "Reddit Sans Condensed",
+   "weight": 400,
+   "size": 3.348,
+   "ls": 0.0,
+   "color": "#dcdcdf",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.76,
+   "n": 5,
+   "pitch": 4.419
+  },
+  "body0c": {
+   "ref_contrast": 2.52,
+   "family": "Heebo",
+   "weight": 700,
+   "size": 2.661,
+   "ls": 0.0,
+   "color": "#d0f2f2",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.75,
+   "n": 5,
+   "pitch": 3.513
+  }
+ },
+ "created": 1791116902.6400192,
+ "fonts": {
+  "Raleway": [
+   700
+  ],
+  "Heebo": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "Reddit Sans Condensed": [
+   400
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 17.78,
+    "y": 21.33,
+    "x1": 107.92,
+    "y1": 29.58,
+    "key": "name",
+    "text": "ALIYA CASSIN",
+    "fs": 11.305,
+    "room": null,
+    "bg": "#fefefe",
+    "room_kind": null,
+    "room_hard": 116.68
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 18.03,
+    "y": 33.39,
+    "x1": 76.31,
+    "y1": 36.31,
+    "key": "title",
+    "text": "YOUR PROFESSION HERE",
+    "fs": 4.0,
+    "room": 62.47,
+    "bg": "#fefdfe",
+    "room_kind": "rule",
+    "room_hard": 116.43
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   135.85,
+   0.0,
+   210.0,
+   91.29
+  ],
+  "radius": 0.0,
+  "circle": false,
+  "overlays": [
+   {
+    "x0": 135.85,
+    "x1": 210.0,
+    "y0": 59.04,
+    "y1": 91.03,
+    "color": "#01a4b6",
+    "alpha": 0.933,
+    "blend": "multiply"
+   }
+  ]
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 16.63,
+   "x1": 130.01,
+   "top": 52.69,
+   "bottom": 283.26,
+   "text_x": 35.55,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "PROFILE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      18.41,
+      53.33,
+      41.77,
+      56.88
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\head_profile_0_415.png",
+      "box": [
+       17.78,
+       46.6,
+       69.32,
+       60.05
+      ],
+      "text": [
+       0.63,
+       6.73,
+       24.0,
+       10.28
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 46.6,
+     "head_bottom": 60.05,
+     "tokens": {
+      "head_first": 4.96,
+      "wrap": 5.97
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0c",
+       "x": 17.52,
+       "x1": 128.87,
+       "y": 65.01,
+       "lead": false,
+       "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit etam"
+      },
+      {
+       "role": "body",
+       "key": "body0c",
+       "x": 17.52,
+       "x1": 129.38,
+       "y": 71.1,
+       "lead": false,
+       "text": "esterissque, metus an alicoes laoreet, puras meqne voluatet "
+      },
+      {
+       "role": "body",
+       "key": "body0c",
+       "x": 17.52,
+       "x1": 129.38,
+       "y": 77.07,
+       "lead": false,
+       "text": "Integer at nibh ultas purus licenta viventa dui, vul cursus "
+      },
+      {
+       "role": "body",
+       "key": "body0c",
+       "x": 17.52,
+       "x1": 89.51,
+       "y": 82.91,
+       "lead": false,
+       "text": "ultricies nibh elementum, matia urna sune incidont isgum."
+      }
+     ]
+    },
+    {
+     "key": "projects",
+     "title": "PROJECT DETAILS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      18.16,
+      102.71,
+      69.2,
+      106.27
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\head_projects_0_806.png",
+      "box": [
+       17.27,
+       102.71,
+       69.2,
+       108.81
+      ],
+      "text": [
+       0.89,
+       0.0,
+       51.93,
+       3.56
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 102.71,
+     "head_bottom": 108.81,
+     "tokens": {
+      "head_first": 4.95,
+      "head_body": 5.59,
+      "wrap": 5.97,
+      "new_item": 6.09,
+      "item_gap": 19.68,
+      "sec_gap": 19.8,
+      "prev_key": "body0c"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\lead_projects_0_36.png",
+      "w": 1.02,
+      "h": 1.02,
+      "dx": 3.68,
+      "dy": 0.89,
+      "all_same": true
+     },
+     "graphics": {
+      "timeline": {
+       "x_mm": 29.46,
+       "w_mm": 0.76,
+       "color": "#d5d6db",
+       "top_mm": 113.63,
+       "bottom_mm": 284.02,
+       "node": {
+        "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\node_projects_0.png",
+        "w_mm": 4.06,
+        "h_mm": 2.79,
+        "cx_mm": 29.71,
+        "dy_mm": 1.78
+       }
+      }
+     },
+     "roles": [
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 17.39,
+       "x1": 24.0,
+       "y": 113.76,
+       "lead": false,
+       "text": "2019"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 35.55,
+       "x1": 99.92,
+       "y": 113.76,
+       "lead": false,
+       "text": "ENTER YOUR PROJECT TITLE HERE"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 91.54,
+       "y": 119.35,
+       "lead": false,
+       "text": "Name of Project / Organization > Key Role"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 128.87,
+       "y": 127.22,
+       "lead": false,
+       "text": "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Pel"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 129.12,
+       "y": 133.19,
+       "lead": false,
+       "text": "metus convallis faucibus laoreet. In condimentum nibh aligue"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 121.38,
+       "y": 139.15,
+       "lead": false,
+       "text": "ut pellentesque sem. Morti ante nibh, thoncus eget mauris et"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.85,
+       "x1": 129.63,
+       "y": 146.26,
+       "lead": true,
+       "text": "Portifor lectus at, pellentesque sem. Morti ante nibh, moncu"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.98,
+       "x1": 102.97,
+       "y": 152.36,
+       "lead": true,
+       "text": "Eleifend tincidunt orci and semper tempor consequet."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.98,
+       "x1": 129.89,
+       "y": 158.33,
+       "lead": true,
+       "text": "Consectetur adipiscing eft. Pellentesque voliopet metus conv"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 17.39,
+       "x1": 24.12,
+       "y": 177.75,
+       "lead": false,
+       "text": "2018"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 35.55,
+       "x1": 100.05,
+       "y": 177.75,
+       "lead": false,
+       "text": "ENTER YOUR PROJECT TITLE HERE"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 91.54,
+       "y": 183.34,
+       "lead": false,
+       "text": "Name of Project / Organization > Key Role"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.68,
+       "x1": 128.87,
+       "y": 191.21,
+       "lead": false,
+       "text": "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Pel"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 129.12,
+       "y": 197.18,
+       "lead": false,
+       "text": "metus convallis faucibus laoreet. In condimentum nibh alique"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 121.38,
+       "y": 203.14,
+       "lead": false,
+       "text": "ut pellentesque sem. Morti ante nibh, thoncus eget mauris et"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.85,
+       "x1": 102.97,
+       "y": 210.38,
+       "lead": true,
+       "text": "Portifor lonadunt orci sed semper tempor consequet."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.98,
+       "x1": 129.89,
+       "y": 216.35,
+       "lead": true,
+       "text": "Consectetur adipiscing eft. Pellentesque voliopet metus conv"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 17.39,
+       "x1": 24.12,
+       "y": 236.15,
+       "lead": false,
+       "text": "2017"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 35.55,
+       "x1": 99.92,
+       "y": 236.28,
+       "lead": false,
+       "text": "ENTER YOUR PROJECT TITLE HERE"
+      },
+      {
+       "role": "body",
+       "key": "body0c",
+       "x": 35.55,
+       "x1": 91.54,
+       "y": 241.74,
+       "lead": false,
+       "text": "Name of Project / Organization > Key Role"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.68,
+       "x1": 128.87,
+       "y": 249.61,
+       "lead": false,
+       "text": "Lorem Ipsum dolor sit amet, consectetur adipiscing elit. Pel"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 129.0,
+       "y": 255.58,
+       "lead": false,
+       "text": "metus convallis faucibus laoreet. In condimentum nibh alique"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 35.55,
+       "x1": 121.38,
+       "y": 261.55,
+       "lead": false,
+       "text": "ut pellentesque sem. Morti ante nibh, thoncus eget mauris et"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.85,
+       "x1": 129.63,
+       "y": 268.78,
+       "lead": true,
+       "text": "Portifor lectus ut, pellentesque sem. Morbi ante nibh, moncu"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.85,
+       "x1": 102.97,
+       "y": 274.88,
+       "lead": true,
+       "text": "Eleifend tincidunt orci sed semper tempor consequet."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.98,
+       "x1": 129.76,
+       "y": 280.85,
+       "lead": true,
+       "text": "Consectetur adipiscing eft. Pellentesque voliopet metus conv"
+      }
+     ]
+    }
+   ],
+   "bullet_x": 35.3,
+   "bullet_text_x": 38.91
+  },
+  {
+   "x0": 141.57,
+   "x1": 189.56,
+   "top": 102.33,
+   "bottom": 280.72,
+   "text_x": 142.2,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACTS",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      141.82,
+      102.59,
+      171.78,
+      106.14
+     ],
+     "top": 102.59,
+     "head_bottom": 106.14,
+     "tokens": {
+      "head_first": 8.26,
+      "new_item": 10.285,
+      "wrap": 11.05
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\lead_contact_1_11.png",
+       "w": 7.36,
+       "h": 7.36,
+       "ctype": "phone",
+       "dx": 10.54,
+       "dy": -2.54
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\lead_contact_1_13.png",
+       "w": 7.87,
+       "h": 7.36,
+       "ctype": "email",
+       "dx": 10.79,
+       "dy": -2.54
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\lead_contact_1_18.png",
+       "w": 7.36,
+       "h": 7.36,
+       "ctype": "",
+       "dx": 10.54,
+       "dy": -2.67
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.98,
+       "x1": 175.59,
+       "y": 114.4,
+       "lead": true,
+       "text": "+123 45678 9000"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.98,
+       "x1": 189.56,
+       "y": 125.06,
+       "lead": true,
+       "text": "examplerurtl@example.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.98,
+       "x1": 177.37,
+       "y": 136.11,
+       "lead": false,
+       "text": "www.example.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.98,
+       "x1": 185.11,
+       "y": 146.01,
+       "lead": true,
+       "text": "United States of America"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      141.95,
+      167.97,
+      174.83,
+      171.53
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\head_education_1_1321.png",
+      "box": [
+       141.69,
+       167.97,
+       174.83,
+       173.81
+      ],
+      "text": [
+       0.25,
+       0.0,
+       33.14,
+       3.56
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 167.97,
+     "head_bottom": 173.81,
+     "tokens": {
+      "head_first": 6.86,
+      "date_title": 4.505000000000001,
+      "head_body": 5.46,
+      "item_gap": 10.16,
+      "sec_gap": 21.96,
+      "prev_key": "contact1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "meta_above",
+       "key": "meta_above1",
+       "x": 142.2,
+       "x1": 148.93,
+       "y": 180.67,
+       "lead": false,
+       "text": "2016"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 142.2,
+       "x1": 189.18,
+       "y": 185.11,
+       "lead": false,
+       "text": "DEGREE NAME PUTHERE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 142.33,
+       "x1": 180.67,
+       "y": 190.57,
+       "lead": false,
+       "text": "Name of University/College"
+      },
+      {
+       "role": "meta_above",
+       "key": "meta_above1",
+       "x": 142.2,
+       "x1": 148.93,
+       "y": 200.73,
+       "lead": false,
+       "text": "2016"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 142.33,
+       "x1": 189.18,
+       "y": 205.3,
+       "lead": false,
+       "text": "DEGREE NAME PUT HERE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 142.33,
+       "x1": 180.67,
+       "y": 210.76,
+       "lead": false,
+       "text": "Name of University/College"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      141.95,
+      231.33,
+      161.5,
+      235.01
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\27a78878f8794fc0\\crops\\head_skills_1_1820.png",
+      "box": [
+       141.69,
+       231.33,
+       161.5,
+       237.81
+      ],
+      "text": [
+       0.25,
+       0.0,
+       19.81,
+       3.68
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 231.33,
+     "head_bottom": 237.81,
+     "tokens": {
+      "head_first": 4.95,
+      "wrap": 8.825,
+      "sec_gap": 20.57,
+      "prev_key": "body1"
+     },
+     "graphics": {
+      "bars": {
+       "place": "below",
+       "h_mm": 2.16,
+       "columns": 1,
+       "label_dx_mm": 0.0,
+       "col_x_mm": [
+        141.69
+       ],
+       "w_mm": 52.56,
+       "x0_mm": 141.95,
+       "fill": "#03afbf",
+       "track": "#bcbec4",
+       "gap_mm": 1.65,
+       "radius_mm": 1.08,
+       "levels": [
+        0.0,
+        0.72,
+        0.92,
+        0.77,
+        0.86,
+        0.52
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 142.2,
+       "x1": 165.05,
+       "y": 242.76,
+       "lead": false,
+       "text": "Adobe Illustrator"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 142.2,
+       "x1": 166.32,
+       "y": 251.39,
+       "lead": false,
+       "text": "Adobe Photoshop"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 142.2,
+       "x1": 163.4,
+       "y": 260.41,
+       "lead": false,
+       "text": "Adobe InDesign"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 142.2,
+       "x1": 170.26,
+       "y": 269.29,
+       "lead": false,
+       "text": "Adobe Dreamweaver"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 142.2,
+       "x1": 168.48,
+       "y": 278.05,
+       "lead": false,
+       "text": "Adove After Effects"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 82.2
+}

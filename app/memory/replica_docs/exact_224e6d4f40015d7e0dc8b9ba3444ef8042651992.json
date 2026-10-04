@@ -1,5 +1,5 @@
 {
- "v": 4,
+ "v": 8,
  "sha1": "224e6d4f40015d7e0dc8b9ba3444ef8042651992",
  "source": "Screenshot_2026-10-02_133520_1790928356.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-02_133520_1790928356.png",
@@ -10,7 +10,8 @@
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\plate2.png",
   "src_dpi": 53.5,
   "partial": false,
-  "letter": false
+  "letter": false,
+  "ornaments": []
  },
  "styles": {
   "name": {
@@ -73,7 +74,7 @@
    "ref_contrast": 4.48,
    "family": "Noto Sans Tamil",
    "weight": 400,
-   "size": 2.73,
+   "size": 3.235,
    "ls": 0.0,
    "color": "#777777",
    "upper": false,
@@ -81,7 +82,7 @@
    "desc": 0.37,
    "ink_asc": 0.76,
    "n": 24,
-   "pitch": 5.206
+   "pitch": 5.015
   },
   "contact0": {
    "ref_contrast": 6.13,
@@ -101,7 +102,7 @@
    "ref_contrast": 12.45,
    "family": "Oxygen",
    "weight": 400,
-   "size": 4.117,
+   "size": 4.223,
    "ls": 0.0,
    "color": "#343434",
    "upper": false,
@@ -109,7 +110,7 @@
    "desc": 0.24,
    "ink_asc": 0.75,
    "n": 3,
-   "pitch": 5.434
+   "pitch": 5.574
   },
   "meta_right1": {
    "ref_contrast": 5.0,
@@ -129,7 +130,7 @@
    "ref_contrast": 8.06,
    "family": "Oxygen",
    "weight": 400,
-   "size": 3.507,
+   "size": 3.73,
    "ls": 0.0,
    "color": "#505050",
    "upper": false,
@@ -137,13 +138,13 @@
    "desc": 0.24,
    "ink_asc": 0.75,
    "n": 3,
-   "pitch": 4.629
+   "pitch": 4.924
   },
   "list0": {
    "ref_contrast": 6.44,
    "family": "Noto Sans Tamil",
    "weight": 400,
-   "size": 3.332,
+   "size": 3.381,
    "ls": 0.0,
    "color": "#9cb6c7",
    "upper": false,
@@ -151,7 +152,7 @@
    "desc": 0.37,
    "ink_asc": 0.76,
    "n": 14,
-   "pitch": 4.398
+   "pitch": 4.463
   },
   "list1": {
    "ref_contrast": 7.81,
@@ -168,7 +169,7 @@
    "pitch": 5.298
   }
  },
- "created": 1791092050.7877789,
+ "created": 1791117596.6938984,
  "fonts": {
   "Faustina": [
    400,
@@ -227,7 +228,8 @@
    34.92
   ],
   "radius": 0.0,
-  "circle": false
+  "circle": false,
+  "overlays": []
  },
  "hcontact": [],
  "columns": [
@@ -395,12 +397,12 @@
        ],
        "w_mm": 50.91,
        "x0_mm": 10.16,
-       "fill": "#1688bb",
-       "track": "#e2e3e8",
+       "fill": "#1486b8",
+       "track": "#d9e4df",
        "gap_mm": 1.65,
        "radius_mm": 1.27,
        "levels": [
-        1.0,
+        0.02,
         1.0,
         0.79,
         0.79,
@@ -410,7 +412,7 @@
         0.8,
         0.8,
         0.8,
-        0.79,
+        0.8,
         1.0
        ]
       }
@@ -556,7 +558,7 @@
      "graphics": {
       "dots": {
        "d_mm": 3.81,
-       "pitch_mm": 4.95,
+       "pitch_mm": 5.08,
        "on": "#1685ba",
        "off": "#eae7e7",
        "n": 5,
@@ -1139,5 +1141,5 @@
    "bullet_text_x": 84.05
   }
  ],
- "analysis_s": 94.3
+ "analysis_s": 71.4
 }

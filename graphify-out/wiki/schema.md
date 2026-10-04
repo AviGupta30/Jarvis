@@ -31,9 +31,9 @@
 
 - [schema](schema.md) (11 shared connections)
 - [schema + bindings](schema_+_bindings.md) (2 shared connections)
-- [orchestrator + renderer](orchestrator_+_renderer.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
-- [task_ledger + resume_detector](task_ledger_+_resume_detector.md) (1 shared connections)
+- [storage + orchestrator](storage_+_orchestrator.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [task_ledger + rag_memory](task_ledger_+_rag_memory.md) (1 shared connections)
 - [bindings](bindings.md) (1 shared connections)
 - [repair](repair.md) (1 shared connections)
 

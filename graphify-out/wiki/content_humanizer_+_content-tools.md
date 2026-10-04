@@ -1,6 +1,6 @@
 # content_humanizer + content-tools
 
-> 38 nodes · cohesion 0.08
+> 37 nodes · cohesion 0.09
 
 ## Key Concepts
 
@@ -18,7 +18,6 @@
 - **inject_micro_errors()** (4 connections) — `app/services/content_humanizer.py`
 - **build_prompt()** (4 connections) — `app/services/social_content_manager.py`
 - **call_llm()** (4 connections) — `app/services/social_content_manager.py`
-- **random** (4 connections)
 - **fact_check()** (3 connections) — `app/services/content_humanizer.py`
 - **inject_human_fingerprints()** (3 connections) — `app/services/content_humanizer.py`
 - **build_structure_prompt()** (2 connections) — `app/services/content_humanizer.py`
@@ -29,20 +28,15 @@
 - **reshape_paragraphs()** (2 connections) — `app/services/content_humanizer.py`
 - **Social content (`social_content_manager`)** (2 connections) — `docs/features/content-tools.md`
 - **test()** (2 connections) — `scripts/test_humanizer.py`
-- *... and 13 more nodes in this community*
+- **Helper to rewrite a batch of sentences via Groq.** (1 connections) — `app/services/content_humanizer.py`
+- *... and 12 more nodes in this community*
 
 ## Relationships
 
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (6 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
-- [tools + window_layout](tools_+_window_layout.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [fontmatch + fonts](fontmatch_+_fonts.md) (1 shared connections)
-- [llm-personality + ARCHITECTURE](llm-personality_+_ARCHITECTURE.md) (1 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (10 shared connections)
+- [dynamic_skill + planner](dynamic_skill_+_planner.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
 
 ## Source Files
 
@@ -53,8 +47,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 65 (87%)
-- INFERRED: 10 (13%)
+- EXTRACTED: 62 (86%)
+- INFERRED: 10 (14%)
 - AMBIGUOUS: 0 (0%)
 
 ---

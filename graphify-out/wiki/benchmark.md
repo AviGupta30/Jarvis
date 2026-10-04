@@ -21,7 +21,7 @@
 
 ## Relationships
 
-- [server + persistence](server_+_persistence.md) (4 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (4 shared connections)
 - [client](client.md) (1 shared connections)
 
 ## Source Files

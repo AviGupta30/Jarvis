@@ -33,13 +33,13 @@
 
 ## Relationships
 
-- [ppt_content](ppt_content.md) (20 shared connections)
-- [server + persistence](server_+_persistence.md) (2 shared connections)
-- [web_search + tools](web_search_+_tools.md) (2 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [memory + tool_runner](memory_+_tool_runner.md) (1 shared connections)
-- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (19 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
+- [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)
 
 ## Source Files
 

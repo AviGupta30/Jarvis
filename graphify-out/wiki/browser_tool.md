@@ -33,11 +33,10 @@
 
 ## Relationships
 
-- [tools + window_layout](tools_+_window_layout.md) (6 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (2 shared connections)
+- [tools](tools.md) (8 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
 - [web_search + tools](web_search_+_tools.md) (2 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
+- [smart_navigator](smart_navigator.md) (1 shared connections)
 
 ## Source Files
 

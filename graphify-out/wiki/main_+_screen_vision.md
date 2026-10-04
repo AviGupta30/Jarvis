@@ -14,10 +14,10 @@
 ## Relationships
 
 - [main](main.md) (3 shared connections)
-- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (2 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (2 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [voice_agent + main](voice_agent_+_main.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
 - [screen_vision](screen_vision.md) (1 shared connections)
 
 ## Source Files

@@ -21,11 +21,9 @@
 ## Relationships
 
 - [pipeline](pipeline.md) (3 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
-- [fontmatch + fonts](fontmatch_+_fonts.md) (1 shared connections)
-- [measure](measure.md) (1 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
+- [measure](measure.md) (2 shared connections)
 - [plate](plate.md) (1 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files

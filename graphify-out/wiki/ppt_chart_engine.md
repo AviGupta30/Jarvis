@@ -33,13 +33,13 @@
 
 ## Relationships
 
-- [server + persistence](server_+_persistence.md) (2 shared connections)
+- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [fontmatch + fonts](fontmatch_+_fonts.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
 - [compiler](compiler.md) (1 shared connections)
-- [jarvis_overlay + prompt_overlay](jarvis_overlay_+_prompt_overlay.md) (1 shared connections)
+- [jarvis_overlay](jarvis_overlay.md) (1 shared connections)
 
 ## Source Files
 
