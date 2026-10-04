@@ -21,10 +21,11 @@
 ## Relationships
 
 - [pipeline](pipeline.md) (3 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
-- [measure](measure.md) (2 shared connections)
+- [resume_campus + measure](resume_campus_+_measure.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
+- [measure](measure.md) (1 shared connections)
 - [plate](plate.md) (1 shared connections)
-- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 

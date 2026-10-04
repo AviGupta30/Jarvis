@@ -1,6 +1,6 @@
 # dark_enhancement + dark_video_enhancement
 
-> 28 nodes · cohesion 0.13
+> 23 nodes · cohesion 0.18
 
 ## Key Concepts
 
@@ -11,7 +11,6 @@
 - **process_video_smartly()** (7 connections) — `app/services/dark_video_enhancement.py`
 - **media_enhancement.py** (7 connections) — `app/services/media_enhancement.py`
 - **enhance_media()** (7 connections) — `app/services/media_enhancement.py`
-- **Dark image/video enhancement** (5 connections) — `docs/features/media-enhancement.md`
 - **_path_2_wavelet()** (4 connections) — `app/services/dark_enhancement.py`
 - **run_pipeline_a()** (4 connections) — `app/services/dark_enhancement.py`
 - **_enhance_frame()** (4 connections) — `app/services/dark_video_enhancement.py`
@@ -27,16 +26,17 @@
 - **ndarray** (1 connections)
 - **Re-encode a video to H.264 MP4 so browsers can play it.** (1 connections) — `app/services/dark_video_enhancement.py`
 - **Enhance a dark image or video using the dark enhancement pipeline. It returns a…** (1 connections) — `app/services/media_enhancement.py`
-- **media-enhancement.md** (1 connections) — `docs/features/media-enhancement.md`
-- **Files & symbols (auto-generated, line numbers are current)** (1 connections) — `docs/features/media-enhancement.md`
-- *... and 3 more nodes in this community*
+- **pywt** (1 connections)
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (5 shared connections)
-- [refresh_docs + whatsapp](refresh_docs_+_whatsapp.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [acoustic_tripwire](acoustic_tripwire.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (2 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
+- [dag_executor](dag_executor.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
+- [media-enhancement](media-enhancement.md) (1 shared connections)
 
 ## Source Files
 
@@ -47,8 +47,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 54 (92%)
-- INFERRED: 5 (8%)
+- EXTRACTED: 50 (91%)
+- INFERRED: 5 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

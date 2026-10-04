@@ -33,10 +33,13 @@
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (10 shared connections)
-- [dynamic_skill + planner](dynamic_skill_+_planner.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (8 shared connections)
 - [tools](tools.md) (2 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (1 shared connections)
+- [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
+- [dag_executor](dag_executor.md) (1 shared connections)
 
 ## Source Files
 

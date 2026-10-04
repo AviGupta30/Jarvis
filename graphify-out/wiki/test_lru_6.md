@@ -1,18 +1,18 @@
 # test_lru
 
-> 5 nodes · cohesion 0.40
+> 4 nodes · cohesion 0.50
 
 ## Key Concepts
 
-- **TestSentinels** (5 connections) — `neural_cache/tests/test_lru.py`
-- **.test_delete_all_returns_to_empty()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_empty_cache_head_tail_linked()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_sentinels_not_in_map()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_single_element_list_integrity()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **small_cache()** (4 connections) — `neural_cache/tests/test_lru.py`
+- **large_cache()** (3 connections) — `neural_cache/tests/test_lru.py`
+- **fixture** (2 connections)
+- **LRU cache with capacity 3 — easy to reason about eviction.** (1 connections) — `neural_cache/tests/test_lru.py`
 
 ## Relationships
 
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [test_lru](test_lru.md) (2 shared connections)
+- [lru](lru.md) (2 shared connections)
 
 ## Source Files
 
@@ -20,8 +20,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 5 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 5 (71%)
+- INFERRED: 2 (29%)
 - AMBIGUOUS: 0 (0%)
 
 ---

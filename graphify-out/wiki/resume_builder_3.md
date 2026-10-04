@@ -25,7 +25,7 @@
 
 - [resume_builder](resume_builder.md) (9 shared connections)
 - [plate](plate.md) (2 shared connections)
-- [measure](measure.md) (1 shared connections)
+- [resume_campus + measure](resume_campus_+_measure.md) (1 shared connections)
 - [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (1 shared connections)
 - [exact_render](exact_render.md) (1 shared connections)
 

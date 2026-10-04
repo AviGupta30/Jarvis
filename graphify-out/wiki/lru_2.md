@@ -21,7 +21,7 @@
 ## Relationships
 
 - [lru](lru.md) (11 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [test_lru](test_lru.md) (2 shared connections)
 - [README](README.md) (1 shared connections)
 
 ## Source Files

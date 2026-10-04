@@ -33,10 +33,13 @@
 
 ## Relationships
 
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
-- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
-- [task_ledger + rag_memory](task_ledger_+_rag_memory.md) (1 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [repair](repair.md) (1 shared connections)
+- [server + persistence](server_+_persistence.md) (1 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
 
 ## Source Files

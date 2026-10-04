@@ -1,11 +1,10 @@
 # plate
 
-> 8 nodes · cohesion 0.29
+> 7 nodes · cohesion 0.33
 
 ## Key Concepts
 
 - **_straight_edges()** (9 connections) — `app/services/resume_replica/plate.py`
-- **Generic analysis rules added 2026-10-04 (round 5, `SPEC_VERSION` 6)** (7 connections) — `docs/features/resume-creator.md`
 - **_band_extent()** (5 connections) — `app/services/resume_replica/plate.py`
 - **flat()** (2 connections) — `app/services/resume_replica/plate.py`
 - **horizontal()** (2 connections) — `app/services/resume_replica/plate.py`
@@ -15,20 +14,17 @@
 
 ## Relationships
 
-- [plate](plate.md) (7 shared connections)
-- [resume_builder](resume_builder.md) (2 shared connections)
-- [exact_render](exact_render.md) (2 shared connections)
-- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (1 shared connections)
+- [plate](plate.md) (6 shared connections)
+- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/resume_replica/plate.py`
-- `docs/features/resume-creator.md`
 
 ## Audit Trail
 
-- EXTRACTED: 13 (65%)
-- INFERRED: 7 (35%)
+- EXTRACTED: 12 (86%)
+- INFERRED: 2 (14%)
 - AMBIGUOUS: 0 (0%)
 
 ---

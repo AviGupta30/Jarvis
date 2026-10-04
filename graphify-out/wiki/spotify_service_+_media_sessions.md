@@ -33,17 +33,18 @@
 
 ## Relationships
 
-- [youtube_player](youtube_player.md) (7 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (6 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (3 shared connections)
-- [tools](tools.md) (3 shared connections)
+- [tools](tools.md) (6 shared connections)
+- [youtube_player](youtube_player.md) (4 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (4 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (3 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (2 shared connections)
 - [youtube_control](youtube_control.md) (2 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
-- [os-control + youtube_control](os-control_+_youtube_control.md) (2 shared connections)
-- [rag_memory + tool_runner](rag_memory_+_tool_runner.md) (1 shared connections)
-- [window_layout](window_layout.md) (1 shared connections)
-- [refresh_docs + whatsapp](refresh_docs_+_whatsapp.md) (1 shared connections)
+- [youtube_control + os-control](youtube_control_+_os-control.md) (2 shared connections)
+- [planner + dynamic_skill](planner_+_dynamic_skill.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (1 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [tool-registry + vector_store](tool-registry_+_vector_store.md) (1 shared connections)
 
 ## Source Files
 

@@ -1,6 +1,6 @@
 # ppt_router + ppt_tool
 
-> 26 nodes · cohesion 0.11
+> 25 nodes · cohesion 0.11
 
 ## Key Concepts
 
@@ -12,7 +12,6 @@
 - **get_styles()** (4 connections) — `app/api/ppt_router.py`
 - **BaseModel** (4 connections)
 - **_pick()** (4 connections) — `app/services/ppt_tool.py`
-- **pydantic** (4 connections)
 - **generate()** (3 connections) — `app/api/ppt_router.py`
 - **PPTBuildRequest** (3 connections) — `app/api/ppt_router.py`
 - **PPTCreateRequest** (3 connections) — `app/api/ppt_router.py`
@@ -29,22 +28,22 @@
 - **Build a PPTX from a pre-generated slide plan (JSON). Streams live per-slide…** (1 connections) — `app/api/ppt_router.py`
 - **PPT v6 entry point → ppt_studio.create (adaptive layouts, strict user content,…** (1 connections) — `app/services/ppt_tool.py`
 - **Intelligently pick a palette based on the presentation topic.** (1 connections) — `app/services/ppt_tool.py`
-- *... and 1 more nodes in this community*
+- **Generator wrapper — streams live progress to the frontend via chat.py's…** (1 connections) — `app/services/tools.py`
 
 ## Relationships
 
 - [ppt_tool](ppt_tool.md) (8 shared connections)
 - [tools](tools.md) (5 shared connections)
-- [resume_router](resume_router.md) (2 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [resume_router + tools](resume_router_+_tools.md) (3 shared connections)
+- [tool-registry + vector_store](tool-registry_+_vector_store.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
 - [main](main.md) (1 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (1 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (1 shared connections)
 - [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (1 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [dag_executor](dag_executor.md) (1 shared connections)
 - [ppt_research](ppt_research.md) (1 shared connections)
-- [tool-registry + tools](tool-registry_+_tools.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files
 
@@ -54,7 +53,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 55 (87%)
+- EXTRACTED: 52 (87%)
 - INFERRED: 8 (13%)
 - AMBIGUOUS: 0 (0%)
 

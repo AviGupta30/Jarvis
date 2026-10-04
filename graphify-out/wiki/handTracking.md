@@ -16,8 +16,7 @@
 
 ## Relationships
 
-- [ControlPanel + HandSkeleton](ControlPanel_+_HandSkeleton.md) (2 shared connections)
-- [package + App](package_+_App.md) (1 shared connections)
+- [ControlPanel + gestureController](ControlPanel_+_gestureController.md) (3 shared connections)
 
 ## Source Files
 

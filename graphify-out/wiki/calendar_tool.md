@@ -17,12 +17,13 @@
 
 ## Relationships
 
-- [tools](tools.md) (6 shared connections)
+- [tools](tools.md) (3 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (3 shared connections)
 - [gmail_tool + memory_tool](gmail_tool_+_memory_tool.md) (3 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
-- [task_ledger + rag_memory](task_ledger_+_rag_memory.md) (1 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [test_lru](test_lru.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
 
 ## Source Files
 

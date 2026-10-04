@@ -35,9 +35,9 @@
 
 - [ppt_tool](ppt_tool.md) (26 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (3 shared connections)
-- [dag_executor + planner](dag_executor_+_planner.md) (2 shared connections)
+- [dag_executor](dag_executor.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
+- [ppt](ppt.md) (1 shared connections)
 
 ## Source Files
 

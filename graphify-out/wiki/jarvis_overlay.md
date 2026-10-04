@@ -1,12 +1,11 @@
 # jarvis_overlay
 
-> 14 nodes · cohesion 0.18
+> 13 nodes · cohesion 0.19
 
 ## Key Concepts
 
 - **jarvis_overlay.py** (11 connections) — `scripts/jarvis_overlay.py`
 - **JarvisOverlay** (7 connections) — `scripts/jarvis_overlay.py`
-- **pil** (4 connections)
 - **generate_arc_reactor()** (4 connections) — `scripts/jarvis_overlay.py`
 - **.animate()** (3 connections) — `scripts/jarvis_overlay.py`
 - **.__init__()** (3 connections) — `scripts/jarvis_overlay.py`
@@ -21,10 +20,10 @@
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (5 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
-- [screen_reader](screen_reader.md) (1 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (3 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
 
 ## Source Files
 
@@ -32,7 +31,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 25 (100%)
+- EXTRACTED: 22 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

@@ -1,6 +1,6 @@
 # resume_builder + resume-exact-replica
 
-> 46 nodes · cohesion 0.06
+> 45 nodes · cohesion 0.06
 
 ## Key Concepts
 
@@ -23,23 +23,22 @@
 - **_merge_design()** (5 connections) — `app/services/resume_builder.py`
 - **Step 5: Transfer the user's content (design locked)** (4 connections) — `docs/plans/resume-exact-replica.md`
 - **_closest_preset()** (3 connections) — `app/services/resume_builder.py`
-- **_face_ratio()** (3 connections) — `app/services/resume_builder.py`
 - **Purpose** (3 connections) — `docs/features/resume-creator.md`
 - **_title_key()** (2 connections) — `app/services/resume_builder.py`
 - **Data/config** (2 connections) — `docs/features/resume-creator.md`
+- **UI** (2 connections) — `docs/features/resume-creator.md`
 - **Step 0: Ingest and harden the input** (2 connections) — `docs/plans/resume-exact-replica.md`
 - **Step 1: Measure (local CV, no LLM)** (2 connections) — `docs/plans/resume-exact-replica.md`
-- *... and 21 more nodes in this community*
+- *... and 20 more nodes in this community*
 
 ## Relationships
 
-- [resume_builder](resume_builder.md) (42 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (10 shared connections)
-- [analyzer](analyzer.md) (8 shared connections)
-- [resume_builder + exact_render](resume_builder_+_exact_render.md) (5 shared connections)
-- [plate](plate.md) (3 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
-- [measure](measure.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (48 shared connections)
+- [analyzer](analyzer.md) (14 shared connections)
+- [plate](plate.md) (4 shared connections)
+- [pipeline](pipeline.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [exact_render](exact_render.md) (1 shared connections)
 
 ## Source Files
 
@@ -49,8 +48,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 90 (68%)
-- INFERRED: 43 (32%)
+- EXTRACTED: 88 (67%)
+- INFERRED: 43 (33%)
 - AMBIGUOUS: 0 (0%)
 
 ---

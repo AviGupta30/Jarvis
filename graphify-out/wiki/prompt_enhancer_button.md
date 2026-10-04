@@ -1,57 +1,60 @@
 # prompt_enhancer_button
 
-> 35 nodes · cohesion 0.08
+> 42 nodes · cohesion 0.07
 
 ## Key Concepts
 
 - **prompt_enhancer_button.py** (51 connections) — `app/services/prompt_enhancer_button.py`
 - **classify_app()** (10 connections) — `app/services/prompt_enhancer_button.py`
 - **main()** (7 connections) — `app/services/prompt_enhancer_button.py`
+- **Entry points** (7 connections) — `docs/features/prompt-enhancer.md`
+- **_box_contains()** (6 connections) — `app/services/prompt_enhancer_button.py`
+- **is_prompt_box()** (6 connections) — `app/services/prompt_enhancer_button.py`
+- **_ide_allows()** (5 connections) — `app/services/prompt_enhancer_button.py`
+- **_box_set_value()** (4 connections) — `app/services/prompt_enhancer_button.py`
 - **_is_editable()** (4 connections) — `app/services/prompt_enhancer_button.py`
 - **_startup_shortcut()** (4 connections) — `app/services/prompt_enhancer_button.py`
 - **_acquire_single_instance()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **_app_title_match()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **_browser_url()** (3 connections) — `app/services/prompt_enhancer_button.py`
+- **_focused_text()** (3 connections) — `app/services/prompt_enhancer_button.py`
+- **_hint_text()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **install_autostart()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **_setup_logging()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **uninstall_autostart()** (3 connections) — `app/services/prompt_enhancer_button.py`
-- **_window_rect()** (3 connections) — `app/services/prompt_enhancer_button.py`
-- **dotenv** (3 connections)
-- **.__init__()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_exe_name()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_has_pattern()** (2 connections) — `app/services/prompt_enhancer_button.py`
-- **_load_state()** (2 connections) — `app/services/prompt_enhancer_button.py`
+- **_norm()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_set_dpi_aware()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_site_match()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_title_match()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **ctypes_wintypes** (2 connections)
-- **psutil** (2 connections)
-- **Path** (1 connections)
-- **prompt_enhancer_button.py…** (1 connections) — `app/services/prompt_enhancer_button.py`
-- **Visible frame bounds (excludes the invisible resize border).** (1 connections) — `app/services/prompt_enhancer_button.py`
-- *... and 10 more nodes in this community*
+- *... and 17 more nodes in this community*
 
 ## Relationships
 
-- [prompt_enhancer_button](prompt_enhancer_button.md) (14 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (7 shared connections)
-- [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (6 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (4 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
-- [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (1 shared connections)
+- [prompt_enhancer_button](prompt_enhancer_button.md) (13 shared connections)
+- [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (5 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (4 shared connections)
+- [server + persistence](server_+_persistence.md) (2 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (2 shared connections)
+- [uia_local](uia_local.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [refresh_docs](refresh_docs.md) (1 shared connections)
+- [test_lru](test_lru.md) (1 shared connections)
 - [web_search + tools](web_search_+_tools.md) (1 shared connections)
 - [window_layout](window_layout.md) (1 shared connections)
-- [dynamic_skill + planner](dynamic_skill_+_planner.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/prompt_enhancer_button.py`
+- `docs/features/prompt-enhancer.md`
 
 ## Audit Trail
 
-- EXTRACTED: 82 (98%)
-- INFERRED: 2 (2%)
+- EXTRACTED: 90 (93%)
+- INFERRED: 7 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -10,8 +10,7 @@
 
 ## Relationships
 
-- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
-- [compiler](compiler.md) (1 shared connections)
+- [compiler](compiler.md) (2 shared connections)
 
 ## Source Files
 

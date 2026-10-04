@@ -149,10 +149,11 @@ One line per source file: what it does and its public entry points. Use this to 
 | File | Lines | Purpose |
 |---|---|---|
 | `config.js` | 2 | `API_BASE` backend URL (`VITE_API_URL` override) |
-| `App.jsx` | 860 | Main chat UI: messages, upload menu (`/upload` → `[ATTACHED_FILE: …]`), PPT theme image (`/ppt/create`), tripwire toggle, `/chat` stream reader (plain text vs DAG SSE), opens AirDrawing on `[OPEN_AIR_DRAWING]` |
-| `ChatMessage.jsx` | 127 | Markdown + GFM + syntax-highlighted message bubble |
-| `DagPlanPanel.jsx` | 259 | Live DAG plan/node status panel |
-| `MemorySidebar.jsx` | 154 | Knowledge ingest sidebar (POST `/memory/ingest`) |
+| `App.jsx` | 571 | App shell: messages (persisted in localStorage), mode state, `/upload` (+ drag/drop/paste), `runRequest` stream reader for `/chat` and `/ppt/create` (plain text vs DAG SSE, DAG state per message), stop/regenerate, tripwire + `/alerts` polling, dictation, AirDrawing overlay |
+| `ChatMessage.jsx` | 193 | Markdown message (code copy, file chips, media cards), inline DagPlanPanel, copy/regenerate |
+| `DagPlanPanel.jsx` | 145 | Live DAG plan/node status panel (collapsible, progress bar) |
+| `modes.js` | 312 | Mode definitions (Chat, Resume Creator, PPT Generator, Deep Research, Assignment, Humanizer) + `buildRequest` |
+| `components/*.jsx` | ~750 | Sidebar, Composer, EmptyState, MemoryPanel (`/memory/*`), Toasts, Orb |
 | `AirDrawing/AirDrawingApp.jsx` | 275 | Webcam air-drawing overlay root |
 | `AirDrawing/components/*` | ~1000 | CameraView, DrawingCanvas, HandSkeleton, ControlPanel, HelpPanel |
 | `AirDrawing/modules/handTracking.js` | 50 | MediaPipe hands setup |

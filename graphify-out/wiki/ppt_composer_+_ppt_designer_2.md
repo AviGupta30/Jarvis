@@ -37,7 +37,7 @@
 - [ppt_designer](ppt_designer.md) (19 shared connections)
 - [ppt_content](ppt_content.md) (1 shared connections)
 - [exact_render](exact_render.md) (1 shared connections)
-- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
+- [ppt](ppt.md) (1 shared connections)
 
 ## Source Files
 

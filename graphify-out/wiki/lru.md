@@ -24,11 +24,11 @@
 ## Relationships
 
 - [lru](lru.md) (11 shared connections)
-- [test_lru](test_lru.md) (6 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
-- [persistence + server](persistence_+_server.md) (1 shared connections)
+- [test_lru](test_lru.md) (8 shared connections)
+- [persistence](persistence.md) (1 shared connections)
+- [server + persistence](server_+_persistence.md) (1 shared connections)
 - [neural-cache](neural-cache.md) (1 shared connections)
-- [test_protocol + engine](test_protocol_+_engine.md) (1 shared connections)
+- [engine + test_protocol](engine_+_test_protocol.md) (1 shared connections)
 
 ## Source Files
 

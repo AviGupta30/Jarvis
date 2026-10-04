@@ -63,7 +63,7 @@ Order matters; the first stage that returns wins.
 
 ## Frontend (`frontend/src`)
 - `App.jsx` (859 L): chat UI, file upload menu (→ `/upload`, then inserts `[ATTACHED_FILE: …]`), PPT theme image, tripwire toggle, SSE reader. The first chunk decides the mode: `data: {` = DAG events → `DagPlanPanel`; anything else is appended to the message as raw text. The `[OPEN_AIR_DRAWING]` marker in a reply opens `AirDrawing/AirDrawingApp`.
-- `ChatMessage.jsx`: markdown + syntax highlighting. `DagPlanPanel.jsx`: live node graph. `MemorySidebar.jsx`: knowledge ingest.
+- `ChatMessage.jsx`: markdown + syntax highlighting. `DagPlanPanel.jsx`: live node graph. `modes.js`: per-mode uploads/options/prompt building (`buildRequest`). `components/MemoryPanel.jsx`: memory drawer (stats, recall, forget, ingest).
 - `AirDrawing/`: MediaPipe hand tracking → gesture interpreter → stroke/shape/transform engines on a canvas (`modules/*.js`).
 
 ## Voice path (`scripts/voice_agent.py`)

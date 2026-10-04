@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (3 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (3 shared connections)
 - [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files

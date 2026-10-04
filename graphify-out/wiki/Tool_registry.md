@@ -25,11 +25,11 @@
 - audit_playlist_syllabus() `INFERRED`
 - _media_compound() `INFERRED`
 - confirm_whatsapp_send() `INFERRED`
-- read_file() `INFERRED`
 - do_assignment() `INFERRED`
+- read_file() `INFERRED`
+- ppt_edit() `INFERRED`
 - search_site() `INFERRED`
-- browse_and_read() `INFERRED`
-- _media_target() `INFERRED`
+- agentic_web_action() `INFERRED`
 - *…and 102 more `references` connection(s) not listed (lowest-degree first to go)*
 
 ---

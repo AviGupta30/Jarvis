@@ -1,10 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Workflow, ChevronDown, Loader2, Check, X, Clock, SkipForward } from 'lucide-react';
 
 /**
- * DagPlanPanel — Live DAG Execution Graph
- * ----------------------------------------
- * Renders a real-time visual of the DAG plan as nodes execute.
- * Styled to match the existing Jarvis sci-fi HUD aesthetic.
+ * DagPlanPanel — live DAG execution graph shown inside the assistant message.
  *
  * Props:
  *   nodes       — array of node objects from the "plan" SSE event
@@ -13,8 +12,57 @@ import { useEffect, useRef } from 'react';
  *   waveCount   — number of execution waves
  *   isComplete  — boolean, true after "done" event
  */
+const STATUS = {
+  pending: { icon: Clock, label: 'Pending', color: '#6b7186' },
+  running: { icon: Loader2, label: 'Running', color: '#fbbf24', spin: true },
+  done: { icon: Check, label: 'Done', color: '#34d399' },
+  failed: { icon: X, label: 'Failed', color: '#fb7185' },
+  skipped: { icon: SkipForward, label: 'Skipped', color: '#6b7186' },
+};
+
+const toolIcon = (tool) => {
+  const icons = {
+    check_emails: '📧', list_unread: '📧', summarize_inbox: '📧', check_emails_tool: '📧',
+    get_upcoming_events: '📅', check_today_schedule: '📅', add_event: '📅',
+    set_reminder: '⏰', get_info: '🔍', get_morning_brief: '🌅',
+    get_system_time: '🕐', get_system_info: '💻', take_screenshot: '📸',
+    read_file: '📄', write_file: '📝', create_word_doc: '📝',
+    open_app: '🖥️', open_website: '🌐', DYNAMIC: '⚙️', AGGREGATE: '🧠',
+  };
+  return icons[tool] || '🔧';
+};
+
+
+function NodeCard({ node, wide, nodeStates }) {
+  const status = nodeStates[node.id]?.status || 'pending';
+  const s = STATUS[status] || STATUS.pending;
+  const Icon = s.icon;
+  const st = nodeStates[node.id] || {};
+  return (
+    <motion.div id={`dag-node-${node.id}`} layout
+      className={`relative p-3 rounded-xl border bg-white/[0.025] transition-colors ${wide ? '' : 'min-w-0'}`}
+      style={{ borderColor: status === 'pending' ? 'rgba(255,255,255,0.07)' : `${s.color}55`, boxShadow: status === 'running' ? `0 0 24px -8px ${s.color}` : 'none' }}>
+      <div className="flex items-center gap-2">
+        <span className="text-[15px] leading-none">{toolIcon(node.tool)}</span>
+        <span className="flex-1 truncate text-[11px] font-mono text-ink-400">
+          {node.tool === 'DYNAMIC' ? 'dynamic' : (node.tool || '').replace(/_/g, ' ')}
+        </span>
+        <span className="flex items-center gap-1 text-[10.5px] font-medium" style={{ color: s.color }}>
+          <Icon size={12} className={s.spin ? 'animate-spin' : ''} /> {s.label}
+        </span>
+      </div>
+      <p className="mt-1.5 text-[12.5px] text-ink-200 leading-snug line-clamp-2">{node.description}</p>
+      {status === 'done' && st.result && <p className="mt-1.5 text-[11px] text-emerald-300/80 line-clamp-1">{st.result}</p>}
+      {status === 'failed' && st.error && <p className="mt-1.5 text-[11px] text-rose-300/80 line-clamp-1">{st.error}</p>}
+    </motion.div>
+  );
+}
+
 export default function DagPlanPanel({ nodes = [], nodeStates = {}, summary = '', waveCount = 0, isComplete = false }) {
   const panelRef = useRef(null);
+  // Folds away once everything finished, unless the user toggled it
+  const [collapsedPref, setCollapsed] = useState(null);
+  const collapsed = collapsedPref ?? isComplete;
 
   useEffect(() => {
     // Scroll the panel into view when it first appears
@@ -25,235 +73,73 @@ export default function DagPlanPanel({ nodes = [], nodeStates = {}, summary = ''
 
   if (nodes.length === 0) return null;
 
-  // Group non-aggregate nodes vs aggregate node
   const planNodes = nodes.filter(n => n.tool !== 'AGGREGATE');
   const aggregateNode = nodes.find(n => n.tool === 'AGGREGATE');
 
-  // Build execution waves from depends_on graph (topological grouping for display)
+  // Build execution waves from the depends_on graph (topological grouping for display)
   const getDisplayWaves = () => {
     const waves = [];
     const placed = new Set();
-
-    // Wave 0: nodes with no dependencies
-    const wave0 = planNodes.filter(n => n.depends_on.length === 0);
-    if (wave0.length > 0) {
-      waves.push(wave0);
-      wave0.forEach(n => placed.add(n.id));
-    }
-
-    // Subsequent waves: nodes whose all deps are placed
+    const wave0 = planNodes.filter(n => (n.depends_on || []).length === 0);
+    if (wave0.length > 0) { waves.push(wave0); wave0.forEach(n => placed.add(n.id)); }
     let changed = true;
     while (changed) {
       changed = false;
-      const next = planNodes.filter(n =>
-        !placed.has(n.id) && n.depends_on.every(dep => placed.has(dep))
-      );
-      if (next.length > 0) {
-        waves.push(next);
-        next.forEach(n => placed.add(n.id));
-        changed = true;
-      }
+      const next = planNodes.filter(n => !placed.has(n.id) && (n.depends_on || []).every(dep => placed.has(dep)));
+      if (next.length > 0) { waves.push(next); next.forEach(n => placed.add(n.id)); changed = true; }
     }
-
-    // Any remaining (shouldn't happen after cycle detection, but safety net)
     const remaining = planNodes.filter(n => !placed.has(n.id));
     if (remaining.length > 0) waves.push(remaining);
-
     return waves;
   };
 
   const waves = getDisplayWaves();
-
   const getNodeStatus = (nodeId) => nodeStates[nodeId]?.status || 'pending';
-
-  const statusConfig = {
-    pending: {
-      badge: '⏳ Pending',
-      badgeClass: 'text-cyan-500 border-cyan-800 bg-cyan-950/40',
-      cardBorder: 'border-cyan-900/50',
-      glow: '',
-    },
-    running: {
-      badge: '⚡ Running',
-      badgeClass: 'text-yellow-300 border-yellow-600/50 bg-yellow-900/30 animate-pulse',
-      cardBorder: 'border-yellow-500/60',
-      glow: 'shadow-[0_0_12px_rgba(234,179,8,0.3)]',
-    },
-    done: {
-      badge: '✅ Done',
-      badgeClass: 'text-emerald-400 border-emerald-600/50 bg-emerald-900/30',
-      cardBorder: 'border-emerald-600/50',
-      glow: 'shadow-[0_0_8px_rgba(52,211,153,0.2)]',
-    },
-    failed: {
-      badge: '❌ Failed',
-      badgeClass: 'text-red-400 border-red-600/50 bg-red-900/30',
-      cardBorder: 'border-red-600/40',
-      glow: 'shadow-[0_0_8px_rgba(239,68,68,0.2)]',
-    },
-    skipped: {
-      badge: '⏭ Skipped',
-      badgeClass: 'text-gray-500 border-gray-700 bg-gray-900/30',
-      cardBorder: 'border-gray-800',
-      glow: '',
-    },
-  };
-
-  const toolIcon = (tool) => {
-    const icons = {
-      check_emails: '📧', list_unread: '📧', summarize_inbox: '📧', check_emails_tool: '📧',
-      get_upcoming_events: '📅', check_today_schedule: '📅', add_event: '📅',
-      set_reminder: '⏰',
-      get_info: '🔍', get_morning_brief: '🌅',
-      get_system_time: '🕐', get_system_info: '💻',
-      take_screenshot: '📸',
-      read_file: '📄', write_file: '📝', create_word_doc: '📝',
-      open_app: '🖥️', open_website: '🌐',
-      DYNAMIC: '⚙️',
-      AGGREGATE: '🧠',
-    };
-    return icons[tool] || '🔧';
-  };
 
   const doneCount = planNodes.filter(n => getNodeStatus(n.id) === 'done').length;
   const failedCount = planNodes.filter(n => getNodeStatus(n.id) === 'failed').length;
-  const aggStatus = aggregateNode ? getNodeStatus(aggregateNode.id) : 'pending';
+  const progress = planNodes.length ? (doneCount + failedCount) / planNodes.length : 0;
 
   return (
-    <div
-      id="dag-plan-panel"
-      ref={panelRef}
-      className="w-full mb-3 rounded-xl border border-cyan-700/60 bg-[#010c18]/90 backdrop-blur-md overflow-hidden shadow-[0_0_30px_rgba(0,243,255,0.08)]"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-cyan-900/60 bg-cyan-950/30">
-        <div className="flex items-center gap-2">
-          <span className="text-cyan-400 text-xs font-mono tracking-widest uppercase">⬡ DAG Executor</span>
-          <span className="text-[10px] font-mono text-cyan-600 px-2 py-0.5 border border-cyan-800/50 rounded bg-cyan-950/40">
-            {planNodes.length} tasks · {waveCount || waves.length} wave{(waveCount || waves.length) !== 1 ? 's' : ''}
-          </span>
+    <div id="dag-plan-panel" ref={panelRef} className="mb-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+      <button type="button" onClick={() => setCollapsed(!collapsed)} className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-white/[0.02]">
+        <span className="grid place-items-center w-8 h-8 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]"><Workflow size={15} /></span>
+        <div className="flex-1 min-w-0">
+          <p className="text-[13px] font-medium text-white flex items-center gap-2">
+            {isComplete ? 'Plan executed' : 'Executing plan'}
+            <span className="text-[11px] font-normal text-ink-400">
+              {planNodes.length} tasks · {waveCount || waves.length} wave{(waveCount || waves.length) !== 1 ? 's' : ''}
+              {doneCount > 0 && <span className="text-emerald-300"> · {doneCount} done</span>}
+              {failedCount > 0 && <span className="text-rose-300"> · {failedCount} failed</span>}
+            </span>
+          </p>
+          {summary && <p className="text-[12px] text-ink-400 truncate">{summary}</p>}
         </div>
-        <div className="flex items-center gap-2 text-[10px] font-mono">
-          {doneCount > 0 && (
-            <span className="text-emerald-400">{doneCount} done</span>
-          )}
-          {failedCount > 0 && (
-            <span className="text-red-400">{failedCount} failed</span>
-          )}
-          {isComplete && (
-            <span className="text-cyan-400 animate-pulse">● Complete</span>
-          )}
-        </div>
+        <ChevronDown size={16} className={`text-ink-400 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+      </button>
+      <div className="h-[2px] bg-white/[0.04]">
+        <motion.div className="h-full" style={{ background: 'linear-gradient(90deg, var(--accent), var(--accent-2))' }}
+          animate={{ width: `${(isComplete ? 1 : progress) * 100}%` }} transition={{ type: 'spring', stiffness: 120, damping: 20 }} />
       </div>
 
-      {/* Plan Summary */}
-      {summary && (
-        <div className="px-4 py-2 text-[11px] font-mono text-cyan-400/80 border-b border-cyan-900/40 bg-cyan-950/10 truncate">
-          {summary}
+      {!collapsed && (
+        <div className="p-3 space-y-3">
+          {waves.map((wave, waveIdx) => (
+            <div key={waveIdx}>
+              <div className="flex items-center gap-2 mb-2 px-1">
+                <span className="text-[10.5px] uppercase tracking-[0.14em] text-ink-400">
+                  Wave {waveIdx + 1}{wave.length > 1 && <span className="text-[var(--accent)]"> · parallel</span>}
+                </span>
+                <div className="flex-1 h-px bg-white/[0.05]" />
+              </div>
+              <div className={`grid gap-2 ${wave.length >= 3 ? 'sm:grid-cols-3' : wave.length === 2 ? 'sm:grid-cols-2' : 'grid-cols-1'}`}>
+                {wave.map(node => <NodeCard key={node.id} node={node} nodeStates={nodeStates} />)}
+              </div>
+            </div>
+          ))}
+          {aggregateNode && <NodeCard node={aggregateNode} nodeStates={nodeStates} wide />}
         </div>
       )}
-
-      {/* Execution Waves */}
-      <div className="p-3 space-y-2">
-        {waves.map((wave, waveIdx) => (
-          <div key={waveIdx}>
-            {/* Wave Label */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[9px] font-mono text-cyan-700 uppercase tracking-widest">
-                Wave {waveIdx + 1}
-                {wave.length > 1 && <span className="text-cyan-600 ml-1">· parallel</span>}
-              </span>
-              <div className="flex-1 h-px bg-cyan-900/40" />
-            </div>
-
-            {/* Node Cards */}
-            <div className={`grid gap-1.5 ${wave.length >= 3 ? 'grid-cols-3' : wave.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-              {wave.map((node) => {
-                const status = getNodeStatus(node.id);
-                const cfg = statusConfig[status] || statusConfig.pending;
-                const nodeState = nodeStates[node.id] || {};
-
-                return (
-                  <div
-                    key={node.id}
-                    id={`dag-node-${node.id}`}
-                    className={`relative rounded-lg border ${cfg.cardBorder} ${cfg.glow} bg-[#010d1a]/80 p-2.5 transition-all duration-300`}
-                  >
-                    {/* Running pulse ring */}
-                    {status === 'running' && (
-                      <div className="absolute inset-0 rounded-lg border border-yellow-500/40 animate-ping pointer-events-none" />
-                    )}
-
-                    {/* Top row: icon + tool name + status badge */}
-                    <div className="flex items-center justify-between gap-1 mb-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-base leading-none shrink-0">{toolIcon(node.tool)}</span>
-                        <span className="text-[9px] font-mono text-cyan-600 uppercase tracking-wide truncate">
-                          {node.tool === 'DYNAMIC' ? 'dynamic' : node.tool.replace(/_/g, ' ')}
-                        </span>
-                      </div>
-                      <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${cfg.badgeClass}`}>
-                        {cfg.badge}
-                      </span>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-[10px] text-cyan-200/80 font-mono leading-tight line-clamp-2">
-                      {node.description}
-                    </p>
-
-                    {/* Result preview */}
-                    {status === 'done' && nodeState.result && (
-                      <div className="mt-1.5 px-2 py-1 bg-emerald-950/30 border border-emerald-800/30 rounded text-[9px] text-emerald-300/70 font-mono line-clamp-1">
-                        {nodeState.result}
-                      </div>
-                    )}
-
-                    {/* Error preview */}
-                    {status === 'failed' && nodeState.error && (
-                      <div className="mt-1.5 px-2 py-1 bg-red-950/30 border border-red-800/30 rounded text-[9px] text-red-300/70 font-mono line-clamp-1">
-                        {nodeState.error}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Arrow between waves */}
-            {waveIdx < waves.length - 1 && (
-              <div className="flex justify-center mt-1.5">
-                <span className="text-cyan-800 text-xs font-mono">↓</span>
-              </div>
-            )}
-          </div>
-        ))}
-
-        {/* Aggregate node */}
-        {aggregateNode && (
-          <>
-            <div className="flex justify-center">
-              <span className="text-cyan-800 text-xs font-mono">↓</span>
-            </div>
-            <div
-              id={`dag-node-${aggregateNode.id}`}
-              className={`rounded-lg border ${(statusConfig[getNodeStatus(aggregateNode.id)] || statusConfig.pending).cardBorder} ${(statusConfig[getNodeStatus(aggregateNode.id)] || statusConfig.pending).glow} bg-[#010d1a]/80 p-2.5 transition-all duration-300`}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-base">🧠</span>
-                  <span className="text-[10px] font-mono text-cyan-300">
-                    {aggregateNode.description || 'Final Summary'}
-                  </span>
-                </div>
-                <span className={`text-[8px] font-mono px-1.5 py-0.5 rounded border ${(statusConfig[aggStatus] || statusConfig.pending).badgeClass}`}>
-                  {(statusConfig[aggStatus] || statusConfig.pending).badge}
-                </span>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
     </div>
   );
 }

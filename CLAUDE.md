@@ -27,7 +27,7 @@ app/services/personality.py  JARVIS_SYSTEM_PROMPT + TOOL_ROUTER_PROMPT (tool lis
 app/services/*           one feature per file (see docs/CODEMAP.md)
 app/memory/              ChromaDB skills/prefs (memory.py), facts.json, session.json
 neural_cache/            standalone Redis-like LRU TCP server (own README)
-frontend/src/            App.jsx (chat + SSE/DAG parsing), DagPlanPanel, MemorySidebar, AirDrawing/
+frontend/src/            App.jsx (chat + SSE/DAG parsing), modes.js (Resume/PPT/… modes), components/, DagPlanPanel, AirDrawing/
 scripts/                 voice_agent.py, jarvis_overlay.py, init/test scripts
 3D/, AirDrawer_ref*/     older copies of AirDrawing, ignore (live copy: frontend/src/AirDrawing)
 root *.py / *.txt        scratch/debug scripts & old diffs (chat_old.py etc.), ignore

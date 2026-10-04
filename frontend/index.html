@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Jarvis — AI Desktop Assistant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#05060a" />
+    <meta name="color-scheme" content="dark" />
+    <title>Jarvis</title>
     <!-- Puter.js: zero-key access to Gemini, GPT-4o-mini and more (free) -->
     <script src="https://js.puter.com/v2/"></script>
 
-    <!-- Google Fonts (required by Air Drawing) -->
+    <!-- Google Fonts: Geist / Instrument Serif (UI) + Outfit / JetBrains Mono / Pacifico (Air Drawing) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Pacifico&display=swap" rel="stylesheet">
 
     <!-- MediaPipe (required by Air Drawing) -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -33,7 +35,7 @@
       }
     </style>
   </head>
-  <body>
+  <body style="background:#05060a">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

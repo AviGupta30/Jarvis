@@ -1,6 +1,6 @@
 # gmail_tool + memory_tool
 
-> 49 nodes · cohesion 0.07
+> 55 nodes · cohesion 0.06
 
 ## Key Concepts
 
@@ -11,6 +11,7 @@
 - **summarize_inbox()** (7 connections) — `app/services/gmail_tool.py`
 - **forget_fact()** (7 connections) — `app/services/memory_tool.py`
 - **_load_memory()** (7 connections) — `app/services/memory_tool.py`
+- **Memory: RAG, facts, task ledger, resume, skills** (7 connections) — `docs/features/memory.md`
 - **Purpose** (7 connections) — `docs/features/memory.md`
 - **_format_date()** (6 connections) — `app/services/gmail_tool.py`
 - **get_email_body()** (6 connections) — `app/services/gmail_tool.py`
@@ -28,20 +29,20 @@
 - **_fuzzy_match_topics()** (4 connections) — `app/services/memory_tool.py`
 - **_truncate()** (3 connections) — `app/services/gmail_tool.py`
 - **_ensure_memory_file()** (3 connections) — `app/services/memory_tool.py`
-- **Calendar** (2 connections) — `docs/features/email-calendar.md`
-- *... and 24 more nodes in this community*
+- *... and 30 more nodes in this community*
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (6 shared connections)
 - [tools](tools.md) (6 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (4 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (4 shared connections)
 - [calendar_tool](calendar_tool.md) (3 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
-- [task_ledger + rag_memory](task_ledger_+_rag_memory.md) (2 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (2 shared connections)
-- [memory](memory.md) (2 shared connections)
-- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
-- [tool-registry + tools](tool-registry_+_tools.md) (1 shared connections)
+- [tool-registry + vector_store](tool-registry_+_vector_store.md) (3 shared connections)
+- [test_lru](test_lru.md) (2 shared connections)
+- [repair](repair.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [rag_memory + memory](rag_memory_+_memory.md) (1 shared connections)
+- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (1 shared connections)
 
 ## Source Files
 
@@ -53,8 +54,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 93 (88%)
-- INFERRED: 13 (12%)
+- EXTRACTED: 99 (88%)
+- INFERRED: 14 (12%)
 - AMBIGUOUS: 0 (0%)
 
 ---

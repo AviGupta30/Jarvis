@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
 
 ## Source Files
 

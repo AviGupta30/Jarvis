@@ -16,10 +16,9 @@
 
 ## Relationships
 
+- [repair](repair.md) (3 shared connections)
 - [bindings](bindings.md) (2 shared connections)
 - [schema](schema.md) (2 shared connections)
-- [repair](repair.md) (2 shared connections)
-- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (1 shared connections)
 
 ## Source Files
 

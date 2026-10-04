@@ -2,7 +2,7 @@
 
 > God node · 49 connections · `docs/features/os-control.md`
 
-**Community:** [youtube_player](youtube_player.md)
+**Community:** [tools](tools.md)
 
 ## Connections by Relation
 

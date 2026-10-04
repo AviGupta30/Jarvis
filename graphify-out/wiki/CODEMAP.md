@@ -16,7 +16,7 @@
 
 ## Relationships
 
-- [dag_executor + planner](dag_executor_+_planner.md) (1 shared connections)
+- [dag_executor](dag_executor.md) (1 shared connections)
 
 ## Source Files
 

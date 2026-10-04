@@ -33,9 +33,10 @@
 
 ## Relationships
 
-- [repair + assignment_humanizer](repair_+_assignment_humanizer.md) (6 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (6 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (3 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (6 shared connections)
+- [repair](repair.md) (4 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (3 shared connections)
+- [compiler](compiler.md) (2 shared connections)
 - [analyzer](analyzer.md) (2 shared connections)
 - [schema](schema.md) (1 shared connections)
 

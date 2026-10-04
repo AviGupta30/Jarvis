@@ -1,6 +1,6 @@
 # web_search + tools
 
-> 33 nodes · cohesion 0.09
+> 34 nodes · cohesion 0.09
 
 ## Key Concepts
 
@@ -12,6 +12,7 @@
 - **get_info()** (8 connections) — `app/services/tools.py`
 - **urllib_parse** (8 connections)
 - **_duckduckgo_search()** (6 connections) — `app/services/web_search.py`
+- **requests** (6 connections)
 - **Triggers** (5 connections) — `docs/features/web.md`
 - **_format_ddg_results()** (4 connections) — `app/services/web_search.py`
 - **_extract_location()** (3 connections) — `app/services/tools.py`
@@ -28,22 +29,22 @@
 - **Search for a query within a specific website using DuckDuckGo site: operator.** (1 connections) — `app/services/tools.py`
 - **Read and extract readable text content from a specific URL.** (1 connections) — `app/services/tools.py`
 - **Smart information lookup (Step 3 upgrade): - Weather queries -> wttr.in (real-…** (1 connections) — `app/services/tools.py`
-- **web_search.py — Jarvis Reliable Web Search (Step 3)…** (1 connections) — `app/services/web_search.py`
-- *... and 8 more nodes in this community*
+- *... and 9 more nodes in this community*
 
 ## Relationships
 
-- [tools](tools.md) (14 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (4 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
+- [tools](tools.md) (12 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (2 shared connections)
 - [research_scraper + nlp_extractor](research_scraper_+_nlp_extractor.md) (2 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (2 shared connections)
 - [browser_tool](browser_tool.md) (2 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [ppt_research](ppt_research.md) (2 shared connections)
+- [planner + dynamic_skill](planner_+_dynamic_skill.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [agentic_web](agentic_web.md) (1 shared connections)
+- [content_humanizer + content-tools](content_humanizer_+_content-tools.md) (1 shared connections)
 - [browser_mail](browser_mail.md) (1 shared connections)
-- [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
-- [ppt_research](ppt_research.md) (1 shared connections)
-- [prompt_enhancer_button](prompt_enhancer_button.md) (1 shared connections)
 
 ## Source Files
 
@@ -54,8 +55,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 63 (83%)
-- INFERRED: 13 (17%)
+- EXTRACTED: 67 (84%)
+- INFERRED: 13 (16%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -1,8 +1,8 @@
 # chat_endpoint()
 
-> God node · 50 connections · `app/api/chat.py`
+> God node · 51 connections · `app/api/chat.py`
 
-**Community:** [chat + youtube_control](chat_+_youtube_control.md)
+**Community:** [chat + llm](chat_+_llm.md)
 
 ## Connections by Relation
 
@@ -16,10 +16,10 @@
 - recall() `EXTRACTED`
 - detect_resume_intent() `EXTRACTED`
 - check_for_tool_intent() `EXTRACTED`
+- is_complex_task() `EXTRACTED`
 - read_file() `EXTRACTED`
 - _media_compound() `EXTRACTED`
 - _save_session() `EXTRACTED`
-- is_complex_task() `EXTRACTED`
 - format_recall_for_prompt() `EXTRACTED`
 - is_dag_task() `EXTRACTED`
 - get_embedding() `EXTRACTED`
@@ -47,6 +47,7 @@
 - [Key pieces](Key_pieces.md) `INFERRED`
 - Flow `INFERRED`
 - Fixed on 2026-09-28 `INFERRED`
+- Open `INFERRED`
 - Jump table for the big files `INFERRED`
 - Flow (`chat_endpoint`, order matters, first hit wins) `INFERRED`
 - ChatRequest `EXTRACTED`

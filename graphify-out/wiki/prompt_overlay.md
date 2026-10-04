@@ -29,7 +29,7 @@
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (2 shared connections)
 
 ## Source Files
 

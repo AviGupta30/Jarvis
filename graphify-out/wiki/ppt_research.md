@@ -34,11 +34,13 @@
 ## Relationships
 
 - [ppt_content](ppt_content.md) (19 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
-- [web_search + tools](web_search_+_tools.md) (1 shared connections)
-- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
+- [web_search + tools](web_search_+_tools.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [dump_wa_ui + test_wa](dump_wa_ui_+_test_wa.md) (1 shared connections)
+- [planner + dynamic_skill](planner_+_dynamic_skill.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
+- [ppt](ppt.md) (1 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)
 
 ## Source Files

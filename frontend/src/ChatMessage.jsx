@@ -1,129 +1,193 @@
-import React from 'react';
+import { memo, useState } from 'react';
+import { motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Copy, Check, RefreshCw, Download, FileText, ExternalLink, FilePen, Info } from 'lucide-react';
+import Orb from './components/Orb';
+import DagPlanPanel from './DagPlanPanel';
+import { MODE_BY_ID, isImage } from './modes';
 
-export default function ChatMessage({ msg }) {
-  const isUser = msg.role === 'user';
+function useCopy() {
+  const [copied, setCopied] = useState(false);
+  const copy = async (text) => {
+    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ }
+  };
+  return [copied, copy];
+}
 
+function CodeBlock({ lang, code }) {
+  const [copied, copy] = useCopy();
   return (
-    <div className={`flex items-start w-full ${isUser ? 'justify-end' : 'justify-start'} mb-6`}>
-      <div
-        className={`max-w-[85%] sm:max-w-[75%] px-6 py-4 relative shadow-lg ${
-          isUser
-            ? 'hud-panel text-cyan-100 rounded-2xl rounded-br-none border border-[#00f3ff]/50 shadow-[0_0_15px_rgba(0,243,255,0.2)]'
-            : 'hud-panel text-gray-200 rounded-2xl rounded-tl-none border-l-4 border-l-cyan-400'
-        }`}
-      >
-        {/* Decorative corner accents for assistant */}
-        {!isUser && (
-          <>
-            <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-cyan-400"></div>
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-cyan-400"></div>
-          </>
-        )}
-        
-        {/* decorative glowing dot for user */}
-        {isUser && (
-          <div className="absolute -right-2 -bottom-2 w-4 h-4 bg-cyan-400 rounded-full blur-[4px]"></div>
-        )}
-
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={{
-            code({ node, inline, className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || '');
-              return !inline && match ? (
-                <div className="my-4 rounded-xl overflow-hidden border border-cyan-900/60 shadow-[0_4px_15px_rgba(0,0,0,0.5)]">
-                  <div className="bg-[#050b14] text-cyan-400 px-4 py-2 text-xs font-mono uppercase border-b border-cyan-900/60 flex justify-between tracking-widest">
-                    {match[1]}
-                  </div>
-                  <SyntaxHighlighter
-                    {...props}
-                    style={vscDarkPlus}
-                    language={match[1]}
-                    PreTag="div"
-                    customStyle={{ margin: 0, borderRadius: 0, background: '#0a101d' }}
-                  >
-                    {String(children).replace(/\n$/, '')}
-                  </SyntaxHighlighter>
-                </div>
-              ) : (
-                <code className="bg-cyan-900/30 text-cyan-300 px-1.5 py-0.5 rounded text-[13px] font-mono border border-cyan-800/50" {...props}>
-                  {children}
-                </code>
-              );
-            },
-            img: ({ node, ...props }) => {
-              const isVideo = props.src && props.src.match(/\.(mp4|webm|ogg|avi|mov|mkv)$/i);
-              return (
-                <div className="my-4 flex flex-col items-center border border-cyan-500/40 bg-[#061022]/80 rounded-xl overflow-hidden shadow-[0_0_15px_rgba(0,243,255,0.1)]">
-                  {isVideo ? (
-                    <video controls src={props.src} className="max-w-full max-h-[400px]" />
-                  ) : (
-                    <img src={props.src} alt={props.alt} className="max-w-full max-h-[400px] object-contain" />
-                  )}
-                  <div className="w-full bg-[#050b14] p-3 border-t border-cyan-900/60 flex justify-between items-center">
-                    <span className="text-xs font-mono text-cyan-500">{isVideo ? 'VIDEO RENDERED' : 'IMAGE RENDERED'}</span>
-                    <a
-                      href={props.src}
-                      download
-                      className="px-4 py-1.5 text-xs font-mono bg-cyan-900/40 hover:bg-cyan-600 hover:text-white text-cyan-300 border border-cyan-700/50 rounded transition-colors"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Download
-                    </a>
-                  </div>
-                </div>
-              );
-            },
-            p: ({ node, ...props }) => <p className="mb-3 last:mb-0 leading-relaxed text-[15px]" {...props} />,
-            ul: ({ node, ...props }) => <ul className="list-disc ml-5 mb-3 space-y-1 text-gray-300" {...props} />,
-            ol: ({ node, ...props }) => <ol className="list-decimal ml-5 mb-3 space-y-1 text-gray-300" {...props} />,
-            li: ({ node, ...props }) => <li className="leading-relaxed" {...props} />,
-            a: ({ node, ...props }) => (props.href || '').includes('/resume/editor')
-              ? <a className="inline-block my-1 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/60 text-amber-200 hover:bg-amber-500/40 hover:text-white no-underline font-mono text-sm transition-colors" target="_blank" rel="noopener noreferrer" {...props} />
-              : <a className="text-cyan-400 hover:text-cyan-300 hover:shadow-[0_0_5px_rgba(0,243,255,0.5)] transition-all underline decoration-cyan-500/50" target="_blank" rel="noopener noreferrer" {...props} />,
-            
-            // Custom Table styling for sci-fi look
-            table: ({ node, ...props }) => (
-              <div className="my-4 rounded-xl overflow-hidden border border-cyan-500/40 bg-[#061022]/80 shadow-[0_0_15px_rgba(0,243,255,0.1)]">
-                <table className="min-w-full divide-y divide-cyan-800/50 text-sm font-mono" {...props} />
-              </div>
-            ),
-            thead: ({ node, ...props }) => <thead className="bg-[#00f3ff]/10" {...props} />,
-            th: ({ node, ...props }) => <th className="px-4 py-3 text-left font-semibold text-cyan-300 uppercase tracking-widest border-b border-cyan-500/40" {...props} />,
-            tbody: ({ node, ...props }) => <tbody className="divide-y divide-cyan-900/30" {...props} />,
-            tr: ({ node, ...props }) => <tr className="hover:bg-cyan-900/20 transition-colors" {...props} />,
-            td: ({ node, ...props }) => <td className="px-4 py-3 whitespace-nowrap text-cyan-100/80 border-r border-cyan-900/30 last:border-r-0" {...props} />,
-          }}
-        >
-          {msg.content}
-        </ReactMarkdown>
-
-        {msg.attachedFiles && msg.attachedFiles.length > 0 && (
-          <div className={`flex flex-wrap gap-3 ${msg.content ? 'mt-4' : ''}`}>
-            {msg.attachedFiles.map((f, i) => (
-              <div key={i} className="relative group rounded-xl overflow-hidden border border-cyan-500/40 bg-[#061022]/80 shadow-[0_0_15px_rgba(0,243,255,0.1)] flex flex-col">
-                {f.name.match(/\.(png|jpg|jpeg|webp)$/i) ? (
-                  <img src={f.url} alt={f.name} className="max-w-[200px] max-h-[200px] object-cover" />
-                ) : (
-                  <div className="flex items-center justify-center w-[150px] h-[100px] bg-cyan-950/40 text-cyan-200 text-sm font-mono p-3 text-center break-words">
-                    📄 {f.name}
-                  </div>
-                )}
-                {f.description && (
-                  <div className="bg-[#030a16]/90 p-2 text-xs text-cyan-300 font-mono truncate max-w-[200px] border-t border-cyan-500/30">
-                    {f.description}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="my-4 rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0b0d14]">
+      <div className="flex items-center justify-between px-4 h-9 border-b border-white/[0.06] bg-white/[0.02]">
+        <span className="text-[11.5px] font-mono text-ink-400">{lang}</span>
+        <button onClick={() => copy(code)} className="flex items-center gap-1.5 text-[11.5px] text-ink-400 hover:text-white transition-colors">
+          {copied ? <><Check size={13} className="text-emerald-400" /> Copied</> : <><Copy size={13} /> Copy</>}
+        </button>
       </div>
+      <SyntaxHighlighter style={vscDarkPlus} language={lang} PreTag="div"
+        customStyle={{ margin: 0, padding: '14px 16px', background: 'transparent', fontSize: '13px', lineHeight: 1.65 }}
+        codeTagProps={{ style: { fontFamily: 'var(--font-mono)' } }}>
+        {code}
+      </SyntaxHighlighter>
     </div>
   );
 }
+
+const FILE_RX = /\.(pptx|potx|pdf|docx|xlsx|csv|zip|html|png|jpe?g|webp|mp4|mov|webm)(\?|#|$)/i;
+
+const mdComponents = {
+  pre: ({ children }) => <>{children}</>,
+  code({ className, children }) {
+    const match = /language-([\w+-]+)/.exec(className || '');
+    const text = String(children ?? '');
+    if (match || text.includes('\n')) return <CodeBlock lang={match?.[1] || 'text'} code={text.replace(/\n$/, '')} />;
+    return <code className="inline-code">{children}</code>;
+  },
+  img: ({ src, alt }) => {
+    const props = { src, alt };
+    const isVideo = /\.(mp4|webm|ogg|avi|mov|mkv)$/i.test(props.src || '');
+    return (
+      <span className="block my-4 rounded-2xl overflow-hidden border border-white/[0.08] bg-black/30 w-fit max-w-full">
+        {isVideo
+          ? <video controls src={props.src} className="max-w-full max-h-[420px]" />
+          : <a href={props.src} target="_blank" rel="noopener noreferrer"><img src={props.src} alt={props.alt} className="max-w-full max-h-[420px] object-contain" /></a>}
+        <span className="flex items-center justify-between gap-6 px-3.5 py-2 border-t border-white/[0.06] bg-white/[0.02]">
+          <span className="text-[11.5px] text-ink-400 truncate">{props.alt || (isVideo ? 'Video' : 'Image')}</span>
+          <a href={props.src} download target="_blank" rel="noopener noreferrer" className="!no-underline flex items-center gap-1.5 text-[12px] !text-ink-200 hover:!text-white">
+            <Download size={13} /> Download
+          </a>
+        </span>
+      </span>
+    );
+  },
+  a: ({ href = '', title, children }) => {
+    const props = { title };
+    if (href.includes('/resume/editor')) {
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" {...props}
+          className="!no-underline inline-flex items-center gap-2 my-1 px-3.5 py-2 rounded-xl text-[13px] font-medium !text-ink-950 bg-amber-300 hover:bg-amber-200 transition-colors">
+          <FilePen size={14} /> {children}
+        </a>
+      );
+    }
+    if (FILE_RX.test(href)) {
+      const ext = (href.match(FILE_RX)?.[1] || '').toUpperCase();
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" {...props}
+          className="!no-underline inline-flex items-center gap-2.5 my-1 pl-1.5 pr-3 py-1.5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] hover:border-white/20 transition-colors align-middle">
+          <span className="grid place-items-center w-7 h-7 rounded-lg bg-[var(--accent-soft)] text-[var(--accent)]"><FileText size={14} /></span>
+          <span className="text-[13px] !text-white">{children}</span>
+          <span className="text-[10px] font-mono text-ink-400">{ext}</span>
+          <ExternalLink size={12} className="text-ink-400" />
+        </a>
+      );
+    }
+    return <a href={href} target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
+  },
+  table: ({ children }) => (
+    <div className="my-4 overflow-x-auto custom-scrollbar rounded-2xl border border-white/[0.08] bg-white/[0.015]">
+      <table>{children}</table>
+    </div>
+  ),
+};
+
+function Attachments({ files, align }) {
+  if (!files?.length) return null;
+  return (
+    <div className={`flex flex-wrap gap-2 mb-2 ${align === 'right' ? 'justify-end' : ''}`}>
+      {files.map((f, i) => (
+        f.url && isImage(f.name) ? (
+          <div key={i} className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/30">
+            <img src={f.url} alt={f.name} className="h-32 w-auto min-w-24 max-w-[220px] object-cover" />
+            {(f.description || f.label) && (
+              <p className="absolute bottom-0 inset-x-0 px-2.5 py-1.5 text-[11px] text-white bg-gradient-to-t from-black/80 to-transparent truncate">
+                {f.label ? <b className="font-medium">{f.label}</b> : null}{f.label && f.description ? ' · ' : ''}{f.description}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div key={i} className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-2xl border border-white/10 bg-white/[0.04] max-w-[260px]">
+            <span className="grid place-items-center w-8 h-8 rounded-xl bg-white/[0.06] text-ink-200"><FileText size={15} /></span>
+            <div className="min-w-0">
+              <p className="text-[12.5px] text-white truncate">{f.name}</p>
+              <p className="text-[10.5px] text-ink-400">{f.label || (f.name.split('.').pop() || '').toUpperCase()}</p>
+            </div>
+          </div>
+        )
+      ))}
+    </div>
+  );
+}
+
+function ChatMessage({ msg, isStreaming, canRegenerate, onRegenerate }) {
+  const [copied, copy] = useCopy();
+  const mode = msg.mode && msg.mode !== 'chat' ? MODE_BY_ID[msg.mode] : null;
+
+  if (msg.role === 'user') {
+    return (
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+        className="flex flex-col items-end">
+        <Attachments files={msg.attachedFiles} align="right" />
+        {msg.content && (
+          <div className="max-w-[85%] sm:max-w-[75%] px-4 py-2.5 rounded-3xl rounded-br-lg bg-white/[0.07] border border-white/[0.08] text-[15px] leading-relaxed text-ink-100 whitespace-pre-wrap break-words">
+            {msg.content}
+          </div>
+        )}
+        {mode && (
+          <span className="mt-1.5 inline-flex items-center gap-1 text-[11px]" style={{ color: mode.accent }}>
+            <mode.icon size={11} /> {mode.label}
+          </span>
+        )}
+      </motion.div>
+    );
+  }
+
+  const empty = !msg.content;
+  return (
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ type: 'spring', stiffness: 300, damping: 28 }}
+      className="group flex gap-3.5 sm:gap-4">
+      <div className="pt-0.5"><Orb size={28} busy={isStreaming} rings={false} /></div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[13px] font-medium text-ink-200 mb-1.5 h-[22px] flex items-center">Jarvis</p>
+
+        {msg.dag?.plan && (
+          <DagPlanPanel nodes={msg.dag.plan.nodes} nodeStates={msg.dag.nodeStates} summary={msg.dag.plan.summary}
+            waveCount={msg.dag.plan.waveCount} isComplete={msg.dag.complete} />
+        )}
+
+        {empty && isStreaming ? (
+          <div className="flex items-center gap-3 h-7">
+            <span className="dot-pulse flex gap-1"><span /><span /><span /></span>
+            <span className="text-[13.5px] text-shimmer">{mode ? `${mode.label} is working…` : 'Thinking…'}</span>
+          </div>
+        ) : (
+          <div className={`prose-jarvis ${isStreaming ? 'caret' : ''}`}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={mdComponents}>{msg.content}</ReactMarkdown>
+          </div>
+        )}
+
+        {msg.note && (
+          <p className="mt-3 flex items-start gap-2 text-[12px] text-ink-400"><Info size={13} className="mt-0.5 shrink-0" /> {msg.note}</p>
+        )}
+
+        {!isStreaming && !empty && (
+          <div className="mt-2 -ml-1.5 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button onClick={() => copy(msg.content)} title="Copy" className="p-1.5 rounded-lg text-ink-400 hover:text-white hover:bg-white/[0.06]">
+              {copied ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+            </button>
+            {canRegenerate && (
+              <button onClick={onRegenerate} title="Regenerate" className="p-1.5 rounded-lg text-ink-400 hover:text-white hover:bg-white/[0.06]">
+                <RefreshCw size={14} />
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+export default memo(ChatMessage);

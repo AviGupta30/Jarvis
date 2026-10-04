@@ -186,7 +186,8 @@ FEATURES = {
     "frontend": ("Web UI (React/Vite)", {
         "frontend/src/App.jsx": None,
         "frontend/src/DagPlanPanel.jsx": None,
-        "frontend/src/MemorySidebar.jsx": None,
+        "frontend/src/modes.js": None,
+        "frontend/src/components/*.jsx": None,
         "frontend/src/ChatMessage.jsx": None,
         "frontend/src/config.js": None,
     }),

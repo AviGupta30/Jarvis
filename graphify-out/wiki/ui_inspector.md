@@ -27,7 +27,7 @@
 
 ## Relationships
 
-- [tools](tools.md) (2 shared connections)
+- [ui_inspector + tools](ui_inspector_+_tools.md) (2 shared connections)
 
 ## Source Files
 

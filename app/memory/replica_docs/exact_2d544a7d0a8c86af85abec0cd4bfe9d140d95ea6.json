@@ -1,12 +1,12 @@
 {
- "v": 6,
+ "v": 8,
  "sha1": "2d544a7d0a8c86af85abec0cd4bfe9d140d95ea6",
  "source": "Screenshot_2026-10-04_122644_1791098945.png",
  "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_122644_1791098945.png",
  "page": {
   "h_mm": 297.0,
   "ref_h_mm": 282.0,
-  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\plate.jpg",
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\plate.png",
   "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\plate2.png",
   "src_dpi": 81.2,
   "partial": false,
@@ -35,6 +35,12 @@
     150.83,
     200.22,
     154.39
+   ],
+   [
+    150.58,
+    216.73,
+    157.69,
+    216.98
    ],
    [
     10.92,
@@ -242,7 +248,7 @@
    "pitch": 4.633
   }
  },
- "created": 1791111468.365101,
+ "created": 1791121428.9683058,
  "fonts": {
   "Poppins": [
    300,
@@ -282,10 +288,10 @@
     "key": "name",
     "text": "name",
     "fs": 13.791,
-    "room": null,
-    "bg": "#efe8e6",
-    "room_kind": null,
-    "room_hard": 86.84
+    "room": 81.0,
+    "bg": "#efe9e6",
+    "room_kind": "rule",
+    "room_hard": null
    }
   ]
  },
@@ -300,10 +306,10 @@
     "key": "title",
     "text": "GRAPHIC DESIGNER",
     "fs": 5.771,
-    "room": null,
+    "room": 62.21,
     "bg": "#efe9e6",
-    "room_kind": null,
-    "room_hard": 86.84
+    "room_kind": "rule",
+    "room_hard": null
    }
   ]
  },
@@ -315,7 +321,8 @@
    138.39
   ],
   "radius": 28.12,
-  "circle": true
+  "circle": true,
+  "overlays": []
  },
  "hcontact": [],
  "columns": [
@@ -408,9 +415,18 @@
      "tokens": {
       "head_first": 6.48,
       "head_body": 5.21,
-      "wrap": 5.08,
+      "wrap": 7.62,
+      "new_item": 5.015000000000001,
       "sec_gap": 35.3,
       "prev_key": "body0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_experience_0_42.png",
+      "w": 5.08,
+      "h": 7.36,
+      "dx": 5.46,
+      "dy": -4.06,
+      "all_same": false
      },
      "graphics": {},
      "roles": [
@@ -510,7 +526,7 @@
        "x": 38.22,
        "x1": 104.11,
        "y": 221.68,
-       "lead": false,
+       "lead": true,
        "text": "dignor aignat pajen:t, from concept"
       },
       {
@@ -519,7 +535,7 @@
        "x": 38.22,
        "x1": 65.01,
        "y": 226.51,
-       "lead": false,
+       "lead": true,
        "text": "of complection."
       },
       {
@@ -528,7 +544,7 @@
        "x": 38.34,
        "x1": 70.21,
        "y": 236.41,
-       "lead": false,
+       "lead": true,
        "text": "Workplace name"
       },
       {
@@ -546,7 +562,7 @@
        "x": 38.22,
        "x1": 68.69,
        "y": 241.61,
-       "lead": false,
+       "lead": true,
        "text": "Graphic Designer"
       },
       {
@@ -564,7 +580,7 @@
        "x": 38.34,
        "x1": 104.11,
        "y": 254.18,
-       "lead": false,
+       "lead": true,
        "text": "visuals palisency instruclanis vatch"
       },
       {
@@ -573,12 +589,14 @@
        "x": 38.34,
        "x1": 92.81,
        "y": 259.14,
-       "lead": false,
+       "lead": true,
        "text": "visuals and compsiting Gycais."
       }
      ]
     }
-   ]
+   ],
+   "bullet_x": 34.92,
+   "bullet_text_x": 38.28
   },
   {
    "x0": 130.9,
@@ -831,5 +849,5 @@
    ]
   }
  ],
- "analysis_s": 83.9
+ "analysis_s": 175.0
 }

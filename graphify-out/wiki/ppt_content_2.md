@@ -19,8 +19,8 @@
 - **_retry()** (4 connections) — `app/services/ppt_content.py`
 - **deck_facts()** (4 connections) — `app/services/ppt_content.py`
 - **needs_architect()** (4 connections) — `app/services/ppt_content.py`
-- **plain_md()** (4 connections) — `app/services/ppt_content.py`
 - **run()** (3 connections) — `app/services/ppt_content.py`
+- **detect_profile()** (3 connections) — `app/services/ppt_content.py`
 - **_spec_texts()** (3 connections) — `app/services/ppt_content.py`
 - **_copy_sec()** (1 connections) — `app/services/ppt_content.py`
 - **True if the slide only re-uses the user's words (≥ min_ratio of tokens) and…** (1 connections) — `app/services/ppt_content.py`
@@ -33,16 +33,16 @@
 
 ## Relationships
 
-- [ppt_content](ppt_content.md) (22 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (8 shared connections)
-- [ppt + ppt_studio](ppt_+_ppt_studio.md) (2 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
+- [ppt_content](ppt_content.md) (24 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (8 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [ppt](ppt.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_studio](ppt_studio.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
 - [ppt_template](ppt_template.md) (1 shared connections)
 - [ppt_router + ppt_tool](ppt_router_+_ppt_tool.md) (1 shared connections)
-- [voice_agent + KNOWN_ISSUES](voice_agent_+_KNOWN_ISSUES.md) (1 shared connections)
+- [KNOWN_ISSUES](KNOWN_ISSUES.md) (1 shared connections)
 - [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (1 shared connections)
 - [ppt_research](ppt_research.md) (1 shared connections)
 

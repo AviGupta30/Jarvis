@@ -1,26 +1,31 @@
 # voice_agent
 
-> 10 nodes · cohesion 0.33
+> 17 nodes · cohesion 0.21
 
 ## Key Concepts
 
-- **MicListener** (11 connections) — `scripts/voice_agent.py`
-- **._process()** (5 connections) — `scripts/voice_agent.py`
+- **VoiceAgent** (14 connections) — `scripts/voice_agent.py`
+- **.handle_utterance()** (9 connections) — `scripts/voice_agent.py`
+- **_pick()** (7 connections) — `scripts/voice_agent.py`
+- **.dispatch()** (6 connections) — `scripts/voice_agent.py`
+- **._run_command()** (6 connections) — `scripts/voice_agent.py`
 - **.run()** (5 connections) — `scripts/voice_agent.py`
-- **._calibrate()** (3 connections) — `scripts/voice_agent.py`
-- **._is_user_frame()** (3 connections) — `scripts/voice_agent.py`
-- **._emit()** (2 connections) — `scripts/voice_agent.py`
-- **._open()** (2 connections) — `scripts/voice_agent.py`
-- **._reset_segmenter()** (2 connections) — `scripts/voice_agent.py`
-- **Initial ambient noise floor (kept up to date on every non-speech frame).** (1 connections) — `scripts/voice_agent.py`
-- **One 32 ms frame → clap check + VAD state machine → events.** (1 connections) — `scripts/voice_agent.py`
+- **_is_stop()** (3 connections) — `scripts/voice_agent.py`
+- **._greet_after_pause()** (3 connections) — `scripts/voice_agent.py`
+- **.on_clap()** (3 connections) — `scripts/voice_agent.py`
+- **._overlaps_speech()** (3 connections) — `scripts/voice_agent.py`
+- **._safe_utterance()** (3 connections) — `scripts/voice_agent.py`
+- **run_voice_agent()** (2 connections) — `scripts/voice_agent.py`
+- **._open_followup()** (2 connections) — `scripts/voice_agent.py`
+- **filler()** (2 connections) — `scripts/voice_agent.py`
+- **Was Jarvis talking (or just finished) during [t0, t1]?** (1 connections) — `scripts/voice_agent.py`
+- **_done()** (1 connections) — `scripts/voice_agent.py`
+- **._on_speaker_state()** (1 connections) — `scripts/voice_agent.py`
 
 ## Relationships
 
-- [voice_agent + voice](voice_agent_+_voice.md) (2 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
-- [voice_agent + KNOWN_ISSUES](voice_agent_+_KNOWN_ISSUES.md) (1 shared connections)
-- [voice](voice.md) (1 shared connections)
+- [voice_agent](voice_agent.md) (12 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (3 shared connections)
 
 ## Source Files
 
@@ -28,8 +33,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 18 (90%)
-- INFERRED: 2 (10%)
+- EXTRACTED: 40 (93%)
+- INFERRED: 3 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---

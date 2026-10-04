@@ -35,7 +35,7 @@
 
 - [ppt_designer](ppt_designer.md) (57 shared connections)
 - [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (55 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (2 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (2 shared connections)
 - [ppt_template](ppt_template.md) (2 shared connections)
 - [ppt_content](ppt_content.md) (1 shared connections)
 

@@ -33,9 +33,10 @@
 
 ## Relationships
 
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (2 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [safe_executor](safe_executor.md) (1 shared connections)
+- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
 - [compiler](compiler.md) (1 shared connections)

@@ -36,14 +36,15 @@
 - [ppt_designer](ppt_designer.md) (52 shared connections)
 - [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (34 shared connections)
 - [ppt_template](ppt_template.md) (15 shared connections)
-- [ppt_studio + ppt_content](ppt_studio_+_ppt_content.md) (8 shared connections)
-- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (8 shared connections)
 - [ppt_tool](ppt_tool.md) (2 shared connections)
 - [memory](memory.md) (1 shared connections)
 - [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (1 shared connections)
-- [ppt + ppt_studio](ppt_+_ppt_studio.md) (1 shared connections)
-- [chat + youtube_control](chat_+_youtube_control.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [test_lru](test_lru.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
+- [ppt](ppt.md) (1 shared connections)
+- [planner + dynamic_skill](planner_+_dynamic_skill.md) (1 shared connections)
 
 ## Source Files
 

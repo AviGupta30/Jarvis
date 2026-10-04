@@ -1,6 +1,6 @@
 # plate
 
-> 50 nodes · cohesion 0.08
+> 48 nodes · cohesion 0.09
 
 ## Key Concepts
 
@@ -12,11 +12,11 @@
 - **_hex()** (7 connections) — `app/services/resume_replica/measure.py`
 - **_find_photo()** (7 connections) — `app/services/resume_replica/plate.py`
 - **_long_lines()** (7 connections) — `app/services/resume_replica/plate.py`
+- **Generic analysis rules added 2026-10-04 (round 5, `SPEC_VERSION` 6)** (7 connections) — `docs/features/resume-creator.md`
 - **contact_type()** (6 connections) — `app/services/resume_replica/measure.py`
 - **_heading_deco()** (6 connections) — `app/services/resume_replica/plate.py`
 - **_lead_of()** (6 connections) — `app/services/resume_replica/plate.py`
 - **_ocr_verify()** (6 connections) — `app/services/resume_replica/plate.py`
-- **_ornaments()** (6 connections) — `app/services/resume_replica/plate.py`
 - **_photo_overlays()** (6 connections) — `app/services/resume_replica/plate.py`
 - **_rgba()** (6 connections) — `app/services/resume_replica/plate.py`
 - **_stands_out()** (6 connections) — `app/services/resume_replica/plate.py`
@@ -29,28 +29,33 @@
 - **comps_in()** (4 connections) — `app/services/resume_replica/plate.py`
 - **_components()** (3 connections) — `app/services/resume_replica/plate.py`
 - **_end_radius()** (3 connections) — `app/services/resume_replica/plate.py`
-- *... and 25 more nodes in this community*
+- *... and 23 more nodes in this community*
 
 ## Relationships
 
-- [plate](plate.md) (12 shared connections)
-- [measure](measure.md) (8 shared connections)
-- [resume_builder + integrate](resume_builder_+_integrate.md) (5 shared connections)
+- [plate](plate.md) (14 shared connections)
+- [exact_render](exact_render.md) (7 shared connections)
+- [measure](measure.md) (5 shared connections)
 - [pipeline](pipeline.md) (3 shared connections)
-- [voice_agent + download_kokoro](voice_agent_+_download_kokoro.md) (3 shared connections)
-- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (2 shared connections)
+- [resume_builder + resume-exact-replica](resume_builder_+_resume-exact-replica.md) (3 shared connections)
+- [resume_campus + measure](resume_campus_+_measure.md) (2 shared connections)
+- [benchmark + download_kokoro](benchmark_+_download_kokoro.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [acoustic_tripwire](acoustic_tripwire.md) (1 shared connections)
 - [ingest](ingest.md) (1 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/resume_replica/measure.py`
 - `app/services/resume_replica/plate.py`
+- `docs/features/resume-creator.md`
 
 ## Audit Trail
 
-- EXTRACTED: 129 (93%)
-- INFERRED: 10 (7%)
+- EXTRACTED: 128 (91%)
+- INFERRED: 13 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

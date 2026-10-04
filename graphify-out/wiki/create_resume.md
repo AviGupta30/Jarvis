@@ -2,7 +2,7 @@
 
 > God node · 31 connections · `app/services/resume_builder.py`
 
-**Community:** [resume_builder + integrate](resume_builder_+_integrate.md)
+**Community:** [resume_builder](resume_builder.md)
 
 ## Connections by Relation
 
