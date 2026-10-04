@@ -1,10 +1,12 @@
 # fontmatch + fonts
 
-> 35 nodes · cohesion 0.08
+> 38 nodes · cohesion 0.08
 
 ## Key Concepts
 
+- **numpy** (15 connections)
 - **fontmatch.py** (14 connections) — `app/services/resume_replica/fontmatch.py`
+- **fonts.py** (13 connections) — `app/services/resume_replica/fonts.py`
 - **load_index()** (12 connections) — `app/services/resume_replica/fonts.py`
 - **FontMatcher** (11 connections) — `app/services/resume_replica/fontmatch.py`
 - **identify()** (6 connections) — `app/services/resume_replica/fontmatch.py`
@@ -27,16 +29,22 @@
 - **.__init__()** (1 connections) — `app/services/resume_replica/fontmatch.py`
 - **fontmatch.py — Font identification against the local library (fonts.py), all in…** (1 connections) — `app/services/resume_replica/fontmatch.py`
 - **Scale so the stroke cores read 1.0 (same rule as the JS side: mean of values…** (1 connections) — `app/services/resume_replica/fontmatch.py`
-- **Reference intensity map (0 = background, 1 = text colour) of a line's ink box…** (1 connections) — `app/services/resume_replica/fontmatch.py`
-- **One warm Chromium page with the whole font library loaded. Use as a context…** (1 connections) — `app/services/resume_replica/fontmatch.py`
-- *... and 10 more nodes in this community*
+- *... and 13 more nodes in this community*
 
 ## Relationships
 
-- [pipeline](pipeline.md) (8 shared connections)
-- [benchmark + server](benchmark_+_server.md) (6 shared connections)
-- [exact_render](exact_render.md) (3 shared connections)
-- [dark_enhancement + dark_video_enhancement](dark_enhancement_+_dark_video_enhancement.md) (1 shared connections)
+- [pipeline](pipeline.md) (9 shared connections)
+- [exact_render](exact_render.md) (4 shared connections)
+- [server](server.md) (2 shared connections)
+- [dark_enhancement + dark_video_enhancement](dark_enhancement_+_dark_video_enhancement.md) (2 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
+- [content_humanizer](content_humanizer.md) (1 shared connections)
+- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (1 shared connections)
+- [ingest](ingest.md) (1 shared connections)
+- [measure](measure.md) (1 shared connections)
+- [plate](plate.md) (1 shared connections)
 
 ## Source Files
 
@@ -46,8 +54,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 65 (98%)
-- INFERRED: 1 (2%)
+- EXTRACTED: 85 (99%)
+- INFERRED: 1 (1%)
 - AMBIGUOUS: 0 (0%)
 
 ---

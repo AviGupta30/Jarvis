@@ -10,8 +10,8 @@
 - TOOLS.md `EXTRACTED`
 
 ### references
-- keyword_detect_tool() `INFERRED`
 - create_resume() `INFERRED`
+- keyword_detect_tool() `INFERRED`
 - youtube_play_result() `INFERRED`
 - ppt_create() `INFERRED`
 - youtube_channel() `INFERRED`

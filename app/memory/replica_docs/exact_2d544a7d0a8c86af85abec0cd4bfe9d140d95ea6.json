@@ -1,0 +1,875 @@
+{
+ "v": 5,
+ "sha1": "2d544a7d0a8c86af85abec0cd4bfe9d140d95ea6",
+ "source": "Screenshot_2026-10-04_122644_1791098945.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_122644_1791098945.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 282.0,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\plate.jpg",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\plate2.png",
+  "src_dpi": 81.2,
+  "partial": false,
+  "letter": false,
+  "ornaments": [
+   [
+    76.31,
+    20.57,
+    96.75,
+    25.77
+   ],
+   [
+    181.43,
+    60.94,
+    196.16,
+    62.97
+   ],
+   [
+    181.43,
+    63.48,
+    196.54,
+    65.51
+   ],
+   [
+    178.0,
+    150.83,
+    200.22,
+    154.39
+   ],
+   [
+    10.92,
+    268.78,
+    31.36,
+    272.97
+   ]
+  ]
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 15.59,
+   "family": "Poppins",
+   "weight": 700,
+   "size": 13.319,
+   "ls": 0.0,
+   "color": "#0c120d",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.57,
+   "n": 2,
+   "pitch": 18.41
+  },
+  "head1": {
+   "ref_contrast": 11.47,
+   "family": "Tw Cen MT",
+   "weight": 700,
+   "size": 7.118,
+   "ls": 0.0391,
+   "color": "#ede8e5",
+   "upper": true,
+   "asc": 0.86,
+   "desc": 0.23,
+   "ink_asc": 0.65,
+   "n": 3,
+   "pitch": 9.396
+  },
+  "contact1": {
+   "ref_contrast": 9.02,
+   "family": "Poppins",
+   "weight": 500,
+   "size": 3.588,
+   "ls": 0.0,
+   "color": "#d0d3d3",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.74,
+   "n": 3,
+   "pitch": 4.736
+  },
+  "title": {
+   "ref_contrast": 16.5,
+   "family": "Tw Cen MT",
+   "weight": 700,
+   "size": 5.771,
+   "ls": 0.1353,
+   "color": "#090a08",
+   "upper": true,
+   "asc": 0.86,
+   "desc": 0.23,
+   "ink_asc": 0.65,
+   "n": 1,
+   "pitch": 7.618
+  },
+  "head0": {
+   "ref_contrast": 14.28,
+   "family": "Tw Cen MT",
+   "weight": 700,
+   "size": 6.925,
+   "ls": 0.0437,
+   "color": "#090a08",
+   "upper": true,
+   "asc": 0.86,
+   "desc": 0.23,
+   "ink_asc": 0.65,
+   "n": 2,
+   "pitch": 9.141
+  },
+  "body0": {
+   "ref_contrast": 8.15,
+   "family": "Days One",
+   "weight": 400,
+   "size": 3.355,
+   "ls": 0.0,
+   "color": "#433c38",
+   "upper": false,
+   "asc": 1,
+   "desc": 0.28,
+   "ink_asc": 0.71,
+   "n": 19,
+   "pitch": 4.952
+  },
+  "meta_left0": {
+   "ref_contrast": 14.44,
+   "family": "Tw Cen MT",
+   "weight": 700,
+   "size": 4.297,
+   "ls": -0.0375,
+   "color": "#1c1a19",
+   "upper": false,
+   "asc": 0.86,
+   "desc": 0.23,
+   "ink_asc": 0.64,
+   "n": 3,
+   "pitch": 5.672
+  },
+  "item_title0": {
+   "ref_contrast": 14.02,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 3.521,
+   "ls": 0.0,
+   "color": "#1e1d1b",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.74,
+   "n": 1,
+   "pitch": 4.648
+  },
+  "meta_left1": {
+   "ref_contrast": 11.46,
+   "family": "Poppins",
+   "weight": 700,
+   "size": 3.843,
+   "ls": 0.0,
+   "color": "#ebebe9",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.75,
+   "n": 2,
+   "pitch": 5.073
+  },
+  "item_title1": {
+   "ref_contrast": 9.92,
+   "family": "Poppins",
+   "weight": 300,
+   "size": 3.774,
+   "ls": 0.0,
+   "color": "#d8dbd8",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.76,
+   "n": 2,
+   "pitch": 4.982
+  },
+  "body1": {
+   "ref_contrast": 9.49,
+   "family": "Poppins",
+   "weight": 600,
+   "size": 3.514,
+   "ls": 0.0,
+   "color": "#d1d6d3",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.79,
+   "n": 2,
+   "pitch": 4.698
+  },
+  "sub1": {
+   "ref_contrast": 9.62,
+   "family": "Days One",
+   "weight": 400,
+   "size": 3.594,
+   "ls": 0.0,
+   "color": "#d5d7d5",
+   "upper": false,
+   "asc": 1,
+   "desc": 0.28,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 4.744
+  },
+  "meta1": {
+   "ref_contrast": 10.03,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 3.737,
+   "ls": 0.0,
+   "color": "#d9dbd9",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.76,
+   "n": 1,
+   "pitch": 4.933
+  },
+  "list1": {
+   "ref_contrast": 9.92,
+   "family": "Poppins",
+   "weight": 600,
+   "size": 3.51,
+   "ls": 0.0,
+   "color": "#d6d8d5",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.79,
+   "n": 4,
+   "pitch": 4.633
+  }
+ },
+ "created": 1791099128.3783314,
+ "fonts": {
+  "Poppins": [
+   300,
+   400,
+   500,
+   600,
+   700
+  ],
+  "Tw Cen MT": [
+   700
+  ],
+  "Days One": [
+   400
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 24.25,
+    "y": 26.54,
+    "x1": 58.02,
+    "y1": 37.33,
+    "key": "name",
+    "text": "your",
+    "fs": 12.848,
+    "room": 52.18,
+    "bg": "#eee8e6",
+    "room_kind": "rule",
+    "room_hard": null
+   },
+   {
+    "x": 24.89,
+    "y": 44.95,
+    "x1": 66.28,
+    "y1": 52.94,
+    "key": "name",
+    "text": "name",
+    "fs": 13.791,
+    "room": 81.0,
+    "bg": "#efe9e6",
+    "room_kind": "rule",
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 24.63,
+    "y": 61.7,
+    "x1": 85.19,
+    "y1": 65.51,
+    "key": "title",
+    "text": "GRAPHIC DESIGNER",
+    "fs": 5.771,
+    "room": 62.21,
+    "bg": "#efe9e6",
+    "room_kind": "rule",
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   110.59,
+   82.27,
+   166.83,
+   138.39
+  ],
+  "radius": 28.12,
+  "circle": true
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 23.62,
+   "x1": 105.0,
+   "top": 94.08,
+   "bottom": 262.44,
+   "text_x": 38.22,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "PROFILE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      24.38,
+      94.46,
+      50.91,
+      98.91
+     ],
+     "top": 94.46,
+     "head_bottom": 98.91,
+     "tokens": {
+      "head_first": 6.34,
+      "wrap": 4.95
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 24.5,
+       "x1": 104.24,
+       "y": 105.25,
+       "lead": false,
+       "text": "Innovative, grapmic designer with a modern"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 24.38,
+       "x1": 104.11,
+       "y": 109.7,
+       "lead": false,
+       "text": "attury warlering dccering of intitoralliteti"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 24.38,
+       "x1": 104.11,
+       "y": 114.65,
+       "lead": false,
+       "text": "typeGrapheandimpauthuldesigenty."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 24.38,
+       "x1": 104.24,
+       "y": 119.6,
+       "lead": false,
+       "text": "Committed to aarvoring exceptional risual"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 24.38,
+       "x1": 68.56,
+       "y": 124.68,
+       "lead": false,
+       "text": "communication solutions."
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "EXPERIENCES",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      24.38,
+      159.98,
+      67.29,
+      164.67
+     ],
+     "top": 159.98,
+     "head_bottom": 164.67,
+     "tokens": {
+      "head_first": 6.48,
+      "head_body": 5.21,
+      "wrap": 7.62,
+      "new_item": 5.015000000000001,
+      "sec_gap": 35.3,
+      "prev_key": "body0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_experience_0_42.png",
+      "w": 0.25,
+      "h": 0.25,
+      "dx": 0.64,
+      "dy": 3.05,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 24.25,
+       "x1": 32.88,
+       "y": 171.15,
+       "lead": false,
+       "text": "2022"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 38.34,
+       "x1": 70.34,
+       "y": 171.28,
+       "lead": false,
+       "text": "Workplace name"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 77.45,
+       "y": 176.48,
+       "lead": false,
+       "text": "SerniallGrophic Dosigner"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.47,
+       "x1": 103.98,
+       "y": 184.73,
+       "lead": false,
+       "text": "Led bravialina projects. ensuring"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.22,
+       "x1": 104.24,
+       "y": 189.3,
+       "lead": false,
+       "text": "considlence and wilh loooding clossly"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 89.76,
+       "y": 194.38,
+       "lead": false,
+       "text": "with preerintunctional teams."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 70.21,
+       "y": 203.78,
+       "lead": false,
+       "text": "Workplace name"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 24.25,
+       "x1": 33.14,
+       "y": 204.29,
+       "lead": false,
+       "text": "2020"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 68.69,
+       "y": 208.73,
+       "lead": false,
+       "text": "Graphic Designer"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.47,
+       "x1": 103.73,
+       "y": 216.6,
+       "lead": false,
+       "text": "Managed a aiveres deess of print of"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.22,
+       "x1": 104.11,
+       "y": 221.68,
+       "lead": true,
+       "text": "dignor aignat pajen:t, from concept"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.22,
+       "x1": 65.01,
+       "y": 226.51,
+       "lead": true,
+       "text": "of complection."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 70.21,
+       "y": 236.41,
+       "lead": true,
+       "text": "Workplace name"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 24.12,
+       "x1": 32.12,
+       "y": 236.66,
+       "lead": false,
+       "text": "2019"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.22,
+       "x1": 68.69,
+       "y": 241.61,
+       "lead": true,
+       "text": "Graphic Designer"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.22,
+       "x1": 104.11,
+       "y": 249.23,
+       "lead": false,
+       "text": "Contributed to successful malkering"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 104.11,
+       "y": 254.18,
+       "lead": true,
+       "text": "visuals palisency instruclanis vatch"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 38.34,
+       "x1": 92.81,
+       "y": 259.14,
+       "lead": true,
+       "text": "visuals and compsiting Gycais."
+      }
+     ]
+    }
+   ],
+   "bullet_x": 37.2,
+   "bullet_text_x": 38.28
+  },
+  {
+   "x0": 130.9,
+   "x1": 189.3,
+   "top": 28.06,
+   "bottom": 238.57,
+   "text_x": 144.61,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      143.34,
+      28.44,
+      175.47,
+      33.14
+     ],
+     "top": 28.44,
+     "head_bottom": 33.14,
+     "tokens": {
+      "head_first": 5.46,
+      "new_item": 5.395
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_contact_1_2.png",
+       "w": 4.82,
+       "h": 4.57,
+       "ctype": "",
+       "dx": 8.51,
+       "dy": -0.89
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_contact_1_3.png",
+       "w": 4.82,
+       "h": 4.82,
+       "ctype": "",
+       "dx": 8.51,
+       "dy": -0.89
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_contact_1_5.png",
+       "w": 4.57,
+       "h": 4.32,
+       "ctype": "",
+       "dx": 8.5,
+       "dy": -0.76
+      }
+     ],
+     "graphics": {
+      "chips": {
+       "h_mm": 4.32,
+       "pad_x_mm": 0.63,
+       "radius_mm": 0.0,
+       "border": "#122c29",
+       "fill": "#143230",
+       "border_w_mm": 3.94,
+       "gap_x_mm": 2.0,
+       "gap_y_mm": 6.98,
+       "text_color": "#d2d8d6"
+      }
+     },
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.47,
+       "x1": 166.07,
+       "y": 38.6,
+       "lead": true,
+       "text": "Number"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.47,
+       "x1": 160.61,
+       "y": 43.93,
+       "lead": true,
+       "text": "Emall"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 151.72,
+       "x1": 165.44,
+       "y": 49.39,
+       "lead": true,
+       "text": "website"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      131.41,
+      161.63,
+      169.24,
+      166.32
+     ],
+     "top": 161.63,
+     "head_bottom": 166.32,
+     "tokens": {
+      "head_first": 5.46,
+      "head_body": 4.82,
+      "wrap": 4.7,
+      "item_gap": 8.89,
+      "title_sub": 4.7,
+      "sub_meta": 4.95,
+      "sec_gap": 112.24,
+      "prev_key": "contact1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 131.66,
+       "x1": 139.53,
+       "y": 171.78,
+       "lead": false,
+       "text": "2018"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 144.61,
+       "x1": 174.96,
+       "y": 172.04,
+       "lead": false,
+       "text": "University name"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 144.61,
+       "x1": 184.99,
+       "y": 176.86,
+       "lead": false,
+       "text": "Macch tolDesigon and"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 144.36,
+       "x1": 187.65,
+       "y": 181.56,
+       "lead": false,
+       "text": "Visual Commumication"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left1",
+       "x": 131.41,
+       "x1": 139.53,
+       "y": 190.32,
+       "lead": false,
+       "text": "2012"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 144.87,
+       "x1": 174.83,
+       "y": 190.45,
+       "lead": false,
+       "text": "University name"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 144.61,
+       "x1": 185.88,
+       "y": 195.15,
+       "lead": true,
+       "text": "poslitive tolissign and"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 144.61,
+       "x1": 187.53,
+       "y": 200.1,
+       "lead": true,
+       "text": "Visual Communication"
+      }
+     ]
+    },
+    {
+     "key": "competencies",
+     "title": "EXPERTISE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      131.54,
+      211.65,
+      165.94,
+      216.35
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\head_competencies_1_1667.png",
+      "box": [
+       125.44,
+       203.52,
+       192.99,
+       223.33
+      ],
+      "text": [
+       6.09,
+       8.13,
+       40.5,
+       12.82
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 203.52,
+     "head_bottom": 223.33,
+     "tokens": {
+      "head_first": 6.73,
+      "wrap": 0.63,
+      "new_item": 4.7,
+      "sec_gap": 3.42,
+      "prev_key": "meta1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\2d544a7d0a8c86af\\crops\\lead_competencies_1_38.png",
+      "w": 7.62,
+      "h": 8.89,
+      "dx": 14.73,
+      "dy": -2.92,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 140.68,
+       "x1": 155.02,
+       "y": 230.06,
+       "lead": false,
+       "text": "Graphic"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 175.59,
+       "x1": 188.29,
+       "y": 230.7,
+       "lead": false,
+       "text": "Mation"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 139.92,
+       "x1": 155.79,
+       "y": 235.39,
+       "lead": true,
+       "text": "Designer"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 174.83,
+       "x1": 188.92,
+       "y": 236.03,
+       "lead": false,
+       "text": "Graphc"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 180.8
+}

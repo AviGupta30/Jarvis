@@ -33,9 +33,11 @@
 
 ## Relationships
 
-- [repair + renderer](repair_+_renderer.md) (8 shared connections)
-- [benchmark + server](benchmark_+_server.md) (4 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (2 shared connections)
+- [repair](repair.md) (4 shared connections)
+- [renderer](renderer.md) (4 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (2 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
 - [analyzer](analyzer.md) (2 shared connections)
 - [schema](schema.md) (1 shared connections)
 

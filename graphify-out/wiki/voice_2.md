@@ -32,11 +32,11 @@
 
 ## Relationships
 
-- [voice](voice.md) (11 shared connections)
-- [hinglish_normalizer](hinglish_normalizer.md) (2 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (2 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
-- [voice + voice](voice_+_voice.md) (1 shared connections)
+- [voice](voice.md) (9 shared connections)
+- [hinglish_normalizer](hinglish_normalizer.md) (3 shared connections)
+- [voice + voice](voice_+_voice.md) (3 shared connections)
+- [voice + tools](voice_+_tools.md) (1 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
 - [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 - [voice_agent](voice_agent.md) (1 shared connections)
 

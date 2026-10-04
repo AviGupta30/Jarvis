@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [whatsapp_smart](whatsapp_smart.md) (1 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (1 shared connections)
 
 ## Source Files
 

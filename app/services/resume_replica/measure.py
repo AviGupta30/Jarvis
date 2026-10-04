@@ -331,13 +331,69 @@ def contact_type(text: str) -> str:
 
 # ── structure ─────────────────────────────────────────────────────────────────────────────────────
 
+_DATE_CORE = (r"(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?(?:19|20)\d{2}"
+              r"(?:\s*[-–—‑]\s*(?:(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\s+)?"
+              r"(?:(?:19|20)\d{2}|present|current|now))?")
+_LEAD_DATE = re.compile(r"(?i)^\s*(" + _DATE_CORE + r")\s+(\S.*)$")
+_DATE_ONLY = re.compile(r"(?i)^\s*" + _DATE_CORE + r"\s*$")
+
+
+def _split_lead_dates(img: np.ndarray, lines: list[dict]) -> list[dict]:
+    """OCR joins a date column and the title beside it into one line ("2022  Workplace name"). When the ink has a
+    wide gap right after the date (wider than a word space), they are two columns: split them, so the title's
+    x is the title column's x."""
+    out = []
+    for l in lines:
+        m = _LEAD_DATE.match(l["text"])
+        if not m or l.get("mask") is None or not l.get("ink"):
+            out.append(l)
+            continue
+        x0, y0, x1, y1 = l["ink"]
+        occ = l["mask"].any(0)
+        h = max(1, y1 - y0)
+        exp = (x1 - x0) * len(m.group(1)) / max(1, len(l["text"].strip()))
+        gaps, start = [], None
+        for i, v in enumerate(occ):
+            if not v and start is None:
+                start = i
+            elif v and start is not None:
+                gaps.append((start, i))
+                start = None
+        gaps = [g for g in gaps if 0.5 * exp <= g[0] <= 2.0 * exp and g[1] - g[0] >= 0.6 * h]
+        if not gaps:
+            out.append(l)
+            continue
+        g0, g1 = max(gaps, key=lambda g: g[1] - g[0])
+        a = {"text": m.group(1).strip(), "conf": l["conf"], "box": [l["box"][0], l["box"][1], x0 + g0 + 1, l["box"][3]]}
+        b = {"text": m.group(2).strip(), "conf": l["conf"], "box": [x0 + g1 - 1, l["box"][1], l["box"][2], l["box"][3]]}
+        for n in (a, b):
+            measure_line(img, n)
+        if a.get("ink") and b.get("ink"):
+            out += [a, b]
+        else:
+            out.append(l)
+    for i, l in enumerate(out):
+        l["id"] = i
+    return out
+
+
+_ORN_CHARS = set("oO0°●○◯•·.,-–—_=*~><»«▶◀►◄▸◂▷◁|/+#:;'\"`^\\")
+
+
+def is_ornament_text(text: str) -> bool:
+    t = re.sub(r"\s+", "", str(text or ""))
+    return len(t) >= 3 and all(ch in _ORN_CHARS for ch in t)
+
+
 def analyse(img: np.ndarray) -> dict:
     """Returns the structure dict (lines with roles, headings, columns, sections, name/title lines)."""
     H, W = img.shape[:2]
     lines = ocr_lines(img)
     for l in lines:
         measure_line(img, l)
-    lines = [l for l in lines if l.get("ink")]
+    # a run of one repeated symbol ("00000" = ○○○○○, ">>>>" = ▶▶▶▶, "....") is an ornament, not text
+    lines = [l for l in lines if l.get("ink") and not is_ornament_text(l["text"])]
+    lines = _split_lead_dates(img, lines)
     for l in lines:
         t = l["text"]
         l["words"] = max(len(t.split()), int(len(t) / 7.5))      # robust to OCR-dropped spaces
@@ -666,9 +722,20 @@ def _item_roles(sec: dict) -> None:
                     lower_share >= 0.5 and len(l["text"]) <= 30:
                 l["role"] = "subhead"
         return
-    first = ls[0]
+    # a date alone at the left of a row, with the item's title to its right: a date column ("2022  Workplace")
+    for l in ls:
+        if _DATE_ONLY.match(l["text"]):
+            h = max(1, l["box"][3] - l["box"][1])
+            right = [o for o in ls if o is not l and _v_overlap(l["box"], o["box"]) > 0.5 and
+                     0 <= o["box"][0] - l["box"][2] < 3 * h and not _DATE_ONLY.match(o["text"])]
+            if right:
+                l["role"] = "meta_left"
+                l["meta_of"] = min(right, key=lambda o: o["box"][0])["id"]
+    first = next((l for l in ls if l["role"] != "meta_left"), ls[0])
     title_style = first if not _same_style(first, body, 0.12, 35) or first["words"] <= 8 else None
     for l in ls:
+        if l["role"] == "meta_left":
+            continue
         if title_style is not None and _same_style(l, title_style, 0.12, 40) and                 not (_same_style(l, body, 0.08, 25) and l["words"] > 8):
             l["role"] = "item_title"
     # a title-style line directly under a title (no gap) is the item's second line → sub

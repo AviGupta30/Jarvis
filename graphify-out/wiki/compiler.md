@@ -12,9 +12,9 @@
 - **_compile_document_css()** (3 connections) — `app/services/resume_replica/compiler.py`
 - **_fill_to_css_background()** (3 connections) — `app/services/resume_replica/compiler.py`
 - **_parametric_to_commands()** (3 connections) — `app/services/resume_replica/compiler.py`
+- **contextvars** (3 connections)
 - **_mm_to_pt()** (2 connections) — `app/services/resume_replica/compiler.py`
 - **_pt_to_mm()** (2 connections) — `app/services/resume_replica/compiler.py`
-- **contextvars** (2 connections)
 - **compiler.py — Scene graph → print-ready HTML/CSS. Entry point:…** (1 connections) — `app/services/resume_replica/compiler.py`
 - **Converts a list of SVG path command lists to a path 'd' string. [["M", 0, 0],…** (1 connections) — `app/services/resume_replica/compiler.py`
 - **Generates the complete CSS for the document.** (1 connections) — `app/services/resume_replica/compiler.py`
@@ -29,12 +29,13 @@
 ## Relationships
 
 - [compiler](compiler.md) (37 shared connections)
-- [repair + renderer](repair_+_renderer.md) (2 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
-- [ppt_chart_engine](ppt_chart_engine.md) (1 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (1 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [repair](repair.md) (2 shared connections)
+- [resume_builder + integrate](resume_builder_+_integrate.md) (1 shared connections)
+- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (1 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
+- [exact_render](exact_render.md) (1 shared connections)
 
 ## Source Files
 
@@ -42,7 +43,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 68 (100%)
+- EXTRACTED: 69 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

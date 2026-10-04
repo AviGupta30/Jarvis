@@ -30,11 +30,12 @@
 
 ## Relationships
 
-- [tools](tools.md) (8 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
-- [web_search + web](web_search_+_web.md) (1 shared connections)
-- [web_search](web_search.md) (1 shared connections)
+- [tools](tools.md) (6 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (2 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [web](web.md) (1 shared connections)
+- [web_search + tools](web_search_+_tools.md) (1 shared connections)
 
 ## Source Files
 

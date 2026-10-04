@@ -1,12 +1,11 @@
 # syllabus_auditor
 
-> 43 nodes · cohesion 0.07
+> 36 nodes · cohesion 0.09
 
 ## Key Concepts
 
 - **syllabus_auditor.py** (25 connections) — `app/services/syllabus_auditor.py`
 - **audit_playlist_syllabus()** (11 connections) — `app/services/syllabus_auditor.py`
-- **Syllabus auditor (YouTube playlist vs syllabus)** (7 connections) — `docs/features/syllabus-auditor.md`
 - **_llm_verify_topic()** (6 connections) — `app/services/syllabus_auditor.py`
 - **_assemble_response()** (5 connections) — `app/services/syllabus_auditor.py`
 - **_embed_texts()** (5 connections) — `app/services/syllabus_auditor.py`
@@ -29,16 +28,20 @@
 - **Retrieve all video IDs (and titles where available) from a YouTube playlist.…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Fetch auto-generated or manual captions for a single YouTube video. Tries…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Approximate token count: ~0.75 tokens per word (safe undercount for chunking).** (1 connections) — `app/services/syllabus_auditor.py`
-- *... and 18 more nodes in this community*
+- **Split a transcript into overlapping chunks for semantic search. Strategy: -…** (1 connections) — `app/services/syllabus_auditor.py`
+- *... and 11 more nodes in this community*
 
 ## Relationships
 
-- [benchmark + server](benchmark_+_server.md) (3 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [repair + renderer](repair_+_renderer.md) (1 shared connections)
-- [schema](schema.md) (1 shared connections)
-- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
+- [style_profiler + reply_generator](style_profiler_+_reply_generator.md) (1 shared connections)
 - [tools](tools.md) (1 shared connections)
+- [syllabus-auditor](syllabus-auditor.md) (1 shared connections)
 
 ## Source Files
 
@@ -47,7 +50,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 67 (94%)
+- EXTRACTED: 61 (94%)
 - INFERRED: 4 (6%)
 - AMBIGUOUS: 0 (0%)
 

@@ -21,11 +21,10 @@
 
 - [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (5 shared connections)
 - [tools](tools.md) (5 shared connections)
-- [chat + llm](chat_+_llm.md) (2 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (1 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
-- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
 
 ## Source Files

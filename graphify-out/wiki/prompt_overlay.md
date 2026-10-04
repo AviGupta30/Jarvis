@@ -28,7 +28,7 @@
 
 ## Relationships
 
-- [benchmark + server](benchmark_+_server.md) (2 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (2 shared connections)
 
 ## Source Files
 

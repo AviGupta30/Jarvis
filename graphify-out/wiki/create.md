@@ -2,7 +2,7 @@
 
 > God node · 34 connections · `app/services/ppt_studio.py`
 
-**Community:** [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md)
+**Community:** [ppt_studio](ppt_studio.md)
 
 ## Connections by Relation
 

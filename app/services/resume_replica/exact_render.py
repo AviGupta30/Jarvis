@@ -13,6 +13,7 @@ The DOM mirrors the legacy renderer's editor hooks (section.sec.sec-<key> > h2, 
 from __future__ import annotations
 
 import base64
+import contextvars
 import difflib
 import json
 import os
@@ -20,6 +21,8 @@ import re
 
 _SPEC_CACHE: dict = {}
 _URI_CACHE: dict = {}
+# colour swaps of the editor's colour mode ([[from_hex, to_hex], ...]); applied to every raster asset of the copy
+_RECOLOR: contextvars.ContextVar[tuple] = contextvars.ContextVar("replica_recolor", default=())
 
 _SIDE_KEYS = {"contact", "skills", "languages", "interests", "certifications", "achievements", "highlights",
               "references", "competencies"}
@@ -47,13 +50,48 @@ def load_spec(sha1: str) -> dict | None:
 def _uri(path: str) -> str:
     if not path or not os.path.exists(path):
         return ""
-    key = (path, os.path.getmtime(path))
+    pairs = _RECOLOR.get()
+    key = (path, os.path.getmtime(path), pairs)
     if key not in _URI_CACHE:
-        ext = os.path.splitext(path)[1].lower()
-        mime = "image/jpeg" if ext in (".jpg", ".jpeg") else "image/png"
-        with open(path, "rb") as f:
-            _URI_CACHE[key] = f"data:{mime};base64," + base64.b64encode(f.read()).decode()
+        data = None
+        if pairs:
+            from .recolor import recolor_file
+            data = recolor_file(path, pairs)
+        if data is not None:
+            _URI_CACHE[key] = "data:image/png;base64," + base64.b64encode(data).decode()
+        else:
+            ext = os.path.splitext(path)[1].lower()
+            mime = "image/jpeg" if ext in (".jpg", ".jpeg") else "image/png"
+            with open(path, "rb") as f:
+                _URI_CACHE[key] = f"data:{mime};base64," + base64.b64encode(f.read()).decode()
+        if len(_URI_CACHE) > 400:
+            _URI_CACHE.pop(next(iter(_URI_CACHE)))
     return _URI_CACHE[key]
+
+
+def recolor_pairs(d: dict) -> tuple:
+    rc = ((d.get("free") or {}) if isinstance(d.get("free"), dict) else {}).get("recolor") or []
+    return tuple((str(a).lower(), str(b).lower()) for a, b in rc if a and b)
+
+
+def asset_files(spec: dict) -> list[str]:
+    """Every image of the copy (background plates, heading boxes, icons, bars...), found generically in the spec."""
+    out: list[str] = []
+
+    def walk(o):
+        if isinstance(o, dict):
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+        elif isinstance(o, str) and o.lower().endswith((".png", ".jpg", ".jpeg")) and os.path.isfile(o) and o not in out:
+            out.append(o)
+    walk(spec.get("page") or {})
+    walk(spec.get("header") or {})
+    walk(spec.get("columns") or [])
+    walk({k: v for k, v in spec.items() if k not in ("page", "header", "columns", "source_path")})
+    return out
 
 
 def _png_px_per_mm(path: str, mm_w: float) -> float:
@@ -149,6 +187,14 @@ def _m(v: float) -> str:
 # ── main ───────────────────────────────────────────────────────────────────────────────────────────
 
 def render_replica_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0) -> str:
+    token = _RECOLOR.set(recolor_pairs(d))
+    try:
+        return _render_replica_html(c, d, photo_uri, scale)
+    finally:
+        _RECOLOR.reset(token)
+
+
+def _render_replica_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0) -> str:
     from app.services import resume_builder as rb
     rep = d.get("replica") or {}
     spec = load_spec(rep.get("sha1", ""))
@@ -180,6 +226,7 @@ def render_replica_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0) ->
     placement = _place_sections(ctx)
     cols_html = []
     prev_right = 0.0
+    bottom_pad = max(8.0, min(40.0, 297.0 - max(c_["bottom"] for c_ in spec["columns"]) - 2.0))
     page2_top = 12.0
     for ci, col in enumerate(spec["columns"]):
         secs = placement[ci]
@@ -193,16 +240,21 @@ def render_replica_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0) ->
                 inner.append(html)
                 prev = (last_key, sec)
         first_top = (secs[0][0]["top"] if secs else col["top"])
-        cols_html.append(f'<div class="col" style="margin-left:{_m(x0 - prev_right)};width:{_m(w)}">'
+        below = [o[1] for o in (spec["page"].get("ornaments") or [])
+                 if o[1] > col["bottom"] - 1 and o[0] < col["x1"] and o[2] > col["x0"] + 2]
+        cbot = f' data-pbot="{max(bottom_pad, 297.0 - min(below) + 2.0):.2f}"' if below else ""
+        cols_html.append(f'<div class="col"{cbot} style="margin-left:{_m(x0 - prev_right)};width:{_m(w)}">'
                          f'<div style="height:{_m(max(0.0, first_top))}"></div>{"".join(inner)}</div>')
         prev_right = x0 + w
-    bottom_pad = max(8.0, min(40.0, 297.0 - max(c_["bottom"] for c_ in spec["columns"]) - 2.0))
     edit = rb._EDIT.get() is True
     css = _CSS.replace("%PAGE2TOP%", _m(page2_top)) + S.css()
     plate_css = (f".plate2{{background-image:url('{plate2}')}}.plate1{{background-image:url('{plate1}')}}")
     title = rb._e(c.get("name") or "Resume")
+    pbox = (spec.get("photo") or {}).get("box")
+    photo_attr = (f' data-photo="{",".join(f"{v:.1f}" for v in pbox)}"'
+                  if pbox and photo_uri and d.get("photo") != "none" else "")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{title} — Resume</title>'
-            f'<style>{font_css}</style><style>{css}{plate_css}</style></head><body class="replica" data-ptop="{page2_top}" data-pbot="{bottom_pad:.2f}" style="--s:{scale}">'
+            f'<style>{font_css}</style><style>{css}{plate_css}</style></head><body class="replica" data-ptop="{page2_top}" data-pbot="{bottom_pad:.2f}"{photo_attr} style="--s:{scale}">'
             f'<div class="plate2"></div><div class="plate1"></div>{header}'
             f'<div class="cols">{"".join(cols_html)}</div>'
             f'{rb._free_html(d, edit)}'
@@ -282,7 +334,7 @@ document.querySelectorAll('.pgsp').forEach(e=>e.remove());
 const atoms=Array.from(document.querySelectorAll('.col .hdw,.col h2.hd,.col .blk,.col .row,.col .chips,.col .bargrid'))
  .filter(e=>!e.parentElement.closest('.hdw,.chips,.bargrid,.blk,.row'));
 for(let i=0;i<atoms.length;i++){let e=atoms[i];const h=e.getBoundingClientRect().height/P;if(h<=0)continue;
- const t=y(e),k=Math.floor(t/PH),lim=(k+1)*PH-BOT;if(t+h<=lim+0.05||h>PH-TOP-BOT)continue;
+ const cb=e.closest('.col'),t=y(e),k=Math.floor(t/PH),lim=(k+1)*PH-(k===0&&cb&&cb.dataset.pbot?parseFloat(cb.dataset.pbot):BOT);if(t+h<=lim+0.05||h>PH-TOP-BOT)continue;
  const p=atoms[i-1];
  if(p&&Math.floor(y(p)/PH)===k&&(p.matches('.hdw,h2.hd')||(p.parentElement===e.parentElement&&p===p.parentElement.firstElementChild&&p.parentElement.classList.contains('item'))))e=p;
  const need=(k+1)*PH+TOP-y(e);if(need<=0)continue;
@@ -296,7 +348,8 @@ _GRID_CACHE: dict = {}
 def _bg_grid(spec: dict, cell: float = 3.0) -> dict:
     """Coarse RGB grid of both background plates (for the contrast guard)."""
     import cv2
-    key = (spec["page"]["plate"], spec["page"]["plate2"], cell)
+    pairs = _RECOLOR.get()
+    key = (spec["page"]["plate"], spec["page"]["plate2"], cell, pairs)
     if key in _GRID_CACHE:
         return _GRID_CACHE[key]
     w, h = int(210 / cell), int(297 / cell)
@@ -304,26 +357,39 @@ def _bg_grid(spec: dict, cell: float = 3.0) -> dict:
     for name, path in (("p1", spec["page"]["plate"]), ("p2", spec["page"]["plate2"])):
         import numpy as np
         img = cv2.imdecode(np.fromfile(path, np.uint8), cv2.IMREAD_COLOR)
-        small = cv2.resize(img, (w, h), interpolation=cv2.INTER_AREA)[:, :, ::-1]
+        if pairs:
+            from .recolor import recolor_rgb
+            img = recolor_rgb(np.ascontiguousarray(img[:, :, ::-1]), pairs)[:, :, ::-1]
+        small = cv2.resize(np.ascontiguousarray(img), (w, h), interpolation=cv2.INTER_AREA)[:, :, ::-1]
         out[name] = small.reshape(-1).tolist()
-    pal = {v.get("color") for v in (spec.get("styles") or {}).values() if v.get("color")} | {"#1d1d1f", "#ffffff"}
+    swap = {a: b for a, b in pairs}
+    pal = {swap.get(str(v.get("color")).lower(), v.get("color")) for v in (spec.get("styles") or {}).values()
+           if v.get("color")} | {"#1d1d1f", "#ffffff"}
     out["pal"] = [[int(c[i:i + 2], 16) for i in (1, 3, 5)] for c in pal]
     out["rc"] = {k: v.get("ref_contrast", 4.5) for k, v in (spec.get("styles") or {}).items()}
     _GRID_CACHE[key] = out
     return out
 
 
-_FIT_JS = r"""(function(){const P=3.7795;document.querySelectorAll('[data-fit]').forEach(e=>{const max=parseFloat(e.dataset.fit)*P;
+_FIT_JS = r"""(function(){const P=3.7795;document.querySelectorAll('[data-fit]').forEach(e=>{let max=parseFloat(e.dataset.fit)*P;
+const gl=parseFloat(e.dataset.growl||'0')*P;
+if(gl>0&&e.scrollWidth>max){const ex=Math.min(gl,e.scrollWidth-max+1);e.style.left=(parseFloat(getComputedStyle(e).left)-ex)+'px';max+=ex;}
 const fs0=parseFloat(getComputedStyle(e).fontSize),mn=parseFloat(e.dataset.min||'0.3');let fs=fs0,i=0;
 while(e.scrollWidth>max&&fs>fs0*mn&&i++<40){fs*=0.97;e.style.fontSize=fs+'px';}
 if(e.scrollWidth>max){e.style.whiteSpace='normal';e.style.width=(max/P)+'mm';e.style.lineHeight='1.15';}});
 const BR=document.body.getBoundingClientRect(),B=BR.top,G=window.__RBG__;
 const at=(x,y)=>{if(!G)return null;const cx=Math.min(G.w-1,Math.max(0,Math.floor(x/G.c))),cy=Math.min(G.h-1,Math.max(0,Math.floor(y/G.c)));const i=(cy*G.w+cx)*3;return [G.p1[i],G.p1[i+1],G.p1[i+2]];};
 const differ=(a,b)=>!a||!b||Math.abs(a[0]-b[0])+Math.abs(a[1]-b[1])+Math.abs(a[2]-b[2])>60;
+const PH=(document.body.dataset.photo||'').split(',').filter(Boolean).map(parseFloat);
 document.querySelectorAll('section[data-mintop]').forEach(sc=>{const h=sc.firstElementChild;if(!h)return;
- const r=h.getBoundingClientRect(),top=(r.top-B)/P,min=parseFloat(sc.dataset.mintop),x=(r.left-BR.left)/P+2;
- // keep the flow unless it would put the section on another background (e.g. a dark sidebar's chevron)
- if(top<297&&top<min-0.3&&differ(at(x,top+2),at(x,min+2))){const m=parseFloat(getComputedStyle(h).marginTop)||0;h.style.marginTop=(m+(min-top)*P)+'px';}});})();"""
+ const r=h.getBoundingClientRect(),sr=sc.getBoundingClientRect(),top=(r.top-B)/P,min=parseFloat(sc.dataset.mintop);
+ if(!(top<297&&top<min-0.3))return;
+ // a section flows up after shorter content, unless something of the design lies between where it would start
+ // and its own place in the reference: another background (a band, a chevron, a sidebar's end) or the photo
+ const xl=(sr.left-BR.left)/P,xr=(sr.right-BR.left)/P;let cross=false;
+ for(const x of [xl+2,(xl+xr)/2,xr-2]){const ref=at(x,min+2);for(let y=top;y<min&&!cross;y+=1.5)if(differ(at(x,y),ref))cross=true;if(cross)break;}
+ if(!cross&&PH.length===4&&PH[0]<xr&&PH[2]>xl&&PH[1]<min&&PH[3]>top)cross=true;
+ if(cross){const m=parseFloat(getComputedStyle(h).marginTop)||0;h.style.marginTop=(m+(min-top)*P)+'px';}});})();"""
 
 
 # ── header ─────────────────────────────────────────────────────────────────────────────────────────
@@ -634,7 +700,7 @@ def _role_x(sec: dict, role: str, col: dict) -> float:
     if not xs:
         return 0.0
     xs.sort()
-    v = max(-15.0, xs[len(xs) // 2] - col["text_x"])
+    v = max(min(-15.0, col["x0"] - col["text_x"] - 2.0), xs[len(xs) // 2] - col["text_x"])
     return 0.0 if v > 0.3 * max(20.0, col["x1"] - col["text_x"]) else v
 
 
@@ -646,6 +712,7 @@ def _keys_for(S: Styles, ci: int):
         "sub": S.pick(f"sub{ci}", f"sub{o}", f"body{ci}"),
         "meta": S.pick(f"meta{ci}", f"meta_right{ci}", f"meta{o}", f"meta_right{o}", f"body{ci}"),
         "meta_r": S.pick(f"meta_right{ci}", f"meta{ci}", f"meta_right{o}", f"body{ci}"),
+        "meta_l": S.pick(f"meta_left{ci}", f"meta_left{o}", f"item_title{ci}", f"meta{ci}", f"body{ci}"),
         "body": S.pick(f"body{ci}", f"list{ci}", f"body{o}"),
         "list": S.pick(f"list{ci}", f"body{ci}", f"list{o}"),
         "contact": S.pick(f"contact{ci}", f"list{ci}", f"body{ci}", "hcontact"),
@@ -763,7 +830,8 @@ def _section_html(ctx, ci, col, sec, key, title, is_ref, prev, first) -> tuple[s
     body, last = _content_html(ctx, ci, col, sec, key, K, hfirst)
     if not body:
         return "", None
-    mintop = f' data-mintop="{sec.get("top", 0):.2f}"' if is_ref and sec.get("top") and not ctx.get("squeeze") else ""
+    # (kept when squeezing for a page target too: the design's own obstacles don't move)
+    mintop = f' data-mintop="{sec.get("top", 0):.2f}"' if is_ref and sec.get("top") else ""
     return f'<section class="sec sec-{key}"{mintop}>{head_html}{body}</section>', last
 
 
@@ -859,6 +927,15 @@ def _items_html(ctx, ci, col, sec, key, K, hfirst) -> tuple[str, str | None]:
         r["role"] == "meta_right" for s in col["sections"] for r in s.get("roles") or []))
     kt, ks, km, kmr, kb = K["title"], K["sub"], K["meta"], K["meta_r"], K["body"]
     xt, xs_, xm = _role_x(sec, "item_title", col), _role_x(sec, "sub", col), _role_x(sec, "meta", col)
+    # a date column left of the titles ("2022  Workplace name"): the period goes there, on the title's row
+    if "meta" not in roles and roles:          # no meta line in the reference: align it with the sub / title text
+        xm = xs_ if "sub" in roles else xt
+    has_meta_l = "meta_left" in roles
+    kml, xml = K["meta_l"], _role_x(sec, "meta_left", col)
+    # education in the reference's order: titles that name a school ("University name") → institution first
+    inst_first = key == "education" and any(
+        re.search(r"(?i)univ|college|school|institut|academy|campus", r.get("text") or "")
+        for r in sec.get("roles") or [] if r["role"] == "item_title")
     lead = sec.get("lead")
     own = sorted(r["x"] for r in sec.get("roles") or [] if r.get("lead") and r["role"] == "body")
     if lead and own:
@@ -886,6 +963,8 @@ def _items_html(ctx, ci, col, sec, key, K, hfirst) -> tuple[str, str | None]:
         else:
             t, s_, per, bullets, desc = it.get("degree", ""), it.get("institution", ""), it.get("period", ""), [], ""
             tf, sf, pf = "degree", "institution", "period"
+            if inst_first and s_:
+                t, s_, tf, sf = s_, t, sf, tf
             det = (it.get("details") or "").strip()
             if det and per:                      # an older editor save glued the details into the period
                 per = " · ".join(x for x in dict.fromkeys(per.split(" · ")) if x.strip() != det)
@@ -903,7 +982,19 @@ def _items_html(ctx, ci, col, sec, key, K, hfirst) -> tuple[str, str | None]:
             ny = S.lead(kt) + (nd.get("dy_mm") or 0) * S.s - nd["h_mm"] * S.s / 2
             node = (f'<img class="gl" src="{_uri(nd["file"])}" style="left:{_m(nd["cx_mm"] - nd["w_mm"] / 2 - col["text_x"] - xt)};'
                     f'top:{_m(ny)};width:{_m(nd["w_mm"] * S.s)};height:{_m(nd["h_mm"] * S.s)};z-index:2">')
-        if has_meta_r and per:
+        if has_meta_l and it.get(pf):
+            room = max(6.0, xt - xml - 1.5)
+            # a longer date ("2024–2028") may grow left into the free space before this column, then shrink
+            prev_x1 = max([c_["x1"] for c_ in ctx["spec"]["columns"] if c_["x1"] < col["text_x"] + xml] or [2.0])
+            growl = max(0.0, col["text_x"] + xml - prev_x1 - 3.0)
+            datecol = (f'<span class="k-{kml}" data-fit="{room:.1f}" data-growl="{growl:.1f}" data-min="0.6" style="position:absolute;'
+                       f'left:{_m(xml - xt)};top:{_m(S.lead(kt) - S.lead(kml))};white-space:nowrap">{rb._f(f"{p}.{pf}", it[pf])}</span>')
+            blocks.append(f'<div class="blk k-{kt}" style="margin-top:{_m(mt)};margin-left:{_m(xt)};position:relative">{node}'
+                          f'{datecol}{rb._f(f"{p}.{tf}", t)}</div>')
+            per_done = True
+            if key == "education" and it.get("details"):       # the details still get their own line
+                per, per_html, per_done = it["details"], rb._f(f"{p}.details", it["details"].strip()), False
+        elif has_meta_r and per:
             blocks.append(f'<div class="row" style="margin-top:{_m(mt)};margin-left:{_m(xt)}">{node}'
                           f'<span class="k-{kt}">{rb._f(f"{p}.{tf}", t)}</span>'
                           f'<span class="r k-{kmr}">{per_html}</span></div>')
@@ -968,6 +1059,9 @@ def _contact_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
     labels = sec.get("contact_labels")
     out, prev = [], None
     x_text = _text_x(sec, col, "contact")
+    cols = ctx["spec"]["columns"]
+    nxt = [c_["text_x"] for c_ in cols if c_["text_x"] > col["text_x"] + 5]
+    room = (min(nxt) - 3.0 if nxt else 210.0 - 6.0) - col["text_x"]
     for t in order:
         v = contact.get(t)
         if not v or t in (ctx.get("hcontact_used") or set()):
@@ -984,7 +1078,9 @@ def _contact_html(ctx, ci, col, sec, K, hfirst) -> tuple[str, str | None]:
         if ic and os.path.exists(ic["file"]):
             g = (f'<img class="gl" src="{_uri(ic["file"])}" style="left:{_m(-ic["dx"] * S.s)};top:{_m(S.lead(k) + ic["dy"] * S.s)};'
                  f'width:{_m(ic["w"] * S.s)};height:{_m(ic["h"] * S.s)}">')
-        out.append(f'<div class="blk k-{k}" style="margin-top:{_m(mt)};margin-left:{_m(x_text)}">{g}{rb._f(f"contact.{t}", v, t)}</div>')
+        # one line, as in the reference: a long e-mail/URL shrinks to the room up to the next column / page edge
+        out.append(f'<div class="blk k-{k}" data-fit="{max(10.0, room - x_text):.1f}" data-min="0.72" '
+                   f'style="margin-top:{_m(mt)};margin-left:{_m(x_text)};white-space:nowrap">{g}{rb._f(f"contact.{t}", v, t)}</div>')
         prev = k
     return "".join(out), prev
 

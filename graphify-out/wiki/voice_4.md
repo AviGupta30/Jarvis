@@ -1,45 +1,38 @@
 # voice
 
-> 15 nodes · cohesion 0.14
+> 14 nodes · cohesion 0.18
 
 ## Key Concepts
 
-- **speak_text()** (10 connections) — `app/services/voice.py`
-- **SentenceSplitter** (9 connections) — `app/services/voice.py`
-- **test_hindi_tts.py** (6 connections) — `scripts/test_hindi_tts.py`
-- **speak_stream()** (5 connections) — `app/services/voice.py`
+- **_Player** (12 connections) — `app/services/voice.py`
+- **.play()** (6 connections) — `app/services/voice.py`
 - **get_player()** (4 connections) — `app/services/voice.py`
-- **split_sentences()** (3 connections) — `app/services/voice.py`
+- **.output_level()** (3 connections) — `app/services/voice.py`
+- **._push()** (3 connections) — `app/services/voice.py`
+- **.clear()** (2 connections) — `app/services/voice.py`
+- **._ensure()** (2 connections) — `app/services/voice.py`
 - **.__init__()** (2 connections) — `app/services/voice.py`
-- **main()** (2 connections) — `scripts/test_hindi_tts.py`
-- **Feed streamed tokens; get back speakable sentences as early as possible.** (1 connections) — `app/services/voice.py`
-- **Speak a complete text. All sentences synthesise in parallel, play in order.** (1 connections) — `app/services/voice.py`
-- **Speak an async generator of text chunks, sentence by sentence, pipelined.** (1 connections) — `app/services/voice.py`
-- **.feed()** (1 connections) — `app/services/voice.py`
-- **.flush()** (1 connections) — `app/services/voice.py`
+- **._callback()** (1 connections) — `app/services/voice.py`
 - **.__init__()** (1 connections) — `app/services/voice.py`
-- **Test language-adaptive TTS - plays English then Hindi to verify both engines…** (1 connections) — `scripts/test_hindi_tts.py`
+- **.pending()** (1 connections) — `app/services/voice.py`
+- **One persistent 24 kHz output stream driven by a callback that pulls from a…** (1 connections) — `app/services/voice.py`
+- **Loudest output RMS in the last `window` s — the voice agent's echo reference.** (1 connections) — `app/services/voice.py`
+- **Play a clip as it arrives. Returns False if interrupted.** (1 connections) — `app/services/voice.py`
 
 ## Relationships
 
-- [voice](voice.md) (9 shared connections)
-- [voice + voice](voice_+_voice.md) (2 shared connections)
-- [tools](tools.md) (2 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
-- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (1 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
-- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [voice](voice.md) (6 shared connections)
+- [voice + tools](voice_+_tools.md) (1 shared connections)
+- [voice + voice](voice_+_voice.md) (1 shared connections)
 
 ## Source Files
 
 - `app/services/voice.py`
-- `scripts/test_hindi_tts.py`
 
 ## Audit Trail
 
-- EXTRACTED: 30 (91%)
-- INFERRED: 3 (9%)
+- EXTRACTED: 22 (92%)
+- INFERRED: 2 (8%)
 - AMBIGUOUS: 0 (0%)
 
 ---

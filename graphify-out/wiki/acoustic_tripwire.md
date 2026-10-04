@@ -33,11 +33,11 @@
 
 ## Relationships
 
-- [benchmark + server](benchmark_+_server.md) (5 shared connections)
-- [main](main.md) (1 shared connections)
-- [chat + chat-routing](chat_+_chat-routing.md) (1 shared connections)
+- [server](server.md) (5 shared connections)
+- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
 - [frontend](frontend.md) (1 shared connections)
-- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (1 shared connections)
+- [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 
 ## Source Files

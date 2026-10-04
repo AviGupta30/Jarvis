@@ -29,7 +29,7 @@
 ## Relationships
 
 - [voice_agent](voice_agent.md) (6 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (2 shared connections)
+- [voice + voice](voice_+_voice.md) (2 shared connections)
 - [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files

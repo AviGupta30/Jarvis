@@ -26,17 +26,17 @@
 ## Relationships
 
 - [ppt_content](ppt_content.md) (4 shared connections)
-- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (3 shared connections)
+- [ppt_studio](ppt_studio.md) (3 shared connections)
 - [tools](tools.md) (3 shared connections)
 - [ppt_tool](ppt_tool.md) (3 shared connections)
-- [chat + tools](chat_+_tools.md) (2 shared connections)
+- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_research](ppt_research.md) (1 shared connections)
 - [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (1 shared connections)
 - [ppt_template](ppt_template.md) (1 shared connections)
-- [chat + chat-routing](chat_+_chat-routing.md) (1 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
 - [resume_builder](resume_builder.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
 
 ## Source Files
 

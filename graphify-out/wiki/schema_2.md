@@ -1,21 +1,18 @@
 # schema
 
-> 8 nodes · cohesion 0.25
+> 4 nodes · cohesion 0.50
 
 ## Key Concepts
 
-- **make_frame_node()** (4 connections) — `app/services/resume_replica/schema.py`
-- **make_no_fill()** (4 connections) — `app/services/resume_replica/schema.py`
-- **make_padding()** (3 connections) — `app/services/resume_replica/schema.py`
-- **make_path_node()** (3 connections) — `app/services/resume_replica/schema.py`
-- **Returns {"type": "none"}** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete FRAME node.** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete PATH node.** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns {"top_mm": ..., "right_mm": ..., "bottom_mm": ..., "left_mm": ...}** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_page_node()** (4 connections) — `app/services/resume_replica/schema.py`
+- **make_default_replica_document()** (3 connections) — `app/services/resume_replica/schema.py`
+- **Returns a complete PAGE node.** (1 connections) — `app/services/resume_replica/schema.py`
+- **Returns a skeleton replica document with an empty scene graph. The caller is…** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 
-- [schema](schema.md) (4 shared connections)
+- [schema](schema.md) (2 shared connections)
+- [repair](repair.md) (1 shared connections)
 
 ## Source Files
 
@@ -23,7 +20,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 11 (100%)
+- EXTRACTED: 6 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

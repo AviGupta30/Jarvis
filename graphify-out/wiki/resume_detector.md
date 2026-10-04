@@ -22,10 +22,10 @@
 
 ## Relationships
 
-- [chat + llm](chat_+_llm.md) (3 shared connections)
-- [task_ledger](task_ledger.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [chat + chat-routing](chat_+_chat-routing.md) (1 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (3 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
 
 ## Source Files
 

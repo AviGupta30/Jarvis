@@ -264,13 +264,17 @@ def build(img: np.ndarray, s: dict, out_dir: str, page_h_mm: float, overlays: li
     # ── fill: erased pixels take the clean local background (from the interior of background regions, so
     #    faint halo pixels next to the text can't smear back in), with a soft seam ──
     protect = [photo["box"]] if photo else []
+    orn, orn_boxes = _ornaments(img, local_bg, lines, protect)     # ▶▶▶▶, ○○○○○, dot grids: the design's own
+    info["ornaments"] = len(orn_boxes)
+    info["ornament_boxes_mm"] = [[round(v / MM, 2) for v in b] for b in orn_boxes]
 
-    erase |= _text_residue(img, local_bg, protect)          # text OCR missed (tiny / low contrast)
+    erase |= _text_residue(img, local_bg, protect + orn_boxes)   # text OCR missed (tiny / low contrast)
     erase = cv2.dilate(erase.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+    erase &= ~orn
     soft = cv2.GaussianBlur(erase.astype(np.float32), (5, 5), 0)[..., None]
     plate = (local_bg.astype(np.float32) * soft + img.astype(np.float32) * (1 - soft)).round().astype(np.uint8)
     plate[erase] = local_bg[erase]
-    plate, n_left = _ocr_verify(plate, local_bg, protect)    # whatever text is still readable goes too
+    plate, n_left = _ocr_verify(plate, local_bg, protect + orn_boxes)    # whatever text is still readable goes too
     info["erase_frac"] = round(float(erase.mean()), 3)
     info["ocr_leftovers_removed"] = n_left
     # room to the right of the name/title. A thin rule beside it ("Accountant ———") is "soft": a longer title
@@ -356,6 +360,78 @@ def _long_lines(diff: np.ndarray, areas: list) -> np.ndarray:
             if u_ < 0.3 and d_ < 0.3 and crosses(a, y, b, y + 1) >= 2:
                 out[y, a:b + 1] |= diff[y, a:b + 1]
     return out
+
+
+def _ornaments(img: np.ndarray, local_bg: np.ndarray, lines: list, protect: list):
+    """Decorative runs the plate must keep: ≥ 3 identical marks (same size and shape), evenly spaced in a row,
+    with no text beside them (arrows ▶▶▶▶, circles ○○○○○, dot grids). Letters of a word differ in shape; rating
+    dots / leader dots sit next to a text line, so those stay content. Returns (mask, boxes)."""
+    import cv2
+    H, W = img.shape[:2]
+    d = (np.abs(img.astype(np.int16) - local_bg.astype(np.int16)).sum(-1) > 30).astype(np.uint8)
+    n, cc, st, _ = cv2.connectedComponentsWithStats(d, connectivity=8)
+    cand = [i for i in range(1, n) if st[i, 4] >= 3 and 0.35 * MM <= max(st[i, 2], st[i, 3]) <= 8 * MM
+            and min(st[i, 2], st[i, 3]) >= 0.25 * MM]
+    sig = {}
+    for i in cand:
+        x, y, w, h = st[i, :4]
+        sig[i] = cv2.resize((cc[y:y + h, x:x + w] == i).astype(np.uint8) * 255, (12, 12), interpolation=cv2.INTER_AREA) > 127
+
+    def alike(i, j):
+        wi, hi, wj, hj = st[i, 2], st[i, 3], st[j, 2], st[j, 3]
+        small = max(wi, hi, wj, hj) < 2.5 * MM          # low-res / JPEG: small marks vary more
+        tol = 0.4 if small else 0.25
+        if abs(wi - wj) > max(2, tol * max(wi, wj)) or abs(hi - hj) > max(2, tol * max(hi, hj)):
+            return False
+        if max(wi, hi) < 1.2 * MM:                 # tiny dots: size is the shape
+            return True
+        a, b = sig[i], sig[j]
+        return (a & b).sum() / max(1, (a | b).sum()) >= (0.5 if small else 0.6)
+    rows: list[list[int]] = []
+    for i in sorted(cand, key=lambda i: (st[i, 1] + st[i, 3] / 2, st[i, 0])):
+        cy = st[i, 1] + st[i, 3] / 2
+        for r in rows:
+            j = r[-1]
+            if abs(st[j, 1] + st[j, 3] / 2 - cy) < max(2, 0.3 * st[j, 3]) and alike(i, j):
+                r.append(i)
+                break
+        else:
+            rows.append([i])
+    text_boxes = [l["box"] for l in lines]
+    mask = np.zeros((H, W), bool)
+    boxes = []
+    for r in rows:
+        r.sort(key=lambda i: st[i, 0])
+        runs, cur = [], [r[0]]
+        for i in r[1:]:
+            j = cur[-1]
+            gap = st[i, 0] - (st[j, 0] + st[j, 2])
+            if -max(2, 0.15 * st[j, 2]) <= gap <= 3 * max(st[j, 2], st[j, 3]) + 1.5 * MM:      # touching marks too
+                cur.append(i)
+            else:
+                runs.append(cur)
+                cur = [i]
+        runs.append(cur)
+        for run in runs:
+            if len(run) < 3:
+                continue
+            gaps = [st[b, 0] - st[a, 0] for a, b in zip(run, run[1:])]
+            if max(gaps) - min(gaps) > max(3, 0.3 * float(np.median(gaps))):
+                continue                           # not evenly spaced
+            x0 = min(st[i, 0] for i in run)
+            y0 = min(st[i, 1] for i in run)
+            x1 = max(st[i, 0] + st[i, 2] for i in run)
+            y1 = max(st[i, 1] + st[i, 3] for i in run)
+            if any(b[1] < y1 and b[3] > y0 and b[0] < x1 + 12 * MM and b[2] > x0 - 12 * MM for b in text_boxes):
+                continue                           # beside text: rating dots, leaders, bullets → content
+            if any(not (x1 < b[0] or x0 > b[2] or y1 < b[1] or y0 > b[3]) for b in protect):
+                continue
+            for i in run:
+                mask |= cc == i
+            boxes.append([int(x0), int(y0), int(x1), int(y1)])
+    if mask.any():
+        mask = cv2.dilate(mask.astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool)
+    return mask, boxes
 
 
 def _text_residue(img: np.ndarray, local_bg: np.ndarray, protect: list) -> np.ndarray:
@@ -695,36 +771,55 @@ def _photo_edges(img: np.ndarray, face) -> dict | None:
         return None
     rng = np.random.default_rng(3)
     nr = len(rays)
-    face_r = 0.5 * np.hypot(fw, fh)
+    # the face itself (an ellipse inside the detector's padded square), not the square's corners: a photo circle
+    # that clips the box corners still holds the whole face
+    face_r = 0.5 * max(fw, fh)
 
     def support_circle(ctr, r):
         tol = max(3.0, 0.025 * r)
         return sum(1 for pts in rays if len(pts) and np.min(np.abs(np.linalg.norm(pts - ctr, axis=1) - r)) < tol)
 
-    cands = []
+    def sample_circles(P, K, n_iter):
+        out = []
+        if len(P) < 3:
+            return out
+        for _ in range(n_iter):
+            i = rng.choice(len(P), 3, replace=False)
+            if len(set(K[i])) < 3:
+                continue
+            a, b, c = P[i]
+            A = np.array([[b[0] - a[0], b[1] - a[1]], [c[0] - a[0], c[1] - a[1]]]) * 2
+            if abs(np.linalg.det(A)) < 1e-6:
+                continue
+            ctr = np.linalg.solve(A, np.array([b @ b - a @ a, c @ c - a @ a]))
+            r = float(np.linalg.norm(a - ctr))
+            # the frame must contain the whole face
+            if r < face_r * 1.05 or r > 3.4 * fw or np.hypot(*(ctr - [cx0, cy0])) + face_r > r * 1.02:
+                continue
+            out.append((ctr, r))
+        return out
     P = np.array([p for _, p in allp])
     K = np.array([k for k, _ in allp])
-    for _ in range(900):
-        i = rng.choice(len(P), 3, replace=False)
-        if len(set(K[i])) < 3:
-            continue
-        a, b, c = P[i]
-        A = np.array([[b[0] - a[0], b[1] - a[1]], [c[0] - a[0], c[1] - a[1]]]) * 2
-        if abs(np.linalg.det(A)) < 1e-6:
-            continue
-        ctr = np.linalg.solve(A, np.array([b @ b - a @ a, c @ c - a @ a]))
-        r = float(np.linalg.norm(a - ctr))
-        # the frame must contain the whole face
-        if r < face_r * 1.05 or r > 3.4 * fw or np.hypot(*(ctr - [cx0, cy0])) + face_r > r * 1.02:
-            continue
-        cands.append((ctr, r))
-    scored = [(support_circle(c, r), c, r) for c, r in cands]
+    scored = [(support_circle(c, r), c, r) for c, r in sample_circles(P, K, 900)]
+    if scored:                                    # second, focused search inside the best circle (a photo
+        best = max(scored, key=lambda t: t[0])    # inside a larger round shape has fewer, inner edge points)
+        inner = np.linalg.norm(P - best[1], axis=1) < best[2] - 2 * MM
+        scored += [(support_circle(c, r), c, r) for c, r in sample_circles(P[inner], K[inner], 600)]
     circle = None
     if scored:
         top = max(s for s, _, _ in scored)
         if top >= 0.5 * nr:
             good = [t for t in scored if t[0] >= 0.85 * top]
             circle = min(good, key=lambda t: t[2])         # innermost well-supported circle
+            # a photo inside a larger round shape (a band ending in a circle, a ring): the picture's own edge is
+            # often less supported (a light shirt melts into the frame), so an inner circle with fair support whose
+            # outside is flat (frame / ring / background, not more picture) is the photo edge
+            fair = sorted((t for t in scored if t[0] >= max(0.6 * top, 0.4 * nr) and t[2] < circle[2] - 2 * MM),
+                          key=lambda t: t[2])
+            for t in fair:
+                if _flat_outside(img, t[1], t[2]):
+                    circle = t
+                    break
     # rectangle: per side, the x (or y) most rays near that direction agree on
     def side(sel, axis, limit, outward):
         """Innermost edge position (beyond `limit` in the `outward` direction) that most rays agree on."""
@@ -762,6 +857,38 @@ def _photo_edges(img: np.ndarray, face) -> dict | None:
     return None
 
 
+def _flat_outside(img, ctr, r) -> bool:
+    """Just outside the circle the colour is flat (a ring, frame or background), not more picture."""
+    H, W = img.shape[:2]
+    steps = []
+    for a in np.linspace(0, 2 * np.pi, 72, endpoint=False):
+        pts = [(int(ctr[0] + (r + k * MM) * np.cos(a)), int(ctr[1] + (r + k * MM) * np.sin(a))) for k in (0.7, 1.2, 1.7)]
+        if all(0 <= x < W and 0 <= y < H for x, y in pts):
+            c = [img[y, x].astype(int) for x, y in pts]
+            steps.append(max(np.abs(c[1] - c[0]).sum(), np.abs(c[2] - c[1]).sum()))
+    return len(steps) >= 36 and float(np.percentile(steps, 75)) < 30
+
+
+def _stands_out(img, cc, stats, i, thr: int = 30) -> bool:
+    """The component's colour differs visibly from what surrounds it. On photographed / JPEG references a
+    background's shading can leave large 'non-background' blobs of nearly the same colour: those aren't boxes,
+    chips or dots."""
+    H, W = img.shape[:2]
+    x, y, w, h, _ = stats[i]
+    m = cc[y:y + h, x:x + w] == i
+    if not m.any():
+        return False
+    col = np.median(img[y:y + h, x:x + w][m], axis=0).astype(int)
+    p = max(3, int(1.5 * MM))
+    X0, Y0, X1, Y1 = max(0, x - p), max(0, y - p), min(W, x + w + p), min(H, y + h + p)
+    ring = np.ones((Y1 - Y0, X1 - X0), bool)
+    ring[y - Y0:y - Y0 + h, x - X0:x - X0 + w] = False
+    if not ring.any():
+        return True
+    sur = np.median(img[Y0:Y1, X0:X1][ring], axis=0).astype(int)
+    return int(np.abs(col - sur).sum()) > thr
+
+
 def _ring_contrast(img, cx, cy, r) -> float:
     """Colour difference just inside vs just outside a circle (high = a real frame edge)."""
     H, W = img.shape[:2]
@@ -796,6 +923,8 @@ def _heading_deco(img, h, lines, col, nonbg, text_mask, cc, stats, comps_in, ax0
             continue
         if a < 4:
             continue
+        if a > 40 and not _stands_out(img, cc, stats, i):
+            continue                             # background shading, not a box
         keep.append(i)
     if keep:
         xs0 = min(stats[i, 0] for i in keep)
@@ -908,14 +1037,20 @@ def _heading_deco(img, h, lines, col, nonbg, text_mask, cc, stats, comps_in, ax0
 
 # ── leading glyphs (bullets / icons) ───────────────────────────────────────────────────────────────
 
-def _lead_of(l, nonbg, text_mask, comps_in, stats, W):
-    """Small graphic just left of a text line (bullet, icon). Returns (x0, y0, x1, y1, ids) or None."""
+def _lead_of(l, nonbg, text_mask, comps_in, stats, W, others=None):
+    """Small graphic just left of a text line (bullet, icon). Returns (x0, y0, x1, y1, ids) or None.
+    Marks inside another text line's box (e.g. the anti-aliased edge of a date column's digits) aren't glyphs."""
     if not l.get("ink"):
         return None
     ix0, iy0, ix1, iy1 = l["ink"]
     ih = max(4, iy1 - iy0)
     ids = comps_in(ix0 - 4.6 * ih, iy0 - 0.9 * ih, ix0 - 1, iy1 + 0.9 * ih, 0.85)
     ids = [i for i in ids if stats[i, 3] < 2.2 * ih and stats[i, 2] < 2.6 * ih]
+    if others:
+        def in_other(i):
+            cx, cy = stats[i, 0] + stats[i, 2] / 2, stats[i, 1] + stats[i, 3] / 2
+            return any(b[0] - 2 <= cx <= b[2] + 2 and b[1] - 2 <= cy <= b[3] + 2 for b in others)
+        ids = [i for i in ids if not in_other(i)]
     if not ids:
         return None
     # nearest cluster to the text
@@ -936,7 +1071,7 @@ def _leading_glyphs(img, sec_lines, nonbg, text_mask, comps_in, cc, stats, out_d
     W = img.shape[1]
     found = []
     for l in sec_lines:
-        g = _lead_of(l, nonbg, text_mask, comps_in, stats, W)
+        g = _lead_of(l, nonbg, text_mask, comps_in, stats, W, [o["box"] for o in sec_lines if o is not l])
         if g:
             x0, y0, x1, y1, ids = g
             alpha = np.zeros((y1 - y0, x1 - x0), bool)
@@ -1136,7 +1271,8 @@ def _section_graphics(img, sec, sec_lines, nonbg, text_mask, cc, stats, comps_in
             free = [i for i in free if i not in flat]
     # dots: rows of ≥3 similar round blobs
     blobs = [i for i in free if 0.6 < stats[i, 2] / max(1, stats[i, 3]) < 1.6 and 1.2 * MM < stats[i, 3] < 5 * MM
-             and not any(overlaps(stats[i], l["box"]) for l in sec_lines)]     # dot leaders inside text lines
+             and not any(overlaps(stats[i], l["box"]) for l in sec_lines)     # dot leaders inside text lines
+             and _stands_out(img, cc, stats, i)]
     if len(blobs) >= 6 and sec["key"] in ("skills", "languages", "competencies"):
         rows = {}
         for i in blobs:
@@ -1165,7 +1301,7 @@ def _section_graphics(img, sec, sec_lines, nonbg, text_mask, cc, stats, comps_in
             ih = l["ink"][3] - l["ink"][1]
             pad = 0.45 * MM
             if (x <= l["ink"][0] - pad and x + w >= l["ink"][2] + pad and y <= l["ink"][1] - 1
-                    and y + h >= l["ink"][3] + 1 and 1.3 * ih <= h < 3.5 * med_h):
+                    and y + h >= l["ink"][3] + 1 and 1.3 * ih <= h < 3.5 * med_h and _stands_out(img, cc, stats, i)):
                 chips.append((l, i))
                 break
     if len(chips) >= 2:

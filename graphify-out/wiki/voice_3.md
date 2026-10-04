@@ -1,24 +1,29 @@
 # voice
 
-> 10 nodes · cohesion 0.27
+> 13 nodes · cohesion 0.15
 
 ## Key Concepts
 
-- **_Player** (12 connections) — `app/services/voice.py`
-- **.play()** (6 connections) — `app/services/voice.py`
-- **._push()** (3 connections) — `app/services/voice.py`
-- **.clear()** (2 connections) — `app/services/voice.py`
-- **._ensure()** (2 connections) — `app/services/voice.py`
-- **._callback()** (1 connections) — `app/services/voice.py`
+- **Clip** (11 connections) — `app/services/voice.py`
+- **start_clip()** (10 connections) — `app/services/voice.py`
+- **route_language()** (4 connections) — `app/services/voice.py`
+- **prewarm()** (3 connections) — `app/services/voice.py`
+- **.push()** (2 connections) — `app/services/voice.py`
+- **.cancel()** (1 connections) — `app/services/voice.py`
+- **.finish()** (1 connections) — `app/services/voice.py`
 - **.__init__()** (1 connections) — `app/services/voice.py`
-- **.pending()** (1 connections) — `app/services/voice.py`
-- **One persistent 24 kHz output stream driven by a callback that pulls from a…** (1 connections) — `app/services/voice.py`
-- **Play a clip as it arrives. Returns False if interrupted.** (1 connections) — `app/services/voice.py`
+- **.iter_chunks()** (1 connections) — `app/services/voice.py`
+- **PCM (int16, 24 kHz) that fills while synthesis streams; playable immediately.** (1 connections) — `app/services/voice.py`
+- **hi' → Hindi voice, 'en' → English voice, for one sentence.** (1 connections) — `app/services/voice.py`
+- **Begin synthesising `text` now; returns a Clip that can be played while it fills.** (1 connections) — `app/services/voice.py`
+- **Synthesise short stock phrases (greetings, acks) into the cache for instant…** (1 connections) — `app/services/voice.py`
 
 ## Relationships
 
-- [voice](voice.md) (5 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
+- [voice](voice.md) (11 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [voice + tools](voice_+_tools.md) (1 shared connections)
+- [hinglish_normalizer](hinglish_normalizer.md) (1 shared connections)
 
 ## Source Files
 
@@ -26,8 +31,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 17 (94%)
-- INFERRED: 1 (6%)
+- EXTRACTED: 25 (96%)
+- INFERRED: 1 (4%)
 - AMBIGUOUS: 0 (0%)
 
 ---

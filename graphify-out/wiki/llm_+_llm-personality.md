@@ -1,18 +1,16 @@
 # llm + llm-personality
 
-> 49 nodes · cohesion 0.07
+> 47 nodes · cohesion 0.07
 
 ## Key Concepts
 
 - **llm.py** (35 connections) — `app/services/llm.py`
 - **generate_chat_response()** (17 connections) — `app/services/llm.py`
 - **check_for_tool_intent()** (12 connections) — `app/services/llm.py`
-- **datetime** (11 connections)
 - **detect_language()** (10 connections) — `app/services/context_classifier.py`
 - **context_classifier.py** (8 connections) — `app/services/context_classifier.py`
 - **_groq_generate()** (8 connections) — `app/services/llm.py`
 - **pick_model()** (8 connections) — `app/services/llm.py`
-- **collections** (8 connections)
 - **LLM layer & Jarvis personality** (8 connections) — `docs/features/llm-personality.md`
 - **classify_context()** (7 connections) — `app/services/context_classifier.py`
 - **_mark_exhausted()** (6 connections) — `app/services/llm.py`
@@ -29,22 +27,24 @@
 - **_reply_language_note()** (3 connections) — `app/services/llm.py`
 - **_room()** (3 connections) — `app/services/llm.py`
 - **Backend pieces that matter for voice** (3 connections) — `docs/features/voice.md`
-- *... and 24 more nodes in this community*
+- **Exception** (2 connections)
+- **Models (Groq)** (2 connections) — `docs/features/llm-personality.md`
+- *... and 22 more nodes in this community*
 
 ## Relationships
 
-- [chat + llm](chat_+_llm.md) (7 shared connections)
-- [chat + chat-routing](chat_+_chat-routing.md) (7 shared connections)
-- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (6 shared connections)
-- [voice_agent](voice_agent.md) (5 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (3 shared connections)
-- [voice](voice.md) (3 shared connections)
-- [benchmark + server](benchmark_+_server.md) (3 shared connections)
-- [memory_tool + email-calendar](memory_tool_+_email-calendar.md) (3 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (2 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (2 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
-- [style_profiler](style_profiler.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (8 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (6 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (4 shared connections)
+- [voice_agent](voice_agent.md) (4 shared connections)
+- [voice + voice](voice_+_voice.md) (4 shared connections)
+- [memory + rag_memory](memory_+_rag_memory.md) (4 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (2 shared connections)
+- [voice](voice.md) (2 shared connections)
+- [gmail_tool + memory_tool](gmail_tool_+_memory_tool.md) (2 shared connections)
+- [safe_executor + refresh_docs](safe_executor_+_refresh_docs.md) (2 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (2 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -57,8 +57,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 121 (87%)
-- INFERRED: 18 (13%)
+- EXTRACTED: 105 (85%)
+- INFERRED: 18 (15%)
 - AMBIGUOUS: 0 (0%)
 
 ---

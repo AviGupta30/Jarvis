@@ -1,19 +1,21 @@
 # test_lru
 
-> 6 nodes · cohesion 0.33
+> 7 nodes · cohesion 0.29
 
 ## Key Concepts
 
-- **TestTTL** (6 connections) — `neural_cache/tests/test_lru.py`
-- **.test_expired_key_counts_as_eviction()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_expired_key_evicted_from_map()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_set_without_ttl_never_expires()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_ttl_expiry_on_get()** (1 connections) — `neural_cache/tests/test_lru.py`
-- **.test_zero_ttl_immediately_expired()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **TestSnapshot** (7 connections) — `neural_cache/tests/test_lru.py`
+- **.test_snapshot_load_respects_capacity()** (2 connections) — `neural_cache/tests/test_lru.py`
+- **Snapshot with more keys than capacity should trigger LRU eviction on load.** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_load_snapshot_restores_values()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_load_snapshot_skips_expired()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_snapshot_contains_all_live_keys()** (1 connections) — `neural_cache/tests/test_lru.py`
+- **.test_snapshot_excludes_expired_keys()** (1 connections) — `neural_cache/tests/test_lru.py`
 
 ## Relationships
 
 - [test_lru](test_lru.md) (1 shared connections)
+- [lru](lru.md) (1 shared connections)
 
 ## Source Files
 
@@ -21,8 +23,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 6 (100%)
-- INFERRED: 0 (0%)
+- EXTRACTED: 7 (88%)
+- INFERRED: 1 (12%)
 - AMBIGUOUS: 0 (0%)
 
 ---

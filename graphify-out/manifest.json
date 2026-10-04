@@ -876,9 +876,9 @@
     "semantic_hash": ""
   },
   "docs/KNOWN_ISSUES.md": {
-    "mtime": 1791093483.5744257,
-    "seen": 1791093507.5057216,
-    "ast_hash": "a40e16968fcd892e2c4e2fd7d56775c2",
+    "mtime": 1791095251.1645372,
+    "seen": 1791095275.2278574,
+    "ast_hash": "6d9776b194e37c2769a8e79a8301eab3",
     "semantic_hash": ""
   },
   "docs/TOOLS.md": {
@@ -948,128 +948,128 @@
     "semantic_hash": ""
   },
   "docs/features/agents.md": {
-    "mtime": 1791093484.0714855,
-    "seen": 1791093507.505731,
+    "mtime": 1791095291.1029413,
+    "seen": 1791095310.206914,
     "ast_hash": "a1a26a9ea873fbdba921611b96798ffc",
     "semantic_hash": ""
   },
   "docs/features/air-drawing.md": {
-    "mtime": 1791093485.6534364,
-    "seen": 1791093507.505734,
+    "mtime": 1791095292.6500547,
+    "seen": 1791095310.206918,
     "ast_hash": "af70f588d176d9de0b92e36fba7fb2df",
     "semantic_hash": ""
   },
   "docs/features/assignment.md": {
-    "mtime": 1791093484.5030298,
-    "seen": 1791093507.5057364,
+    "mtime": 1791095291.5189338,
+    "seen": 1791095310.2069206,
     "ast_hash": "822ed8d8a34bcdaff6689ce17f9e13a0",
     "semantic_hash": ""
   },
   "docs/features/chat-routing.md": {
-    "mtime": 1791093484.002878,
-    "seen": 1791093507.505739,
+    "mtime": 1791095291.039228,
+    "seen": 1791095310.2069228,
     "ast_hash": "981c2add324331ac0936dc71e26386bd",
     "semantic_hash": ""
   },
   "docs/features/content-tools.md": {
-    "mtime": 1791093485.0147095,
-    "seen": 1791093507.5057414,
+    "mtime": 1791095292.0006666,
+    "seen": 1791095310.2069252,
     "ast_hash": "5d2a2dee17c3ba4c10facbf9dff17f9b",
     "semantic_hash": ""
   },
   "docs/features/dsa-mode.md": {
-    "mtime": 1791093485.6102872,
-    "seen": 1791093507.505744,
+    "mtime": 1791095292.610451,
+    "seen": 1791095310.2069273,
     "ast_hash": "083efa369b0b4b189ddb536139a68d5b",
     "semantic_hash": ""
   },
   "docs/features/email-calendar.md": {
-    "mtime": 1791093484.90194,
-    "seen": 1791093507.5057461,
+    "mtime": 1791095291.8895369,
+    "seen": 1791095310.2069297,
     "ast_hash": "eb21225fae0ef51941b9a93f773c2056",
     "semantic_hash": ""
   },
   "docs/features/frontend.md": {
-    "mtime": 1791093485.638833,
-    "seen": 1791093507.5057485,
+    "mtime": 1791095292.6365852,
+    "seen": 1791095310.2069318,
     "ast_hash": "e5a57c600aa868c14e410809d4255210",
     "semantic_hash": ""
   },
   "docs/features/llm-personality.md": {
-    "mtime": 1791093484.0842402,
-    "seen": 1791093507.505751,
+    "mtime": 1791095291.1140673,
+    "seen": 1791095310.206934,
     "ast_hash": "2faae7c84ddb473450d8a588d1be3359",
     "semantic_hash": ""
   },
   "docs/features/media-enhancement.md": {
-    "mtime": 1791093485.022171,
-    "seen": 1791093507.505753,
+    "mtime": 1791095292.0084484,
+    "seen": 1791095310.2069361,
     "ast_hash": "71848ba766f440c12040db64315301b5",
     "semantic_hash": ""
   },
   "docs/features/memory.md": {
-    "mtime": 1791093484.1100755,
-    "seen": 1791093507.5057552,
+    "mtime": 1791095291.139613,
+    "seen": 1791095310.206938,
     "ast_hash": "7df5f527e65c44928165e31f66e44ea0",
     "semantic_hash": ""
   },
   "docs/features/neural-cache.md": {
-    "mtime": 1791093485.6298163,
-    "seen": 1791093507.5057578,
+    "mtime": 1791095292.6285932,
+    "seen": 1791095310.2069404,
     "ast_hash": "f1e6427e2c74c287a0d5e48c9696dfd8",
     "semantic_hash": ""
   },
   "docs/features/os-control.md": {
-    "mtime": 1791093484.79668,
-    "seen": 1791093507.5057602,
+    "mtime": 1791095291.7823336,
+    "seen": 1791095310.206943,
     "ast_hash": "7ba3c41e5abcdfe8d94de69e11318055",
     "semantic_hash": ""
   },
   "docs/features/ppt.md": {
-    "mtime": 1791093484.46623,
-    "seen": 1791093507.5057626,
+    "mtime": 1791095291.4789894,
+    "seen": 1791095310.206945,
     "ast_hash": "b903efee4357ee8b4951ebf82afaf849",
     "semantic_hash": ""
   },
   "docs/features/prompt-enhancer.md": {
-    "mtime": 1791093484.9841995,
-    "seen": 1791093507.5057647,
+    "mtime": 1791095291.970698,
+    "seen": 1791095310.2069473,
     "ast_hash": "bce171c049d0b52aad1c750e896531e7",
     "semantic_hash": ""
   },
   "docs/features/screen-vision.md": {
-    "mtime": 1791093484.6677475,
-    "seen": 1791093507.5057693,
+    "mtime": 1791095291.6616182,
+    "seen": 1791095310.2069516,
     "ast_hash": "ab85743cb28adb8cfcb14e09d22da813",
     "semantic_hash": ""
   },
   "docs/features/syllabus-auditor.md": {
-    "mtime": 1791093485.0045273,
-    "seen": 1791093507.5057719,
+    "mtime": 1791095291.9908102,
+    "seen": 1791095310.206954,
     "ast_hash": "c1188a12e57470dc7aca88e698c956c9",
     "semantic_hash": ""
   },
   "docs/features/tool-registry.md": {
-    "mtime": 1791093484.0428946,
-    "seen": 1791093507.505774,
+    "mtime": 1791095291.0776083,
+    "seen": 1791095310.2069561,
     "ast_hash": "bc2c740760ebf2164d9205e6052406fe",
     "semantic_hash": ""
   },
   "docs/features/voice.md": {
-    "mtime": 1791093484.9548247,
-    "seen": 1791093507.505777,
+    "mtime": 1791095291.9435725,
+    "seen": 1791095310.206958,
     "ast_hash": "6c146c6881adfef2d23ad020075caea7",
     "semantic_hash": ""
   },
   "docs/features/web.md": {
-    "mtime": 1791093484.8528166,
-    "seen": 1791093507.5057793,
+    "mtime": 1791095291.8400578,
+    "seen": 1791095310.2069604,
     "ast_hash": "fbcc13376a1c7659575efdd835f13eb9",
     "semantic_hash": ""
   },
   "docs/features/whatsapp.md": {
-    "mtime": 1791093484.611448,
-    "seen": 1791093507.5057814,
+    "mtime": 1791095291.6103342,
+    "seen": 1791095310.2069626,
     "ast_hash": "8433f918efa791d1cd6ac8b2de62dc60",
     "semantic_hash": ""
   },
@@ -1152,21 +1152,21 @@
     "semantic_hash": ""
   },
   "app/services/resume_builder.py": {
-    "mtime": 1791093392.2410817,
-    "seen": 1791093441.222855,
-    "ast_hash": "f80c41e1552d921eeb7f43f51e63dc2c",
+    "mtime": 1791095176.0893576,
+    "seen": 1791095213.1896756,
+    "ast_hash": "d9f8e200f8a2f6f47af7afec799f7dd7",
     "semantic_hash": ""
   },
   "docs/features/resume-creator.md": {
-    "mtime": 1791093485.5631711,
-    "seen": 1791093507.5057669,
-    "ast_hash": "5ce89545605104bf880c08fbd0579746",
+    "mtime": 1791095292.5718746,
+    "seen": 1791095310.2069495,
+    "ast_hash": "c2c8ea4b87b9f150db1429bc1eed4cd2",
     "semantic_hash": ""
   },
   "app/api/resume_router.py": {
-    "mtime": 1791043258.5040808,
-    "seen": 1791043288.7224758,
-    "ast_hash": "b61ba4de502c0c2883e2cae1b55abd40",
+    "mtime": 1791093526.3243804,
+    "seen": 1791095213.189502,
+    "ast_hash": "14d3dea2e8fc58f8f93c4d277c61de27",
     "semantic_hash": ""
   },
   "app/memory/replica_docs/9eb12a30b87500ca381715c6c999b3ce66517a09.json": {
@@ -1290,9 +1290,9 @@
     "semantic_hash": ""
   },
   "app/services/resume_replica/exact_render.py": {
-    "mtime": 1791091384.66081,
-    "seen": 1791092153.0621095,
-    "ast_hash": "0385c3ade235fff450954e21f3352fc7",
+    "mtime": 1791094472.0078928,
+    "seen": 1791095213.189692,
+    "ast_hash": "4a0d5e9004c11239b81aa490145c47a4",
     "semantic_hash": ""
   },
   "app/services/resume_replica/fontmatch.py": {
@@ -1347,6 +1347,12 @@
     "mtime": 1791091268.9388456,
     "seen": 1791092153.061791,
     "ast_hash": "0201348b8be29e960ed803b2677f1894",
+    "semantic_hash": ""
+  },
+  "app/services/resume_replica/recolor.py": {
+    "mtime": 1791095128.73574,
+    "seen": 1791095213.1897163,
+    "ast_hash": "f94dc7a0cf664d19199bf3d6105092ca",
     "semantic_hash": ""
   }
 }

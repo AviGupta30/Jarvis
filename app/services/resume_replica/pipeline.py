@@ -20,7 +20,7 @@ import numpy as np
 
 from .ingest import PX_PER_MM, load_reference
 
-SPEC_VERSION = 4
+SPEC_VERSION = 5
 _BASE = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 SPEC_DIR = os.path.join(_BASE, "app", "memory", "replica_docs")
 ASSET_DIR = os.path.join(_BASE, "data", "uploads", "resumes", "replica")
@@ -64,7 +64,7 @@ def _style_key(l: dict) -> str | None:
         return r
     if r == "heading":
         return f"head{c}"
-    if r in ("item_title", "sub", "meta", "meta_right"):
+    if r in ("item_title", "sub", "meta", "meta_right", "meta_left"):
         return f"{r}{c}"
     if r in ("body", "list"):
         return f"{r}{c}"
@@ -156,8 +156,13 @@ def _font_styles(ref: dict, s: dict, log) -> dict:
         w_em = m.get("ink_right_em", 0) + m.get("ink_left_em", 0) * -1
         if _mostly_lower(l["text"]) and len(l["text"]) >= 6 and w_em > 0.5:
             fs_w = (l["ink"][2] - l["ink"][0]) / w_em / MM
+            # low-res/blurred references lose thin descenders from the ink: then the height matches the font's
+            # ascender part only, and the width agrees with that reading
+            fs_a = (l["ink"][3] - l["ink"][1]) / max(0.3, m["ink_asc_em"]) / MM
             if 0.6 < fs_w / fs < 1.4:
                 fs = 0.75 * fs_w + 0.25 * fs
+            elif m["ink_desc_em"] > 0.08 and 0.75 < fs_w / fs_a < 1.3:
+                fs = 0.75 * fs_w + 0.25 * fs_a
         sizes.setdefault(k, []).append((fs, m))
         l["fs_mm"] = fs
         l["m"] = m
@@ -269,7 +274,7 @@ def _section_tokens(sec: dict, lines_sorted: list, deco_bottom_mm: float | None)
             add("head_first", _ink_top(lines_sorted[0]) - deco_bottom_mm)
         prev = None
         for l in lines_sorted:
-            if l["role"] == "meta_right":
+            if l["role"] in ("meta_right", "meta_left"):
                 continue
             if prev is not None:
                 d = _ink_top(l) - _ink_top(prev)
@@ -337,7 +342,7 @@ def analyse_reference(image_path: str, log=_safe_print, force: bool = False) -> 
                   "source_path": os.path.abspath(image_path),
                   "page": {"h_mm": 297.0, "ref_h_mm": round(ref["page_h_mm"], 1), "plate": info["plate"],
                            "plate2": info["plate2"], "src_dpi": ref["src_dpi"], "partial": ref["partial"],
-                           "letter": ref["letter"]},
+                           "letter": ref["letter"], "ornaments": info.get("ornament_boxes_mm") or []},
                   "styles": styles, "created": time.time()}
     fonts: dict = {}
     for st in styles.values():

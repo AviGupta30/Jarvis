@@ -1,6 +1,6 @@
 # ppt_designer
 
-> 58 nodes · cohesion 0.14
+> 56 nodes · cohesion 0.15
 
 ## Key Concepts
 
@@ -29,15 +29,14 @@
 - **_vpos()** (10 connections) — `app/services/ppt_designer.py`
 - **._list_grid()** (9 connections) — `app/services/ppt_designer.py`
 - **._s_agenda()** (9 connections) — `app/services/ppt_designer.py`
-- *... and 33 more nodes in this community*
+- *... and 31 more nodes in this community*
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (56 shared connections)
-- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (49 shared connections)
-- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (3 shared connections)
-- [ppt_designer + ppt_composer](ppt_designer_+_ppt_composer.md) (2 shared connections)
-- [ppt_template](ppt_template.md) (2 shared connections)
+- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (65 shared connections)
+- [ppt_designer](ppt_designer.md) (45 shared connections)
+- [ppt_template](ppt_template.md) (3 shared connections)
+- [ppt_studio](ppt_studio.md) (2 shared connections)
 - [ppt_content](ppt_content.md) (1 shared connections)
 
 ## Source Files
@@ -47,7 +46,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 342 (99%)
+- EXTRACTED: 338 (99%)
 - INFERRED: 3 (1%)
 - AMBIGUOUS: 0 (0%)
 

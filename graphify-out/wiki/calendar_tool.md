@@ -17,11 +17,13 @@
 
 ## Relationships
 
-- [tools](tools.md) (6 shared connections)
-- [memory_tool + email-calendar](memory_tool_+_email-calendar.md) (3 shared connections)
-- [benchmark + server](benchmark_+_server.md) (2 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
+- [tools](tools.md) (3 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (3 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (2 shared connections)
+- [gmail_tool + memory_tool](gmail_tool_+_memory_tool.md) (2 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [agentic_web + email-calendar](agentic_web_+_email-calendar.md) (1 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
 
 ## Source Files
 

@@ -1,10 +1,11 @@
 # assignment_answers
 
-> 26 nodes · cohesion 0.12
+> 27 nodes · cohesion 0.11
 
 ## Key Concepts
 
 - **assignment_answers.py** (22 connections) — `app/services/assignment_answers.py`
+- **io** (11 connections)
 - **_run_browser_session()** (9 connections) — `app/services/assignment_answers.py`
 - **_ask_question_on_page()** (8 connections) — `app/services/assignment_answers.py`
 - **generate_answers()** (6 connections) — `app/services/assignment_answers.py`
@@ -28,19 +29,22 @@
 - **Send one question to the open AI page and return the answer text.** (1 connections) — `app/services/assignment_answers.py`
 - **Full browser session: open site → upload PDF → ask all questions → close.…** (1 connections) — `app/services/assignment_answers.py`
 - **Generate an answer using Groq LLM with automatic model fallback chain. Tries…** (1 connections) — `app/services/assignment_answers.py`
-- **Generate complete answers for ALL questions from an assignment. Tries these…** (1 connections) — `app/services/assignment_answers.py`
-- *... and 1 more nodes in this community*
+- *... and 2 more nodes in this community*
 
 ## Relationships
 
-- [assignment_pipeline + assignment_tool](assignment_pipeline_+_assignment_tool.md) (3 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (2 shared connections)
-- [benchmark + server](benchmark_+_server.md) (2 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (3 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (3 shared connections)
+- [assignment_tool + assignment_pipeline](assignment_tool_+_assignment_pipeline.md) (3 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
 - [tools](tools.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [repair + renderer](repair_+_renderer.md) (1 shared connections)
-- [safe_executor](safe_executor.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (1 shared connections)
+- [assignment_tool](assignment_tool.md) (1 shared connections)
+- [ppt_chart_engine + jarvis_overlay](ppt_chart_engine_+_jarvis_overlay.md) (1 shared connections)
+- [ppt_tool](ppt_tool.md) (1 shared connections)
+- [recolor + exact_render](recolor_+_exact_render.md) (1 shared connections)
+- [safe_executor + refresh_docs](safe_executor_+_refresh_docs.md) (1 shared connections)
 
 ## Source Files
 
@@ -48,8 +52,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 49 (94%)
-- INFERRED: 3 (6%)
+- EXTRACTED: 59 (95%)
+- INFERRED: 3 (5%)
 - AMBIGUOUS: 0 (0%)
 
 ---

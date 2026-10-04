@@ -280,7 +280,66 @@ def _save_state(state: dict) -> None:
 
 
 UNDO_PATH = os.path.join(_BASE_DIR, "app", "memory", "resume_undo.json")
-_UNDO_KEYS = ("content", "design", "photo", "target_pages", "render_scale")
+_UNDO_KEYS = ("content", "design", "photo", "target_pages", "render_scale", "tpl_designs")
+
+
+def _tpl_key(d: dict | None) -> str:
+    """Which template a design is: a preset name, 'copy:<sha>' for an exact copy, 'image' for a design read by the VLM."""
+    if not d:
+        return ""
+    if d.get("replica"):
+        return "copy:" + str((d.get("replica") or {}).get("sha1", ""))[:12]
+    src = str(d.get("source") or "")
+    return src if src in PRESETS else "image"
+
+
+def _stash_design(st: dict, new: dict) -> None:
+    """A template switch keeps the outgoing design (its own shapes, text boxes, styles, colours, hidden and arranged
+    sections) under its template key, so each template keeps its own changes and switching back restores them.
+    The content (the person's details) is shared by all templates."""
+    old = st.get("design")
+    store = st.get("tpl_designs") if isinstance(st.get("tpl_designs"), dict) else {}
+    ko, kn = _tpl_key(old), _tpl_key(new)
+    if old and ko and ko != kn:
+        store.pop(ko, None)
+        store[ko] = {"design": old, "render_scale": st.get("render_scale")}
+    store.pop(kn, None)
+    st["tpl_designs"] = dict(list(store.items())[-12:])
+
+
+def _ref_copy_design(st: dict) -> dict | None:
+    """The exact copy of the last reference image, rebuilt from its cached analysis (no new analysis)."""
+    ref = st.get("ref_image") or ""
+    if not (ref and os.path.exists(ref)):
+        return None
+    try:
+        from app.services.resume_replica.integrate import replica_design
+        from app.services.resume_replica.pipeline import _file_hash, load_spec
+        spec = load_spec(_file_hash(ref))
+        return replica_design(spec) if spec else None
+    except Exception as e:
+        print(f"[resume] reference copy unavailable: {e}")
+        return None
+
+
+_RASTER_PAL: dict = {}
+
+
+def _raster_palette(d: dict) -> list[str]:
+    """Dominant colours of an exact copy's images (background, heading boxes, icons) for the editor's colour mode."""
+    sha = str((d.get("replica") or {}).get("sha1") or "")
+    if not sha:
+        return []
+    if sha not in _RASTER_PAL:
+        try:
+            from app.services.resume_replica.exact_render import asset_files, load_spec
+            from app.services.resume_replica.recolor import palette_of
+            spec = load_spec(sha)
+            _RASTER_PAL[sha] = palette_of(asset_files(spec)) if spec else []
+        except Exception as e:
+            print(f"[resume] raster palette failed: {e}")
+            _RASTER_PAL[sha] = []
+    return _RASTER_PAL[sha]
 
 
 def _state_rev(st: dict) -> str:
@@ -2290,6 +2349,13 @@ def _clean_free(f) -> dict:
     fv = {k: _css_val(v) for k, v in (f.get("vars") or {}).items() if re.fullmatch(r"--[a-z][a-z0-9-]{0,30}", str(k))}
     if any(fv.values()):
         out["vars"] = {k: v for k, v in fv.items() if v}
+    rc = []
+    for pr in (f.get("recolor") or [])[:40]:
+        if (isinstance(pr, (list, tuple)) and len(pr) == 2
+                and all(re.fullmatch(r"#[0-9a-fA-F]{6}", str(x or "")) for x in pr) and pr[0].lower() != pr[1].lower()):
+            rc.append([pr[0].lower(), pr[1].lower()])
+    if rc:
+        out["recolor"] = rc
     names = {n for n, _, _ in _FREE_FONTS}
     fonts = {k: v for k, v in (f.get("fonts") or {}).items() if k in ("head", "body") and v in names}
     if fonts:
@@ -2351,6 +2417,7 @@ def _free_html(d: dict, edit: bool) -> str:
     icon_names = list(_ICONS) if edit else sorted({s.get("icon") or "star" for s in shapes if s.get("type") == "icon"})
     data = {"styles": f.get("styles") or {}, "groups": f.get("groups") or {}, "vars": f.get("vars") or {},
             "fonts": f.get("fonts") or {}, "text_scale": f.get("text_scale") or 1, "shapes": shapes,
+            "recolor": f.get("recolor") or [],
             "fontcat": {n: cat for n, cat, _ in _FREE_FONTS},
             "icons": {n: _icon(n, "currentColor", "100%") for n in icon_names},
             "waves": {k: list(v) for k, v in _SHAPES.items()}}
@@ -2424,7 +2491,69 @@ function find(key){
 function val(p, v){ return p === 'font-family' ? stack(v) : v; }
 const BOXY = ['translate', 'rotate', 'scale', 'width', 'height'];
 let touched = [];
+// ── colour swaps (editor colour mode): every CSS colour equal to a "from" colour is drawn in its "to" colour ──
+// (computed colours, so it works for any template; raster backgrounds of an exact copy are swapped server-side)
+let rcDone = [];
+const RC_PROPS = ['color', 'background-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'];
+const RC_SVG = ['fill', 'stroke', 'stop-color', 'flood-color'];
+function rgbOf(s){
+  const m = String(s || '').match(/rgba?\(([^)]+)\)/);
+  if (!m) return null;
+  const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat);
+  return p.length >= 3 ? [p[0], p[1], p[2], p.length > 3 ? p[3] : 1] : null;
+}
+function hexRgb(h){
+  h = String(h || '').replace('#', '');
+  if (h.length === 3) h = h.replace(/./g, c => c + c);
+  return /^[0-9a-f]{6}$/i.test(h) ? [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)) : null;
+}
+function swapOf(c, pairs){
+  for (const [a, b] of pairs) if (Math.abs(c[0] - a[0]) + Math.abs(c[1] - a[1]) + Math.abs(c[2] - a[2]) <= 12) return b;
+  return null;
+}
+const rgbStr = (b, al) => al < 1 ? 'rgba(' + b.join(',') + ',' + al + ')' : 'rgb(' + b.join(',') + ')';
+function swapStr(str, pairs){            // gradients and SVG data-URI backgrounds (wave headers, shaped bands…)
+  const one = t => t.replace(/rgba?\([^)]+\)/g, m => { const c = rgbOf(m), b = c && swapOf(c, pairs); return b ? rgbStr(b, c[3]) : m; })
+    .replace(/(%23|#)([0-9a-fA-F]{6}|[0-9a-fA-F]{3})(?![0-9a-fA-F])/g, (m, p, h) => {
+      const c = hexRgb(h), b = c && swapOf(c, pairs); return b ? p + b.map(x => x.toString(16).padStart(2, '0')).join('') : m; });
+  if (!/;base64,/.test(str)) return one(str);
+  return str.replace(/data:image\/svg\+xml;base64,([A-Za-z0-9+\/=]+)/g, (m, b64) => {
+    try { return 'data:image/svg+xml;base64,' + btoa(one(atob(b64))); } catch (e) { return m; } });
+}
+function rcUndo(){
+  for (const [el, p, prev, pri, set] of rcDone) {
+    if (el.style.getPropertyValue(p) !== set) continue;           // restyled since: leave it
+    if (prev) el.style.setProperty(p, prev, pri); else el.style.removeProperty(p);
+  }
+  rcDone = [];
+}
+function recolor(){
+  rcUndo();
+  const pairs = (D.recolor || []).map(x => [hexRgb(x[0]), hexRgb(x[1])]).filter(x => x[0] && x[1]);
+  if (!pairs.length) return;
+  const todo = [];
+  for (const el of [document.documentElement, document.body, ...document.body.querySelectorAll('*')]) {
+    if (/^(SCRIPT|STYLE|LINK|IMG|BR)$/.test(el.tagName) || (el.id && el.id.indexOf('rb-') === 0) ||
+        el.closest('#rb-free,#rb-bar,#rb-panel,#rb-hint,#rb-ctl,#rb-sctl,#rb-selbox,.rb-pt')) continue;
+    const cs = getComputedStyle(el), svg = el instanceof SVGElement;
+    for (const p of svg ? RC_PROPS.concat(RC_SVG) : RC_PROPS) {
+      const c = rgbOf(cs.getPropertyValue(p));
+      if (!c || c[3] === 0) continue;
+      const b = swapOf(c, pairs);
+      if (b) todo.push([el, p, rgbStr(b, c[3])]);
+    }
+    const bi = cs.backgroundImage;
+    if (bi && bi !== 'none' && /gradient|svg/.test(bi)) { const n = swapStr(bi, pairs); if (n !== bi) todo.push([el, 'background-image', n]); }
+  }
+  for (const [el, p, v] of todo) {                                 // read everything first, then write
+    const rec = [el, p, el.style.getPropertyValue(p), el.style.getPropertyPriority(p), ''];
+    el.style.setProperty(p, v, 'important');
+    rec[4] = el.style.getPropertyValue(p);
+    rcDone.push(rec);
+  }
+}
 function applyStyles(){
+  rcUndo();
   touched.forEach(el => { if (el.__rbo === null) el.removeAttribute('style'); else el.setAttribute('style', el.__rbo); });
   touched = [];
   for (const [k, props] of Object.entries(D.styles || {})) {
@@ -2436,6 +2565,7 @@ function applyStyles(){
     if (!props.display && BOXY.some(p => props[p]) && getComputedStyle(el).display === 'inline')
       el.style.setProperty('display', 'inline-block', 'important');   // transforms don't apply to inline boxes
   }
+  recolor();
 }
 function buildCss(){
   let out = '';
@@ -2540,7 +2670,7 @@ function renderShapes(){
   for (const s of D.shapes || []) { try { layer.appendChild(build(s)); } catch (e) {} }
 }
 function refresh(){ buildCss(); applyStyles(); renderShapes(); }
-window.RBF = {D, MM, stack, keyOf, find, sig, skip, refresh, buildCss, applyStyles, renderShapes, CLIP, POLY};
+window.RBF = {D, MM, stack, keyOf, find, sig, skip, refresh, buildCss, applyStyles, renderShapes, recolor, CLIP, POLY};
 refresh();
 })();
 """
@@ -2982,6 +3112,10 @@ html.rb-pan #rb-panel{display:block}
 #rb-panel .sec-row button{padding:2px 6px}
 #rb-panel .val{min-width:34px;color:#94a3b8;text-align:right}
 body.rb-design{user-select:none;-webkit-user-select:none}
+body.rb-colormode,body.rb-colormode *{cursor:crosshair!important}
+body.rb-colormode{user-select:none;-webkit-user-select:none}
+body.rb-colormode [data-f]:hover,body.rb-colormode [data-f]:focus,body.rb-colormode [data-item].rb-hot{background:none!important;box-shadow:none!important;outline:none!important}
+body.rb-colormode #rb-bar *,body.rb-colormode #rb-panel *{cursor:auto!important}
 body.rb-design [data-f]{cursor:default}
 body.rb-design [data-f]:hover,body.rb-design [data-f]:focus{background:none;box-shadow:none}
 .rb-hov{outline:1px dashed rgba(6,182,212,.95)!important;outline-offset:1px}
@@ -3014,6 +3148,7 @@ _EDITOR_JS = r"""
   const RB = window.__RB__, F = window.RBF, FD = F.D, MM = F.MM;
   ['styles', 'groups', 'vars', 'fonts'].forEach(k => { if (!FD[k] || typeof FD[k] !== 'object' || Array.isArray(FD[k])) FD[k] = {}; });
   if (!Array.isArray(FD.shapes)) FD.shapes = [];
+  if (!Array.isArray(FD.recolor)) FD.recolor = [];
   let dirty = false, hot = null, mode = 'text', sel = null, scope = 'one', tab = 'sel', drag = null, editingShape = false;
   let rev = RB.rev || '', busy = false;
   const hist = [], fut = [], srcOf = {}, typing = {el: null, t: 0};
@@ -3044,7 +3179,7 @@ _EDITOR_JS = r"""
   }
   function freeOut(){
     return {styles: FD.styles, groups: FD.groups, vars: FD.vars, fonts: FD.fonts, text_scale: FD.text_scale || 1,
-            shapes: FD.shapes.map(s => { const t = Object.assign({}, s); delete t.src; return t; })};
+            recolor: FD.recolor, shapes: FD.shapes.map(s => { const t = Object.assign({}, s); delete t.src; return t; })};
   }
   function keepView(){
     ss.set('rbScroll', String(window.scrollY)); ss.set('rbMode', mode); ss.set('rbTab', tab);
@@ -3133,6 +3268,13 @@ _EDITOR_JS = r"""
   $('#rb-pages').onchange = e => send({target_pages: e.target.value}, false);
   $('#rb-tpl').onchange = e => { if (e.target.value) send({template: e.target.value}, true); };
   $('#rb-color').onchange = e => {
+    if (RB.replica) {
+      const sat = c => { const x = hexA(c); return x ? Math.max(...x) - Math.min(...x) : 0; };
+      const main = designColours().find(c => sat(c) > 40);
+      if (!main) return status('No accent colour found — use 🖌 Colours and click the colour to change');
+      snap(); const pr = swapFor(main); setSwap(pr, e.target.value.toLowerCase()); rcDone(pr);
+      return;
+    }
     ['--primary', '--on-primary', '--accent', '--heading', '--side', '--tint', '--track'].forEach(v => delete FD.vars[v]);
     send({color: e.target.value}, true);
   };
@@ -3168,7 +3310,8 @@ _EDITOR_JS = r"""
   // ── undo / redo: one history for typing, design changes and structural changes ──────────────
   // A local step is a snapshot of every text field + the free design; a structural step ({srv: id}) is a
   // whole-state snapshot kept by the server (item / section ops, template, colour, photo, AI edit, page fit).
-  const fdOf = () => ({styles: FD.styles, groups: FD.groups, vars: FD.vars, fonts: FD.fonts, text_scale: FD.text_scale || 1, shapes: FD.shapes});
+  const fdOf = () => ({styles: FD.styles, groups: FD.groups, vars: FD.vars, fonts: FD.fonts, text_scale: FD.text_scale || 1,
+                       recolor: FD.recolor, shapes: FD.shapes});
   const texts = () => Array.from(document.querySelectorAll('[data-f]'), el => [el.dataset.f, el.textContent]);
   const snapshot = () => JSON.stringify({t: texts(), f: fdOf()});
   function snap(){ hist.push(snapshot()); if (hist.length > 80) hist.shift(); fut.length = 0; }
@@ -3195,14 +3338,18 @@ _EDITOR_JS = r"""
     const o = JSON.parse(js), f = o.f || o;
     (f.shapes || []).forEach(x => { if (x.type === 'image' && !x.src && x.path && srcOf[x.path]) x.src = srcOf[x.path]; });
     const fdChanged = JSON.stringify(f) !== JSON.stringify(fdOf());
+    const rcBefore = JSON.stringify(FD.recolor || []);
+    if (!Array.isArray(f.recolor)) f.recolor = [];
     Object.assign(FD, f);
+    const rasterRc = rcBefore !== JSON.stringify(FD.recolor) && rcTouchesRaster(JSON.parse(rcBefore).concat(FD.recolor));
     document.documentElement.style.setProperty('--s', String(FD.text_scale || 1));
     F.refresh();
     if (o.t) setTexts(o.t);
     if (sel && sel.kind === 'shape' && !shapeById(sel.id)) sel = null;
     if (sel && sel.kind === 'el') sel.el = F.find(sel.key) || sel.el;
     updateSel(); renderPanel();
-    if (fdChanged) saveFree();
+    if (rasterRc) send({}, true);
+    else if (fdChanged) saveFree();
     else if (dirty) status('✏️ Unsaved changes — press <b>Save &amp; export PDF</b> (Ctrl+S)');
   }
   async function step(from, to, undoing){
@@ -3255,19 +3402,25 @@ _EDITOR_JS = r"""
   function setMode(m){
     mode = m;
     document.body.classList.toggle('rb-design', m === 'design');
+    document.body.classList.toggle('rb-colormode', m === 'color');
     $('#rb-mode-text').classList.toggle('on', m === 'text');
     $('#rb-mode-design').classList.toggle('on', m === 'design');
+    $('#rb-mode-color').classList.toggle('on', m === 'color');
     document.querySelectorAll('[data-f]').forEach(el => el.setAttribute('contenteditable', m === 'text' ? 'true' : 'false'));
     ctl.style.display = 'none'; sctl.style.display = 'none';
     if (hot) hot.classList.remove('rb-hot');
     if (m === 'text') select(null);
-    else setPanel(true);
-    $('#rb-hint').innerHTML = m === 'text'
+    else if (m === 'color') { select(null); tab = 'colors'; setPanel(true); }
+    else { if (tab === 'colors') tab = 'sel'; setPanel(true); }
+    $('#rb-hint').innerHTML = m === 'color'
+      ? 'Click any colour on the resume (text, background, band, box, line, icon) → choose its new colour · it changes everywhere it is used · Ctrl+Z undo'
+      : m === 'text'
       ? 'Click text to type · hover an item for ＋ ⧉ ↑ ✕ · hover a section for ↑ ↓ ⇄ ✕ · Ctrl+Z undo · Ctrl+D duplicates the item · red line = page break · Ctrl+S saves'
       : 'Click anything to select · drag to move · handles resize / rotate · Del hides · arrows nudge · Ctrl+Z undo · Ctrl+D duplicate · double-click text to edit';
   }
   $('#rb-mode-text').onclick = () => setMode('text');
   $('#rb-mode-design').onclick = () => setMode('design');
+  $('#rb-mode-color').onclick = () => setMode('color');
   $('#rb-panel-btn').onclick = () => setPanel(!document.documentElement.classList.contains('rb-pan'));
 
   // ── selection ───────────────────────────────────────────────────────────────────────────────
@@ -3506,9 +3659,195 @@ _EDITOR_JS = r"""
   $('#rb-img-file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) imageFile(f, null); };
   $('#rb-img-repl').onchange = e => { const f = e.target.files[0]; e.target.value = ''; const s = curShape(); if (f && s) imageFile(f, s); };
 
+  // ── colour mode: pick a colour on the page, swap it everywhere ───────────────────────────────
+  // Swaps are FD.recolor = [[from, to]]: CSS colours are swapped by the shared runtime (F.recolor, editor = PDF);
+  // raster art of an exact copy (background plate, heading boxes, icons) is redrawn by the server, so a swap that
+  // touches one of RB.raster_pal's colours saves and reloads.
+  const hx = c => '#' + c.slice(0, 3).map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+  const rgbA = s => { const m = String(s || '').match(/rgba?\(([^)]+)\)/); if (!m) return null;
+                      const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(parseFloat); return p.length >= 3 ? [p[0], p[1], p[2], p.length > 3 ? p[3] : 1] : null; };
+  const hexA = h => { h = String(h || '').replace('#', ''); return /^[0-9a-f]{6}$/i.test(h) ? [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16)) : null; };
+  const cdist = (a, b) => { const x = hexA(a), y = hexA(b); return x && y ? Math.abs(x[0] - y[0]) + Math.abs(x[1] - y[1]) + Math.abs(x[2] - y[2]) : 999; };
+  const shown = c => { const p = FD.recolor.find(q => cdist(q[0], c) <= 12); return p ? p[1] : c; };   // original → as drawn now
+  function rcTouchesRaster(pairs){ return (RB.raster_pal || []).some(c => pairs.some(p => cdist(p[0], c) <= 40)); }
+  let picked = null;                                         // {hex, how}
+  // the swap that draws colour `cur` (as currently shown): edit it, or start a new one from `cur`
+  function swapFor(cur){
+    let pr = FD.recolor.find(q => cdist(q[1], cur) <= 12);
+    if (!pr) { pr = [cur, cur]; FD.recolor.push(pr); }
+    return pr;
+  }
+  function setSwap(pr, to){
+    pr[1] = to;
+    FD.recolor = FD.recolor.filter(q => q[0] !== q[1]);
+    if (FD.recolor.indexOf(pr) < 0 && pr[0] !== pr[1]) FD.recolor.push(pr);
+    F.recolor();
+  }
+  function rcDone(pr){
+    const raster = rcTouchesRaster([pr]);
+    if (raster) { status('⏳ Recolouring the background art…'); send({}, true); }
+    else { saveFree(); renderPanel(); }
+  }
+  // what colour is under the pointer: text → its colour; else the first painted thing down the stack
+  // (SVG fill, image pixel, background image incl. 9-slice border images, border, background colour)
+  const imgs = new Map();
+  function imgCtx(src){
+    if (!imgs.has(src)) imgs.set(src, new Promise(res => {
+      const im = new Image();
+      im.onload = () => { const c = document.createElement('canvas'); c.width = im.naturalWidth || 300; c.height = im.naturalHeight || 150;
+                          const g = c.getContext('2d', {willReadFrequently: true}); g.drawImage(im, 0, 0, c.width, c.height); res(g); };
+      im.onerror = () => res(null);
+      im.src = src;
+    }));
+    return imgs.get(src);
+  }
+  async function sample(src, fu, fv){                    // fu/fv: 0..1 in the image → most frequent colour around it
+    const g = await imgCtx(src); if (!g) return null;
+    const W = g.canvas.width, H = g.canvas.height;
+    const x = Math.max(0, Math.min(W - 5, Math.floor(fu * W) - 2)), y = Math.max(0, Math.min(H - 5, Math.floor(fv * H) - 2));
+    const d = g.getImageData(x, y, Math.min(5, W), Math.min(5, H)).data, n = new Map();
+    for (let i = 0; i < d.length; i += 4) { if (d[i + 3] < 128) continue; const k = (d[i] >> 3) + ',' + (d[i + 1] >> 3) + ',' + (d[i + 2] >> 3);
+      const e = n.get(k) || [0, d[i], d[i + 1], d[i + 2]]; e[0]++; n.set(k, e); }
+    let best = null; n.forEach(e => { if (!best || e[0] > best[0]) best = e; });
+    return best ? [best[1], best[2], best[3]] : null;
+  }
+  const urlOf = s => { const m = String(s || '').match(/url\(["']?([^"')]+)["']?\)/); return m ? m[1] : ''; };
+  function bgUV(el, cs, x, y, W, H){
+    const r = el.getBoundingClientRect(), ox = x - r.left, oy = y - r.top;
+    const sz = cs.backgroundSize.split(',')[0].trim(), tok = sz.split(/\s+/);
+    let bw, bh;
+    if (sz === 'cover' || sz === 'contain') { const k = (sz === 'cover' ? Math.max : Math.min)(r.width / W, r.height / H); bw = W * k; bh = H * k; }
+    else {
+      const len = (t, full) => t === 'auto' || t == null ? null : /%$/.test(t) ? parseFloat(t) / 100 * full : parseFloat(t);
+      bw = len(tok[0], r.width); bh = len(tok.length > 1 ? tok[1] : 'auto', r.height);
+      if (bw == null && bh == null) { bw = W; bh = H; } else if (bw == null) bw = bh * W / H; else if (bh == null) bh = bw * H / W;
+    }
+    const pos = (t, free) => /%$/.test(t) ? parseFloat(t) / 100 * free : parseFloat(t) || 0;
+    let u = (ox - pos(cs.backgroundPositionX.split(',')[0].trim(), r.width - bw)) / bw;
+    let v = (oy - pos(cs.backgroundPositionY.split(',')[0].trim(), r.height - bh)) / bh;
+    const rp = cs.backgroundRepeat.split(',')[0];
+    if (/repeat(?!-y)|repeat-x/.test(rp) && !/no-repeat/.test(rp)) u -= Math.floor(u);
+    if (/repeat(?!-x)|repeat-y/.test(rp) && !/no-repeat/.test(rp)) v -= Math.floor(v);
+    return u >= 0 && u < 1 && v >= 0 && v < 1 ? [u, v] : null;
+  }
+  function sliceUV(el, cs, x, y, W, H){                 // border-image: map the point through the 9 slices
+    const r = el.getBoundingClientRect(), ox = x - r.left, oy = y - r.top;
+    const sl = cs.borderImageSlice.replace('fill', '').trim().split(/\s+/).map(t => /%$/.test(t) ? null : parseFloat(t));
+    const s4 = [sl[0], sl[1] != null ? sl[1] : sl[0], sl[2] != null ? sl[2] : sl[0], sl[3] != null ? sl[3] : (sl[1] != null ? sl[1] : sl[0])].map(v => v || 0);
+    const bwd = [cs.borderTopWidth, cs.borderRightWidth, cs.borderBottomWidth, cs.borderLeftWidth].map(parseFloat);
+    const wt = cs.borderImageWidth.trim().split(/\s+/);
+    const w4 = [0, 1, 2, 3].map(i => { const t = wt[i] != null ? wt[i] : wt[i % 2] != null ? wt[i % 2] : wt[0];
+      return /px$/.test(t) ? parseFloat(t) : /%$/.test(t) ? parseFloat(t) / 100 * (i % 2 ? r.width : r.height) : t === 'auto' ? s4[i] : parseFloat(t) * bwd[i]; });
+    const map = (o, full, a, b, sa, sb, N) => o < a ? (a ? o / a * sa : 0) : o > full - b ? N - sb + (b ? (o - (full - b)) / b * sb : 0)
+      : sa + (o - a) / Math.max(1, full - a - b) * Math.max(1, N - sa - sb);
+    return [map(ox, r.width, w4[3], w4[1], s4[3], s4[1], W) / W, map(oy, r.height, w4[0], w4[2], s4[0], s4[2], H) / H];
+  }
+  async function colourAt(x, y){
+    const cr = document.caretRangeFromPoint && document.caretRangeFromPoint(x, y);
+    if (cr && cr.startContainer.nodeType === 3) {
+      const n = cr.startContainer, el = n.parentElement;
+      for (const o of [cr.startOffset - 1, cr.startOffset]) {
+        if (o < 0 || o >= n.length || !el || editorUi(el) || el.closest('#rb-free')) continue;
+        const rg = document.createRange(); rg.setStart(n, o); rg.setEnd(n, o + 1);
+        const b = rg.getBoundingClientRect();
+        if (b.width && x >= b.left - 0.5 && x <= b.right + 0.5 && y >= b.top && y <= b.bottom && n.data[o].trim())
+          return {hex: cssColor(getComputedStyle(el).color), how: 'text'};
+      }
+    }
+    for (const el of document.elementsFromPoint(x, y)) {
+      if (editorUi(el) || el.closest('#rb-free') || el === document.documentElement) continue;
+      const cs = getComputedStyle(el);
+      if (cs.visibility === 'hidden' || +cs.opacity === 0) continue;
+      if (el instanceof SVGElement && el.tagName.toLowerCase() !== 'svg') {
+        for (const p of ['fill', 'stroke']) { const c = rgbA(cs.getPropertyValue(p)); if (c && c[3] > 0.3) return {hex: hx(c), how: 'shape'}; }
+        continue;
+      }
+      if (el.tagName === 'IMG' && el.src) {
+        const r = el.getBoundingClientRect(), c = await sample(el.src, (x - r.left) / r.width, (y - r.top) / r.height);
+        if (c) return {hex: hx(c), how: 'image'};
+        continue;
+      }
+      const bis = urlOf(cs.borderImageSource);
+      if (bis) {
+        const g = await imgCtx(bis);
+        if (g) { const uv = sliceUV(el, cs, x, y, g.canvas.width, g.canvas.height), c = await sample(bis, uv[0], uv[1]); if (c) return {hex: hx(c), how: 'image'}; }
+      }
+      const r = el.getBoundingClientRect(), ox = x - r.left, oy = y - r.top;
+      const sides = [['Top', oy], ['Right', r.width - ox], ['Bottom', r.height - oy], ['Left', ox]];
+      for (const [sd, d] of sides) {
+        const w = parseFloat(cs['border' + sd + 'Width']) || 0, c = rgbA(cs['border' + sd + 'Color']);
+        if (w > 0 && d <= w + 0.5 && c && c[3] > 0.3 && cs['border' + sd + 'Style'] !== 'none') return {hex: hx(c), how: 'line'};
+      }
+      const bi = urlOf(cs.backgroundImage);
+      if (bi) {
+        const g = await imgCtx(bi);
+        if (g) { const uv = bgUV(el, cs, x, y, g.canvas.width, g.canvas.height); if (uv) { const c = await sample(bi, uv[0], uv[1]); if (c) return {hex: hx(c), how: /svg/.test(bi.slice(0, 30)) ? 'shape' : 'image'}; } }
+      }
+      const bg = rgbA(cs.backgroundColor);
+      if (bg && bg[3] > 0.3) return {hex: hx(bg), how: 'background'};
+    }
+    return {hex: '#ffffff', how: 'background'};
+  }
+  async function pickAt(x, y){
+    const got = await colourAt(x, y);
+    if (got.how === 'image') {                           // snap a sampled pixel to the art's own flat colour
+      let best = null, bd = 41;
+      (RB.raster_pal || []).map(shown).forEach(c => { const d = cdist(c, got.hex); if (d < bd) { bd = d; best = c; } });
+      if (best) got.hex = best;
+    }
+    picked = got;
+    tab = 'colors';
+    if (!document.documentElement.classList.contains('rb-pan')) setPanel(true); else renderPanel();
+    const inp = panel.querySelector('input[data-rc][data-picked]');
+    if (inp) { try { inp.showPicker(); } catch (e) { inp.focus(); } }
+  }
+  function designColours(){                               // colours in use now, most used first
+    const acc = [];
+    const add = (hex, w) => { if (!hex || !(w > 0)) return; const e = acc.find(a => cdist(a[0], hex) <= 12); if (e) e[1] += w; else acc.push([hex, w]); };
+    for (const el of [document.body, ...document.body.querySelectorAll('*')]) {
+      if (/^(SCRIPT|STYLE|LINK|BR|IMG)$/.test(el.tagName) || editorUi(el) || (el.id && el.id.indexOf('rb-') === 0) || el.closest('#rb-free')) continue;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      const r = el.getBoundingClientRect(), area = r.width * r.height / 100;
+      let chars = 0;
+      for (const n of el.childNodes) if (n.nodeType === 3) chars += n.data.trim().length;
+      const c = rgbA(cs.color);
+      if (chars && c && c[3] > 0.3) add(hx(c), chars * parseFloat(cs.fontSize) / 4);
+      const bg = rgbA(cs.backgroundColor);
+      if (bg && bg[3] > 0.3) add(hx(bg), area);
+      if (el instanceof SVGElement) { const f = rgbA(cs.fill); if (f && f[3] > 0.3 && cs.fill !== 'none') add(hx(f), Math.max(1, area / 2)); }
+      ['Top', 'Left'].forEach(sd => { const w = parseFloat(cs['border' + sd + 'Width']) || 0, b = rgbA(cs['border' + sd + 'Color']);
+        if (w > 0 && b && b[3] > 0.3 && cs['border' + sd + 'Style'] !== 'none') add(hx(b), w * (sd === 'Top' ? r.width : r.height) / 10); });
+    }
+    (RB.raster_pal || []).forEach((c, i) => add(shown(c), 4000 / (i + 1)));
+    return acc.sort((a, b) => b[1] - a[1]).slice(0, 20).map(a => a[0]);
+  }
+  function colorsPanel(){
+    const how = {text: 'text', background: 'background', image: 'background art', shape: 'shape', line: 'line'};
+    let h = grp('Change a colour', picked
+      ? '<div class="pr"><label>Picked</label><div><input type="color" data-rc="' + esc(picked.hex) + '" data-picked="1" value="' + esc(picked.hex) + '" style="width:64px;height:34px">' +
+        '<span class="muted">' + esc(picked.hex) + ' · ' + (how[picked.how] || '') + '</span></div></div>' +
+        '<p class="muted">Choose the new colour — it replaces this colour everywhere in the design.</p>'
+      : '<p class="muted">Click any colour on the resume — text, the page or sidebar background, a header band, a heading box, a line or an icon — then choose its new colour. It changes everywhere that colour is used, in the editor and in the PDF.</p>');
+    h += grp('Colours in this design', '<div style="display:flex;flex-wrap:wrap;gap:6px">' +
+      designColours().map(c => '<input type="color" data-rc="' + esc(c) + '" value="' + esc(c) + '" title="' + esc(c) + ' — click to change">').join('') + '</div>');
+    h += grp('Changed colours', FD.recolor.length
+      ? FD.recolor.map((p, i) => '<div class="sec-row"><span><i style="display:inline-block;width:14px;height:14px;border:1px solid #475569;vertical-align:middle;background:' + esc(p[0]) + '"></i> ' + esc(p[0]) +
+          ' → <i style="display:inline-block;width:14px;height:14px;border:1px solid #475569;vertical-align:middle;background:' + esc(p[1]) + '"></i> ' + esc(p[1]) + '</span>' +
+          btn('data-act="rcdel" data-i="' + i + '"', '↺', 0, 'Back to the original colour') + '</div>').join('') +
+        '<div class="pr"><div>' + btn('data-act="rcclear" class="danger"', '↺ All original colours') + '</div></div>'
+      : '<p class="muted">None yet.</p>');
+    return h;
+  }
+  function rcInput(t){                                     // live, while the picker is open
+    if (!t.__pr) t.__pr = swapFor(t.dataset.rc.toLowerCase());
+    setSwap(t.__pr, t.value.toLowerCase());
+  }
+
   // ── pointer: select, move, resize, rotate, bend ────────────────────────────────────────────
   document.addEventListener('click', e => {
     if (mode === 'design' && !editorUi(e.target) && !editingShape) { e.preventDefault(); }
+    if (mode === 'color' && !editorUi(e.target)) { e.preventDefault(); e.stopPropagation(); pickAt(e.clientX, e.clientY); }
   }, true);
   document.addEventListener('pointerdown', e => {
     if (mode !== 'design' || e.button !== 0 || editingShape && e.target.closest('[contenteditable=true]')) return;
@@ -3699,10 +4038,10 @@ _EDITOR_JS = r"""
 
   function renderPanel(){
     if (!document.documentElement.classList.contains('rb-pan')) return;
-    const tabs = '<div class="tabs">' + [['sel', 'Selected'], ['page', 'Page & colours'], ['secs', 'Sections']]
+    const tabs = '<div class="tabs">' + [['sel', 'Selected'], ['colors', '🖌 Colours'], ['page', 'Page'], ['secs', 'Sections']]
       .map(([k, l]) => btn('data-tab="' + k + '"', l, tab === k)).join('') + '</div>';
     let body = '';
-    try { body = tab === 'page' ? pagePanel() : tab === 'secs' ? secPanel() : (sel ? (sel.kind === 'shape' ? shapePanel() : elPanel()) : emptyPanel()); }
+    try { body = tab === 'colors' ? colorsPanel() : tab === 'page' ? pagePanel() : tab === 'secs' ? secPanel() : (sel ? (sel.kind === 'shape' ? shapePanel() : elPanel()) : emptyPanel()); }
     catch (err) { body = grp('', '<p class="muted">Panel error: ' + esc(err) + '</p>'); }
     panel.innerHTML = tabs + body;
   }
@@ -3710,7 +4049,7 @@ _EDITOR_JS = r"""
     return grp('Design mode', '<p class="muted">Switch to <b>🎨 Design</b>, then click anything on the resume: a heading, a line of text, the photo, ' +
       'the header band, a column, an icon. Drag it to move it, pull the handles to resize or rotate, and style it here ' +
       '(font, size, colour, background, border, shape…).<br><br>Use <b>＋ Insert</b> to add lines, curved lines, arrows, shapes, text boxes, icons or images. ' +
-      'Drag a line\'s yellow dot to bend it.<br><br><b>Page &amp; colours</b> changes the whole palette, fonts, text size and layout. ' +
+      'Drag a line\'s yellow dot to bend it.<br><br><b>🖌 Colours</b> (or the 🖌 Colours mode) lets you click any colour on the resume and change it everywhere. <b>Page</b> changes the palette, fonts, text size and layout. ' +
       '<b>Sections</b> lets you reorder, move, hide, rename or add sections.</p>');
   }
   function elPanel(){
@@ -3910,6 +4249,7 @@ _EDITOR_JS = r"""
   panel.addEventListener('input', e => {
     const t = e.target;
     if (!t.dataset) return;
+    if (t.dataset.rc != null) { begin(); rcInput(t); return; }
     if (t.dataset.dset) { if (t.dataset.dset === 'sidebar_width') document.documentElement.style.setProperty('--sw', t.value + '%'); return; }
     if (t.type === 'text' || t.tagName === 'TEXTAREA' && !t.dataset.sp) return;
     begin(); applyCtl(t);
@@ -3917,6 +4257,13 @@ _EDITOR_JS = r"""
   panel.addEventListener('change', e => {
     const t = e.target;
     if (!t.dataset) return;
+    if (t.dataset.rc != null) {
+      begin(); rcInput(t); tx = false;
+      const pr = t.__pr;
+      if (picked && t.dataset.picked) picked.hex = t.value.toLowerCase();
+      rcDone(pr);
+      return;
+    }
     if (t.dataset.dset) {
       const v = t.type === 'checkbox' ? t.checked : t.dataset.dset === 'sidebar_width' ? +t.value : t.value;
       send({design_set: {[t.dataset.dset]: v}}, true);
@@ -3947,6 +4294,14 @@ _EDITOR_JS = r"""
     if (a === 'scope') { scope = d.v; renderPanel(); return; }
     if (a === 'parent') { const p = sel && sel.el && sel.el.parentElement; if (p && p !== document.documentElement) select(p); return; }
     if (a === 'dupel') { duplicate(null); return; }
+    if (a === 'rcdel' || a === 'rcclear') {
+      snap();
+      const gone = a === 'rcclear' ? FD.recolor.slice() : FD.recolor.splice(+d.i, 1);
+      if (a === 'rcclear') FD.recolor = [];
+      picked = null; F.recolor();
+      if (rcTouchesRaster(gone)) send({}, true); else { saveFree(); renderPanel(); }
+      return;
+    }
     snap();
     if (a === 'hide') removeSel();
     else if (a === 'reset') { if (scope === 'all') delete FD.groups[groupSel(sel.el)]; else delete FD.styles[sel.key]; F.buildCss(); F.applyStyles(); }
@@ -3975,10 +4330,11 @@ _EDITOR_JS = r"""
   const y = ss.get('rbScroll');
   if (y) { window.scrollTo(0, +y); ss.del('rbScroll'); }
   tab = ss.get('rbTab') || 'sel';
+  const tab0 = tab;
   const m0 = ss.get('rbMode'), pan0 = ss.get('rbPan'), sel0 = ss.get('rbSel');
   ['rbMode', 'rbTab', 'rbPan', 'rbSel'].forEach(k => ss.del(k));
-  setMode(m0 === 'design' ? 'design' : 'text');
-  if (pan0) setPanel(true);
+  setMode(m0 === 'design' || m0 === 'color' ? m0 : 'text');
+  if (pan0) { tab = tab0; setPanel(true); }
   if (sel0 && mode === 'design') {
     try { const o = JSON.parse(sel0);
       if (o.kind === 'shape' && shapeById(o.id)) select({kind: 'shape', id: o.id}, true);
@@ -3992,7 +4348,25 @@ _EDITOR_JS = r"""
 
 
 def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
-    tpl = "".join(f'<option value="{k}" title="{_e(v)}">{k.title()}</option>' for k, v in PRESET_BLURBS.items())
+    cur = _tpl_key(design)
+    store = state.get("tpl_designs") if isinstance(state.get("tpl_designs"), dict) else {}
+    own = [k for k in [cur] + list(store) if k not in PRESETS]
+    if not any(k.startswith("copy:") for k in own) and state.get("ref_image"):
+        ref_copy = _ref_copy_design(state)            # a copy made before templates kept their own designs
+        if ref_copy:
+            own.append(_tpl_key(ref_copy))
+    own = list(dict.fromkeys(k for k in own if k))
+    n_copy = sum(k.startswith("copy:") for k in own)
+    labels, i = {}, 0
+    for k in own:
+        if k.startswith("copy:"):
+            i += 1
+            labels[k] = "📷 Your copied design" + (f" {i}" if n_copy > 1 else "")
+        else:
+            labels[k] = "📷 Design from your image"
+    sel = lambda k: " selected" if k == cur else ""
+    tpl = ("".join(f'<option value="{_e(k)}"{sel(k)}>{_e(labels[k])}</option>' for k in own) +
+           "".join(f'<option value="{k}" title="{_e(v)}"{sel(k)}>{k.title()}</option>' for k, v in PRESET_BLURBS.items()))
     hidden = set(design.get("hidden_sections") or [])
     empty = [k for k in _ADDABLE if not content.get(k) or k in hidden]
     add = "".join(f'<option value="{k}">{_e(DEFAULT_TITLES[k])}</option>' for k in empty)
@@ -4010,12 +4384,13 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
     ins = "".join(f'<option value="{k}">{_e(v)}</option>' for k, v in shapes)
     return (f'<div id="rb-bar"><b>✏️ Resume editor</b>'
             f'<span class="seg"><button id="rb-mode-text" class="on" title="Type into the resume">✍️ Text</button>'
-            f'<button id="rb-mode-design" title="Select, move, resize, rotate and restyle anything">🎨 Design</button></span>'
+            f'<button id="rb-mode-design" title="Select, move, resize, rotate and restyle anything">🎨 Design</button>'
+            f'<button id="rb-mode-color" title="Click any colour on the resume and change it everywhere">🖌 Colours</button></span>'
             f'<select id="rb-insert" title="Add a line, shape, text box, icon or image"><option value="">＋ Insert…</option>{ins}</select>'
             f'<button id="rb-addtext" title="Add a text box in the same font, size and colour as the resume text">＋ Text box</button>'
             f'<button id="rb-undo" title="Undo (Ctrl+Z)">↶</button><button id="rb-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↷</button>'
             f'<button id="rb-panel-btn" title="Style panel: selection, colours, fonts, layout, sections">🎛 Panel</button>'
-            f'<select id="rb-tpl" title="Switch format"><option value="">Template…</option>{tpl}</select>'
+            f'<select id="rb-tpl" title="Switch template — each template keeps its own design changes"><option value="">Template…</option>{tpl}</select>'
             f'<input type="color" id="rb-color" value="{_e(design["colors"]["primary"])}" title="Main colour">'
             f'<select id="rb-add" title="Add a section"><option value="">＋ Add section…</option>{add}'
             f'<option value="__custom">✚ Your own section…</option></select>'
@@ -4079,6 +4454,7 @@ def editor_page() -> str:
         photo_uri = _data_uri(photo) if photo and os.path.exists(photo) else ""
         html = _render_html(content, design, photo_uri, float(st.get("render_scale") or 1.0), edit=True)
         data = json.dumps({"content": content, "rev": _state_rev(st), "photo": photo if photo_uri else "",
+                           "replica": bool(design.get("replica")), "raster_pal": _raster_palette(design),
                            **_editor_meta(content, design)}, ensure_ascii=False).replace("</", "<\\/")
         html = html.replace("</head>", _EDITOR_CSS + "</head>", 1)
         html = html.replace("</body>", _editor_toolbar(content, design, st) +
@@ -4152,7 +4528,7 @@ def _section_op(c: dict, d: dict, action: str, key: str) -> str:
             lst[a], lst[b] = lst[b], lst[a]
         elif action == "move":
             if wd["layout"] == "single_column":
-                return "This layout has one column — switch the layout in Page & colours first."
+                return "This layout has one column — switch the layout in the Page tab first."
             dst = "main" if name in ("side", "bottom") else "side"
             lst.remove(key)
             lists[dst].append(key)
@@ -4164,7 +4540,7 @@ def _section_op(c: dict, d: dict, action: str, key: str) -> str:
 
 
 def _design_set(d: dict, changes: dict) -> dict:
-    """Editor 'Page & colours' layout controls → validated design keys."""
+    """Editor 'Page' tab layout controls → validated design keys."""
     for k, v in (changes or {}).items():
         if k in _DESIGN_CHOICES and str(v) in _DESIGN_CHOICES[k]:
             d[k] = str(v)
@@ -4229,11 +4605,25 @@ def editor_save(payload: dict) -> dict:
             note = "Section added — click its first line to type."
         if isinstance(payload.get("sec_op"), dict):
             note = _section_op(content, design, str(payload["sec_op"].get("action") or ""), payload["sec_op"].get("key"))
-        tpl = str(payload.get("template") or "").lower()
-        if tpl in PRESETS:
-            keep = {k: design[k] for k in ("free", "hidden_sections") if design.get(k)}
-            design = _sanitize_design(json.loads(json.dumps(PRESETS[tpl])) | {"source": tpl}) | keep
-            note = f"Switched to the {tpl} format."
+        tpl = str(payload.get("template") or "").strip()
+        if tpl.lower() in PRESETS:
+            tpl = tpl.lower()
+        if tpl and tpl != _tpl_key(design):
+            saved = (st.get("tpl_designs") or {}).get(tpl)
+            new = (json.loads(json.dumps(saved["design"])) if saved else
+                   _sanitize_design(json.loads(json.dumps(PRESETS[tpl])) | {"source": tpl}) if tpl in PRESETS else
+                   _ref_copy_design(st) if tpl.startswith("copy:") else None)
+            if new and _tpl_key(new) == tpl:
+                st["design"] = design
+                _stash_design(st, new)
+                design = new
+                st["render_scale"] = float((saved or {}).get("render_scale") or 1.0)
+                note = ("Switched to your copied design." if tpl.startswith("copy:") else
+                        f"Switched to the {tpl} format." if tpl in PRESETS else "Switched design.")
+                if saved and (_free_of(new) or new.get("hidden_sections")):
+                    note += " Its own earlier changes are back."
+            else:
+                note = "That design isn't available any more."
         if isinstance(payload.get("design_set"), dict):
             design = _design_set(design, payload["design_set"])
             note = "Layout updated."
@@ -4472,6 +4862,15 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
                         replica_err = "it didn't look like a resume page"
                 except Exception as e:
                     replica_err = str(e)[:160]
+        if design is None and tpl_req and not image_path:      # a template used before comes back with its changes
+            tk = template.lower()
+            cur = state.get("design") or {}
+            saved = cur if _tpl_key(cur) == tk else ((state.get("tpl_designs") or {}).get(tk) or {}).get("design")
+            if saved:
+                design = json.loads(json.dumps(saved))
+                if color:
+                    design = _sanitize_design(_apply_color(design, color))
+                design_note = f"Using the **{tk}** format."
         if design is None:
             if image_path:
                 yield "🎨 Studying the design of your reference resume (layout, colours, header, sections)…\n\n"
@@ -4504,6 +4903,7 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         elif state.get("content") and (image_path or template or color or re.search(r"\b(again|same|my)\b", details.lower())):
             content = state["content"]
         if not content or not (content.get("name") or content.get("experience") or content.get("profile")):
+            _stash_design(state, design)
             state.update({"design": design, "awaiting_details": True, "awaiting_since": time.time(),
                           "ref_image": image_path or state.get("ref_image", ""), "photo": photo_path or state.get("photo", ""),
                           "reuse_photo": reuse_photo or state.get("reuse_photo", False)})
@@ -4528,6 +4928,7 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         stem = f"resume_{slug}_{int(time.time())}"
         files, content, fit_note = _fit_render(content, design, photo, stem, target)
 
+        _stash_design(state, design)
         state.update({"design": design, "content": content, "awaiting_details": False, "photo": photo, "target_pages": target,
                       "ref_image": ref_for_photo, "reuse_photo": False, "last_pdf": files["pdf"], "updated": time.time(),
                       "render_scale": files.get("scale", 1.0)})

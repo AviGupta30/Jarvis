@@ -18,11 +18,10 @@
 
 ## Relationships
 
-- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (3 shared connections)
-- [whatsapp_smart](whatsapp_smart.md) (2 shared connections)
-- [chat + llm](chat_+_llm.md) (2 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (4 shared connections)
+- [whatsapp_smart + tools](whatsapp_smart_+_tools.md) (2 shared connections)
+- [chat + youtube_control](chat_+_youtube_control.md) (2 shared connections)
 - [tools](tools.md) (2 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
 
 ## Source Files
 

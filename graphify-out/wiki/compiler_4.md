@@ -20,7 +20,7 @@
 ## Relationships
 
 - [compiler](compiler.md) (28 shared connections)
-- [resume_builder](resume_builder.md) (1 shared connections)
+- [resume_builder + integrate](resume_builder_+_integrate.md) (1 shared connections)
 
 ## Source Files
 

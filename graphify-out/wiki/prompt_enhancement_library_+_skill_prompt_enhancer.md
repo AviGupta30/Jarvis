@@ -29,12 +29,11 @@
 
 ## Relationships
 
-- [chat + chat-routing](chat_+_chat-routing.md) (4 shared connections)
+- [chat-routing + chat](chat-routing_+_chat.md) (4 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
 - [prompt_enhancer_button](prompt_enhancer_button.md) (2 shared connections)
-- [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (2 shared connections)
-- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
-- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (1 shared connections)
-- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [prompt_enhancer_button + prompt-enhancer](prompt_enhancer_button_+_prompt-enhancer.md) (2 shared connections)
+- [smart_navigator + ssml_processor](smart_navigator_+_ssml_processor.md) (1 shared connections)
 
 ## Source Files
 

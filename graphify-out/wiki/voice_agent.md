@@ -1,6 +1,6 @@
 # voice_agent
 
-> 39 nodes · cohesion 0.08
+> 38 nodes · cohesion 0.09
 
 ## Key Concepts
 
@@ -14,7 +14,6 @@
 - **extract_wake_word_command()** (5 connections) — `scripts/voice_agent.py`
 - **.run()** (5 connections) — `scripts/voice_agent.py`
 - **difflib** (4 connections)
-- **random** (4 connections)
 - **on_event()** (4 connections) — `scripts/voice_agent.py`
 - **say_text()** (4 connections) — `scripts/voice_agent.py`
 - **._ui_loop()** (4 connections) — `scripts/voice_agent.py`
@@ -29,22 +28,23 @@
 - **httpx** (2 connections)
 - **_is_wake_token()** (2 connections) — `scripts/voice_agent.py`
 - **run_voice_agent()** (2 connections) — `scripts/voice_agent.py`
-- *... and 14 more nodes in this community*
+- **._open_followup()** (2 connections) — `scripts/voice_agent.py`
+- *... and 13 more nodes in this community*
 
 ## Relationships
 
 - [voice_agent](voice_agent.md) (7 shared connections)
-- [voice + voice_agent](voice_+_voice_agent.md) (6 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (5 shared connections)
-- [benchmark + server](benchmark_+_server.md) (4 shared connections)
-- [voice](voice.md) (2 shared connections)
+- [voice + voice](voice_+_voice.md) (6 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (4 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (2 shared connections)
+- [message_reader + thread_extractor](message_reader_+_thread_extractor.md) (2 shared connections)
+- [safe_executor + refresh_docs](safe_executor_+_refresh_docs.md) (2 shared connections)
 - [main + screen_vision](main_+_screen_vision.md) (2 shared connections)
-- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (1 shared connections)
+- [ppt_studio](ppt_studio.md) (1 shared connections)
 - [exact_render](exact_render.md) (1 shared connections)
-- [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (1 shared connections)
-- [youtube_control](youtube_control.md) (1 shared connections)
-- [content_humanizer](content_humanizer.md) (1 shared connections)
-- [youtube_player](youtube_player.md) (1 shared connections)
+- [spotify_service](spotify_service.md) (1 shared connections)
+- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (1 shared connections)
+- [assignment_humanizer + task_ledger](assignment_humanizer_+_task_ledger.md) (1 shared connections)
 
 ## Source Files
 
@@ -52,7 +52,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 95 (95%)
+- EXTRACTED: 92 (95%)
 - INFERRED: 5 (5%)
 - AMBIGUOUS: 0 (0%)
 

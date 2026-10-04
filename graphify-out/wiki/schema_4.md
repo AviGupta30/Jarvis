@@ -1,17 +1,15 @@
 # schema
 
-> 4 nodes · cohesion 0.50
+> 2 nodes · cohesion 1.00
 
 ## Key Concepts
 
-- **make_image_node()** (3 connections) — `app/services/resume_replica/schema.py`
-- **make_size()** (3 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete IMAGE node.** (1 connections) — `app/services/resume_replica/schema.py`
-- **Returns size dict, only including non-None values.** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_commands_geometry()** (2 connections) — `app/services/resume_replica/schema.py`
+- **Returns a PATH_GEOMETRY with type='commands'. commands: list of ["M",x,y],…** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 
-- [schema](schema.md) (2 shared connections)
+- [schema](schema.md) (1 shared connections)
 
 ## Source Files
 
@@ -19,7 +17,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 5 (100%)
+- EXTRACTED: 2 (100%)
 - INFERRED: 0 (0%)
 - AMBIGUOUS: 0 (0%)
 

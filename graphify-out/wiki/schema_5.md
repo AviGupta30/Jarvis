@@ -4,8 +4,8 @@
 
 ## Key Concepts
 
-- **make_group_node()** (2 connections) — `app/services/resume_replica/schema.py`
-- **Returns a complete GROUP node.** (1 connections) — `app/services/resume_replica/schema.py`
+- **make_radial_fill()** (2 connections) — `app/services/resume_replica/schema.py`
+- **Returns {"type": "gradient_radial", "cx_pct": ..., "cy_pct": ..., "stops":…** (1 connections) — `app/services/resume_replica/schema.py`
 
 ## Relationships
 

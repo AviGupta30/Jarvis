@@ -1,0 +1,899 @@
+{
+ "v": 5,
+ "sha1": "bb6ec1e85d093d8d85079aba6f11466645ee3eaa",
+ "source": "Screenshot_2026-10-04_130729_1791099470.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_130729_1791099470.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 293.7,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\plate2.png",
+  "src_dpi": 82.6,
+  "partial": false,
+  "letter": false,
+  "ornaments": []
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 21.0,
+   "family": "Amiri",
+   "weight": 700,
+   "size": 9.285,
+   "ls": -0.0166,
+   "color": "#000000",
+   "upper": true,
+   "asc": 1.12,
+   "desc": 0.63,
+   "ink_asc": 0.66,
+   "n": 1,
+   "pitch": 12.256
+  },
+  "hcontact": {
+   "ref_contrast": 13.52,
+   "family": "STIX Two Text",
+   "weight": 400,
+   "size": 3.524,
+   "ls": 0.0,
+   "color": "#2f2f2f",
+   "upper": false,
+   "asc": 0.76,
+   "desc": 0.24,
+   "ink_asc": 0.715,
+   "n": 2,
+   "pitch": 4.317
+  },
+  "head0": {
+   "ref_contrast": 17.99,
+   "family": "STIX Two Text",
+   "weight": 500,
+   "size": 4.232,
+   "ls": 0.0259,
+   "color": "#09090a",
+   "upper": true,
+   "asc": 0.76,
+   "desc": 0.24,
+   "ink_asc": 0.67,
+   "n": 6,
+   "pitch": 5.586
+  },
+  "item_title0": {
+   "ref_contrast": 16.12,
+   "family": "Kaisei Decol",
+   "weight": 700,
+   "size": 2.839,
+   "ls": 0.0,
+   "color": "#191919",
+   "upper": false,
+   "asc": 1.16,
+   "desc": 0.29,
+   "ink_asc": 0.81,
+   "n": 2,
+   "pitch": 3.747
+  },
+  "body0": {
+   "ref_contrast": 11.15,
+   "family": "Kaisei Decol",
+   "weight": 400,
+   "size": 2.876,
+   "ls": 0.0,
+   "color": "#393939",
+   "upper": false,
+   "asc": 1.16,
+   "desc": 0.29,
+   "ink_asc": 0.78,
+   "n": 34,
+   "pitch": 4.317
+  },
+  "meta_left0": {
+   "ref_contrast": 13.25,
+   "family": "Amiri",
+   "weight": 700,
+   "size": 3.769,
+   "ls": -0.085,
+   "color": "#0e0e0e",
+   "upper": false,
+   "asc": 1.12,
+   "desc": 0.63,
+   "ink_asc": 0.63,
+   "n": 3,
+   "pitch": 5.333
+  },
+  "list0": {
+   "ref_contrast": 13.06,
+   "family": "Amiri",
+   "weight": 400,
+   "size": 3.509,
+   "ls": 0.0,
+   "color": "#2d2d2d",
+   "upper": false,
+   "asc": 1.12,
+   "desc": 0.63,
+   "ink_asc": 0.71,
+   "n": 10,
+   "pitch": 4.317
+  }
+ },
+ "created": 1791099685.332544,
+ "fonts": {
+  "Amiri": [
+   400,
+   700
+  ],
+  "STIX Two Text": [
+   400,
+   500
+  ],
+  "Kaisei Decol": [
+   400,
+   700
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 33.01,
+    "y": 10.54,
+    "x1": 79.35,
+    "y1": 16.76,
+    "key": "name",
+    "text": "AVI GUPTA",
+    "fs": 9.285,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "hcontact": [
+  {
+   "x": 32.88,
+   "y": 20.31,
+   "x1": 93.07,
+   "y1": 22.85,
+   "key": "hcontact",
+   "text": "avi40973@gmail.com | +91 82877 57838",
+   "fs": 3.348,
+   "room": null,
+   "bg": "#ffffff",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "email"
+  },
+  {
+   "x": 32.88,
+   "y": 24.63,
+   "x1": 92.81,
+   "y1": 27.04,
+   "key": "hcontact",
+   "text": "LinkedIn | Portfolio Website | GitHub",
+   "fs": 3.699,
+   "room": null,
+   "bg": "#ffffff",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "linkedin"
+  }
+ ],
+ "columns": [
+  {
+   "x0": 9.52,
+   "x1": 201.24,
+   "top": 32.38,
+   "bottom": 244.79,
+   "text_x": 15.24,
+   "sections": [
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.79,
+      33.14,
+      35.93,
+      36.06
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_education_0_255.png",
+      "box": [
+       7.36,
+       32.12,
+       202.89,
+       37.2
+      ],
+      "text": [
+       3.43,
+       1.02,
+       28.57,
+       3.94
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 32.12,
+     "head_bottom": 37.2,
+     "tokens": {
+      "head_first": 2.16,
+      "item_gap": 0.19,
+      "head_body": 4.82,
+      "wrap": 0.065
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 31.87,
+       "x1": 59.04,
+       "y": 39.36,
+       "lead": false,
+       "text": "Degree/Certificate"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 181.56,
+       "x1": 195.15,
+       "y": 39.36,
+       "lead": false,
+       "text": "CGPA/%"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 112.74,
+       "x1": 125.06,
+       "y": 39.74,
+       "lead": false,
+       "text": "Institute"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 12.06,
+       "x1": 27.3,
+       "y": 44.56,
+       "lead": false,
+       "text": "2024-2028"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 63.74,
+       "x1": 135.34,
+       "y": 44.56,
+       "lead": false,
+       "text": "Delhi Technological University (DTU), New Delhi"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 32.0,
+       "x1": 51.55,
+       "y": 44.69,
+       "lead": false,
+       "text": "B.Tech (ECE)"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 179.15,
+       "x1": 197.94,
+       "y": 44.69,
+       "lead": false,
+       "text": "CGPA: 8.139"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 32.25,
+       "x1": 37.84,
+       "y": 49.77,
+       "lead": false,
+       "text": "12th"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 178.51,
+       "x1": 198.19,
+       "y": 49.77,
+       "lead": false,
+       "text": "CGPA: 97.2%"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 16.25,
+       "x1": 23.11,
+       "y": 49.9,
+       "lead": false,
+       "text": "2024"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 63.74,
+       "x1": 109.44,
+       "y": 49.9,
+       "lead": false,
+       "text": "Nehru World School, Ghaziabad"
+      },
+      {
+       "role": "meta_left",
+       "key": "meta_left0",
+       "x": 16.25,
+       "x1": 22.98,
+       "y": 55.1,
+       "lead": false,
+       "text": "2022"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 32.25,
+       "x1": 37.84,
+       "y": 55.1,
+       "lead": false,
+       "text": "10th"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 63.61,
+       "x1": 109.44,
+       "y": 55.1,
+       "lead": false,
+       "text": "Nehru World School, Ghaziabad"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 178.51,
+       "x1": 198.19,
+       "y": 55.1,
+       "lead": false,
+       "text": "CGPA: 93.4%"
+      }
+     ]
+    },
+    {
+     "key": "profile",
+     "title": "SUMMARY",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.67,
+      61.7,
+      32.88,
+      64.63
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_profile_0_480.png",
+      "box": [
+       7.36,
+       61.07,
+       202.89,
+       66.15
+      ],
+      "text": [
+       3.3,
+       0.63,
+       25.52,
+       3.56
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 61.07,
+     "head_bottom": 66.15,
+     "tokens": {
+      "head_first": 0.89,
+      "wrap": 4.32,
+      "sec_gap": 5.97,
+      "prev_key": "body0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.03,
+       "x1": 200.73,
+       "y": 67.04,
+       "lead": false,
+       "text": "Highly motivated and skilled individual with experience in d"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.03,
+       "x1": 111.09,
+       "y": 71.35,
+       "lead": false,
+       "text": "Proficient in a range of programming languages, frameworks, "
+      }
+     ]
+    },
+    {
+     "key": "projects",
+     "title": "PROJECTS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.79,
+      77.07,
+      32.5,
+      80.24
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_projects_0_601.png",
+      "box": [
+       7.36,
+       76.31,
+       202.89,
+       81.64
+      ],
+      "text": [
+       3.43,
+       0.76,
+       25.14,
+       3.94
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 76.31,
+     "head_bottom": 81.64,
+     "tokens": {
+      "head_first": 0.51,
+      "new_item": 4.32,
+      "wrap": 4.32,
+      "sec_gap": 4.96,
+      "prev_key": "body0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\lead_projects_0_35.png",
+      "w": 1.52,
+      "h": 1.52,
+      "dx": 3.31,
+      "dy": 0.51,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 9.78,
+       "x1": 169.5,
+       "y": 82.15,
+       "lead": false,
+       "text": "SmartFlex -- AI-Powered Smart Classroom System | React.js, F"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.73,
+       "y": 86.84,
+       "lead": true,
+       "text": "Developed a full-stack campus management application to auto"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 93.07,
+       "y": 91.03,
+       "lead": false,
+       "text": "Up position at the DTU Campus Innovation Challenge."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.73,
+       "y": 95.35,
+       "lead": true,
+       "text": "Implemented advanced constraint optimization algorithms util"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 116.68,
+       "y": 99.67,
+       "lead": false,
+       "text": "free timetables across multiple faculty, semester, and resou"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 199.33,
+       "y": 103.73,
+       "lead": true,
+       "text": "Designed modular RESTful APIs with FastAPI to support distin"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 9.9,
+       "x1": 164.93,
+       "y": 109.44,
+       "lead": false,
+       "text": "LeetCode Rating Predictor Engine | React, FastAPI, XGBoost, "
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.6,
+       "y": 114.14,
+       "lead": true,
+       "text": "Engineered a production-grade full-stack platform using Fast"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 68.69,
+       "y": 118.08,
+       "lead": false,
+       "text": "users with a high accuracy of 7 MAE."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.73,
+       "y": 122.39,
+       "lead": true,
+       "text": "Developed a hybrid mathematical engine integrating Elo-MMR p"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 100.3,
+       "y": 126.71,
+       "lead": false,
+       "text": "predict non-linear edge cases and expected rank estimations."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.86,
+       "y": 131.15,
+       "lead": true,
+       "text": "Architected an automated, asynchronous data pipeline for con"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 63.61,
+       "y": 135.09,
+       "lead": false,
+       "text": "leakage via chronological locking."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 193.24,
+       "y": 139.41,
+       "lead": true,
+       "text": "Designed a highly responsive UI featuring virtualized leader"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 9.9,
+       "x1": 165.69,
+       "y": 144.87,
+       "lead": false,
+       "text": "Advanced Dark Image Enhancement | Image Processing, CLAHE, D"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 65.13,
+       "y": 153.88,
+       "lead": false,
+       "text": "threshold for optimal enhancement."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.36,
+       "x1": 200.73,
+       "y": 158.07,
+       "lead": true,
+       "text": "Implemented Pipeline A for standard dark images utilizing BG"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 93.45,
+       "y": 162.39,
+       "lead": false,
+       "text": "Equalization (CLAHE) for rapid contrast improvement."
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.86,
+       "y": 166.7,
+       "lead": true,
+       "text": "Designed a complex Pipeline B for ultra-dark images featurin"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 154.26,
+       "y": 170.77,
+       "lead": false,
+       "text": "Restoration (MSRCR) and Discrete Wavelet Transform (DWT) fre"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 200.73,
+       "y": 175.08,
+       "lead": true,
+       "text": "Integrated advanced post-processing techniques including sta"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 15.24,
+       "x1": 105.76,
+       "y": 179.4,
+       "lead": false,
+       "text": "uration boosting to preserve sharp details and prevent color"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.67,
+      185.37,
+      25.77,
+      188.29
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_skills_0_1452.png",
+      "box": [
+       7.36,
+       184.48,
+       202.89,
+       189.81
+      ],
+      "text": [
+       3.3,
+       0.89,
+       18.41,
+       3.81
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 184.48,
+     "head_bottom": 189.81,
+     "tokens": {
+      "head_first": 0.89,
+      "wrap": 4.32,
+      "sec_gap": 5.08,
+      "prev_key": "body0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 9.9,
+       "x1": 85.57,
+       "y": 190.7,
+       "lead": false,
+       "text": "Languages: Python, Java, JavaScript, C, HTML/CSS"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 9.9,
+       "x1": 158.96,
+       "y": 195.02,
+       "lead": false,
+       "text": "Frameworks & Tools: FastAPI, React.js, WebAssembly (WASM), G"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 9.9,
+       "x1": 91.16,
+       "y": 198.95,
+       "lead": false,
+       "text": "Databases: PostgreSQL (Supabase), MySQL, MongoDB"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 9.9,
+       "x1": 200.73,
+       "y": 203.27,
+       "lead": false,
+       "text": "Concepts: Data Structures & Algorithms (DSA), System Design,"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 9.9,
+       "x1": 48.63,
+       "y": 207.59,
+       "lead": false,
+       "text": "tion, XGBoost, REST APIs"
+      }
+     ]
+    },
+    {
+     "key": "achievements",
+     "title": "ACHIEVEMENTS & PROBLEM SOLVING",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.67,
+      213.3,
+      92.18,
+      216.22
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_achievements_0_1676.png",
+      "box": [
+       7.36,
+       212.41,
+       202.89,
+       217.74
+      ],
+      "text": [
+       3.3,
+       0.89,
+       84.81,
+       3.81
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 212.41,
+     "head_bottom": 217.74,
+     "tokens": {
+      "head_first": 0.89,
+      "new_item": 3.9349999999999996,
+      "wrap": 4.82,
+      "sec_gap": 4.82,
+      "prev_key": "list0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\lead_achievements_0_54.png",
+      "w": 1.52,
+      "h": 1.27,
+      "dx": 3.31,
+      "dy": 0.63,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 15.24,
+       "x1": 178.39,
+       "y": 218.63,
+       "lead": true,
+       "text": "Secured 1st Runner Up (2nd Place) in the Campus Innovation C"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 15.24,
+       "x1": 200.86,
+       "y": 222.7,
+       "lead": true,
+       "text": "Solved 300+ problems on LeetCode, demonstrating strong algor"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 15.24,
+       "x1": 29.58,
+       "y": 227.52,
+       "lead": false,
+       "text": "structures."
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 15.24,
+       "x1": 126.46,
+       "y": 231.33,
+       "lead": true,
+       "text": "Secured 99.05 percentile with an All India Rank of 15057 in "
+      }
+     ]
+    },
+    {
+     "key": "certifications",
+     "title": "COURSES AND CERTIFICATIONS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.79,
+      236.92,
+      78.21,
+      239.84
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\head_certifications_0_1860.png",
+      "box": [
+       7.36,
+       236.28,
+       202.89,
+       241.36
+      ],
+      "text": [
+       3.43,
+       0.63,
+       70.85,
+       3.56
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 236.28,
+     "head_bottom": 241.36,
+     "tokens": {
+      "head_first": 1.02,
+      "sec_gap": 4.95,
+      "prev_key": "list0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\bb6ec1e85d093d8d\\crops\\lead_certifications_0_58.png",
+      "w": 1.52,
+      "h": 1.52,
+      "dx": 3.31,
+      "dy": 0.5,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 15.24,
+       "x1": 200.73,
+       "y": 242.38,
+       "lead": true,
+       "text": "DSA with Java (Alpha): Apna College | Full Stack Web Develop"
+      }
+     ]
+    }
+   ],
+   "bullet_x": 11.93,
+   "bullet_text_x": 15.24
+  }
+ ],
+ "analysis_s": 210.9
+}

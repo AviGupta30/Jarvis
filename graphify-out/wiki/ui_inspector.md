@@ -28,7 +28,7 @@
 ## Relationships
 
 - [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
+- [tools + ui_inspector](tools_+_ui_inspector.md) (1 shared connections)
 
 ## Source Files
 

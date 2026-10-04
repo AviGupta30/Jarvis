@@ -21,8 +21,8 @@
 ## Relationships
 
 - [pipeline](pipeline.md) (3 shared connections)
-- [benchmark + server](benchmark_+_server.md) (1 shared connections)
-- [dark_enhancement + dark_video_enhancement](dark_enhancement_+_dark_video_enhancement.md) (1 shared connections)
+- [social_content_manager + content-tools](social_content_manager_+_content-tools.md) (1 shared connections)
+- [fontmatch + fonts](fontmatch_+_fonts.md) (1 shared connections)
 - [measure](measure.md) (1 shared connections)
 - [plate](plate.md) (1 shared connections)
 

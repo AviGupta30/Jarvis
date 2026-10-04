@@ -10,7 +10,7 @@
 
 ## Relationships
 
-- [repair + renderer](repair_+_renderer.md) (1 shared connections)
+- [repair](repair.md) (1 shared connections)
 - [compiler](compiler.md) (1 shared connections)
 
 ## Source Files
