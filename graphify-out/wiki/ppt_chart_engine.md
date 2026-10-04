@@ -18,8 +18,8 @@
 - **_render_timeline()** (7 connections) — `app/services/ppt_chart_engine.py`
 - **_hex()** (6 connections) — `app/services/ppt_chart_engine.py`
 - **_render_pie()** (5 connections) — `app/services/ppt_chart_engine.py`
+- **math** (5 connections)
 - **_metrics_to_bar()** (4 connections) — `app/services/ppt_chart_engine.py`
-- **math** (4 connections)
 - **_extract_strict_metric()** (3 connections) — `app/services/ppt_chart_engine.py`
 - **ppt_chart_engine.py — Dynamic Data-Visualization Engine for JARVIS PPT…** (1 connections) — `app/services/ppt_chart_engine.py`
 - **Horizontal or vertical bar chart.** (1 connections) — `app/services/ppt_chart_engine.py`
@@ -34,12 +34,13 @@
 ## Relationships
 
 - [ppt_chart_engine](ppt_chart_engine.md) (2 shared connections)
-- [persistence + engine](persistence_+_engine.md) (1 shared connections)
-- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
+- [safe_executor](safe_executor.md) (1 shared connections)
+- [dark_enhancement + dark_video_enhancement](dark_enhancement_+_dark_video_enhancement.md) (1 shared connections)
+- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
 - [ppt_designer](ppt_designer.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
-- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
+- [compiler](compiler.md) (1 shared connections)
+- [jarvis_overlay](jarvis_overlay.md) (1 shared connections)
 
 ## Source Files
 
@@ -47,7 +48,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 77 (92%)
+- EXTRACTED: 78 (92%)
 - INFERRED: 7 (8%)
 - AMBIGUOUS: 0 (0%)
 

@@ -1,43 +1,48 @@
 # main + screen_vision
 
-> 9 nodes · cohesion 0.25
+> 14 nodes · cohesion 0.18
 
 ## Key Concepts
 
-- **Entry points** (10 connections) — `docs/features/screen-vision.md`
+- **main.py** (27 connections) — `app/main.py`
 - **startup_event()** (8 connections) — `app/main.py`
 - **start_background_watcher()** (6 connections) — `app/services/screen_vision.py`
-- **dump_app_ui_tree()** (6 connections) — `app/services/tools.py`
+- **shutdown_event()** (5 connections) — `app/main.py`
+- **stop_background_watcher()** (4 connections) — `app/services/screen_vision.py`
 - **_on_screen_alert()** (3 connections) — `app/main.py`
+- **shutil** (3 connections)
+- **Stop watcher, acoustic tripwire, and close DB pool cleanly on server shutdown.** (1 connections) — `app/main.py`
 - **Callback fired by the background watcher when something notable is detected.…** (1 connections) — `app/main.py`
 - **Start background screen watcher and RAG memory system when the server boots.** (1 connections) — `app/main.py`
 - **Start the passive background screen watcher. Args: callback: Function called…** (1 connections) — `app/services/screen_vision.py`
-- **Dump the full Windows UI Automation accessibility tree of an app window. Use…** (1 connections) — `app/services/tools.py`
+- **Stop the background screen watcher thread cleanly.** (1 connections) — `app/services/screen_vision.py`
+- **fastapi_middleware_cors** (1 connections)
+- **fastapi_staticfiles** (1 connections)
 
 ## Relationships
 
-- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (4 shared connections)
-- [main](main.md) (3 shared connections)
-- [tools + ui_inspector](tools_+_ui_inspector.md) (3 shared connections)
-- [safe_executor + ui_inspector](safe_executor_+_ui_inspector.md) (2 shared connections)
-- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (2 shared connections)
-- [mysql_db + rag_memory](mysql_db_+_rag_memory.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [memory + rag_memory](memory_+_rag_memory.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
-- [ui_inspector](ui_inspector.md) (1 shared connections)
+- [main](main.md) (8 shared connections)
+- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (5 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (3 shared connections)
+- [benchmark + server](benchmark_+_server.md) (2 shared connections)
+- [resume_router](resume_router.md) (2 shared connections)
+- [voice_agent](voice_agent.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
+- [memory + CLAUDE](memory_+_CLAUDE.md) (1 shared connections)
+- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
+- [ppt_router](ppt_router.md) (1 shared connections)
+- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (1 shared connections)
 
 ## Source Files
 
 - `app/main.py`
 - `app/services/screen_vision.py`
-- `app/services/tools.py`
-- `docs/features/screen-vision.md`
 
 ## Audit Trail
 
-- EXTRACTED: 13 (46%)
-- INFERRED: 15 (54%)
+- EXTRACTED: 42 (89%)
+- INFERRED: 5 (11%)
 - AMBIGUOUS: 0 (0%)
 
 ---

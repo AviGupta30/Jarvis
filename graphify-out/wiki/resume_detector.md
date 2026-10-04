@@ -23,9 +23,9 @@
 ## Relationships
 
 - [chat + llm](chat_+_llm.md) (3 shared connections)
-- [task_ledger + test_task_resumption](task_ledger_+_test_task_resumption.md) (2 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
-- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
+- [task_ledger](task_ledger.md) (2 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [chat + chat-routing](chat_+_chat-routing.md) (1 shared connections)
 
 ## Source Files
 

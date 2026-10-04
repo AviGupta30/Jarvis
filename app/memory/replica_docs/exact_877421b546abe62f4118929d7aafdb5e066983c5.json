@@ -1,0 +1,745 @@
+{
+ "v": 4,
+ "sha1": "877421b546abe62f4118929d7aafdb5e066983c5",
+ "source": "Screenshot_2026-10-03_113601_1791007578.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-03_113601_1791007578.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 297.0,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\877421b546abe62f\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\877421b546abe62f\\plate2.png",
+  "src_dpi": 48.7,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 7.22,
+   "family": "Poppins",
+   "weight": 800,
+   "size": 17.566,
+   "ls": -0.0006,
+   "color": "#585755",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 23.187
+  },
+  "title": {
+   "ref_contrast": 5.1,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 8.817,
+   "ls": 0.1213,
+   "color": "#6e6e6d",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 11.638
+  },
+  "head0": {
+   "ref_contrast": 5.45,
+   "family": "Poppins",
+   "weight": 700,
+   "size": 7.131,
+   "ls": 0.0104,
+   "color": "#f9f9f9",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 9.413
+  },
+  "head1": {
+   "ref_contrast": 6.91,
+   "family": "Poppins",
+   "weight": 700,
+   "size": 7.759,
+   "ls": 0.0093,
+   "color": "#5a5a58",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 10.242
+  },
+  "contact0": {
+   "ref_contrast": 4.26,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 4.797,
+   "ls": 0.0,
+   "color": "#dddddd",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.75,
+   "n": 6,
+   "pitch": 7.11
+  },
+  "body1": {
+   "ref_contrast": 3.23,
+   "family": "Radio Canada",
+   "weight": 400,
+   "size": 2.836,
+   "ls": 0.0,
+   "color": "#8e8e8e",
+   "upper": false,
+   "asc": 0.95,
+   "desc": 0.26,
+   "ink_asc": 0.74,
+   "n": 13,
+   "pitch": 5.333
+  },
+  "item_title1": {
+   "ref_contrast": 2.77,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 4.069,
+   "ls": 0.0,
+   "color": "#7e7e7e",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.74,
+   "n": 7,
+   "pitch": 6.348
+  },
+  "list0": {
+   "ref_contrast": 3.36,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 3.959,
+   "ls": 0.0,
+   "color": "#c6c6c6",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.76,
+   "n": 10,
+   "pitch": 6.348
+  },
+  "meta_right1": {
+   "ref_contrast": 2.28,
+   "family": "Dosis",
+   "weight": 700,
+   "size": 5.978,
+   "ls": 0.0,
+   "color": "#8d8d8d",
+   "upper": false,
+   "asc": 1.03,
+   "desc": 0.24,
+   "ink_asc": 0.76,
+   "n": 1,
+   "pitch": 7.891
+  },
+  "sub1": {
+   "ref_contrast": 2.66,
+   "family": "Dosis",
+   "weight": 400,
+   "size": 3.011,
+   "ls": 0.0,
+   "color": "#909090",
+   "upper": false,
+   "asc": 1.03,
+   "desc": 0.24,
+   "ink_asc": 0.77,
+   "n": 2,
+   "pitch": 3.975
+  }
+ },
+ "created": 1791091949.7733514,
+ "fonts": {
+  "Poppins": [
+   400,
+   700,
+   800
+  ],
+  "Radio Canada": [
+   400
+  ],
+  "Dosis": [
+   400,
+   700
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 75.42,
+    "y": 31.61,
+    "x1": 189.43,
+    "y1": 44.44,
+    "key": "name",
+    "text": "CHIAKI SATO",
+    "fs": 17.566,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 75.42,
+    "y": 49.39,
+    "x1": 172.42,
+    "y1": 55.74,
+    "key": "title",
+    "text": "GRAPHIC DESIGNER",
+    "fs": 8.817,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   0.0,
+   14.09,
+   61.96,
+   81.13
+  ],
+  "radius": 1.3,
+  "circle": false
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 3.68,
+   "x1": 54.47,
+   "top": 91.8,
+   "bottom": 267.39,
+   "text_x": 4.44,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "MY CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      4.7,
+      92.05,
+      53.33,
+      97.26
+     ],
+     "top": 92.05,
+     "head_bottom": 97.26,
+     "tokens": {
+      "head_first": 8.88,
+      "wrap": 7.49
+     },
+     "contact_labels": {
+      "key": "contact0",
+      "texts": [
+       "Phone",
+       "Email",
+       "Address"
+      ]
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.57,
+       "x1": 21.84,
+       "y": 106.14,
+       "lead": false,
+       "text": "Phone"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.95,
+       "x1": 34.28,
+       "y": 113.63,
+       "lead": false,
+       "text": "123-456-7890"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.57,
+       "x1": 19.81,
+       "y": 120.87,
+       "lead": false,
+       "text": "Email"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.57,
+       "x1": 55.74,
+       "y": 130.14,
+       "lead": false,
+       "text": "hello@recllygroatsite.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.57,
+       "x1": 27.55,
+       "y": 137.12,
+       "lead": false,
+       "text": "Address"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 4.44,
+       "x1": 54.21,
+       "y": 145.88,
+       "lead": false,
+       "text": "123 Anywhere St,Any City"
+      }
+     ]
+    },
+    {
+     "key": "competencies",
+     "title": "EXPERTISE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      4.7,
+      162.26,
+      41.14,
+      167.59
+     ],
+     "top": 162.26,
+     "head_bottom": 167.59,
+     "tokens": {
+      "head_first": 9.78,
+      "new_item": 7.62,
+      "sec_gap": 16.38,
+      "prev_key": "contact0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\877421b546abe62f\\crops\\lead_competencies_0_26.png",
+      "w": 2.03,
+      "h": 2.03,
+      "dx": 5.08,
+      "dy": 0.64,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.05,
+       "x1": 37.07,
+       "y": 177.37,
+       "lead": true,
+       "text": "Visuol deaign"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.17,
+       "x1": 31.36,
+       "y": 185.11,
+       "lead": true,
+       "text": "llustration"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.17,
+       "x1": 29.84,
+       "y": 192.73,
+       "lead": true,
+       "text": "Digital art"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.92,
+       "x1": 34.41,
+       "y": 200.35,
+       "lead": true,
+       "text": "Web design"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.17,
+       "x1": 40.63,
+       "y": 207.97,
+       "lead": true,
+       "text": "Product design"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.92,
+       "x1": 25.27,
+       "y": 215.84,
+       "lead": true,
+       "text": "caing"
+      }
+     ]
+    },
+    {
+     "key": "references",
+     "title": "REFERENCES",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      4.7,
+      230.19,
+      48.5,
+      235.39
+     ],
+     "top": 230.19,
+     "head_bottom": 235.39,
+     "tokens": {
+      "head_first": 9.53,
+      "wrap": 6.35,
+      "sec_gap": 14.35,
+      "prev_key": "list0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 4.44,
+       "x1": 33.01,
+       "y": 244.92,
+       "lead": false,
+       "text": "Olivia Wilson"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 4.44,
+       "x1": 45.33,
+       "y": 251.26,
+       "lead": false,
+       "text": "Creative Director at E"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 4.44,
+       "x1": 16.89,
+       "y": 259.01,
+       "lead": false,
+       "text": "Phone"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 4.7,
+       "x1": 30.73,
+       "y": 264.72,
+       "lead": false,
+       "text": "+3-46-7890"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 74.15,
+   "x1": 200.48,
+   "top": 92.05,
+   "bottom": 292.27,
+   "text_x": 75.04,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "ABOUT MYSELF",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      75.42,
+      92.18,
+      132.81,
+      97.64
+     ],
+     "top": 92.18,
+     "head_bottom": 97.64,
+     "tokens": {
+      "head_first": 10.53,
+      "wrap": 5.33
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.16,
+       "x1": 200.1,
+       "y": 108.17,
+       "lead": false,
+       "text": "Lorem ipsum dolor sit amet, consectetur adipisaing elit, sed"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 200.22,
+       "y": 113.51,
+       "lead": false,
+       "text": "eiusmod tempor incididunt ut labore et doore magna aliqua.ut"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 200.1,
+       "y": 119.09,
+       "lead": false,
+       "text": "enim ad minim veniam quis nostrud exercitation ulamco labori"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.29,
+       "x1": 155.02,
+       "y": 124.43,
+       "lead": false,
+       "text": "nisi ut aliquip cx oa commodo oonsoquat."
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "EXPERIENCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      75.54,
+      139.79,
+      121.0,
+      145.37
+     ],
+     "top": 139.79,
+     "head_bottom": 145.37,
+     "tokens": {
+      "head_first": 10.67,
+      "head_body": 5.97,
+      "wrap": 5.46,
+      "item_gap": 10.03,
+      "sec_gap": 15.36,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.16,
+       "x1": 115.28,
+       "y": 156.04,
+       "lead": false,
+       "text": "Borcellc I2013 - 2019"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 108.3,
+       "y": 162.01,
+       "lead": false,
+       "text": "Graphic Designer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.16,
+       "x1": 199.84,
+       "y": 170.01,
+       "lead": false,
+       "text": "Lorem ipsum dolor sit amet consectetur adipiscing elit sed d"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 199.72,
+       "y": 175.34,
+       "lead": false,
+       "text": "eiusmod tempor incidicunt ut kabore et doloremagna aliqua ut"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 199.59,
+       "y": 180.67,
+       "lead": false,
+       "text": "enim ad minim veniam,quis nostrud exercitation ullamco labor"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.16,
+       "x1": 136.36,
+       "y": 190.7,
+       "lead": false,
+       "text": "Ingoude Company 12005-2011"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.29,
+       "x1": 122.39,
+       "y": 196.67,
+       "lead": false,
+       "text": "Digital Marketing Adviaor"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.16,
+       "x1": 199.97,
+       "y": 204.92,
+       "lead": false,
+       "text": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 199.72,
+       "y": 210.0,
+       "lead": false,
+       "text": "eiusmod tempor incididunt ut labore et dolore magna aliqua u"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.04,
+       "x1": 199.46,
+       "y": 215.59,
+       "lead": false,
+       "text": "enim ad minim veniam,quis nostrud exercitation ullamco labor"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      75.54,
+      230.31,
+      120.36,
+      236.03
+     ],
+     "top": 230.31,
+     "head_bottom": 236.03,
+     "tokens": {
+      "head_first": 13.46,
+      "head_body": 5.33,
+      "item_gap": 5.84,
+      "title_sub": 3.05,
+      "sec_gap": 14.72,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 169.24,
+       "x1": 199.72,
+       "y": 249.49,
+       "lead": false,
+       "text": "etconsectetur"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 185.88,
+       "x1": 199.72,
+       "y": 254.82,
+       "lead": false,
+       "text": "tempor"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 169.37,
+       "x1": 199.84,
+       "y": 260.28,
+       "lead": false,
+       "text": "icgna aliqua ut"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.29,
+       "x1": 84.43,
+       "y": 271.96,
+       "lead": false,
+       "text": "2003"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 108.05,
+       "x1": 172.93,
+       "y": 272.21,
+       "lead": false,
+       "text": "Loromipsum dolor sit amot,"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 108.17,
+       "x1": 176.1,
+       "y": 277.8,
+       "lead": false,
+       "text": "adipiscing elit sed do eiusm"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 75.16,
+       "x1": 90.27,
+       "y": 278.31,
+       "lead": false,
+       "text": "Borcele"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 108.94,
+       "x1": 176.1,
+       "y": 284.15,
+       "lead": false,
+       "text": "incididunt ut labore et dolore mag"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 108.81,
+       "x1": 154.14,
+       "y": 289.73,
+       "lead": false,
+       "text": "enm odminimvenam"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 74.9
+}

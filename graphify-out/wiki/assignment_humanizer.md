@@ -1,9 +1,10 @@
 # assignment_humanizer
 
-> 25 nodes · cohesion 0.09
+> 27 nodes · cohesion 0.12
 
 ## Key Concepts
 
+- **assignment_humanizer.py** (20 connections) — `app/services/assignment_humanizer.py`
 - **_humanize_via_browser()** (8 connections) — `app/services/assignment_humanizer.py`
 - **humanize_text()** (7 connections) — `app/services/assignment_humanizer.py`
 - **_humanize_via_llm()** (7 connections) — `app/services/assignment_humanizer.py`
@@ -17,6 +18,7 @@
 - **_find_element()** (3 connections) — `app/services/assignment_humanizer.py`
 - **_get_browser_page()** (3 connections) — `app/services/assignment_humanizer.py`
 - **make_placeholder()** (1 connections) — `app/services/assignment_humanizer.py`
+- **Jarvis Assignment Tool — Phase 3: Answer Humanizer…** (1 connections) — `app/services/assignment_humanizer.py`
 - **Replace technical content with numbered placeholders. Returns (modified_text,…** (1 connections) — `app/services/assignment_humanizer.py`
 - **Restore original technical content from placeholders.** (1 connections) — `app/services/assignment_humanizer.py`
 - **Split text into chunks at sentence boundaries, each ≤ max_chars. Ensures no…** (1 connections) — `app/services/assignment_humanizer.py`
@@ -27,13 +29,16 @@
 - **Humanize a single text chunk on an already-open browser page. Returns humanized…** (1 connections) — `app/services/assignment_humanizer.py`
 - **Open a humanizer site in browser, process text in chunks, return humanized…** (1 connections) — `app/services/assignment_humanizer.py`
 - **Humanize text using Groq LLM with 'write like a student' prompt. Model fallback…** (1 connections) — `app/services/assignment_humanizer.py`
-- **Humanize a single block of AI-generated text to sound like a student wrote it.…** (1 connections) — `app/services/assignment_humanizer.py`
-- **Humanize ALL answers in a QA_JSON block from Phase 2 (generate_answers). Each…** (1 connections) — `app/services/assignment_humanizer.py`
+- *... and 2 more nodes in this community*
 
 ## Relationships
 
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (12 shared connections)
-- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (2 shared connections)
+- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (2 shared connections)
+- [benchmark + server](benchmark_+_server.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [repair + renderer](repair_+_renderer.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
 - [assignment_pipeline + assignment_tool](assignment_pipeline_+_assignment_tool.md) (1 shared connections)
 
 ## Source Files
@@ -42,8 +47,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 40 (93%)
-- INFERRED: 3 (7%)
+- EXTRACTED: 48 (94%)
+- INFERRED: 3 (6%)
 - AMBIGUOUS: 0 (0%)
 
 ---

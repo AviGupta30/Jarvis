@@ -20,9 +20,10 @@
 
 ## Relationships
 
-- [voice](voice.md) (6 shared connections)
-- [voice + tools](voice_+_tools.md) (2 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (2 shared connections)
+- [voice](voice.md) (7 shared connections)
+- [tools](tools.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
 
 ## Source Files
 

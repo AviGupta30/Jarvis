@@ -19,8 +19,8 @@
 ## Relationships
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (7 shared connections)
-- [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (3 shared connections)
-- [chat-routing + chat](chat-routing_+_chat.md) (1 shared connections)
+- [chat + chat-routing](chat_+_chat-routing.md) (2 shared connections)
+- [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (2 shared connections)
 
 ## Source Files
 

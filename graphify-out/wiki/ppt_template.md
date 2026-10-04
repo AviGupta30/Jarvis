@@ -1,13 +1,12 @@
 # ppt_template
 
-> 71 nodes · cohesion 0.06
+> 69 nodes · cohesion 0.06
 
 ## Key Concepts
 
 - **ppt_template.py** (52 connections) — `app/services/ppt_template.py`
 - **TemplateFiller** (13 connections) — `app/services/ppt_template.py`
 - **write_text()** (12 connections) — `app/services/ppt_template.py`
-- **prepare_image()** (10 connections) — `app/services/ppt_designer.py`
 - **analyze_format()** (10 connections) — `app/services/ppt_template.py`
 - **fill_form_slide()** (10 connections) — `app/services/ppt_template.py`
 - **_shrink_to_fit()** (10 connections) — `app/services/ppt_template.py`
@@ -29,16 +28,20 @@
 - **_replace_picture()** (5 connections) — `app/services/ppt_template.py`
 - **_walk()** (5 connections) — `app/services/ppt_template.py`
 - **_field_label()** (4 connections) — `app/services/ppt_template.py`
-- *... and 46 more nodes in this community*
+- **_paras_for()** (4 connections) — `app/services/ppt_template.py`
+- *... and 44 more nodes in this community*
 
 ## Relationships
 
-- [ppt_designer](ppt_designer.md) (15 shared connections)
-- [ppt_studio](ppt_studio.md) (8 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (4 shared connections)
-- [ppt_designer + ppt_composer](ppt_designer_+_ppt_composer.md) (4 shared connections)
+- [ppt_designer](ppt_designer.md) (14 shared connections)
+- [ppt_studio + ppt_designer](ppt_studio_+_ppt_designer.md) (10 shared connections)
+- [ppt_composer + ppt_designer](ppt_composer_+_ppt_designer.md) (2 shared connections)
+- [benchmark + server](benchmark_+_server.md) (2 shared connections)
 - [ppt_content](ppt_content.md) (2 shared connections)
-- [ppt](ppt.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
+- [repair + renderer](repair_+_renderer.md) (1 shared connections)
+- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 - [ppt_tool](ppt_tool.md) (1 shared connections)
 
 ## Source Files
@@ -49,7 +52,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 171 (96%)
+- EXTRACTED: 166 (96%)
 - INFERRED: 7 (4%)
 - AMBIGUOUS: 0 (0%)
 

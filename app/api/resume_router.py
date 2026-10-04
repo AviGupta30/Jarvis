@@ -5,9 +5,11 @@ Registered in main.py.
 
 GET  /resume/editor   The current resume (app/memory/resume_state.json) rendered with every text
                       value editable, plus a toolbar (template, colour, photo, add section, AI edit, export).
-POST /resume/save     Body: {content, op?, add_section?, template?, color?, photo?, remove_photo?,
-                      instruction?, export?}. Applies the edits, saves the state and, with export=true,
-                      re-renders the PDF/PNGs. Sync handlers, so FastAPI runs them in its threadpool
+POST /resume/save     Body: {content, free?, op?, sec_op?, add_section?, add_custom?, design_set?, template?,
+                      color?, photo?, remove_photo?, instruction?, target_pages?, export?, restore_snap?}. free = the Design-mode
+                      layer (element styles, shapes, palette, fonts). Applies the edits, saves the state and, with export=true,
+                      re-renders the PDF/PNGs. Structural changes return `snap` (an undo id; restore_snap=id undoes
+                      it) and every reply carries `rev`, the state fingerprint the editor history is tied to. Sync handlers, so FastAPI runs them in its threadpool
                       (Playwright's sync API needs a thread without an event loop).
 """
 

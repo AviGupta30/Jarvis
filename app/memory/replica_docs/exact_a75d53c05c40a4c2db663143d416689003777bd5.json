@@ -1,0 +1,819 @@
+{
+ "v": 4,
+ "sha1": "a75d53c05c40a4c2db663143d416689003777bd5",
+ "source": "Screenshot_2026-10-02_112128_1790920307.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-02_112128_1790920307.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 295.2,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\plate2.png",
+  "src_dpi": 67.1,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 2.5,
+   "family": "Poppins",
+   "weight": 500,
+   "size": 13.187,
+   "ls": 0.0,
+   "color": "#f9fafb",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.74,
+   "n": 1,
+   "pitch": 17.407
+  },
+  "title": {
+   "ref_contrast": 1.68,
+   "family": "Lemonada",
+   "weight": 400,
+   "size": 4.07,
+   "ls": 0.0,
+   "color": "#a7d7e5",
+   "upper": false,
+   "asc": 1.35,
+   "desc": 0.65,
+   "ink_asc": 0.78,
+   "n": 1,
+   "pitch": 5.372
+  },
+  "head0": {
+   "ref_contrast": 2.48,
+   "family": "Poppins",
+   "weight": 600,
+   "size": 6.877,
+   "ls": -0.0036,
+   "color": "#2eb4bf",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.71,
+   "n": 3,
+   "pitch": 9.078
+  },
+  "head1": {
+   "ref_contrast": 2.54,
+   "family": "Poppins",
+   "weight": 600,
+   "size": 6.965,
+   "ls": -0.002,
+   "color": "#2cb2c0",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.71,
+   "n": 2,
+   "pitch": 9.194
+  },
+  "item_title0": {
+   "ref_contrast": 3.84,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 4.145,
+   "ls": 0.0,
+   "color": "#7f8284",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 5,
+   "pitch": 5.471
+  },
+  "list1": {
+   "ref_contrast": 2.43,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 4.05,
+   "ls": 0.0,
+   "color": "#9ca6a6",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.76,
+   "n": 15,
+   "pitch": 6.92
+  },
+  "body0": {
+   "ref_contrast": 2.58,
+   "family": "Poppins",
+   "weight": 300,
+   "size": 4.046,
+   "ls": 0.0,
+   "color": "#a1a1a1",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.76,
+   "n": 9,
+   "pitch": 6.348
+  },
+  "sub0": {
+   "ref_contrast": 3.62,
+   "family": "Poppins",
+   "weight": 400,
+   "size": 4.162,
+   "ls": 0.0,
+   "color": "#868687",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.35,
+   "ink_asc": 0.74,
+   "n": 2,
+   "pitch": 5.494
+  },
+  "meta0": {
+   "ref_contrast": 2.49,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 3.56,
+   "ls": 0.0,
+   "color": "#a4a4a4",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 1,
+   "pitch": 4.699
+  },
+  "contact1": {
+   "ref_contrast": 4.64,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 4.116,
+   "ls": 0.0,
+   "color": "#747474",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 2,
+   "pitch": 5.433
+  },
+  "contact0": {
+   "ref_contrast": 3.92,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 4.232,
+   "ls": 0.0023,
+   "color": "#808080",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.82,
+   "n": 1,
+   "pitch": 5.586
+  }
+ },
+ "created": 1791091678.9743044,
+ "fonts": {
+  "Poppins": [
+   300,
+   400,
+   500,
+   600
+  ],
+  "Lemonada": [
+   400
+  ],
+  "BIZ UDPGothic": [
+   700
+  ]
+ },
+ "name": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 30.73,
+    "y": 12.57,
+    "x1": 123.28,
+    "y1": 22.09,
+    "key": "name",
+    "text": "Abdur Raman",
+    "fs": 13.187,
+    "room": 103.35,
+    "bg": "#20b0bf",
+    "room_kind": "rule",
+    "room_hard": 115.92
+   }
+  ]
+ },
+ "title": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 68.18,
+    "y": 25.27,
+    "x1": 86.72,
+    "y1": 28.19,
+    "key": "title",
+    "text": "Teacher",
+    "fs": 4.07,
+    "room": null,
+    "bg": "#21b0c0",
+    "room_kind": null,
+    "room_hard": 57.01
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   148.04,
+   14.09,
+   196.8,
+   62.85
+  ],
+  "radius": 24.41,
+  "circle": true
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 11.93,
+   "x1": 97.51,
+   "top": 72.24,
+   "bottom": 244.92,
+   "text_x": 12.7,
+   "sections": [
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      21.58,
+      72.62,
+      60.44,
+      77.58
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\head_education_0_569.png",
+      "box": [
+       11.93,
+       71.74,
+       60.44,
+       79.1
+      ],
+      "text": [
+       9.65,
+       0.89,
+       48.5,
+       5.84
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 71.74,
+     "head_bottom": 79.1,
+     "tokens": {
+      "head_first": 5.08,
+      "head_body": 8.89,
+      "wrap": 6.22,
+      "item_gap": 8.315000000000001
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.82,
+       "x1": 73.13,
+       "y": 84.18,
+       "lead": false,
+       "text": "School Name..0000-0000"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 97.26,
+       "y": 93.07,
+       "lead": false,
+       "text": "Lorem Ipsum is simply dummy text of the"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 77.19,
+       "y": 99.29,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.82,
+       "x1": 75.67,
+       "y": 107.03,
+       "lead": false,
+       "text": "Collage Name..0000-0000"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 97.26,
+       "y": 115.67,
+       "lead": false,
+       "text": "Lorem Ipsum is simply dummy text of the"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 77.32,
+       "y": 122.01,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.95,
+       "x1": 80.5,
+       "y": 130.9,
+       "lead": false,
+       "text": "Univercity Name..0000-0000"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 97.26,
+       "y": 141.57,
+       "lead": false,
+       "text": "Lorem Ipsumis simply dummy text of the"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 77.32,
+       "y": 147.66,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "WORK EXPERIENCE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      21.33,
+      158.96,
+      83.8,
+      163.91
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\head_experience_0_1251.png",
+      "box": [
+       11.93,
+       158.07,
+       83.8,
+       165.18
+      ],
+      "text": [
+       9.4,
+       0.89,
+       71.86,
+       5.84
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 158.07,
+     "head_bottom": 165.18,
+     "tokens": {
+      "head_first": 6.86,
+      "title_sub": 7.8100000000000005,
+      "sub_meta": 6.35,
+      "head_body": 8.25,
+      "item_gap": 11.05,
+      "wrap": 6.48,
+      "sec_gap": 10.41,
+      "prev_key": "body0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.7,
+       "x1": 61.07,
+       "y": 172.04,
+       "lead": false,
+       "text": "School Name Here...I"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 12.82,
+       "x1": 47.61,
+       "y": 179.15,
+       "lead": false,
+       "text": "Teacher...3 Years"
+      },
+      {
+       "role": "meta",
+       "key": "meta0",
+       "x": 12.7,
+       "x1": 97.26,
+       "y": 185.5,
+       "lead": false,
+       "text": "Lorem Ipsum is simply dummy text of the"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 77.19,
+       "y": 191.59,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.7,
+       "x1": 62.47,
+       "y": 202.64,
+       "lead": false,
+       "text": "School Name Here...2"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 12.82,
+       "x1": 58.78,
+       "y": 211.14,
+       "lead": false,
+       "text": "Head Teacher....5Years"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 97.26,
+       "y": 221.55,
+       "lead": false,
+       "text": "Lorem Ipsum is simply dummy text of the"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.7,
+       "x1": 77.32,
+       "y": 228.03,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      }
+     ]
+    },
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      21.33,
+      241.61,
+      54.72,
+      246.57
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\head_contact_0_1904.png",
+      "box": [
+       11.93,
+       239.84,
+       54.72,
+       246.95
+      ],
+      "text": [
+       9.4,
+       1.78,
+       42.79,
+       6.73
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 239.84,
+     "head_bottom": 246.95,
+     "tokens": {
+      "head_first": -18.67,
+      "new_item": 6.4750000000000005,
+      "sec_gap": 11.81,
+      "prev_key": "body0"
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\lead_contact_0_38.png",
+       "w": 5.08,
+       "h": 5.33,
+       "ctype": "",
+       "dx": 9.27,
+       "dy": -0.89
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\lead_contact_0_39.png",
+       "w": 5.33,
+       "h": 5.33,
+       "ctype": "",
+       "dx": 9.27,
+       "dy": -0.25
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\lead_contact_0_40.png",
+       "w": 5.33,
+       "h": 5.33,
+       "ctype": "phone",
+       "dx": 9.15,
+       "dy": -0.38
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 129.38,
+       "x1": 172.67,
+       "y": 228.28,
+       "lead": true,
+       "text": "your location here"
+      },
+      {
+       "role": "contact",
+       "key": "contact1",
+       "x": 129.38,
+       "x1": 163.78,
+       "y": 240.09,
+       "lead": true,
+       "text": "your mail here"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 77.96,
+       "x1": 115.41,
+       "y": 241.23,
+       "lead": true,
+       "text": "000123456789"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 112.74,
+   "x1": 198.57,
+   "top": 77.96,
+   "bottom": 211.4,
+   "text_x": 113.76,
+   "sections": [
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      124.04,
+      78.34,
+      144.49,
+      83.42
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\head_skills_1_614.png",
+      "box": [
+       113.25,
+       77.83,
+       144.49,
+       85.19
+      ],
+      "text": [
+       10.79,
+       0.51,
+       31.23,
+       5.59
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 77.83,
+     "head_bottom": 85.19,
+     "tokens": {
+      "head_first": 7.11,
+      "wrap": 6.92
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 198.07,
+       "y": 92.3,
+       "lead": false,
+       "text": "Lorem Ipsumis simply dummy text of the"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 178.26,
+       "y": 98.52,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.63,
+       "x1": 151.22,
+       "y": 105.89,
+       "lead": false,
+       "text": "I.Subject Name."
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 160.1,
+       "x1": 171.28,
+       "y": 106.27,
+       "lead": false,
+       "text": "..80%"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 198.07,
+       "y": 114.01,
+       "lead": false,
+       "text": "Lorem Ipsumis simply dummy text of the"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 178.26,
+       "y": 120.49,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 172.42,
+       "y": 128.87,
+       "lead": false,
+       "text": "2.Subject Name. ..50%"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 198.07,
+       "y": 137.5,
+       "lead": false,
+       "text": "Lorem Ipsumis simply dummy text of the"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 178.39,
+       "y": 143.72,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      }
+     ]
+    },
+    {
+     "key": "languages",
+     "title": "LANGUAGE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      125.31,
+      155.79,
+      161.5,
+      160.74
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\a75d53c05c40a4c2\\crops\\head_languages_1_1224.png",
+      "box": [
+       113.25,
+       154.26,
+       161.5,
+       161.37
+      ],
+      "text": [
+       12.06,
+       1.52,
+       48.25,
+       6.48
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 154.26,
+     "head_bottom": 161.37,
+     "tokens": {
+      "head_first": 4.83,
+      "wrap": 8.13,
+      "sec_gap": 10.54,
+      "prev_key": "list1"
+     },
+     "graphics": {
+      "bars": {
+       "place": "right",
+       "h_mm": 2.79,
+       "columns": 1,
+       "label_dx_mm": 20.06,
+       "col_x_mm": [
+        113.76
+       ],
+       "w_mm": 62.47,
+       "x0_mm": 133.82,
+       "fill": "#22b1c2",
+       "track": "#201f1d",
+       "gap_mm": 1.0,
+       "radius_mm": 1.4,
+       "levels": [
+        0.77,
+        0.9,
+        0.39,
+        0.0
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 198.07,
+       "y": 166.2,
+       "lead": false,
+       "text": "Lorem Ipsumis simply dummy text of the"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 178.39,
+       "y": 172.29,
+       "lead": false,
+       "text": "printingandtypesettingindustry."
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 130.14,
+       "y": 180.42,
+       "lead": false,
+       "text": "English"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 130.27,
+       "y": 190.45,
+       "lead": false,
+       "text": "Bangla"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 128.87,
+       "y": 199.59,
+       "lead": false,
+       "text": "Arabic"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 113.76,
+       "x1": 132.55,
+       "y": 207.71,
+       "lead": false,
+       "text": "Spanish"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 69.5
+}

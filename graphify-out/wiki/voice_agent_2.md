@@ -1,39 +1,46 @@
 # voice_agent
 
-> 16 nodes · cohesion 0.23
+> 21 nodes · cohesion 0.12
 
 ## Key Concepts
 
-- **VoiceAgent** (14 connections) — `scripts/voice_agent.py`
-- **.handle_utterance()** (9 connections) — `scripts/voice_agent.py`
-- **_pick()** (7 connections) — `scripts/voice_agent.py`
-- **.dispatch()** (6 connections) — `scripts/voice_agent.py`
-- **._run_command()** (6 connections) — `scripts/voice_agent.py`
-- **.run()** (5 connections) — `scripts/voice_agent.py`
-- **._ui_loop()** (4 connections) — `scripts/voice_agent.py`
-- **._greet_after_pause()** (3 connections) — `scripts/voice_agent.py`
-- **.on_clap()** (3 connections) — `scripts/voice_agent.py`
-- **._overlaps_speech()** (3 connections) — `scripts/voice_agent.py`
-- **._safe_utterance()** (3 connections) — `scripts/voice_agent.py`
-- **._open_followup()** (2 connections) — `scripts/voice_agent.py`
-- **filler()** (2 connections) — `scripts/voice_agent.py`
-- **Was Jarvis talking (or just finished) during [t0, t1]?** (1 connections) — `scripts/voice_agent.py`
-- **_done()** (1 connections) — `scripts/voice_agent.py`
-- **._on_speaker_state()** (1 connections) — `scripts/voice_agent.py`
+- **_ClapDetector** (8 connections) — `scripts/voice_agent.py`
+- **.__init__()** (7 connections) — `scripts/voice_agent.py`
+- **_SileroStream** (7 connections) — `scripts/voice_agent.py`
+- **_EnergyVAD** (6 connections) — `scripts/voice_agent.py`
+- **ndarray** (5 connections)
+- **.feed()** (3 connections) — `scripts/voice_agent.py`
+- **._hf_ratio()** (3 connections) — `scripts/voice_agent.py`
+- **Fixed on 2026-10-01 (voice, round 2)** (2 connections) — `docs/KNOWN_ISSUES.md`
+- **.__call__()** (2 connections) — `scripts/voice_agent.py`
+- **.reset()** (2 connections) — `scripts/voice_agent.py`
+- **.__call__()** (2 connections) — `scripts/voice_agent.py`
+- **.__init__()** (2 connections) — `scripts/voice_agent.py`
+- **.__init__()** (2 connections) — `scripts/voice_agent.py`
+- **AbstractEventLoop** (1 connections)
+- **.__init__()** (1 connections) — `scripts/voice_agent.py`
+- **.__init__()** (1 connections) — `scripts/voice_agent.py`
+- **Queue** (1 connections)
+- **Stateful frame-by-frame Silero VAD using the ONNX model bundled with faster-…** (1 connections) — `scripts/voice_agent.py`
+- **Fallback if Silero can't load: adaptive noise floor.** (1 connections) — `scripts/voice_agent.py`
+- **Strict double clap. The old tripwire fired on ANY two loud 2–8 kHz frames…** (1 connections) — `scripts/voice_agent.py`
+- **.reset()** (1 connections) — `scripts/voice_agent.py`
 
 ## Relationships
 
-- [voice_agent](voice_agent.md) (11 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (3 shared connections)
+- [voice_agent](voice_agent.md) (6 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (2 shared connections)
+- [ppt + KNOWN_ISSUES](ppt_+_KNOWN_ISSUES.md) (1 shared connections)
 
 ## Source Files
 
+- `docs/KNOWN_ISSUES.md`
 - `scripts/voice_agent.py`
 
 ## Audit Trail
 
-- EXTRACTED: 39 (93%)
-- INFERRED: 3 (7%)
+- EXTRACTED: 31 (91%)
+- INFERRED: 3 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

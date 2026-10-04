@@ -1,0 +1,887 @@
+{
+ "v": 4,
+ "sha1": "8f827e541a450eee45eaf6f8462f30c8101ca77e",
+ "source": "Screenshot_2026-10-04_102007_1791089515.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_102007_1791089515.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 296.8,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\plate2.png",
+  "src_dpi": 88.1,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 6.57,
+   "family": "BIZ UDPGothic",
+   "weight": 400,
+   "size": 9.112,
+   "ls": 0.155,
+   "color": "#5c4336",
+   "upper": true,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.81,
+   "n": 1,
+   "pitch": 12.028
+  },
+  "head0": {
+   "ref_contrast": 3.81,
+   "family": "Maven Pro",
+   "weight": 700,
+   "size": 4.113,
+   "ls": 0.1382,
+   "color": "#84736a",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.21,
+   "ink_asc": 0.69,
+   "n": 3,
+   "pitch": 5.429
+  },
+  "head1": {
+   "ref_contrast": 1.95,
+   "family": "Familjen Grotesk",
+   "weight": 700,
+   "size": 4.232,
+   "ls": 0.1139,
+   "color": "#f7eae1",
+   "upper": true,
+   "asc": 1.03,
+   "desc": 0.23,
+   "ink_asc": 0.67,
+   "n": 3,
+   "pitch": 5.586
+  },
+  "contact0": {
+   "ref_contrast": 6.04,
+   "family": "Familjen Grotesk",
+   "weight": 700,
+   "size": 3.559,
+   "ls": 0.0,
+   "color": "#5d5753",
+   "upper": false,
+   "asc": 1.03,
+   "desc": 0.23,
+   "ink_asc": 0.7,
+   "n": 4,
+   "pitch": 4.698
+  },
+  "body1": {
+   "ref_contrast": 5.76,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 2.965,
+   "ls": 0.0,
+   "color": "#5c4e48",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 17,
+   "pitch": 4.761
+  },
+  "list0": {
+   "ref_contrast": 6.04,
+   "family": "BIZ UDPGothic",
+   "weight": 700,
+   "size": 2.858,
+   "ls": 0.0,
+   "color": "#5e5754",
+   "upper": false,
+   "asc": 0.88,
+   "desc": 0.12,
+   "ink_asc": 0.83,
+   "n": 14,
+   "pitch": 4.571
+  },
+  "item_title1": {
+   "ref_contrast": 10.16,
+   "family": "Maven Pro",
+   "weight": 800,
+   "size": 3.831,
+   "ls": 0.0,
+   "color": "#342926",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.21,
+   "ink_asc": 0.72,
+   "n": 3,
+   "pitch": 5.057
+  },
+  "subhead0": {
+   "ref_contrast": 4.11,
+   "family": "Familjen Grotesk",
+   "weight": 700,
+   "size": 4.048,
+   "ls": 0.1616,
+   "color": "#7e6e66",
+   "upper": true,
+   "asc": 1.03,
+   "desc": 0.23,
+   "ink_asc": 0.67,
+   "n": 2,
+   "pitch": 4.571
+  }
+ },
+ "created": 1791091268.929038,
+ "fonts": {
+  "BIZ UDPGothic": [
+   400,
+   700
+  ],
+  "Maven Pro": [
+   700,
+   800
+  ],
+  "Familjen Grotesk": [
+   700
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 147.91,
+    "y": 31.36,
+    "x1": 188.16,
+    "y1": 39.11,
+    "key": "name",
+    "text": "DARCY",
+    "fs": 9.112,
+    "room": null,
+    "bg": "#efd6cf",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   19.81,
+   12.06,
+   69.83,
+   62.09
+  ],
+  "radius": 24.98,
+  "circle": true
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 17.65,
+   "x1": 70.59,
+   "top": 75.29,
+   "bottom": 279.32,
+   "text_x": 24.31,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      17.78,
+      75.54,
+      39.36,
+      78.46
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_contact_0_593.png",
+      "box": [
+       17.52,
+       75.54,
+       69.83,
+       80.5
+      ],
+      "text": [
+       0.25,
+       0.0,
+       21.84,
+       2.92
+      ],
+      "kind": "full",
+      "on_box": false
+     },
+     "top": 75.54,
+     "head_bottom": 80.5,
+     "tokens": {
+      "head_first": 4.06,
+      "new_item": 9.4
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_contact_0_4.png",
+       "w": 5.84,
+       "h": 4.06,
+       "ctype": "phone",
+       "dx": 10.16,
+       "dy": -0.76
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_contact_0_5.png",
+       "w": 6.09,
+       "h": 4.06,
+       "ctype": "email",
+       "dx": 10.41,
+       "dy": -0.64
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_contact_0_8.png",
+       "w": 8.38,
+       "h": 5.84,
+       "ctype": "",
+       "dx": 9.9,
+       "dy": -1.65
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_contact_0_11.png",
+       "w": 5.33,
+       "h": 5.33,
+       "ctype": "website",
+       "dx": 9.64,
+       "dy": -1.65
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.68,
+       "x1": 50.53,
+       "y": 84.56,
+       "lead": true,
+       "text": "123-456-7890"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.42,
+       "x1": 67.16,
+       "y": 93.83,
+       "lead": true,
+       "text": "hello@reallygreatsite.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.68,
+       "x1": 70.34,
+       "y": 103.22,
+       "lead": true,
+       "text": "123 Anywhere St.,Any City"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 27.42,
+       "x1": 56.63,
+       "y": 112.87,
+       "lead": true,
+       "text": "reallygreatsite.com"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      18.16,
+      130.27,
+      33.52,
+      133.19
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_skills_0_1022.png",
+      "box": [
+       17.78,
+       130.27,
+       70.08,
+       135.09
+      ],
+      "text": [
+       0.38,
+       0.0,
+       15.74,
+       2.92
+      ],
+      "kind": "full",
+      "on_box": false
+     },
+     "top": 130.27,
+     "head_bottom": 135.09,
+     "tokens": {
+      "head_first": 4.83,
+      "new_item": 8.76,
+      "wrap": 4.57,
+      "sec_gap": 17.4,
+      "prev_key": "contact0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_skills_0_21.png",
+      "w": 1.78,
+      "h": 1.52,
+      "dx": 4.19,
+      "dy": 0.77,
+      "all_same": false
+     },
+     "subhead": {
+      "text": "EXTRACURRICULAR",
+      "key": "subhead0",
+      "x": 17.9,
+      "after": 4.57
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 25.77,
+       "x1": 41.26,
+       "y": 139.92,
+       "lead": true,
+       "text": "Teamwork"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.63,
+       "x1": 53.58,
+       "y": 148.68,
+       "lead": true,
+       "text": "Time Management"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 25.01,
+       "x1": 41.64,
+       "y": 158.07,
+       "lead": true,
+       "text": "Leadership"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.76,
+       "x1": 51.29,
+       "y": 167.59,
+       "lead": true,
+       "text": "Verbal&Written"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.76,
+       "x1": 48.5,
+       "y": 172.29,
+       "lead": false,
+       "text": "communication"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead0",
+       "x": 17.9,
+       "x1": 62.09,
+       "y": 189.56,
+       "lead": false,
+       "text": "EXTRACURRICULAR"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead0",
+       "x": 17.78,
+       "x1": 43.04,
+       "y": 194.13,
+       "lead": false,
+       "text": "ACTIVITIES"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.25,
+       "x1": 67.42,
+       "y": 203.14,
+       "lead": true,
+       "text": "Organize monthly events to"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.38,
+       "x1": 67.67,
+       "y": 207.71,
+       "lead": true,
+       "text": "increase the participation of"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.38,
+       "x1": 61.7,
+       "y": 212.16,
+       "lead": false,
+       "text": "the students in different"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.25,
+       "x1": 44.82,
+       "y": 216.73,
+       "lead": false,
+       "text": "college clubs."
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.5,
+       "x1": 70.34,
+       "y": 225.36,
+       "lead": true,
+       "text": "Conducted a CSR programme"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 24.63,
+       "x1": 66.02,
+       "y": 229.93,
+       "lead": false,
+       "text": "in World Environment Day"
+      }
+     ]
+    },
+    {
+     "key": "languages",
+     "title": "LANGUAGE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      19.17,
+      247.33,
+      43.8,
+      250.12
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_languages_0_1945.png",
+      "box": [
+       18.79,
+       247.33,
+       71.1,
+       252.15
+      ],
+      "text": [
+       0.38,
+       0.0,
+       25.01,
+       2.79
+      ],
+      "kind": "full",
+      "on_box": false
+     },
+     "top": 247.33,
+     "head_bottom": 252.15,
+     "tokens": {
+      "head_first": 4.83,
+      "wrap": 9.84,
+      "sec_gap": 17.4,
+      "prev_key": "list0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_languages_0_42.png",
+      "w": 0.25,
+      "h": 0.25,
+      "dx": 0.51,
+      "dy": 3.3,
+      "all_same": true
+     },
+     "graphics": {
+      "dots": {
+       "d_mm": 3.3,
+       "pitch_mm": 3.3,
+       "on": "#816b60",
+       "off": "#f9eadf",
+       "n": 4,
+       "x0_mm": 41.64,
+       "place": "right"
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 19.3,
+       "x1": 30.09,
+       "y": 256.98,
+       "lead": true,
+       "text": "English"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 19.3,
+       "x1": 29.84,
+       "y": 267.77,
+       "lead": false,
+       "text": "French"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 19.3,
+       "x1": 27.3,
+       "y": 276.66,
+       "lead": false,
+       "text": "Hindi"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 92.05,
+   "x1": 197.43,
+   "top": 80.75,
+   "bottom": 279.96,
+   "text_x": 92.56,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "PROFESSIONALPROFILE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      95.35,
+      80.88,
+      150.83,
+      83.8
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_profile_1_636.png",
+      "box": [
+       91.67,
+       78.21,
+       200.1,
+       86.08
+      ],
+      "text": [
+       3.68,
+       2.67,
+       59.17,
+       5.59
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 78.21,
+     "head_bottom": 86.08,
+     "tokens": {
+      "head_first": 10.03,
+      "new_item": 3.94,
+      "wrap": 4.19
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_profile_1_9.png",
+      "w": 0.25,
+      "h": 0.25,
+      "dx": 0.76,
+      "dy": 0.39,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.43,
+       "x1": 194.51,
+       "y": 96.11,
+       "lead": false,
+       "text": "An independent and self-motivated graduate looking for an en"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.56,
+       "x1": 193.37,
+       "y": 100.05,
+       "lead": true,
+       "text": "level position in the marketing department where I can utili"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.43,
+       "x1": 198.07,
+       "y": 103.98,
+       "lead": true,
+       "text": "extensive knowledge I have gained during my course.Well vers"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.56,
+       "x1": 186.26,
+       "y": 108.17,
+       "lead": false,
+       "text": "market research and excellence in creating brand awareness."
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      95.73,
+      127.73,
+      122.14,
+      130.65
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_education_1_1004.png",
+      "box": [
+       92.18,
+       125.19,
+       200.35,
+       133.06
+      ],
+      "text": [
+       3.56,
+       2.54,
+       29.96,
+       5.46
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 125.19,
+     "head_bottom": 133.06,
+     "tokens": {
+      "head_first": 10.28,
+      "head_body": 6.22,
+      "new_item": 6.09,
+      "item_gap": 10.28,
+      "sec_gap": 17.02,
+      "prev_key": "body1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_education_1_26.png",
+      "w": 2.03,
+      "h": 2.29,
+      "dx": 4.57,
+      "dy": 0.38,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.18,
+       "x1": 166.83,
+       "y": 143.34,
+       "lead": false,
+       "text": "Masters in Global Business Management"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.3,
+       "x1": 157.31,
+       "y": 149.56,
+       "lead": false,
+       "text": "Really Great University(2020-2022"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.27,
+       "x1": 182.32,
+       "y": 158.45,
+       "lead": true,
+       "text": "Post graduated in Marketing and Sales Management"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.65,
+       "x1": 123.54,
+       "y": 164.55,
+       "lead": true,
+       "text": "MinorFinance"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.05,
+       "x1": 155.91,
+       "y": 174.83,
+       "lead": false,
+       "text": "Graduate in International Business"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.3,
+       "x1": 157.31,
+       "y": 181.05,
+       "lead": false,
+       "text": "ReallyGreat University(2020-2017"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.27,
+       "x1": 126.58,
+       "y": 190.07,
+       "lead": true,
+       "text": "MacroEconomics"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.65,
+       "x1": 127.09,
+       "y": 196.16,
+       "lead": true,
+       "text": "Risk Management"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.52,
+       "x1": 129.63,
+       "y": 202.26,
+       "lead": true,
+       "text": "Advertising&Sales"
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "INTERNSHIP",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      95.6,
+      219.4,
+      123.16,
+      222.32
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\head_experience_1_1726.png",
+      "box": [
+       92.18,
+       216.86,
+       200.35,
+       224.73
+      ],
+      "text": [
+       3.43,
+       2.54,
+       30.98,
+       5.46
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 216.86,
+     "head_bottom": 224.73,
+     "tokens": {
+      "head_first": 10.28,
+      "head_body": 6.6,
+      "new_item": 9.27,
+      "wrap": 5.71,
+      "sec_gap": 14.6,
+      "prev_key": "body1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\8f827e541a450eee\\crops\\lead_experience_1_40.png",
+      "w": 1.78,
+      "h": 2.03,
+      "dx": 4.19,
+      "dy": 0.51,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.56,
+       "x1": 116.55,
+       "y": 235.01,
+       "lead": false,
+       "text": "Salford &Co."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.94,
+       "x1": 122.01,
+       "y": 241.61,
+       "lead": true,
+       "text": "Marketing Intern"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.91,
+       "x1": 194.0,
+       "y": 250.37,
+       "lead": true,
+       "text": "Conducted market research with the assigned team for the"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.91,
+       "x1": 191.84,
+       "y": 256.09,
+       "lead": false,
+       "text": "newly launched product and create awareness among the"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.91,
+       "x1": 119.73,
+       "y": 261.8,
+       "lead": false,
+       "text": "target group."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.4,
+       "x1": 196.92,
+       "y": 271.58,
+       "lead": true,
+       "text": "Assisted the marketing manager in writing press releases and"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.52,
+       "x1": 174.96,
+       "y": 276.91,
+       "lead": false,
+       "text": "conducting surveys through phones and emails."
+      }
+     ]
+    }
+   ],
+   "bullet_x": 93.83,
+   "bullet_text_x": 98.46
+  }
+ ],
+ "analysis_s": 80.6
+}

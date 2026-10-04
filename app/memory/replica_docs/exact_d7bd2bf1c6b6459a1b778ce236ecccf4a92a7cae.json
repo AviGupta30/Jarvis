@@ -1,0 +1,804 @@
+{
+ "v": 3,
+ "sha1": "d7bd2bf1c6b6459a1b778ce236ecccf4a92a7cae",
+ "source": "Screenshot_2026-10-04_002631_1791053806.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 296.7,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\plate2.png",
+  "src_dpi": 38.9,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "family": "Mulish",
+   "weight": 800,
+   "size": 14.088,
+   "ls": 0.0,
+   "color": "#fefcfd",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 18.596
+  },
+  "head1": {
+   "family": "Anton",
+   "weight": 400,
+   "size": 5.915,
+   "ls": 0.1174,
+   "color": "#514f52",
+   "upper": true,
+   "asc": 1.18,
+   "desc": 0.33,
+   "ink_asc": 0.87,
+   "n": 2,
+   "pitch": 7.808
+  },
+  "item_title1": {
+   "family": "Oxanium",
+   "weight": 300,
+   "size": 5.336,
+   "ls": -0.12,
+   "color": "#eeeded",
+   "upper": false,
+   "asc": 0.79,
+   "desc": 0.21,
+   "ink_asc": 0.69,
+   "n": 2,
+   "pitch": 7.044
+  },
+  "body1": {
+   "family": "Mulish",
+   "weight": 400,
+   "size": 4.145,
+   "ls": 0.0,
+   "color": "#949496",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.25,
+   "ink_asc": 0.74,
+   "n": 19,
+   "pitch": 5.904
+  },
+  "head0": {
+   "family": "Anton",
+   "weight": 400,
+   "size": 4.545,
+   "ls": 0.1299,
+   "color": "#d0cfd1",
+   "upper": true,
+   "asc": 1.18,
+   "desc": 0.33,
+   "ink_asc": 0.87,
+   "n": 2,
+   "pitch": 5.999
+  },
+  "list0": {
+   "family": "Mulish",
+   "weight": 400,
+   "size": 4.082,
+   "ls": 0.0,
+   "color": "#acabad",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 14,
+   "pitch": 6.285
+  },
+  "subhead0": {
+   "family": "Oxanium",
+   "weight": 700,
+   "size": 4.389,
+   "ls": -0.0248,
+   "color": "#b0b1b3",
+   "upper": true,
+   "asc": 0.79,
+   "desc": 0.21,
+   "ink_asc": 0.75,
+   "n": 1,
+   "pitch": 5.793
+  },
+  "list1": {
+   "family": "Anton",
+   "weight": 400,
+   "size": 2.686,
+   "ls": 0.0,
+   "color": "#818181",
+   "upper": false,
+   "asc": 1.18,
+   "desc": 0.33,
+   "ink_asc": 0.895,
+   "n": 4,
+   "pitch": 3.546
+  },
+  "subhead1": {
+   "family": "Mulish",
+   "weight": 400,
+   "size": 5.913,
+   "ls": 0.0,
+   "color": "#828284",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 7.805
+  }
+ },
+ "created": 1791053964.057871,
+ "fonts": {
+  "Mulish": [
+   400,
+   800
+  ],
+  "Anton": [
+   400
+  ],
+  "Oxanium": [
+   300,
+   700
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 109.82,
+    "y": 26.79,
+    "x1": 155.02,
+    "y1": 38.34,
+    "key": "name",
+    "text": "JHON",
+    "fs": 12.696
+   },
+   {
+    "x": 110.21,
+    "y": 40.63,
+    "x1": 198.95,
+    "y1": 51.93,
+    "key": "name",
+    "text": "MACINERY",
+    "fs": 15.479
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   25.27,
+   12.95,
+   79.48,
+   67.16
+  ],
+  "radius": 27.09,
+  "circle": true
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 13.33,
+   "x1": 82.78,
+   "top": 109.57,
+   "bottom": 289.61,
+   "text_x": 14.35,
+   "sections": [
+    {
+     "key": "languages",
+     "title": "LANGOAGE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      14.47,
+      110.46,
+      34.41,
+      113.25
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\head_languages_0_863.png",
+      "box": [
+       13.97,
+       109.82,
+       85.07,
+       114.14
+      ],
+      "text": [
+       0.51,
+       0.63,
+       20.44,
+       3.43
+      ],
+      "kind": "full",
+      "on_box": true
+     },
+     "top": 109.82,
+     "head_bottom": 114.14,
+     "tokens": {
+      "head_first": -3.55,
+      "wrap": 6.795
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\lead_languages_0_16.png",
+      "w": 0.51,
+      "h": 2.29,
+      "dx": 3.04,
+      "dy": 0.5,
+      "all_same": true
+     },
+     "subhead": {
+      "text": "HTML/CSS",
+      "key": "subhead0",
+      "x": 14.35,
+      "after": 6.35
+     },
+     "graphics": {
+      "bars": {
+       "place": "right",
+       "h_mm": 3.56,
+       "w_mm": 39.36,
+       "x0_mm": 55.1,
+       "fill": "#bdbfc0",
+       "track": "#e1e0e2",
+       "gap_mm": 1.0,
+       "radius_mm": 0.89,
+       "levels": [
+        0.83,
+        0.82,
+        0.84,
+        0.83,
+        0.62,
+        0.82,
+        0.84,
+        0.86,
+        0.76
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 42.15,
+       "x1": 84.43,
+       "y": 110.59,
+       "lead": true,
+       "text": "ENOLISHLNIND.IRLNCN"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 27.42,
+       "x1": 41.77,
+       "y": 125.57,
+       "lead": false,
+       "text": "SKILL"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.22,
+       "x1": 49.39,
+       "y": 140.04,
+       "lead": false,
+       "text": "Adobe Photoshope"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.22,
+       "x1": 43.68,
+       "y": 146.26,
+       "lead": false,
+       "text": "Adobe llistrator"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.35,
+       "x1": 42.66,
+       "y": 152.61,
+       "lead": false,
+       "text": "Adobe Incexgn"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.35,
+       "x1": 31.61,
+       "y": 165.05,
+       "lead": false,
+       "text": "MS Word"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.35,
+       "x1": 35.3,
+       "y": 171.53,
+       "lead": false,
+       "text": "PowerPoint"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.35,
+       "x1": 23.62,
+       "y": 177.24,
+       "lead": false,
+       "text": "Excel"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead0",
+       "x": 14.35,
+       "x1": 35.04,
+       "y": 189.94,
+       "lead": false,
+       "text": "HTML/CSS"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.22,
+       "x1": 34.03,
+       "y": 196.29,
+       "lead": false,
+       "text": "WordPress"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 14.47,
+       "x1": 24.89,
+       "y": 203.4,
+       "lead": false,
+       "text": "Jumia"
+      }
+     ]
+    },
+    {
+     "key": "interests",
+     "title": "INTERESTED",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      29.2,
+      221.81,
+      60.56,
+      227.01
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\head_interests_0_1741.png",
+      "box": [
+       10.67,
+       218.51,
+       65.26,
+       230.7
+      ],
+      "text": [
+       18.54,
+       3.3,
+       49.9,
+       8.51
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 218.51,
+     "head_bottom": 230.7,
+     "tokens": {
+      "head_first": 9.26,
+      "wrap": 5.08,
+      "new_item": 19.490000000000002,
+      "sec_gap": 15.11,
+      "prev_key": "list0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\lead_interests_0_52.png",
+      "w": 10.16,
+      "h": 9.9,
+      "dx": 13.97,
+      "dy": -2.54,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 59.93,
+       "x1": 80.24,
+       "y": 239.96,
+       "lead": false,
+       "text": "CESSNING"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 59.29,
+       "x1": 74.53,
+       "y": 245.04,
+       "lead": false,
+       "text": "DNIAIMS"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 78.21,
+       "x1": 81.13,
+       "y": 247.07,
+       "lead": true,
+       "text": "ONIDNS"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 61.96,
+       "x1": 68.43,
+       "y": 284.02,
+       "lead": true,
+       "text": "in"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 107.92,
+   "x1": 198.45,
+   "top": 76.05,
+   "bottom": 290.24,
+   "text_x": 109.57,
+   "sections": [
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      121.12,
+      76.81,
+      149.56,
+      82.02
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\head_education_1_599.png",
+      "box": [
+       106.4,
+       73.26,
+       156.67,
+       85.45
+      ],
+      "text": [
+       14.73,
+       3.56,
+       43.17,
+       8.76
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 73.26,
+     "head_bottom": 85.45,
+     "tokens": {
+      "head_first": 6.35,
+      "head_body": 0.885,
+      "wrap": 5.84,
+      "item_gap": 13.33
+     },
+     "graphics": {
+      "chips": {
+       "h_mm": 6.6,
+       "pad_x_mm": 3.17,
+       "radius_mm": 0.0,
+       "border": "#fcfcfc",
+       "fill": "#1a1818",
+       "border_w_mm": 1.02,
+       "gap_x_mm": 2.0,
+       "gap_y_mm": 42.66,
+       "text_color": "#f0eeef"
+      }
+     },
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 176.23,
+       "x1": 198.32,
+       "y": 91.8,
+       "lead": false,
+       "text": "2005-2009"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 142.84,
+       "y": 92.94,
+       "lead": false,
+       "text": "BA WEB DESIGN"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 153.88,
+       "y": 98.78,
+       "lead": false,
+       "text": "Deign colageAuttralia"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 192.48,
+       "y": 104.75,
+       "lead": false,
+       "text": "Loom ipsun doior sit amet conecteuer adpicing"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 157.44,
+       "y": 109.44,
+       "lead": false,
+       "text": "il sed am non.Lorem ipom"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 176.86,
+       "x1": 196.67,
+       "y": 122.78,
+       "lead": true,
+       "text": "2009-2010"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 150.33,
+       "y": 123.41,
+       "lead": false,
+       "text": "MAWEB DEVLOPING"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 160.74,
+       "y": 129.25,
+       "lead": false,
+       "text": "Shilingon collape Austalia"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 192.48,
+       "y": 135.09,
+       "lead": false,
+       "text": "Laes ipnum dolor st amet coeeceuer adipincing"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 174.7,
+       "x1": 199.59,
+       "y": 151.85,
+       "lead": false,
+       "text": "2010-2013"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 149.06,
+       "y": 153.88,
+       "lead": false,
+       "text": "BSS.MANAGEMENT"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 157.82,
+       "y": 159.59,
+       "lead": false,
+       "text": "Oxtord university.England"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 192.48,
+       "y": 165.56,
+       "lead": false,
+       "text": "Lo iosn ir sit at coesecteoer adigiscng"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 157.44,
+       "y": 170.39,
+       "lead": false,
+       "text": "eityedGamnonLore owm."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 169.63,
+       "y": 195.27,
+       "lead": false,
+       "text": "WORK EXPERIANCE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 181.94,
+       "y": 209.11,
+       "lead": false,
+       "text": "WEBDESIGNER/GRAPHICDESIGNER"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 162.64,
+       "y": 214.95,
+       "lead": false,
+       "text": "Vicky design austraia 2200"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 191.59,
+       "y": 221.3,
+       "lead": false,
+       "text": "Loren ipnumdl it ametcontecirtan adpnorg"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.44,
+       "x1": 149.18,
+       "y": 231.33,
+       "lead": false,
+       "text": "GRAPHIC DESIGNER"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 160.48,
+       "y": 236.92,
+       "lead": false,
+       "text": "Design Solution,USA, 6001"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 109.57,
+       "x1": 192.99,
+       "y": 243.26,
+       "lead": false,
+       "text": "Lorem ipsum dolor s coecer ciscng"
+      }
+     ]
+    },
+    {
+     "key": "references",
+     "title": "REFERANCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      121.12,
+      260.41,
+      150.33,
+      265.61
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\d7bd2bf1c6b6459a\\crops\\head_references_1_2046.png",
+      "box": [
+       106.4,
+       257.1,
+       174.7,
+       272.59
+      ],
+      "text": [
+       14.73,
+       3.3,
+       43.93,
+       8.51
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 257.1,
+     "head_bottom": 272.59,
+     "tokens": {
+      "head_first": 0.77,
+      "wrap": 5.46,
+      "sec_gap": 13.84,
+      "prev_key": "body1"
+     },
+     "subhead": {
+      "text": "HON REY",
+      "key": "subhead1",
+      "x": 109.57,
+      "after": 3.68
+     },
+     "graphics": {
+      "chips": {
+       "h_mm": 7.87,
+       "pad_x_mm": 0.63,
+       "radius_mm": 0.0,
+       "border": "#e4e4e6",
+       "fill": "#fcfcfe",
+       "border_w_mm": 3.62,
+       "gap_x_mm": 2.0,
+       "gap_y_mm": 3.3,
+       "text_color": "#828284"
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 155.79,
+       "x1": 173.81,
+       "y": 273.36,
+       "lead": false,
+       "text": "VICCY DONE"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead1",
+       "x": 109.57,
+       "x1": 128.36,
+       "y": 273.48,
+       "lead": false,
+       "text": "HON REY"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 109.57,
+       "x1": 127.98,
+       "y": 277.16,
+       "lead": false,
+       "text": "Web desigeer"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 155.79,
+       "x1": 178.51,
+       "y": 277.29,
+       "lead": false,
+       "text": "Goghic eger"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 170.89,
+       "x1": 194.89,
+       "y": 288.08,
+       "lead": false,
+       "text": ":wonngggoat.con"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 100.8
+}

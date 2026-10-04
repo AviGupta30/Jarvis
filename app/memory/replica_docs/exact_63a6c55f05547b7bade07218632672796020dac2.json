@@ -1,0 +1,1280 @@
+{
+ "v": 4,
+ "sha1": "63a6c55f05547b7bade07218632672796020dac2",
+ "source": "Screenshot_2026-10-03_120914_1791009559.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-03_120914_1791009559.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 291.9,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\plate2.png",
+  "src_dpi": 76.0,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 12.2,
+   "family": "Heebo",
+   "weight": 800,
+   "size": 8.407,
+   "ls": 0.0141,
+   "color": "#032c5c",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.73,
+   "n": 1,
+   "pitch": 11.097
+  },
+  "title": {
+   "ref_contrast": 11.34,
+   "family": "Inter Tight",
+   "weight": 800,
+   "size": 3.216,
+   "ls": 0.0,
+   "color": "#323233",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.74,
+   "n": 1,
+   "pitch": 4.245
+  },
+  "head1": {
+   "ref_contrast": 12.21,
+   "family": "Inter Tight",
+   "weight": 400,
+   "size": 4.877,
+   "ls": 0.0,
+   "color": "#e7f4f8",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.74,
+   "n": 2,
+   "pitch": 6.438
+  },
+  "head0": {
+   "ref_contrast": 12.19,
+   "family": "Heebo",
+   "weight": 700,
+   "size": 5.01,
+   "ls": -0.0098,
+   "color": "#e7f4f7",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.73,
+   "n": 4,
+   "pitch": 6.613
+  },
+  "item_title1": {
+   "ref_contrast": 9.01,
+   "family": "Heebo",
+   "weight": 700,
+   "size": 3.359,
+   "ls": 0.0,
+   "color": "#2e4a66",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.75,
+   "n": 3,
+   "pitch": 4.434
+  },
+  "meta_right1": {
+   "ref_contrast": 9.86,
+   "family": "Inter Tight",
+   "weight": 500,
+   "size": 2.835,
+   "ls": 0.0,
+   "color": "#424340",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.74,
+   "n": 2,
+   "pitch": 3.742
+  },
+  "sub1": {
+   "ref_contrast": 8.61,
+   "family": "Nunito",
+   "weight": 400,
+   "size": 3.008,
+   "ls": 0.0,
+   "color": "#344d68",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.35,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 3.971
+  },
+  "contact0": {
+   "ref_contrast": 6.04,
+   "family": "Inter Tight",
+   "weight": 800,
+   "size": 2.722,
+   "ls": 0.0,
+   "color": "#54565a",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.78,
+   "n": 4,
+   "pitch": 3.593
+  },
+  "body1": {
+   "ref_contrast": 6.98,
+   "family": "Inter Tight",
+   "weight": 700,
+   "size": 2.731,
+   "ls": 0.0,
+   "color": "#585955",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.77,
+   "n": 34,
+   "pitch": 4.698
+  },
+  "list0": {
+   "ref_contrast": 6.84,
+   "family": "Inter Tight",
+   "weight": 600,
+   "size": 2.894,
+   "ls": 0.0,
+   "color": "#4d4e52",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.77,
+   "n": 16,
+   "pitch": 4.317
+  },
+  "subhead0": {
+   "ref_contrast": 6.16,
+   "family": "Heebo",
+   "weight": 800,
+   "size": 2.917,
+   "ls": 0.0518,
+   "color": "#3f5672",
+   "upper": true,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.73,
+   "n": 1,
+   "pitch": 3.85
+  },
+  "item_title0": {
+   "ref_contrast": 8.66,
+   "family": "Heebo",
+   "weight": 900,
+   "size": 2.927,
+   "ls": 0.0,
+   "color": "#3e3f43",
+   "upper": false,
+   "asc": 1.05,
+   "desc": 0.42,
+   "ink_asc": 0.77,
+   "n": 2,
+   "pitch": 3.864
+  },
+  "sub0": {
+   "ref_contrast": 6.46,
+   "family": "Nunito",
+   "weight": 800,
+   "size": 2.61,
+   "ls": 0.0,
+   "color": "#58595e",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.35,
+   "ink_asc": 0.735,
+   "n": 2,
+   "pitch": 3.445
+  },
+  "meta0": {
+   "ref_contrast": 3.63,
+   "family": "Inter Tight",
+   "weight": 700,
+   "size": 3.047,
+   "ls": 0.0,
+   "color": "#76787e",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.74,
+   "n": 1,
+   "pitch": 4.022
+  },
+  "body0": {
+   "ref_contrast": 8.92,
+   "family": "Inter Tight",
+   "weight": 400,
+   "size": 3.068,
+   "ls": 0.0,
+   "color": "#3c3d41",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.24,
+   "ink_asc": 0.74,
+   "n": 3,
+   "pitch": 5.333
+  }
+ },
+ "created": 1791091511.9438007,
+ "fonts": {
+  "Heebo": [
+   700,
+   800,
+   900
+  ],
+  "Inter Tight": [
+   400,
+   500,
+   600,
+   700,
+   800
+  ],
+  "Nunito": [
+   400,
+   800
+  ]
+ },
+ "name": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 106.27,
+    "y": 7.87,
+    "x1": 176.35,
+    "y1": 14.09,
+    "key": "name",
+    "text": "AANCHAL GUPTA",
+    "fs": 8.407,
+    "room": null,
+    "bg": "#eff1f1",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 114.14,
+    "y": 17.65,
+    "x1": 168.23,
+    "y1": 20.06,
+    "key": "title",
+    "text": "SITE RELIABILITY ENGINEER",
+    "fs": 3.216,
+    "room": null,
+    "bg": "#f1f1f1",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   22.85,
+   6.98,
+   52.06,
+   36.44
+  ],
+  "radius": 2.17,
+  "circle": false
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 6.86,
+   "x1": 66.4,
+   "top": 42.91,
+   "bottom": 284.02,
+   "text_x": 7.87,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.3,
+      43.17,
+      33.39,
+      46.85
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_contact_0_338.png",
+      "box": [
+       7.36,
+       41.01,
+       37.07,
+       49.64
+      ],
+      "text": [
+       3.94,
+       2.16,
+       26.03,
+       5.84
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 41.01,
+     "head_bottom": 49.64,
+     "tokens": {
+      "head_first": 3.56,
+      "new_item": 6.285,
+      "wrap": 6.48
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_contact_0_7.png",
+       "w": 3.56,
+       "h": 3.3,
+       "ctype": "phone",
+       "dx": 6.47,
+       "dy": -0.26
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_contact_0_10.png",
+       "w": 3.56,
+       "h": 2.79,
+       "ctype": "email",
+       "dx": 6.47,
+       "dy": -0.12
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_contact_0_12.png",
+       "w": 3.3,
+       "h": 3.56,
+       "ctype": "",
+       "dx": 6.22,
+       "dy": -0.38
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 14.09,
+       "x1": 34.79,
+       "y": 53.2,
+       "lead": true,
+       "text": "+9187008 19096"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 14.09,
+       "x1": 46.09,
+       "y": 59.67,
+       "lead": true,
+       "text": "aanchalag16@gmai.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 14.09,
+       "x1": 39.99,
+       "y": 65.77,
+       "lead": true,
+       "text": "Noida,Uttar Pradesh"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 8.13,
+       "x1": 62.59,
+       "y": 72.24,
+       "lead": false,
+       "text": "in www.linkedin.com/in/aanchalgupta-ag"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.3,
+      82.91,
+      27.17,
+      86.59
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_skills_0_650.png",
+      "box": [
+       7.36,
+       80.88,
+       30.73,
+       89.76
+      ],
+      "text": [
+       3.94,
+       2.03,
+       19.81,
+       5.71
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 80.88,
+     "head_bottom": 89.76,
+     "tokens": {
+      "head_first": 3.18,
+      "wrap": 9.14,
+      "sec_gap": 8.64,
+      "prev_key": "contact0"
+     },
+     "subhead": {
+      "text": "OTHER TECHNOLOGIES",
+      "key": "subhead0",
+      "x": 7.87,
+      "after": 6.22
+     },
+     "graphics": {
+      "bars": {
+       "place": "below",
+       "h_mm": 2.54,
+       "columns": 1,
+       "label_dx_mm": 0.0,
+       "col_x_mm": [
+        7.62
+       ],
+       "w_mm": 59.67,
+       "x0_mm": 7.62,
+       "fill": "#002d60",
+       "track": "#dee4e5",
+       "gap_mm": 1.65,
+       "radius_mm": 1.27,
+       "levels": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 22.35,
+       "y": 92.94,
+       "lead": false,
+       "text": "Kubernetes"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 16.76,
+       "y": 102.59,
+       "lead": false,
+       "text": "Docker"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 42.41,
+       "y": 111.35,
+       "lead": false,
+       "text": "Oracle Cloud In frastructure"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 13.08,
+       "y": 120.49,
+       "lead": false,
+       "text": "SQL"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 17.78,
+       "y": 129.38,
+       "lead": false,
+       "text": "Jenkins"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 14.73,
+       "y": 138.52,
+       "lead": false,
+       "text": "Linux"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 7.87,
+       "x1": 16.76,
+       "y": 147.91,
+       "lead": false,
+       "text": "Python"
+      },
+      {
+       "role": "subhead",
+       "key": "subhead0",
+       "x": 7.87,
+       "x1": 41.64,
+       "y": 157.82,
+       "lead": false,
+       "text": "OTHER TECHNOLOGIES"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 39.11,
+       "x1": 60.05,
+       "y": 164.04,
+       "lead": false,
+       "text": "Jira C&C++"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.67,
+       "x1": 31.87,
+       "y": 164.17,
+       "lead": false,
+       "text": "Machine Learning"
+      }
+     ]
+    },
+    {
+     "key": "certifications",
+     "title": "CERTIFICATIONS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.3,
+      175.85,
+      49.9,
+      179.66
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_certifications_0_1383.png",
+      "box": [
+       7.36,
+       174.07,
+       53.58,
+       182.19
+      ],
+      "text": [
+       3.94,
+       1.78,
+       42.53,
+       5.59
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 174.07,
+     "head_bottom": 182.19,
+     "tokens": {
+      "head_first": 3.94,
+      "wrap": 4.32,
+      "new_item": 5.71,
+      "sec_gap": 9.9,
+      "prev_key": "list0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_certifications_0_57.png",
+      "w": 3.05,
+      "h": 3.3,
+      "dx": 5.59,
+      "dy": -0.38,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 65.89,
+       "y": 186.13,
+       "lead": true,
+       "text": "Machine Learning A-ZTM):AI,Python &"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 27.04,
+       "y": 190.32,
+       "lead": false,
+       "text": "R (Udemy)"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 50.28,
+       "y": 196.29,
+       "lead": true,
+       "text": "C&C++Programming-NIIT"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 48.5,
+       "y": 201.87,
+       "lead": true,
+       "text": "Oracle SQL Explorer Badge"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.33,
+       "x1": 64.5,
+       "y": 207.59,
+       "lead": true,
+       "text": "Advanced Certificationin Data Science"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 57.39,
+       "y": 211.9,
+       "lead": false,
+       "text": "and AI (iHUB DivyaSampark atIIT"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 13.46,
+       "x1": 25.01,
+       "y": 216.48,
+       "lead": false,
+       "text": "Roorkee)"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.43,
+      227.39,
+      37.84,
+      231.08
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_education_0_1790.png",
+      "box": [
+       7.36,
+       225.62,
+       41.9,
+       234.25
+      ],
+      "text": [
+       4.06,
+       1.78,
+       30.47,
+       5.46
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 225.62,
+     "head_bottom": 234.25,
+     "tokens": {
+      "head_first": 3.43,
+      "title_sub": 4.95,
+      "sub_meta": 5.08,
+      "head_body": 9.65,
+      "item_gap": 4.57,
+      "wrap": 5.33,
+      "sec_gap": 9.14,
+      "prev_key": "list0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 7.87,
+       "x1": 66.91,
+       "y": 237.68,
+       "lead": false,
+       "text": "B.Tech (Computer Science and Engineering)"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 7.87,
+       "x1": 62.47,
+       "y": 242.12,
+       "lead": false,
+       "text": "Dr. APJ Abdul Kalam Technical University"
+      },
+      {
+       "role": "meta",
+       "key": "meta0",
+       "x": 7.87,
+       "x1": 19.93,
+       "y": 247.2,
+       "lead": false,
+       "text": "CGPA:8.2"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 7.87,
+       "x1": 13.71,
+       "y": 254.69,
+       "lead": false,
+       "text": "HSC"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 7.87,
+       "x1": 37.07,
+       "y": 259.26,
+       "lead": false,
+       "text": "Uttam Schoolfor Girls"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 7.87,
+       "x1": 20.82,
+       "y": 264.72,
+       "lead": false,
+       "text": "CBSE,82%"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 7.87,
+       "x1": 31.11,
+       "y": 276.53,
+       "lead": false,
+       "text": "Holy Child Schod"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 7.62,
+       "x1": 19.81,
+       "y": 281.86,
+       "lead": false,
+       "text": "ICSE80%"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 80.88,
+   "x1": 198.19,
+   "top": 33.52,
+   "bottom": 263.96,
+   "text_x": 91.29,
+   "sections": [
+    {
+     "key": "experience",
+     "title": "WORK EXPERIENCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      84.3,
+      33.65,
+      129.0,
+      37.33
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_experience_1_264.png",
+      "box": [
+       80.75,
+       31.61,
+       132.55,
+       39.99
+      ],
+      "text": [
+       3.56,
+       2.03,
+       48.25,
+       5.71
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 31.61,
+     "head_bottom": 39.99,
+     "tokens": {
+      "head_first": 3.69,
+      "title_sub": 4.95,
+      "head_body": 5.08,
+      "new_item": 5.46,
+      "wrap": 4.7,
+      "item_gap": 6.285
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\lead_experience_1_31.png",
+      "w": 1.27,
+      "h": 1.52,
+      "dx": 3.55,
+      "dy": 0.89,
+      "all_same": false
+     },
+     "graphics": {
+      "timeline": {
+       "x_mm": 82.02,
+       "w_mm": 1.27,
+       "color": "#97aab9",
+       "top_mm": 42.28,
+       "bottom_mm": 223.84,
+       "node": {
+        "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\node_experience_1.png",
+        "w_mm": 4.32,
+        "h_mm": 3.56,
+        "cx_mm": 82.65,
+        "dy_mm": 1.78
+       }
+      }
+     },
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 87.48,
+       "x1": 113.38,
+       "y": 43.68,
+       "lead": false,
+       "text": "Staff Consultant"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 169.75,
+       "x1": 197.56,
+       "y": 44.31,
+       "lead": false,
+       "text": "March 2022 - Present"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 87.35,
+       "x1": 115.03,
+       "y": 48.5,
+       "lead": false,
+       "text": "Oraclelndia Pvt Ltd."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 183.46,
+       "y": 53.71,
+       "lead": true,
+       "text": "Coll borates with Verizon USA on end-to-end 5G network deplo"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 193.62,
+       "y": 59.17,
+       "lead": true,
+       "text": "Deploys and maintains Oracle Cloud Native Environment (OCCNE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 132.81,
+       "y": 63.86,
+       "lead": false,
+       "text": "components for high avaiability."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 193.49,
+       "y": 69.32,
+       "lead": true,
+       "text": "Executes Kubermetes-based duster deployments on OCI Cl oud, "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 150.71,
+       "y": 73.51,
+       "lead": false,
+       "text": "manages container orchestration with Docker."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 87.99,
+       "x1": 194.38,
+       "y": 79.23,
+       "lead": false,
+       "text": "Per forms integration testing and troudeshooting for SLF in "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 192.1,
+       "y": 84.69,
+       "lead": true,
+       "text": "Streamlines CI /CD pipelines with Jenkins, integrating autom"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 124.68,
+       "y": 89.0,
+       "lead": false,
+       "text": "reduce depl oyment times."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 189.56,
+       "y": 94.46,
+       "lead": true,
+       "text": "Authors det aled operational documentation, incl uding Metho"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 147.28,
+       "y": 98.91,
+       "lead": false,
+       "text": "(MOPs) and Operation al Test Plans (OTPs)."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 187.15,
+       "y": 104.62,
+       "lead": true,
+       "text": "Provides critical support for upgrades and patching in egie,"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 109.7,
+       "y": 109.32,
+       "lead": false,
+       "text": "environments."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 87.48,
+       "x1": 116.17,
+       "y": 117.57,
+       "lead": false,
+       "text": "Systems Engineer"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 162.13,
+       "x1": 197.56,
+       "y": 118.08,
+       "lead": false,
+       "text": "January 2021 - March 2022"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 87.35,
+       "x1": 128.49,
+       "y": 122.65,
+       "lead": false,
+       "text": "Tata Consultancy Services Ltd."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 194.76,
+       "y": 127.47,
+       "lead": true,
+       "text": "Contributed to Tata Steel Europe project focusing on backend"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 120.24,
+       "y": 132.17,
+       "lead": false,
+       "text": "and d ata optimiza tion."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 194.89,
+       "y": 137.63,
+       "lead": true,
+       "text": "Designed and optimized complex SQLqueries and stored functio"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 154.39,
+       "y": 141.95,
+       "lead": false,
+       "text": "extract, manipul ate, and anal yze mult-table data."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 182.83,
+       "y": 147.41,
+       "lead": true,
+       "text": "Configured PSI tool as partof Smart Sted Factory Program to "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 117.7,
+       "y": 152.1,
+       "lead": false,
+       "text": "operational visibl ity."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 187.15,
+       "y": 157.56,
+       "lead": true,
+       "text": "Coll aborated with cross-functional teams to troubeshoot and"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 150.83,
+       "y": 162.01,
+       "lead": false,
+       "text": "incon sistencie s improving reporting accura cy."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 196.29,
+       "y": 167.21,
+       "lead": true,
+       "text": "Participated in agie sprint planning and daily stand-ups tod"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 87.35,
+       "x1": 109.19,
+       "y": 175.97,
+       "lead": false,
+       "text": "TestEngineer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 166.07,
+       "x1": 197.56,
+       "y": 176.48,
+       "lead": false,
+       "text": "July 2019-August 2019"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 87.48,
+       "x1": 117.06,
+       "y": 180.8,
+       "lead": false,
+       "text": "Lavalnternational Ltd."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 188.04,
+       "y": 185.88,
+       "lead": true,
+       "text": "Performed manual testing and MM validationfor mobie devices "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 131.28,
+       "y": 190.32,
+       "lead": false,
+       "text": "product quality prior to release."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.54,
+       "x1": 192.22,
+       "y": 196.03,
+       "lead": true,
+       "text": "Reported bugs and tracked issues using Jira and Zentao,colla"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.29,
+       "x1": 139.03,
+       "y": 199.97,
+       "lead": false,
+       "text": "with devel opers for timel y resdlution."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 124.43,
+       "y": 210.25,
+       "lead": false,
+       "text": "maint ain system stability."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 87.99,
+       "x1": 190.96,
+       "y": 215.71,
+       "lead": false,
+       "text": "Gained h ands-on experience in the mobile testing lifecycle "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 91.41,
+       "x1": 123.03,
+       "y": 220.54,
+       "lead": false,
+       "text": "improving test coverage."
+      }
+     ]
+    },
+    {
+     "key": "profile",
+     "title": "PERSONALINFORMATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      84.56,
+      231.08,
+      144.11,
+      234.76
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\63a6c55f05547b7b\\crops\\head_profile_1_1819.png",
+      "box": [
+       80.75,
+       229.43,
+       148.04,
+       237.81
+      ],
+      "text": [
+       3.81,
+       1.65,
+       63.36,
+       5.33
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 229.43,
+     "head_bottom": 237.81,
+     "tokens": {
+      "head_first": 8.88,
+      "wrap": 4.95,
+      "sec_gap": 8.89,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.26,
+       "x1": 197.3,
+       "y": 246.69,
+       "lead": false,
+       "text": "deployments, 5G network integration, and enterprise software"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.51,
+       "x1": 193.37,
+       "y": 251.64,
+       "lead": false,
+       "text": "Kubemetes,Docker,SQL,and d/CD pipd ines,with hands-on experi"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.38,
+       "x1": 184.1,
+       "y": 256.47,
+       "lead": false,
+       "text": "Cloud and telecom infrastructure. Adept at del Ivering effic"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 81.38,
+       "x1": 155.91,
+       "y": 261.55,
+       "lead": false,
+       "text": "upgrades, and issueresolutions in agile environments."
+      }
+     ]
+    }
+   ],
+   "bullet_x": 87.86,
+   "bullet_text_x": 91.54
+  }
+ ],
+ "analysis_s": 103.8
+}

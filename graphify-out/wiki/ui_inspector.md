@@ -27,8 +27,8 @@
 
 ## Relationships
 
-- [safe_executor + ui_inspector](safe_executor_+_ui_inspector.md) (1 shared connections)
-- [main + screen_vision](main_+_screen_vision.md) (1 shared connections)
+- [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 

@@ -1,0 +1,906 @@
+{
+ "v": 4,
+ "sha1": "25be6e019762e41cd6a84ff3b18a8ed9a1522f88",
+ "source": "Screenshot_2026-10-04_003501_1791054316.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-04_003501_1791054316.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 288.5,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\plate2.png",
+  "src_dpi": 42.1,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 16.37,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 13.68,
+   "ls": 0.0,
+   "color": "#211f1f",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.7,
+   "n": 2,
+   "pitch": 14.601
+  },
+  "title": {
+   "ref_contrast": 4.94,
+   "family": "Khula",
+   "weight": 400,
+   "size": 5.041,
+   "ls": 0.0,
+   "color": "#717070",
+   "upper": false,
+   "asc": 1,
+   "desc": 0.61,
+   "ink_asc": 0.67,
+   "n": 1,
+   "pitch": 6.654
+  },
+  "head1": {
+   "ref_contrast": 8.09,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 5.668,
+   "ls": 0.0,
+   "color": "#474e71",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.79,
+   "n": 3,
+   "pitch": 7.482
+  },
+  "item_title1": {
+   "ref_contrast": 6.69,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 4.976,
+   "ls": 0.0,
+   "color": "#5c5c5c",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 7,
+   "pitch": 6.568
+  },
+  "sub1": {
+   "ref_contrast": 5.66,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 4.422,
+   "ls": 0.0,
+   "color": "#676767",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.75,
+   "n": 3,
+   "pitch": 5.837
+  },
+  "head0": {
+   "ref_contrast": 8.84,
+   "family": "Bahnschrift",
+   "weight": 400,
+   "size": 6.757,
+   "ls": 0.0,
+   "color": "#bbc3c9",
+   "upper": false,
+   "asc": 0.79,
+   "desc": 0.21,
+   "ink_asc": 0.71,
+   "n": 3,
+   "pitch": 8.919
+  },
+  "contact0": {
+   "ref_contrast": 5.34,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 3.614,
+   "ls": 0.0,
+   "color": "#8d97a4",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.77,
+   "n": 4,
+   "pitch": 4.77
+  },
+  "body0": {
+   "ref_contrast": 3.76,
+   "family": "Khula",
+   "weight": 400,
+   "size": 3.128,
+   "ls": 0.0,
+   "color": "#727c90",
+   "upper": false,
+   "asc": 1,
+   "desc": 0.61,
+   "ink_asc": 0.71,
+   "n": 5,
+   "pitch": 6.348
+  },
+  "list1": {
+   "ref_contrast": 3.3,
+   "family": "Bahnschrift",
+   "weight": 400,
+   "size": 3.566,
+   "ls": 0.0,
+   "color": "#8a8ca3",
+   "upper": false,
+   "asc": 0.79,
+   "desc": 0.21,
+   "ink_asc": 0.71,
+   "n": 6,
+   "pitch": 4.707
+  },
+  "list0": {
+   "ref_contrast": 4.73,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 3.906,
+   "ls": 0.0,
+   "color": "#7a7a7a",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.75,
+   "n": 4,
+   "pitch": 7.237
+  }
+ },
+ "created": 1791091400.6038005,
+ "fonts": {
+  "Montserrat": [
+   400,
+   700
+  ],
+  "Khula": [
+   400
+  ],
+  "Bahnschrift": [
+   400
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 92.68,
+    "y": 12.19,
+    "x1": 125.44,
+    "y1": 21.96,
+    "key": "name",
+    "text": "Your",
+    "fs": 13.769,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": 106.9
+   },
+   {
+    "x": 93.7,
+    "y": 26.79,
+    "x1": 135.22,
+    "y1": 36.44,
+    "key": "name",
+    "text": "Name",
+    "fs": 13.591,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": 105.89
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 92.81,
+    "y": 42.03,
+    "x1": 133.69,
+    "y1": 45.45,
+    "key": "title",
+    "text": "Accountant",
+    "fs": 5.041,
+    "room": 44.56,
+    "bg": "#ffffff",
+    "room_kind": "rule",
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   14.98,
+   16.0,
+   66.02,
+   66.53
+  ],
+  "radius": 0.87,
+  "circle": false
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 9.9,
+   "x1": 69.83,
+   "top": 90.4,
+   "bottom": 285.54,
+   "text_x": 10.79,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "Contact Me.",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.92,
+      90.4,
+      46.09,
+      94.21
+     ],
+     "rule": {
+      "color": "#4b5472",
+      "h": 1.42,
+      "gap": -0.13,
+      "len": 23.87,
+      "to_edge": true,
+      "dy": 3.17
+     },
+     "top": 90.4,
+     "head_bottom": 94.21,
+     "tokens": {
+      "head_first": 6.47,
+      "new_item": 8.38
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\crops\\lead_contact_0_13.png",
+       "w": 4.06,
+       "h": 4.06,
+       "ctype": "phone",
+       "dx": 6.99,
+       "dy": -0.63
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\crops\\lead_contact_0_15.png",
+       "w": 4.57,
+       "h": 3.3,
+       "ctype": "email",
+       "dx": 6.98,
+       "dy": 0.13
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\crops\\lead_contact_0_16.png",
+       "w": 4.06,
+       "h": 4.06,
+       "ctype": "website",
+       "dx": 6.73,
+       "dy": -0.76
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\25be6e019762e41c\\crops\\lead_contact_0_19.png",
+       "w": 3.81,
+       "h": 5.08,
+       "ctype": "",
+       "dx": 6.47,
+       "dy": -1.27
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 18.92,
+       "x1": 42.91,
+       "y": 100.68,
+       "lead": true,
+       "text": "+123-456890"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 18.66,
+       "x1": 56.25,
+       "y": 108.81,
+       "lead": true,
+       "text": "maiigrcalysite.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 18.66,
+       "x1": 51.93,
+       "y": 117.57,
+       "lead": true,
+       "text": "www.resuite.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 18.66,
+       "x1": 58.4,
+       "y": 125.95,
+       "lead": true,
+       "text": "123Arywhere ty"
+      }
+     ]
+    },
+    {
+     "key": "profile",
+     "title": "About Me.",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.43,
+      151.72,
+      42.41,
+      155.79
+     ],
+     "rule": {
+      "color": "#363e61",
+      "h": 1.22,
+      "gap": 3.3,
+      "len": 24.12,
+      "to_edge": true,
+      "dy": 3.68
+     },
+     "top": 151.72,
+     "head_bottom": 155.79,
+     "tokens": {
+      "head_first": 7.49,
+      "wrap": 7.745,
+      "sec_gap": 25.77,
+      "prev_key": "contact0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.79,
+       "x1": 67.04,
+       "y": 163.28,
+       "lead": false,
+       "text": "Lcnninmcocrtamecer-"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.79,
+       "x1": 69.83,
+       "y": 171.28,
+       "lead": false,
+       "text": "noummynbheuimootno.nt"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.79,
+       "x1": 60.44,
+       "y": 179.4,
+       "lead": false,
+       "text": "ealdrpt.wwgenmad"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.79,
+       "x1": 69.32,
+       "y": 183.97,
+       "lead": false,
+       "text": "minimwnan gubrciirudeoro"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 10.79,
+       "x1": 20.95,
+       "y": 191.46,
+       "lead": false,
+       "text": "nelut"
+      }
+     ]
+    },
+    {
+     "key": "references",
+     "title": "Reference.",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      12.06,
+      252.41,
+      43.93,
+      256.98
+     ],
+     "rule": {
+      "color": "#ccd0d8",
+      "h": 1.22,
+      "gap": 4.06,
+      "len": 21.58,
+      "to_edge": true,
+      "dy": 3.43
+     },
+     "top": 252.41,
+     "head_bottom": 256.98,
+     "tokens": {
+      "head_first": 5.46,
+      "wrap": 7.24,
+      "sec_gap": 60.95,
+      "prev_key": "body0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.55,
+       "x1": 45.96,
+       "y": 262.44,
+       "lead": false,
+       "text": "Mr.anyname"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.43,
+       "x1": 46.6,
+       "y": 269.67,
+       "lead": false,
+       "text": "Wardiere/CEO"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.43,
+       "x1": 48.75,
+       "y": 276.91,
+       "lead": false,
+       "text": "Phpne:123-656-789"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.43,
+       "x1": 62.85,
+       "y": 283.0,
+       "lead": false,
+       "text": "C-mail:hollo:ealite.com"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 91.41,
+   "x1": 201.11,
+   "top": 60.31,
+   "bottom": 279.58,
+   "text_x": 95.99,
+   "sections": [
+    {
+     "key": "experience",
+     "title": "Work Experience",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      92.3,
+      61.07,
+      142.71,
+      65.26
+     ],
+     "rule": {
+      "color": "#dcdde4",
+      "h": 1.42,
+      "gap": 7.87,
+      "len": 50.02,
+      "to_edge": true,
+      "dy": 3.05
+     },
+     "top": 61.07,
+     "head_bottom": 65.26,
+     "tokens": {
+      "head_first": 9.52,
+      "item_gap": 0.25,
+      "title_sub": 6.665,
+      "sub_meta": 7.805,
+      "head_body": 5.205,
+      "wrap": 5.145
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.3,
+       "x1": 133.44,
+       "y": 74.78,
+       "lead": false,
+       "text": "Job Position Here"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 174.32,
+       "x1": 198.7,
+       "y": 74.78,
+       "lead": false,
+       "text": "2019-2022"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 92.18,
+       "x1": 152.23,
+       "y": 81.51,
+       "lead": false,
+       "text": "Company Name|Location"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 95.99,
+       "x1": 192.1,
+       "y": 89.26,
+       "lead": false,
+       "text": ". Lorem ipsum dolor sit amet.consectetuer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 95.99,
+       "x1": 153.88,
+       "y": 94.33,
+       "lead": false,
+       "text": "adipiscing elii.sed diam"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 156.17,
+       "x1": 200.86,
+       "y": 94.33,
+       "lead": false,
+       "text": "nonummy aibh euis-"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 100.18,
+       "x1": 154.01,
+       "y": 99.79,
+       "lead": false,
+       "text": "mcd tincidgnt ut iaoreet"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 156.29,
+       "x1": 186.13,
+       "y": 100.18,
+       "lead": false,
+       "text": "doloremagna"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 95.99,
+       "x1": 200.35,
+       "y": 105.25,
+       "lead": false,
+       "text": "aliquam erat volutpat.Ut wisi enim sd minim"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 174.32,
+       "x1": 197.56,
+       "y": 118.84,
+       "lead": false,
+       "text": "2017-2019"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.18,
+       "x1": 133.44,
+       "y": 119.09,
+       "lead": false,
+       "text": "Job Position Here"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 92.18,
+       "x1": 152.23,
+       "y": 125.7,
+       "lead": false,
+       "text": "Company NameILocation"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 95.99,
+       "x1": 192.1,
+       "y": 133.57,
+       "lead": false,
+       "text": "Lorem ipsum dolor sit amet, cansectetuer"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 95.99,
+       "x1": 199.33,
+       "y": 138.9,
+       "lead": false,
+       "text": "adipiscing elii, seg aiam nonummy nibh euis"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 100.18,
+       "x1": 186.13,
+       "y": 144.11,
+       "lead": false,
+       "text": "mod tincidunt utiaoreet dolore magna"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 95.99,
+       "x1": 200.35,
+       "y": 149.44,
+       "lead": false,
+       "text": "aliquam erat volutpat Ut wisi onim ad minim"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "Education",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      92.68,
+      163.91,
+      123.16,
+      167.97
+     ],
+     "rule": {
+      "color": "#c7c9d3",
+      "h": 1.42,
+      "gap": 5.08,
+      "len": 72.37,
+      "to_edge": true,
+      "dy": 3.3
+     },
+     "top": 163.91,
+     "head_bottom": 167.97,
+     "tokens": {
+      "head_first": 8.89,
+      "item_gap": 5.65,
+      "title_sub": 6.35,
+      "sub_meta": 8.0,
+      "head_body": 0.51,
+      "wrap": 6.6,
+      "sec_gap": 14.47,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 174.96,
+       "x1": 197.94,
+       "y": 176.86,
+       "lead": false,
+       "text": "2017-2021"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 92.81,
+       "x1": 128.49,
+       "y": 177.5,
+       "lead": false,
+       "text": "Your University"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 92.81,
+       "x1": 136.23,
+       "y": 183.85,
+       "lead": false,
+       "text": "Your Collage Name"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 92.68,
+       "x1": 184.1,
+       "y": 191.84,
+       "lead": false,
+       "text": "Here I Received a lot of knawledge abcut my"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 92.18,
+       "x1": 121.63,
+       "y": 195.91,
+       "lead": false,
+       "text": "jobandcarr"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 174.96,
+       "x1": 198.83,
+       "y": 206.57,
+       "lead": false,
+       "text": "2014-2017"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.81,
+       "x1": 125.31,
+       "y": 207.08,
+       "lead": false,
+       "text": "Course Nam,e"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.81,
+       "x1": 143.09,
+       "y": 213.68,
+       "lead": false,
+       "text": "UniversitwCollage Name"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.68,
+       "x1": 184.1,
+       "y": 220.92,
+       "lead": false,
+       "text": "Here I Received a lot of kncwledge abcut my"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 92.18,
+       "x1": 121.51,
+       "y": 224.98,
+       "lead": false,
+       "text": "job and career"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "Skills",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      92.81,
+      242.38,
+      109.95,
+      247.07
+     ],
+     "rule": {
+      "color": "#c4c7d0",
+      "h": 1.42,
+      "gap": 5.08,
+      "len": 85.57,
+      "to_edge": true,
+      "dy": 3.3
+     },
+     "top": 242.38,
+     "head_bottom": 247.07,
+     "tokens": {
+      "head_first": 11.68,
+      "wrap": 0.25,
+      "sec_gap": 17.4,
+      "prev_key": "body1"
+     },
+     "graphics": {
+      "bars": {
+       "place": "right",
+       "h_mm": 3.05,
+       "columns": 2,
+       "label_dx_mm": 25.01,
+       "col_x_mm": [
+        90.02,
+        151.47
+       ],
+       "w_mm": 21.08,
+       "x0_mm": 119.09,
+       "fill": "#101b46",
+       "track": "#c6c5c7",
+       "gap_mm": 1.0,
+       "radius_mm": 0.0,
+       "levels": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 152.61,
+       "x1": 171.66,
+       "y": 258.75,
+       "lead": false,
+       "text": "M5 Ofce"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 92.81,
+       "x1": 102.08,
+       "y": 259.01,
+       "lead": false,
+       "text": "UUX"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 92.94,
+       "x1": 115.28,
+       "y": 267.9,
+       "lead": false,
+       "text": "Visual Deeign"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 152.61,
+       "x1": 170.39,
+       "y": 267.9,
+       "lead": false,
+       "text": "Uher Flows"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 152.61,
+       "x1": 173.69,
+       "y": 276.91,
+       "lead": false,
+       "text": "Procss Fhows"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 92.94,
+       "x1": 112.24,
+       "y": 277.04,
+       "lead": false,
+       "text": "Wirrater"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "analysis_s": 81.3
+}

@@ -1,9 +1,10 @@
 # syllabus_auditor
 
-> 41 nodes · cohesion 0.05
+> 43 nodes · cohesion 0.07
 
 ## Key Concepts
 
+- **syllabus_auditor.py** (25 connections) — `app/services/syllabus_auditor.py`
 - **audit_playlist_syllabus()** (11 connections) — `app/services/syllabus_auditor.py`
 - **Syllabus auditor (YouTube playlist vs syllabus)** (7 connections) — `docs/features/syllabus-auditor.md`
 - **_llm_verify_topic()** (6 connections) — `app/services/syllabus_auditor.py`
@@ -23,18 +24,21 @@
 - **_fetch_transcript()** (3 connections) — `app/services/syllabus_auditor.py`
 - **_get_embed_model()** (3 connections) — `app/services/syllabus_auditor.py`
 - **_load_image_as_b64()** (3 connections) — `app/services/syllabus_auditor.py`
+- **syllabus_auditor.py — YouTube Playlist Syllabus Auditor (Jarvis Skill)…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Extract the playlist ID from any standard YouTube playlist URL.** (1 connections) — `app/services/syllabus_auditor.py`
 - **Retrieve all video IDs (and titles where available) from a YouTube playlist.…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Fetch auto-generated or manual captions for a single YouTube video. Tries…** (1 connections) — `app/services/syllabus_auditor.py`
 - **Approximate token count: ~0.75 tokens per word (safe undercount for chunking).** (1 connections) — `app/services/syllabus_auditor.py`
-- **Split a transcript into overlapping chunks for semantic search. Strategy: -…** (1 connections) — `app/services/syllabus_auditor.py`
-- **Return a Groq client using the shared GROQ_API_KEY from Jarvis settings.** (1 connections) — `app/services/syllabus_auditor.py`
-- *... and 16 more nodes in this community*
+- *... and 18 more nodes in this community*
 
 ## Relationships
 
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (17 shared connections)
-- [tools + whatsapp_smart](tools_+_whatsapp_smart.md) (1 shared connections)
+- [benchmark + server](benchmark_+_server.md) (3 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [repair + renderer](repair_+_renderer.md) (1 shared connections)
+- [schema](schema.md) (1 shared connections)
+- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
+- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -43,7 +47,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 59 (94%)
+- EXTRACTED: 67 (94%)
 - INFERRED: 4 (6%)
 - AMBIGUOUS: 0 (0%)
 

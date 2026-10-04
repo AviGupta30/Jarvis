@@ -160,6 +160,15 @@ FEATURES = {
     "resume-creator": ("Resume creator (copy a resume design from an image / fixed formats)", {
         "app/services/resume_builder.py": None,
         "app/api/resume_router.py": None,
+        "app/services/resume_replica/integrate.py": None,
+        "app/services/resume_replica/pipeline.py": None,
+        "app/services/resume_replica/ingest.py": None,
+        "app/services/resume_replica/measure.py": None,
+        "app/services/resume_replica/plate.py": None,
+        "app/services/resume_replica/fonts.py": None,
+        "app/services/resume_replica/fontmatch.py": None,
+        "app/services/resume_replica/exact_render.py": None,
+        "scripts/replica_eval.py": None,
         "app/api/chat.py": ["chat_endpoint"],
     }),
     "dsa-mode": ("DSA / LeetCode enforcer mode", {

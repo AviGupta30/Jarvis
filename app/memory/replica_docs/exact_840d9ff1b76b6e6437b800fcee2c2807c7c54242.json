@@ -1,0 +1,922 @@
+{
+ "v": 4,
+ "sha1": "840d9ff1b76b6e6437b800fcee2c2807c7c54242",
+ "source": "Screenshot_2026-10-02_110008_1790919041.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-02_110008_1790919041.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 298.7,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\plate2.png",
+  "src_dpi": 72.1,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 4.9,
+   "family": "Bricolage Grotesque",
+   "weight": 400,
+   "size": 10.935,
+   "ls": 0.2521,
+   "color": "#6e6c98",
+   "upper": true,
+   "asc": 0.93,
+   "desc": 0.27,
+   "ink_asc": 0.67,
+   "n": 2,
+   "pitch": 13.458
+  },
+  "title": {
+   "ref_contrast": 4.74,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 4.585,
+   "ls": 0.0,
+   "color": "#737374",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 6.052
+  },
+  "body1": {
+   "ref_contrast": 4.61,
+   "family": "Montserrat",
+   "weight": 600,
+   "size": 3.086,
+   "ls": 0.0,
+   "color": "#757575",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.78,
+   "n": 23,
+   "pitch": 5.333
+  },
+  "hcontact": {
+   "ref_contrast": 2.53,
+   "family": "Montserrat",
+   "weight": 500,
+   "size": 2.846,
+   "ls": 0.0,
+   "color": "#b1b4cf",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.76,
+   "n": 4,
+   "pitch": 3.757
+  },
+  "head1": {
+   "ref_contrast": 2.78,
+   "family": "Bricolage Grotesque",
+   "weight": 400,
+   "size": 4.897,
+   "ls": 0.2194,
+   "color": "#9c99ac",
+   "upper": true,
+   "asc": 0.93,
+   "desc": 0.27,
+   "ink_asc": 0.68,
+   "n": 1,
+   "pitch": 6.464
+  },
+  "head0": {
+   "ref_contrast": 3.14,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 4.761,
+   "ls": 0.1882,
+   "color": "#c5cada",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 3,
+   "pitch": 6.285
+  },
+  "item_title1": {
+   "ref_contrast": 7.44,
+   "family": "Alexandria",
+   "weight": 500,
+   "size": 3.527,
+   "ls": 0.0407,
+   "color": "#555557",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 3,
+   "pitch": 4.656
+  },
+  "sub1": {
+   "ref_contrast": 4.67,
+   "family": "Alexandria",
+   "weight": 400,
+   "size": 3.233,
+   "ls": 0.0,
+   "color": "#747474",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.75,
+   "n": 1,
+   "pitch": 4.268
+  },
+  "list0": {
+   "ref_contrast": 2.62,
+   "family": "Alexandria",
+   "weight": 300,
+   "size": 3.235,
+   "ls": 0.0,
+   "color": "#b5b8d1",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.75,
+   "n": 11,
+   "pitch": 4.27
+  },
+  "meta1": {
+   "ref_contrast": 4.88,
+   "family": "Montserrat",
+   "weight": 500,
+   "size": 3.247,
+   "ls": 0.0,
+   "color": "#717171",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 4.286
+  },
+  "item_title0": {
+   "ref_contrast": 3.64,
+   "family": "Montserrat",
+   "weight": 700,
+   "size": 3.689,
+   "ls": 0.0,
+   "color": "#d6d9e4",
+   "upper": true,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.72,
+   "n": 2,
+   "pitch": 4.869
+  },
+  "sub0": {
+   "ref_contrast": 2.58,
+   "family": "Montserrat",
+   "weight": 500,
+   "size": 3.117,
+   "ls": 0.0,
+   "color": "#b4b6d0",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.76,
+   "n": 1,
+   "pitch": 4.114
+  },
+  "meta0": {
+   "ref_contrast": 2.57,
+   "family": "Montserrat",
+   "weight": 400,
+   "size": 3.527,
+   "ls": 0.0,
+   "color": "#b2b6ce",
+   "upper": false,
+   "asc": 0.97,
+   "desc": 0.25,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 4.656
+  },
+  "body0": {
+   "ref_contrast": 2.55,
+   "family": "Bricolage Grotesque",
+   "weight": 400,
+   "size": 3.356,
+   "ls": 0.0,
+   "color": "#b2b5ce",
+   "upper": false,
+   "asc": 0.93,
+   "desc": 0.27,
+   "ink_asc": 0.695,
+   "n": 2,
+   "pitch": 4.43
+  }
+ },
+ "created": 1791091867.4591126,
+ "fonts": {
+  "Bricolage Grotesque": [
+   400
+  ],
+  "Montserrat": [
+   400,
+   500,
+   600,
+   700
+  ],
+  "Alexandria": [
+   300,
+   400,
+   500
+  ]
+ },
+ "name": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 97.51,
+    "y": 19.68,
+    "x1": 179.27,
+    "y1": 27.17,
+    "key": "name",
+    "text": "HENRIETTA",
+    "fs": 11.35,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   },
+   {
+    "x": 97.26,
+    "y": 33.14,
+    "x1": 169.5,
+    "y1": 40.5,
+    "key": "name",
+    "text": "MITCHELL",
+    "fs": 10.52,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "left",
+  "lines": [
+   {
+    "x": 97.0,
+    "y": 47.48,
+    "x1": 164.29,
+    "y1": 50.79,
+    "key": "title",
+    "text": "SOFTWAREDEVELOPER",
+    "fs": 4.585,
+    "room": null,
+    "bg": "#ffffff",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   12.44,
+   13.84,
+   65.77,
+   67.16
+  ],
+  "radius": 26.66,
+  "circle": true
+ },
+ "hcontact": [
+  {
+   "x": 20.44,
+   "y": 78.97,
+   "x1": 39.11,
+   "y1": 81.13,
+   "key": "hcontact",
+   "text": "123-456-7890",
+   "fs": 2.998,
+   "room": null,
+   "bg": "#69699b",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "phone",
+   "icon": {
+    "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\crops\\hicon_phone_4.png",
+    "box": [
+     10.41,
+     78.08,
+     16.0,
+     82.4
+    ]
+   }
+  },
+  {
+   "x": 20.44,
+   "y": 88.11,
+   "x1": 57.39,
+   "y1": 90.91,
+   "key": "hcontact",
+   "text": "hello@reallygreatsite.com",
+   "fs": 2.85,
+   "room": null,
+   "bg": "#68699b",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "email",
+   "icon": {
+    "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\crops\\hicon_email_7.png",
+    "box": [
+     10.67,
+     87.73,
+     16.0,
+     91.8
+    ]
+   }
+  },
+  {
+   "x": 20.57,
+   "y": 97.89,
+   "x1": 57.13,
+   "y1": 100.43,
+   "key": "hcontact",
+   "text": "123Anywhere 5t.,Any City",
+   "fs": 2.841,
+   "room": null,
+   "bg": "#68699b",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "location"
+  },
+  {
+   "x": 20.44,
+   "y": 107.67,
+   "x1": 47.61,
+   "y1": 109.95,
+   "key": "hcontact",
+   "text": "reallygreatsite.com",
+   "fs": 2.743,
+   "room": null,
+   "bg": "#68699b",
+   "room_kind": null,
+   "room_hard": null,
+   "type": "website"
+  }
+ ],
+ "columns": [
+  {
+   "x0": 10.54,
+   "x1": 60.56,
+   "top": 122.39,
+   "bottom": 270.56,
+   "text_x": 11.3,
+   "sections": [
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.17,
+      122.65,
+      31.23,
+      126.08
+     ],
+     "top": 122.65,
+     "head_bottom": 126.08,
+     "tokens": {
+      "head_first": 7.74,
+      "new_item": 5.33
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\crops\\lead_skills_0_23.png",
+      "w": 1.52,
+      "h": 1.27,
+      "dx": 4.45,
+      "dy": 0.63,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.76,
+       "x1": 36.31,
+       "y": 133.82,
+       "lead": true,
+       "text": "Web Design"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.89,
+       "x1": 43.04,
+       "y": 139.15,
+       "lead": true,
+       "text": "Design Thinking"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.76,
+       "x1": 48.37,
+       "y": 144.74,
+       "lead": true,
+       "text": "Wireframe Creation"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.89,
+       "x1": 45.2,
+       "y": 149.95,
+       "lead": true,
+       "text": "Front End Coding"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.89,
+       "x1": 43.42,
+       "y": 155.41,
+       "lead": true,
+       "text": "Problem-Solving"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.76,
+       "x1": 46.85,
+       "y": 160.74,
+       "lead": true,
+       "text": "Computer Literacy"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.89,
+       "x1": 60.31,
+       "y": 165.94,
+       "lead": true,
+       "text": "Project Management Tools"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 16.89,
+       "x1": 54.59,
+       "y": 171.53,
+       "lead": true,
+       "text": "Strong Communicatian"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.68,
+      186.0,
+      47.1,
+      189.56
+     ],
+     "top": 186.0,
+     "head_bottom": 189.56,
+     "tokens": {
+      "head_first": 7.87,
+      "title_sub": 7.24,
+      "sub_meta": 6.22,
+      "item_gap": 7.11,
+      "head_body": 7.11,
+      "wrap": 6.6,
+      "sec_gap": 14.47,
+      "prev_key": "list0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 11.3,
+       "x1": 51.67,
+       "y": 197.43,
+       "lead": false,
+       "text": "SECONDARY SCHOOL"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 11.55,
+       "x1": 50.79,
+       "y": 204.67,
+       "lead": false,
+       "text": "Really Great High School"
+      },
+      {
+       "role": "meta",
+       "key": "meta0",
+       "x": 11.3,
+       "x1": 28.57,
+       "y": 210.89,
+       "lead": false,
+       "text": "2010-2014"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 11.55,
+       "x1": 65.51,
+       "y": 218.0,
+       "lead": false,
+       "text": "BACHELOR OFTECHNOLOGY"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 11.55,
+       "x1": 47.48,
+       "y": 225.11,
+       "lead": false,
+       "text": "Really Great University"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 11.3,
+       "x1": 28.44,
+       "y": 231.71,
+       "lead": false,
+       "text": "2014-2016"
+      }
+     ]
+    },
+    {
+     "key": "languages",
+     "title": "LANCUAGE",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.3,
+      246.19,
+      44.18,
+      249.49
+     ],
+     "top": 246.19,
+     "head_bottom": 249.49,
+     "tokens": {
+      "head_first": 8.12,
+      "wrap": 5.205,
+      "sec_gap": 14.48,
+      "prev_key": "body0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.55,
+       "x1": 22.98,
+       "y": 257.61,
+       "lead": false,
+       "text": "English"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.3,
+       "x1": 23.87,
+       "y": 262.69,
+       "lead": false,
+       "text": "Spanish"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 11.3,
+       "x1": 24.25,
+       "y": 268.02,
+       "lead": false,
+       "text": "German"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 96.37,
+   "x1": 188.29,
+   "top": 74.02,
+   "bottom": 283.26,
+   "text_x": 97.13,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "",
+     "implicit": true,
+     "head_key": null,
+     "top": 74.4,
+     "head_bottom": 74.4,
+     "tokens": {
+      "wrap": 5.08
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 97.13,
+       "x1": 188.04,
+       "y": 74.4,
+       "lead": false,
+       "text": "I am a qualified and professional web developer with five"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 96.87,
+       "x1": 192.48,
+       "y": 79.61,
+       "lead": false,
+       "text": "years of experience in database administration and website"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 96.87,
+       "x1": 186.77,
+       "y": 84.69,
+       "lead": false,
+       "text": "design. Strong creative and analytical skills. Team player"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 96.87,
+       "x1": 131.03,
+       "y": 89.76,
+       "lead": false,
+       "text": "with an eye for detail."
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "EXPERIENCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      97.26,
+      110.46,
+      135.47,
+      113.89
+     ],
+     "top": 110.46,
+     "head_bottom": 113.89,
+     "tokens": {
+      "head_first": 8.63,
+      "title_sub": 6.35,
+      "sub_meta": 6.35,
+      "head_body": 7.11,
+      "new_item": 5.33,
+      "wrap": 5.97,
+      "item_gap": 13.84,
+      "sec_gap": 20.7,
+      "prev_key": "body1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\840d9ff1b76b6e64\\crops\\lead_experience_1_39.png",
+      "w": 1.78,
+      "h": 1.78,
+      "dx": 4.7,
+      "dy": 0.38,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 96.87,
+       "x1": 148.55,
+       "y": 122.52,
+       "lead": false,
+       "text": "APPLICATIONSDEVELOPER"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 97.13,
+       "x1": 132.81,
+       "y": 128.87,
+       "lead": false,
+       "text": "Really Great Company"
+      },
+      {
+       "role": "meta",
+       "key": "meta1",
+       "x": 96.87,
+       "x1": 119.09,
+       "y": 135.22,
+       "lead": false,
+       "text": "2016 - Present"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 174.45,
+       "y": 143.72,
+       "lead": true,
+       "text": "Database administration and website design"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 185.62,
+       "y": 149.06,
+       "lead": true,
+       "text": "Built the logic for a streamlined ad-serving platform"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 119.85,
+       "y": 154.52,
+       "lead": false,
+       "text": "that scaled"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 175.59,
+       "y": 159.72,
+       "lead": true,
+       "text": "Educational institutions and online classroom"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 124.43,
+       "y": 165.69,
+       "lead": false,
+       "text": "management"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 96.87,
+       "x1": 145.25,
+       "y": 179.66,
+       "lead": false,
+       "text": "WEB CONTENT MANAGER"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 97.13,
+       "x1": 132.81,
+       "y": 186.38,
+       "lead": false,
+       "text": "Really Creat Company"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 96.87,
+       "x1": 114.01,
+       "y": 192.73,
+       "lead": false,
+       "text": "2014 - 2016"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 98.52,
+       "x1": 174.45,
+       "y": 201.24,
+       "lead": false,
+       "text": "Database administration and website design"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 185.62,
+       "y": 206.7,
+       "lead": true,
+       "text": "Built the logic for a streamlined ad-serving platform"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 119.85,
+       "y": 212.16,
+       "lead": false,
+       "text": "that scaled"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 175.59,
+       "y": 217.36,
+       "lead": true,
+       "text": "Educational institutions and online classroom"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 124.55,
+       "y": 223.33,
+       "lead": false,
+       "text": "management"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 96.87,
+       "x1": 134.2,
+       "y": 237.04,
+       "lead": false,
+       "text": "ANALYSIS CONTENT"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 97.13,
+       "x1": 132.81,
+       "y": 244.15,
+       "lead": false,
+       "text": "Really Great Company"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 96.87,
+       "x1": 114.14,
+       "y": 250.5,
+       "lead": false,
+       "text": "2010 - 2014"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 174.45,
+       "y": 258.88,
+       "lead": true,
+       "text": "Database administration and website design"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 178.51,
+       "y": 264.21,
+       "lead": true,
+       "text": "Built the logic for a streamlined ad-serving plat"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 119.85,
+       "y": 269.55,
+       "lead": false,
+       "text": "that scaled"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 175.59,
+       "y": 275.01,
+       "lead": true,
+       "text": "Educational institutions and online classroom"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 102.46,
+       "x1": 124.43,
+       "y": 280.72,
+       "lead": false,
+       "text": "management"
+      }
+     ]
+    }
+   ],
+   "bullet_x": 97.76,
+   "bullet_text_x": 102.46
+  }
+ ],
+ "analysis_s": 87.2
+}

@@ -1,0 +1,955 @@
+{
+ "v": 4,
+ "sha1": "c7d28b29d2ec268aedd7f698b670b13623f254e6",
+ "source": "Screenshot_2026-10-02_145916_1790933377.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-02_145916_1790933377.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 305.0,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\c7d28b29d2ec268a\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\c7d28b29d2ec268a\\plate2.png",
+  "src_dpi": 54.5,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 11.59,
+   "family": "Reddit Sans Condensed",
+   "weight": 400,
+   "size": 11.815,
+   "ls": 0.0,
+   "color": "#2e2826",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.72,
+   "n": 1,
+   "pitch": 15.596
+  },
+  "title": {
+   "ref_contrast": 4.4,
+   "family": "Reddit Sans Condensed",
+   "weight": 600,
+   "size": 3.946,
+   "ls": 0.0,
+   "color": "#706765",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.73,
+   "n": 1,
+   "pitch": 5.209
+  },
+  "head0": {
+   "ref_contrast": 4.82,
+   "family": "Changa",
+   "weight": 700,
+   "size": 4.617,
+   "ls": 0.1906,
+   "color": "#5d5c5a",
+   "upper": true,
+   "asc": 1.23,
+   "desc": 0.61,
+   "ink_asc": 0.64,
+   "n": 4,
+   "pitch": 6.094
+  },
+  "head1": {
+   "ref_contrast": 5.94,
+   "family": "Calibri",
+   "weight": 700,
+   "size": 4.981,
+   "ls": 0.135,
+   "color": "#636363",
+   "upper": true,
+   "asc": 0.95,
+   "desc": 0.27,
+   "ink_asc": 0.64,
+   "n": 2,
+   "pitch": 6.575
+  },
+  "contact0": {
+   "ref_contrast": 3.02,
+   "family": "Reddit Sans Condensed",
+   "weight": 400,
+   "size": 3.878,
+   "ls": 0.0,
+   "color": "#7c7c7a",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.745,
+   "n": 4,
+   "pitch": 4.761
+  },
+  "body1": {
+   "ref_contrast": 8.58,
+   "family": "Reddit Sans Condensed",
+   "weight": 600,
+   "size": 4.412,
+   "ls": 0.0,
+   "color": "#4b4b4b",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.77,
+   "n": 26,
+   "pitch": 4.571
+  },
+  "item_title0": {
+   "ref_contrast": 3.35,
+   "family": "Reddit Sans Condensed",
+   "weight": 600,
+   "size": 2.814,
+   "ls": 0.0,
+   "color": "#757473",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.82,
+   "n": 2,
+   "pitch": 3.714
+  },
+  "body0": {
+   "ref_contrast": 2.9,
+   "family": "Reddit Sans Condensed",
+   "weight": 700,
+   "size": 3.912,
+   "ls": 0.0,
+   "color": "#807e7d",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.75,
+   "n": 4,
+   "pitch": 4.507
+  },
+  "item_title1": {
+   "ref_contrast": 13.85,
+   "family": "Reddit Sans Condensed",
+   "weight": 600,
+   "size": 4.976,
+   "ls": -0.021,
+   "color": "#2c2c2c",
+   "upper": true,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.73,
+   "n": 3,
+   "pitch": 6.568
+  },
+  "sub0": {
+   "ref_contrast": 2.97,
+   "family": "Reddit Sans Condensed",
+   "weight": 800,
+   "size": 3.641,
+   "ls": 0.0,
+   "color": "#7e7d7c",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.78,
+   "n": 1,
+   "pitch": 4.806
+  },
+  "meta0": {
+   "ref_contrast": 3.51,
+   "family": "Reddit Sans Condensed",
+   "weight": 400,
+   "size": 2.539,
+   "ls": 0.0,
+   "color": "#727170",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.73,
+   "n": 1,
+   "pitch": 3.351
+  },
+  "list0": {
+   "ref_contrast": 3.18,
+   "family": "Reddit Sans Condensed",
+   "weight": 800,
+   "size": 3.703,
+   "ls": 0.0,
+   "color": "#797877",
+   "upper": false,
+   "asc": 1.01,
+   "desc": 0.29,
+   "ink_asc": 0.76,
+   "n": 15,
+   "pitch": 4.571
+  },
+  "sub1": {
+   "ref_contrast": 9.14,
+   "family": "Calibri",
+   "weight": 700,
+   "size": 4.424,
+   "ls": 0.0,
+   "color": "#484848",
+   "upper": false,
+   "asc": 0.95,
+   "desc": 0.27,
+   "ink_asc": 0.71,
+   "n": 1,
+   "pitch": 5.84
+  }
+ },
+ "created": 1791091602.978218,
+ "fonts": {
+  "Reddit Sans Condensed": [
+   400,
+   600,
+   700,
+   800
+  ],
+  "Changa": [
+   700
+  ],
+  "Calibri": [
+   700
+  ]
+ },
+ "name": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 96.49,
+    "y": 15.36,
+    "x1": 190.7,
+    "y1": 23.87,
+    "key": "name",
+    "text": "PAMELA MILLER",
+    "fs": 11.815,
+    "room": null,
+    "bg": "#f0e3e1",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 110.46,
+    "y": 30.09,
+    "x1": 176.23,
+    "y1": 33.01,
+    "key": "title",
+    "text": "YOUR PROFESSIONAL TITLE",
+    "fs": 3.946,
+    "room": null,
+    "bg": "#f0e3e1",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   3.94,
+   6.6,
+   50.28,
+   52.94
+  ],
+  "radius": 23.2,
+  "circle": true
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 10.54,
+   "x1": 58.15,
+   "top": 69.2,
+   "bottom": 295.32,
+   "text_x": 12.06,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.43,
+      69.7,
+      35.17,
+      72.88
+     ],
+     "top": 69.7,
+     "head_bottom": 72.88,
+     "tokens": {
+      "head_first": 6.22,
+      "wrap": 4.57
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 11.43,
+       "x1": 31.74,
+       "y": 79.1,
+       "lead": false,
+       "text": "23-589-22-88"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 11.43,
+       "x1": 45.45,
+       "y": 83.67,
+       "lead": false,
+       "text": "youremail@email.com"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 11.43,
+       "x1": 26.66,
+       "y": 88.62,
+       "lead": false,
+       "text": "CyS"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 11.43,
+       "x1": 47.99,
+       "y": 92.81,
+       "lead": false,
+       "text": "Linkedin.com/usermame"
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.55,
+      107.79,
+      41.52,
+      110.84
+     ],
+     "top": 107.79,
+     "head_bottom": 110.84,
+     "tokens": {
+      "head_first": 6.35,
+      "head_body": 4.255000000000001,
+      "wrap": 4.505000000000001,
+      "item_gap": 8.76,
+      "title_sub": 4.7,
+      "sub_meta": 4.44,
+      "sec_gap": 14.98,
+      "prev_key": "contact0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.06,
+       "x1": 57.77,
+       "y": 117.19,
+       "lead": false,
+       "text": "YOUR DEGREE NAME/MAJOR"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.06,
+       "x1": 27.17,
+       "y": 121.51,
+       "lead": false,
+       "text": "Education"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.06,
+       "x1": 37.07,
+       "y": 126.33,
+       "lead": false,
+       "text": "University Name"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.06,
+       "x1": 28.69,
+       "y": 130.52,
+       "lead": false,
+       "text": "2012-2014"
+      },
+      {
+       "role": "item_title",
+       "key": "item_title0",
+       "x": 12.06,
+       "x1": 57.77,
+       "y": 139.28,
+       "lead": false,
+       "text": "YOUR DEGREE NAME/MAJOR"
+      },
+      {
+       "role": "sub",
+       "key": "sub0",
+       "x": 12.06,
+       "x1": 27.17,
+       "y": 143.98,
+       "lead": false,
+       "text": "Education"
+      },
+      {
+       "role": "meta",
+       "key": "meta0",
+       "x": 12.06,
+       "x1": 36.95,
+       "y": 148.42,
+       "lead": false,
+       "text": "University Name"
+      },
+      {
+       "role": "body",
+       "key": "body0",
+       "x": 12.06,
+       "x1": 28.57,
+       "y": 152.61,
+       "lead": false,
+       "text": "2010-2011"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.55,
+      168.48,
+      28.06,
+      171.53
+     ],
+     "top": 168.48,
+     "head_bottom": 171.53,
+     "tokens": {
+      "head_first": 6.6,
+      "new_item": 7.24,
+      "sec_gap": 15.87,
+      "prev_key": "body0"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\c7d28b29d2ec268a\\crops\\lead_skills_0_45.png",
+      "w": 2.03,
+      "h": 2.29,
+      "dx": 6.86,
+      "dy": 0.26,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 178.13,
+       "lead": true,
+       "text": "Reeam S"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 185.5,
+       "lead": true,
+       "text": "Relevant Skl"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 192.73,
+       "lead": true,
+       "text": "Reevan Sil"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 199.97,
+       "lead": true,
+       "text": "Relevant Sal"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 207.08,
+       "lead": true,
+       "text": "Relevomt Sll"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 214.7,
+       "lead": true,
+       "text": "Reevant Shil"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 221.93,
+       "lead": true,
+       "text": "Relevamt Sk"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 229.3,
+       "lead": true,
+       "text": "Relevant Skil"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 236.41,
+       "lead": true,
+       "text": "Roleam Sal"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 243.77,
+       "lead": true,
+       "text": "Relevant Sull"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 250.88,
+       "lead": true,
+       "text": "Ree Sll"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 18.54,
+       "x1": 38.47,
+       "y": 258.37,
+       "lead": true,
+       "text": "Reevan S"
+      }
+     ]
+    },
+    {
+     "key": "achievements",
+     "title": "AWARDS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      11.43,
+      274.63,
+      33.26,
+      277.55
+     ],
+     "top": 274.63,
+     "head_bottom": 277.55,
+     "tokens": {
+      "head_first": 6.34,
+      "wrap": 3.87,
+      "sec_gap": 16.26,
+      "prev_key": "list0"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 12.06,
+       "x1": 33.77,
+       "y": 283.89,
+       "lead": false,
+       "text": "AWARD NAME"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 12.06,
+       "x1": 31.11,
+       "y": 288.46,
+       "lead": false,
+       "text": "Organleatiom"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 12.19,
+       "x1": 19.3,
+       "y": 291.64,
+       "lead": false,
+       "text": "2016"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 74.91,
+   "x1": 198.07,
+   "top": 69.2,
+   "bottom": 295.19,
+   "text_x": 75.67,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "PROFILE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      75.8,
+      69.7,
+      96.62,
+      72.88
+     ],
+     "top": 69.7,
+     "head_bottom": 72.88,
+     "tokens": {
+      "head_first": 6.35,
+      "wrap": 4.57
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.67,
+       "x1": 197.81,
+       "y": 79.23,
+       "lead": false,
+       "text": "Write a powerful performance summary here. Highlight your mo"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.54,
+       "x1": 197.68,
+       "y": 83.8,
+       "lead": false,
+       "text": "qualifications,achievements,credentials, and other distingui"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.8,
+       "x1": 184.99,
+       "y": 88.49,
+       "lead": false,
+       "text": "It relates to and supports your current objective. Integrate"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.54,
+       "x1": 189.05,
+       "y": 92.68,
+       "lead": false,
+       "text": "qualifications aligned with the company's specific needs.Sho"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.67,
+       "x1": 184.35,
+       "y": 97.0,
+       "lead": false,
+       "text": "uniquely qualifiedfocusing on slls or qualifications, indust"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.54,
+       "x1": 197.3,
+       "y": 101.57,
+       "lead": false,
+       "text": "companies wesked for,degrees, certifications, awards, and/or"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.54,
+       "x1": 92.94,
+       "y": 106.14,
+       "lead": false,
+       "text": "credentials."
+      }
+     ]
+    },
+    {
+     "key": "projects",
+     "title": "PROJECTS",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      75.8,
+      121.38,
+      100.81,
+      124.68
+     ],
+     "top": 121.38,
+     "head_bottom": 124.68,
+     "tokens": {
+      "head_first": 6.35,
+      "head_body": 5.71,
+      "wrap": 7.175000000000001,
+      "new_item": 5.775,
+      "item_gap": 16.0,
+      "title_sub": 5.84,
+      "sec_gap": 15.24,
+      "prev_key": "body1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\c7d28b29d2ec268a\\crops\\lead_projects_1_47.png",
+      "w": 2.79,
+      "h": 2.79,
+      "dx": 7.11,
+      "dy": 0.64,
+      "all_same": false
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.8,
+       "x1": 113.38,
+       "y": 131.03,
+       "lead": false,
+       "text": "PROJECT TITLE ONE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.67,
+       "x1": 150.96,
+       "y": 136.74,
+       "lead": false,
+       "text": "Core Technology I Team Size | Date-Date"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.8,
+       "x1": 181.56,
+       "y": 145.25,
+       "lead": false,
+       "text": "In 2 lines, summarize the project's purpose and your core"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.8,
+       "x1": 104.24,
+       "y": 150.83,
+       "lead": false,
+       "text": "responsibilities."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 190.83,
+       "y": 158.33,
+       "lead": true,
+       "text": "Detail 1 (action verb, past tense): Accomplished X using Y."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 174.58,
+       "y": 164.17,
+       "lead": true,
+       "text": "Detail 2: Enhanced feature Z by implementing W."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 197.94,
+       "y": 169.88,
+       "lead": true,
+       "text": "Detail 3: Collaborated with a team of 3 on system integratio"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 182.83,
+       "y": 175.59,
+       "lead": true,
+       "text": "Detail 4: Achieved performance gains of 20% through"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.67,
+       "x1": 108.05,
+       "y": 181.56,
+       "lead": false,
+       "text": "optimization."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.8,
+       "x1": 114.65,
+       "y": 194.64,
+       "lead": false,
+       "text": "PROJECT TITLE TWO"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 75.8,
+       "x1": 135.73,
+       "y": 200.48,
+       "lead": false,
+       "text": "Platform | Duration | Major Skill"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.67,
+       "x1": 185.75,
+       "y": 208.98,
+       "lead": false,
+       "text": "Summarize the key objectives and your main contributions."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 178.64,
+       "y": 217.11,
+       "lead": true,
+       "text": "Detail 1: Designed the user interface using A and B."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 181.31,
+       "y": 222.95,
+       "lead": true,
+       "text": "Detail 2: Managed project deadlines and milestones."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 174.07,
+       "y": 228.66,
+       "lead": true,
+       "text": "Detail 3: Resolved 50+ bugs and technical issues."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 75.8,
+       "x1": 117.44,
+       "y": 247.58,
+       "lead": false,
+       "text": "PROJECT TITLE THREE"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.8,
+       "x1": 141.95,
+       "y": 253.3,
+       "lead": false,
+       "text": "Framework I Team Size I Date-Date"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 75.42,
+       "x1": 183.46,
+       "y": 261.67,
+       "lead": false,
+       "text": "A 2-line description of the final deliverables and your role"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 176.99,
+       "y": 269.17,
+       "lead": true,
+       "text": "Detail 1: Developed the backend API with C and D."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 187.78,
+       "y": 274.75,
+       "lead": true,
+       "text": "Detail 2: Conducted comprehensive unit and integration"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.67,
+       "x1": 97.38,
+       "y": 280.85,
+       "lead": true,
+       "text": "testing."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 190.96,
+       "y": 285.93,
+       "lead": true,
+       "text": "Detail 3: Docurmented system architecture and user flows."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.8,
+       "x1": 186.26,
+       "y": 291.51,
+       "lead": true,
+       "text": "Detail 4: Mentored junior developers on best practices."
+      }
+     ]
+    }
+   ],
+   "bullet_x": 76.69,
+   "bullet_text_x": 83.8
+  }
+ ],
+ "analysis_s": 83.3
+}

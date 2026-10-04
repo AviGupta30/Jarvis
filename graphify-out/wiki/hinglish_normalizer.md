@@ -20,8 +20,8 @@
 ## Relationships
 
 - [voice](voice.md) (10 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
 
 ## Source Files
 

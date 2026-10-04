@@ -1,0 +1,1143 @@
+{
+ "v": 4,
+ "sha1": "224e6d4f40015d7e0dc8b9ba3444ef8042651992",
+ "source": "Screenshot_2026-10-02_133520_1790928356.png",
+ "source_path": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\Screenshot_2026-10-02_133520_1790928356.png",
+ "page": {
+  "h_mm": 297.0,
+  "ref_h_mm": 279.8,
+  "plate": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\plate.png",
+  "plate2": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\plate2.png",
+  "src_dpi": 53.5,
+  "partial": false,
+  "letter": false
+ },
+ "styles": {
+  "name": {
+   "ref_contrast": 15.94,
+   "family": "Faustina",
+   "weight": 700,
+   "size": 6.808,
+   "ls": 0.001,
+   "color": "#1b1b1b",
+   "upper": true,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.67,
+   "n": 1,
+   "pitch": 8.987
+  },
+  "title": {
+   "ref_contrast": 3.11,
+   "family": "Faustina",
+   "weight": 600,
+   "size": 4.232,
+   "ls": 0.0134,
+   "color": "#8c8c8c",
+   "upper": true,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.67,
+   "n": 1,
+   "pitch": 5.586
+  },
+  "head1": {
+   "ref_contrast": 8.46,
+   "family": "Faustina",
+   "weight": 700,
+   "size": 4.416,
+   "ls": 0.036,
+   "color": "#2c506e",
+   "upper": true,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.67,
+   "n": 4,
+   "pitch": 5.829
+  },
+  "head0": {
+   "ref_contrast": 9.26,
+   "family": "Faustina",
+   "weight": 700,
+   "size": 4.416,
+   "ls": 0.0354,
+   "color": "#c7d7df",
+   "upper": true,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.67,
+   "n": 3,
+   "pitch": 5.829
+  },
+  "body1": {
+   "ref_contrast": 4.48,
+   "family": "Noto Sans Tamil",
+   "weight": 400,
+   "size": 2.73,
+   "ls": 0.0,
+   "color": "#777777",
+   "upper": false,
+   "asc": 0.87,
+   "desc": 0.37,
+   "ink_asc": 0.76,
+   "n": 24,
+   "pitch": 5.206
+  },
+  "contact0": {
+   "ref_contrast": 6.13,
+   "family": "Faustina",
+   "weight": 800,
+   "size": 3.242,
+   "ls": 0.0,
+   "color": "#9ab2c3",
+   "upper": false,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.74,
+   "n": 5,
+   "pitch": 4.19
+  },
+  "item_title1": {
+   "ref_contrast": 12.45,
+   "family": "Oxygen",
+   "weight": 400,
+   "size": 4.117,
+   "ls": 0.0,
+   "color": "#343434",
+   "upper": false,
+   "asc": 1.03,
+   "desc": 0.24,
+   "ink_asc": 0.75,
+   "n": 3,
+   "pitch": 5.434
+  },
+  "meta_right1": {
+   "ref_contrast": 5.0,
+   "family": "Faustina",
+   "weight": 400,
+   "size": 3.307,
+   "ls": 0.0,
+   "color": "#54738a",
+   "upper": false,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.66,
+   "n": 3,
+   "pitch": 4.365
+  },
+  "sub1": {
+   "ref_contrast": 8.06,
+   "family": "Oxygen",
+   "weight": 400,
+   "size": 3.507,
+   "ls": 0.0,
+   "color": "#505050",
+   "upper": false,
+   "asc": 1.03,
+   "desc": 0.24,
+   "ink_asc": 0.75,
+   "n": 3,
+   "pitch": 4.629
+  },
+  "list0": {
+   "ref_contrast": 6.44,
+   "family": "Noto Sans Tamil",
+   "weight": 400,
+   "size": 3.332,
+   "ls": 0.0,
+   "color": "#9cb6c7",
+   "upper": false,
+   "asc": 0.87,
+   "desc": 0.37,
+   "ink_asc": 0.76,
+   "n": 14,
+   "pitch": 4.398
+  },
+  "list1": {
+   "ref_contrast": 7.81,
+   "family": "Faustina",
+   "weight": 400,
+   "size": 4.014,
+   "ls": 0.0,
+   "color": "#525252",
+   "upper": false,
+   "asc": 1.04,
+   "desc": 0.22,
+   "ink_asc": 0.7,
+   "n": 7,
+   "pitch": 5.298
+  }
+ },
+ "created": 1791092050.7877789,
+ "fonts": {
+  "Faustina": [
+   400,
+   600,
+   700,
+   800
+  ],
+  "Noto Sans Tamil": [
+   400
+  ],
+  "Oxygen": [
+   400
+  ]
+ },
+ "name": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 116.05,
+    "y": 7.62,
+    "x1": 165.31,
+    "y1": 12.32,
+    "key": "name",
+    "text": "MARK JACKSON",
+    "fs": 6.808,
+    "room": null,
+    "bg": "#f6f6f6",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "title": {
+  "align": "center",
+  "lines": [
+   {
+    "x": 115.41,
+    "y": 21.33,
+    "x1": 165.82,
+    "y1": 24.25,
+    "key": "title",
+    "text": "SENIOR JAVA DEVELOPER",
+    "fs": 4.232,
+    "room": null,
+    "bg": "#f6f6f6",
+    "room_kind": null,
+    "room_hard": null
+   }
+  ]
+ },
+ "photo": {
+  "box": [
+   1.65,
+   2.03,
+   68.31,
+   34.92
+  ],
+  "radius": 0.0,
+  "circle": false
+ },
+ "hcontact": [],
+ "columns": [
+  {
+   "x0": 9.14,
+   "x1": 50.66,
+   "top": 45.58,
+   "bottom": 241.36,
+   "text_x": 10.41,
+   "sections": [
+    {
+     "key": "contact",
+     "title": "CONTACT",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.54,
+      45.96,
+      30.85,
+      49.01
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_contact_0_359.png",
+      "box": [
+       10.16,
+       45.96,
+       31.23,
+       52.82
+      ],
+      "text": [
+       0.38,
+       0.0,
+       20.7,
+       3.05
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 45.96,
+     "head_bottom": 52.82,
+     "tokens": {
+      "head_first": 4.7,
+      "new_item": 6.54,
+      "wrap": 5.335000000000001
+     },
+     "icons": [
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\lead_contact_0_5.png",
+       "w": 4.32,
+       "h": 3.05,
+       "ctype": "",
+       "dx": 5.59,
+       "dy": -0.39
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\lead_contact_0_8.png",
+       "w": 2.79,
+       "h": 4.32,
+       "ctype": "phone",
+       "dx": 4.95,
+       "dy": -1.02
+      },
+      {
+       "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\lead_contact_0_10.png",
+       "w": 3.3,
+       "h": 3.81,
+       "ctype": "",
+       "dx": 5.08,
+       "dy": -1.01
+      }
+     ],
+     "graphics": {},
+     "roles": [
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 15.49,
+       "x1": 50.41,
+       "y": 57.52,
+       "lead": true,
+       "text": "infoeresumekraftcom"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 15.62,
+       "x1": 40.76,
+       "y": 63.99,
+       "lead": true,
+       "text": "(555)846 6087"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 15.49,
+       "x1": 36.06,
+       "y": 70.59,
+       "lead": true,
+       "text": "Liol,UK"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 10.41,
+       "x1": 48.25,
+       "y": 77.07,
+       "lead": false,
+       "text": "in Uinkecin.com/inmark-"
+      },
+      {
+       "role": "contact",
+       "key": "contact0",
+       "x": 15.24,
+       "x1": 26.79,
+       "y": 81.26,
+       "lead": false,
+       "text": "jackeson"
+      }
+     ]
+    },
+    {
+     "key": "skills",
+     "title": "SKILLS",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.54,
+      93.07,
+      25.27,
+      95.99
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_skills_0_730.png",
+      "box": [
+       10.16,
+       93.07,
+       25.9,
+       99.79
+      ],
+      "text": [
+       0.38,
+       0.0,
+       15.11,
+       2.92
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 93.07,
+     "head_bottom": 99.79,
+     "tokens": {
+      "head_first": 3.69,
+      "wrap": 9.9,
+      "sec_gap": 11.81,
+      "prev_key": "contact0"
+     },
+     "graphics": {
+      "bars": {
+       "place": "below",
+       "h_mm": 2.54,
+       "columns": 1,
+       "label_dx_mm": 0.0,
+       "col_x_mm": [
+        10.16
+       ],
+       "w_mm": 50.91,
+       "x0_mm": 10.16,
+       "fill": "#1688bb",
+       "track": "#e2e3e8",
+       "gap_mm": 1.65,
+       "radius_mm": 1.27,
+       "levels": [
+        1.0,
+        1.0,
+        0.79,
+        0.79,
+        1.0,
+        0.79,
+        1.0,
+        0.8,
+        0.8,
+        0.8,
+        0.79,
+        1.0
+       ]
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 18.41,
+       "y": 103.48,
+       "lead": false,
+       "text": "Java"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.54,
+       "x1": 38.85,
+       "y": 113.0,
+       "lead": false,
+       "text": "Spring Framework"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 25.77,
+       "y": 123.03,
+       "lead": false,
+       "text": "Hibernate"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.54,
+       "x1": 30.98,
+       "y": 132.93,
+       "lead": false,
+       "text": "RESTful APh"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 51.29,
+       "y": 143.09,
+       "lead": false,
+       "text": "Mcrosrvioes Architccture"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.54,
+       "x1": 42.79,
+       "y": 152.99,
+       "lead": false,
+       "text": "Agic Mcthodologics"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 16.0,
+       "y": 162.9,
+       "lead": false,
+       "text": "SQL"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 42.15,
+       "y": 172.67,
+       "lead": false,
+       "text": "Vercion Control (Git)"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 39.87,
+       "y": 182.58,
+       "lead": false,
+       "text": "Conftict Resolution"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 38.98,
+       "y": 192.73,
+       "lead": false,
+       "text": "Strategic Planning"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 34.53,
+       "y": 202.89,
+       "lead": false,
+       "text": "Communkation"
+      }
+     ]
+    },
+    {
+     "key": "languages",
+     "title": "LANGUAGES",
+     "implicit": false,
+     "head_key": "head0",
+     "head_ink": [
+      10.67,
+      216.98,
+      36.69,
+      220.03
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_languages_0_1704.png",
+      "box": [
+       10.16,
+       216.98,
+       36.82,
+       223.97
+      ],
+      "text": [
+       0.51,
+       0.0,
+       26.54,
+       3.05
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 216.98,
+     "head_bottom": 223.97,
+     "tokens": {
+      "head_first": 3.04,
+      "wrap": 6.154999999999999,
+      "sec_gap": 14.09,
+      "prev_key": "list0"
+     },
+     "graphics": {
+      "dots": {
+       "d_mm": 3.81,
+       "pitch_mm": 4.95,
+       "on": "#1685ba",
+       "off": "#eae7e7",
+       "n": 5,
+       "x0_mm": 36.31,
+       "place": "right"
+      }
+     },
+     "roles": [
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 21.96,
+       "y": 227.01,
+       "lead": false,
+       "text": "English"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.41,
+       "x1": 20.82,
+       "y": 232.73,
+       "lead": false,
+       "text": "Fronch"
+      },
+      {
+       "role": "list",
+       "key": "list0",
+       "x": 10.54,
+       "x1": 20.44,
+       "y": 239.33,
+       "lead": false,
+       "text": "Arabic"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "x0": 77.07,
+   "x1": 203.78,
+   "top": 37.45,
+   "bottom": 276.78,
+   "text_x": 79.73,
+   "sections": [
+    {
+     "key": "profile",
+     "title": "SUMMARY",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      77.83,
+      37.96,
+      100.56,
+      41.01
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_profile_1_295.png",
+      "box": [
+       77.19,
+       37.58,
+       101.06,
+       44.95
+      ],
+      "text": [
+       0.63,
+       0.38,
+       23.36,
+       3.43
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 37.58,
+     "head_bottom": 44.95,
+     "tokens": {
+      "head_first": 3.42,
+      "wrap": 5.21
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.83,
+       "x1": 194.89,
+       "y": 48.37,
+       "lead": false,
+       "text": "Specialized in transfomting complex business requirements in"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.83,
+       "x1": 197.56,
+       "y": 58.15,
+       "lead": false,
+       "text": "Hbernate, and REsTful web services, with a proen track recor"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.83,
+       "x1": 197.05,
+       "y": 63.36,
+       "lead": false,
+       "text": "high-qualty sottware solutions on time.Commtted to driving i"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.83,
+       "x1": 199.97,
+       "y": 68.56,
+       "lead": false,
+       "text": "optimizing performance,ready to leverage skille to elevate c"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.96,
+       "x1": 143.34,
+       "y": 73.39,
+       "lead": false,
+       "text": "and contnbute to groundbreaking projects."
+      }
+     ]
+    },
+    {
+     "key": "experience",
+     "title": "EXPERIENCE",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      77.96,
+      81.51,
+      105.0,
+      84.56
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_experience_1_639.png",
+      "box": [
+       77.19,
+       81.0,
+       105.63,
+       88.11
+      ],
+      "text": [
+       0.76,
+       0.51,
+       27.81,
+       3.56
+      ],
+      "kind": "hug",
+      "on_box": true
+     },
+     "top": 81.0,
+     "head_bottom": 88.11,
+     "tokens": {
+      "head_first": 3.43,
+      "title_sub": 4.635,
+      "head_body": 6.029999999999999,
+      "wrap": 4.885,
+      "new_item": 5.145,
+      "item_gap": 8.51,
+      "sec_gap": 7.61,
+      "prev_key": "body1"
+     },
+     "lead": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\lead_experience_1_28.png",
+      "w": 2.03,
+      "h": 2.03,
+      "dx": 4.57,
+      "dy": -0.12,
+      "all_same": true
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 77.96,
+       "x1": 120.36,
+       "y": 91.54,
+       "lead": false,
+       "text": "Senior Java Developer"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 176.74,
+       "x1": 203.52,
+       "y": 91.67,
+       "lead": false,
+       "text": "Jure 2021 - Present"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 77.96,
+       "x1": 108.68,
+       "y": 96.11,
+       "lead": false,
+       "text": "Tech Solutions Inc."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 79.73,
+       "x1": 202.51,
+       "y": 102.21,
+       "lead": false,
+       "text": "Enginoered a mirraservicns arehitecture that improved npplic"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 96.49,
+       "y": 106.9,
+       "lead": false,
+       "text": "by 40%."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.92,
+       "x1": 187.4,
+       "y": 112.11,
+       "lead": true,
+       "text": "Streamlinexl trevelopment prooss,resulting in a 25%6 reducti"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 110.71,
+       "y": 117.32,
+       "lead": false,
+       "text": "deployment time."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 192.1,
+       "y": 122.14,
+       "lead": true,
+       "text": "Collaboratrd with cros;-functional teams to cnhance user exp"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.18,
+       "x1": 172.42,
+       "y": 127.22,
+       "lead": false,
+       "text": "achieving a 20% increase in customer satistaction ratings."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 198.57,
+       "y": 132.42,
+       "lead": true,
+       "text": "Mentored junior developers.fostering a cutture of continuous"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 104.37,
+       "y": 137.76,
+       "lead": false,
+       "text": "impewmont."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 79.73,
+       "x1": 197.81,
+       "y": 142.33,
+       "lead": false,
+       "text": "Implemented automated testing frameworks, increasing code co"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.92,
+       "x1": 91.29,
+       "y": 146.77,
+       "lead": false,
+       "text": "05%."
+      },
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 77.96,
+       "x1": 106.4,
+       "y": 155.28,
+       "lead": false,
+       "text": "Java Developer"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 174.45,
+       "x1": 203.02,
+       "y": 155.53,
+       "lead": false,
+       "text": "Auly 2020 - May 2021"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 77.96,
+       "x1": 106.02,
+       "y": 159.98,
+       "lead": false,
+       "text": "Innovatech Corp."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 79.73,
+       "x1": 198.07,
+       "y": 165.94,
+       "lead": false,
+       "text": "Developed and maintained web applications using Javaleading "
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 139.53,
+       "y": 170.77,
+       "lead": false,
+       "text": "inerooso in spplicotion porformanco"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 79.73,
+       "x1": 194.51,
+       "y": 175.85,
+       "lead": false,
+       "text": "Participated in Agile ceremonies, contributing to a 30% impr"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 123.54,
+       "y": 181.18,
+       "lead": false,
+       "text": "project delivery timelines."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 79.73,
+       "x1": 190.07,
+       "y": 185.88,
+       "lead": false,
+       "text": "Intograx third -party APisenhnting system funtionaliy an usr"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 83.92,
+       "x1": 116.81,
+       "y": 190.83,
+       "lead": false,
+       "text": "engagement by 101."
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 201.49,
+       "y": 195.91,
+       "lead": true,
+       "text": "Conducted code reviews,ensuring adherence to bst practices a"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 84.05,
+       "x1": 104.49,
+       "y": 200.6,
+       "lead": false,
+       "text": "bugs by 20%."
+      }
+     ]
+    },
+    {
+     "key": "education",
+     "title": "EDUCATION",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      77.96,
+      210.63,
+      103.1,
+      213.81
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_education_1_1656.png",
+      "box": [
+       77.19,
+       210.25,
+       103.86,
+       217.87
+      ],
+      "text": [
+       0.76,
+       0.38,
+       25.9,
+       3.56
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 210.25,
+     "head_bottom": 217.87,
+     "tokens": {
+      "head_first": 3.05,
+      "title_sub": 4.7,
+      "head_body": 6.09,
+      "sec_gap": 9.65,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "item_title",
+       "key": "item_title1",
+       "x": 77.83,
+       "x1": 156.93,
+       "y": 220.92,
+       "lead": false,
+       "text": "Bachelor of Science in Computer Science"
+      },
+      {
+       "role": "meta_right",
+       "key": "meta_right1",
+       "x": 169.63,
+       "x1": 203.52,
+       "y": 221.3,
+       "lead": false,
+       "text": "Augurt 201G-May Z020"
+      },
+      {
+       "role": "sub",
+       "key": "sub1",
+       "x": 77.83,
+       "x1": 105.0,
+       "y": 225.62,
+       "lead": false,
+       "text": "State University"
+      },
+      {
+       "role": "body",
+       "key": "body1",
+       "x": 77.83,
+       "x1": 193.49,
+       "y": 231.71,
+       "lead": false,
+       "text": "Graduated with honors. focusing on software development and "
+      }
+     ]
+    },
+    {
+     "key": "certifications",
+     "title": "CERTIFICATIONS",
+     "implicit": false,
+     "head_key": "head1",
+     "head_ink": [
+      77.83,
+      239.84,
+      113.76,
+      242.88
+     ],
+     "deco": {
+      "file": "C:\\Users\\avi40\\Desktop\\Jarvis\\data\\uploads\\resumes\\replica\\224e6d4f40015d7e\\crops\\head_certifications_1_1889.png",
+      "box": [
+       77.19,
+       239.84,
+       114.27,
+       246.82
+      ],
+      "text": [
+       0.63,
+       0.0,
+       36.57,
+       3.05
+      ],
+      "kind": "hug",
+      "on_box": false
+     },
+     "top": 239.84,
+     "head_bottom": 246.82,
+     "tokens": {
+      "head_first": 2.92,
+      "wrap": 4.255000000000001,
+      "sec_gap": 8.13,
+      "prev_key": "body1"
+     },
+     "graphics": {},
+     "roles": [
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 77.83,
+       "x1": 154.52,
+       "y": 249.74,
+       "lead": false,
+       "text": "Oracle Certifled Professional,Java SE 11"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 172.42,
+       "x1": 180.42,
+       "y": 250.63,
+       "lead": false,
+       "text": "bnu"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 77.96,
+       "x1": 97.26,
+       "y": 254.95,
+       "lead": false,
+       "text": "Developer"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 77.83,
+       "x1": 88.75,
+       "y": 259.77,
+       "lead": false,
+       "text": "Oracle"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 77.83,
+       "x1": 140.17,
+       "y": 268.91,
+       "lead": false,
+       "text": "Spring Framework Certification"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 168.48,
+       "x1": 180.29,
+       "y": 269.42,
+       "lead": false,
+       "text": "Maxh 2"
+      },
+      {
+       "role": "list",
+       "key": "list1",
+       "x": 77.83,
+       "x1": 110.97,
+       "y": 273.61,
+       "lead": false,
+       "text": "Spring Professional"
+      }
+     ]
+    }
+   ],
+   "bullet_x": 79.48,
+   "bullet_text_x": 84.05
+  }
+ ],
+ "analysis_s": 94.3
+}

@@ -19,7 +19,7 @@
 
 - [voice_agent](voice_agent.md) (3 shared connections)
 - [voice](voice.md) (1 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
 
 ## Source Files
 

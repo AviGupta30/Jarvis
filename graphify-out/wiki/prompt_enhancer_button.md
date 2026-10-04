@@ -1,6 +1,6 @@
 # prompt_enhancer_button
 
-> 34 nodes · cohesion 0.08
+> 35 nodes · cohesion 0.08
 
 ## Key Concepts
 
@@ -16,6 +16,7 @@
 - **_setup_logging()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **uninstall_autostart()** (3 connections) — `app/services/prompt_enhancer_button.py`
 - **_window_rect()** (3 connections) — `app/services/prompt_enhancer_button.py`
+- **dotenv** (3 connections)
 - **.__init__()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_exe_name()** (2 connections) — `app/services/prompt_enhancer_button.py`
 - **_has_pattern()** (2 connections) — `app/services/prompt_enhancer_button.py`
@@ -28,22 +29,22 @@
 - **Path** (1 connections)
 - **prompt_enhancer_button.py…** (1 connections) — `app/services/prompt_enhancer_button.py`
 - **Visible frame bounds (excludes the invisible resize border).** (1 connections) — `app/services/prompt_enhancer_button.py`
-- **Desktop AI apps whose exe we don't know: title is exactly the product name.** (1 connections) — `app/services/prompt_enhancer_button.py`
-- *... and 9 more nodes in this community*
+- *... and 10 more nodes in this community*
 
 ## Relationships
 
 - [prompt_enhancer_button](prompt_enhancer_button.md) (14 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (6 shared connections)
 - [prompt-enhancer + prompt_enhancer_button](prompt-enhancer_+_prompt_enhancer_button.md) (6 shared connections)
-- [server + test_concurrency](server_+_test_concurrency.md) (3 shared connections)
-- [safe_executor + ui_inspector](safe_executor_+_ui_inspector.md) (1 shared connections)
-- [persistence + engine](persistence_+_engine.md) (1 shared connections)
+- [benchmark + server](benchmark_+_server.md) (5 shared connections)
+- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (2 shared connections)
+- [youtube_player](youtube_player.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
 - [prompt_enhancement_library + skill_prompt_enhancer](prompt_enhancement_library_+_skill_prompt_enhancer.md) (1 shared connections)
-- [refresh_docs](refresh_docs.md) (1 shared connections)
-- [web_search + tools](web_search_+_tools.md) (1 shared connections)
+- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
+- [jarvis_overlay](jarvis_overlay.md) (1 shared connections)
+- [web_search](web_search.md) (1 shared connections)
 - [window_layout](window_layout.md) (1 shared connections)
-- [tools](tools.md) (1 shared connections)
 
 ## Source Files
 
@@ -51,7 +52,7 @@
 
 ## Audit Trail
 
-- EXTRACTED: 80 (98%)
+- EXTRACTED: 82 (98%)
 - INFERRED: 2 (2%)
 - AMBIGUOUS: 0 (0%)
 

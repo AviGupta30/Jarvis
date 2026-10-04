@@ -13,7 +13,7 @@
 
 ## Relationships
 
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
 
 ## Source Files
 

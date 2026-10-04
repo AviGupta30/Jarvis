@@ -13,7 +13,7 @@
 ## Relationships
 
 - [lru](lru.md) (2 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (1 shared connections)
+- [test_lru](test_lru.md) (1 shared connections)
 
 ## Source Files
 

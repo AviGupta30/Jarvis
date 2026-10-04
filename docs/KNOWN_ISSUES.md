@@ -3,6 +3,8 @@
 Originally found in the code survey of 2026-09-28 (commit cb8a3aa). Most were fixed the same day. Delete an entry once it's fixed, and add new ones with evidence plus file/line.
 
 ## Open
+- **Exact resume replica — remaining limits (2026-10-03).** (1) Fonts on very low-res references (< ~60 dpi) can land on a look-alike family/weight; a paid font is only exact if its file is in `data/fonts/user/`. (2) A horizontal contact strip is rendered as a vertical list; free-form layouts (e.g. tabs scattered over a diagonal split, `Screenshot_2026-10-03_011131_*`) keep their background exactly but sections flow in columns. (3) One colour per OCR line (two-colour lines blend). (4) Viewer overlays inside the page (Google Lens button, "storage.googleapis.com" pill) can stay in the plate when they span columns. (5) Colour change requests don't recolour an exact copy. Evaluate with `scripts/replica_eval.py`.
+- **Resume editor undo — limits (2026-10-04).** The editor's Ctrl+Z history belongs to one editor session: a resume change made through Jarvis chat (or a new resume) changes `_state_rev`, so older steps are dropped on the next editor load. Structural steps older than the last 40 server snapshots (`app/memory/resume_undo.json`) report "too old to undo". A free image deleted and then restored after an editor reload shows grey until the next reload (its picture is reloaded from `path`). Typing inside a free text box (double-click) uses the browser's own undo until you click away; then the whole edit is one step.
 - **Resume vision quota.** `qwen/qwen3.8-27b` on Groq has a 200k tokens/**day** cap; one resume image costs two vision calls. `resume_builder` falls back to Gemini (`gemini-flash-lite-latest` worked 2026-10-02; `gemini-2.0/2.5-flash` return 404 for this key) and caches each design by image hash.
 - **Module-global conversation state (not changing, by design).** `llm.conversation_history` and the `api_*_flow` dicts in `app/api/chat.py` are shared by every client (UI, voice agent, overlay). For a single-user assistant this is deliberate: the voice agent and the UI see the same conversation. Only revisit if Jarvis ever serves several users; that would need a session id in `ChatRequest` threaded through chat.py and llm.py.
 - **Gmail API token revoked.** `token.json` fails refresh with `invalid_grant`, so email tools fall back to opening Gmail in the browser. To restore the API path: delete `token.json`, run `python -c "from app.services.gmail_tool import _get_gmail_service; _get_gmail_service()"` and approve in the browser. `calendar_token.json` may need the same treatment via `calendar_tool._get_calendar_service`.
@@ -26,6 +28,22 @@ Originally found in the code survey of 2026-09-28 (commit cb8a3aa). Most were fi
 
 - **PPT: Groq daily token caps bound how many AI-written decks fit in a day.** gpt-oss-120b and 20b each allow 200k tokens/day (plus 8k/min). A grounded 20-slide deck needs roughly 35–60k tokens; testing on 2026-10-01 exhausted both. `_llm_json` then falls back to Gemini (`gemini-3.8-flash` is often 503 "high demand", `3.5-flash-lite` works). Research itself uses no LLM tokens.
 - **PPT research depends on `ddgs` web search, which throttles bursts.** Searches run ≤ 2 at a time with backoff; if it still returns nothing, Wikipedia alone grounds the deck (fewer facts → more qualitative slides).
+
+## Fixed on 2026-10-03 (resume editor)
+- The editor's hover controls (＋ ↑ ✕) were placed with page coordinates inside the positioned, centred `<body>`, so they showed about 76 px too low and offset to the right by the body's left margin. They are now positioned relative to the body box (`brect` in `_EDITOR_JS`).
+
+## Fixed on 2026-10-04, round 3 (resume creator)
+- "Make it one page" failed on exact copies (only ≤ 15 % type shrink allowed, the reference's whitespace kept) → whitespace is squeezed first, then type. The reference's own job title ("BUSINESS GRADUATE", widely letter-spaced) stayed in the copied background and looked like invented content that an edit couldn't remove → letter-spaced text detection + whole-area header erase + single-letter OCR check.
+- The editor didn't show what the PDF prints (different scale, print-only page breaks, editor padding, fonts measured before loading) → one in-page paginator for both, stored render scale, scripts after `fonts.ready`. The toolbar covered the page top when it wrapped.
+
+## Fixed on 2026-10-04 (resume creator, exact replica)
+- Blurry scribble-like leftovers of the reference's sample text (sidebar paragraphs, heading text) in the copied background, and a cartoon avatar kept instead of the user's photo (the face detector can't see cartoons) — see *Robustness rules* in `docs/features/resume-creator.md`.
+- Editor page couldn't scroll and was misaligned on exact copies (`overflow:hidden` / fixed page-2 background now print-only). Education "period" grew "· CGPA … · CGPA …" on every editor save (date and details were one field) — now separate fields; the user's saved state was repaired.
+- Overlapping lines (negative gaps), a title wrapping over the content, a trailing heading rule run over by a longer heading, skill bars of a 2-column grid merged into one, white text continuing onto white paper.
+
+## Fixed on 2026-10-03 (resume creator)
+- Uploaded designs came out "similar" instead of identical: the VLM described them with a fixed vocabulary and the result was merged over the closest preset (e.g. navy filled heading boxes in `Screenshot_2026-10-03_120914_*` became left-bar headings). Now `app/services/resume_replica/` measures the design from pixels and reuses the reference's own background, heading decorations, icons and photo frame with identified fonts and measured spacing (see `docs/features/resume-creator.md` → *Exact replica engine*).
+- A failed design analysis silently produced a stock preset (beige ref `Screenshot_2026-10-03_135251_*` → blue `wave`). The reply now says when it couldn't copy exactly, and warns about low-resolution references.
 
 ## Fixed on 2026-10-02 (resume creator)
 - An uploaded design was replaced by the `tech` template because "tech stack" plus a word like "format" in the pasted details matched the template regex. Templates now need an explicit "<name> template/style" in the request line.

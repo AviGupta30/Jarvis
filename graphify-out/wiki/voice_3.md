@@ -1,24 +1,24 @@
 # voice
 
-> 7 nodes · cohesion 0.29
+> 10 nodes · cohesion 0.27
 
 ## Key Concepts
 
-- **SentenceSplitter** (9 connections) — `app/services/voice.py`
-- **speak_stream()** (5 connections) — `app/services/voice.py`
-- **Feed streamed tokens; get back speakable sentences as early as possible.** (1 connections) — `app/services/voice.py`
-- **Speak an async generator of text chunks, sentence by sentence, pipelined.** (1 connections) — `app/services/voice.py`
-- **.feed()** (1 connections) — `app/services/voice.py`
-- **.flush()** (1 connections) — `app/services/voice.py`
+- **_Player** (12 connections) — `app/services/voice.py`
+- **.play()** (6 connections) — `app/services/voice.py`
+- **._push()** (3 connections) — `app/services/voice.py`
+- **.clear()** (2 connections) — `app/services/voice.py`
+- **._ensure()** (2 connections) — `app/services/voice.py`
+- **._callback()** (1 connections) — `app/services/voice.py`
 - **.__init__()** (1 connections) — `app/services/voice.py`
+- **.pending()** (1 connections) — `app/services/voice.py`
+- **One persistent 24 kHz output stream driven by a callback that pulls from a…** (1 connections) — `app/services/voice.py`
+- **Play a clip as it arrives. Returns False if interrupted.** (1 connections) — `app/services/voice.py`
 
 ## Relationships
 
-- [voice](voice.md) (3 shared connections)
-- [voice + tools](voice_+_tools.md) (1 shared connections)
-- [voice_agent](voice_agent.md) (1 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (1 shared connections)
-- [voice + voice](voice_+_voice.md) (1 shared connections)
+- [voice](voice.md) (5 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
 
 ## Source Files
 
@@ -26,8 +26,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 11 (85%)
-- INFERRED: 2 (15%)
+- EXTRACTED: 17 (94%)
+- INFERRED: 1 (6%)
 - AMBIGUOUS: 0 (0%)
 
 ---

@@ -27,7 +27,9 @@
 ## Relationships
 
 - [ppt_tool](ppt_tool.md) (5 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (3 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [benchmark + server](benchmark_+_server.md) (1 shared connections)
+- [social_content_manager + tools](social_content_manager_+_tools.md) (1 shared connections)
 - [dag_executor + dynamic_skill](dag_executor_+_dynamic_skill.md) (1 shared connections)
 - [voice](voice.md) (1 shared connections)
 

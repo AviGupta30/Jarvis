@@ -1,50 +1,45 @@
 # voice
 
-> 19 nodes · cohesion 0.15
+> 15 nodes · cohesion 0.14
 
 ## Key Concepts
 
-- **Speaker** (17 connections) — `app/services/voice.py`
-- **hinglish_to_devanagari()** (6 connections) — `app/services/hinglish_normalizer.py`
-- **TTS (`voice.Speaker`, `start_clip`, `_Player`)** (6 connections) — `docs/features/voice.md`
-- **.is_echo()** (5 connections) — `app/services/voice.py`
-- **._take()** (5 connections) — `app/services/voice.py`
-- **_norm_words()** (4 connections) — `app/services/voice.py`
-- **.run()** (4 connections) — `app/services/voice.py`
-- **.stop_all()** (4 connections) — `app/services/voice.py`
-- **Fixed on 2026-09-30 (voice)** (4 connections) — `docs/KNOWN_ISSUES.md`
-- **._wake()** (3 connections) — `app/services/voice.py`
-- **._gc()** (2 connections) — `app/services/voice.py`
-- **.say_now()** (2 connections) — `app/services/voice.py`
-- **Rewrite the Hindi words of a romanized Hinglish sentence in Devanagari, leaving…** (1 connections) — `app/services/hinglish_normalizer.py`
-- **Plays sentences from many Channels without overlap: - urgent phrases (acks,…** (1 connections) — `app/services/voice.py`
-- **Barge-in "stop": silence now and drop everything queued.** (1 connections) — `app/services/voice.py`
-- **Did the mic just hear Jarvis himself (speaker → mic bleed)? Echo comes back…** (1 connections) — `app/services/voice.py`
-- **Next (channel, text, lang) or None. Non-blocking.** (1 connections) — `app/services/voice.py`
-- **.busy()** (1 connections) — `app/services/voice.py`
-- **.wait_idle()** (1 connections) — `app/services/voice.py`
+- **speak_text()** (10 connections) — `app/services/voice.py`
+- **SentenceSplitter** (9 connections) — `app/services/voice.py`
+- **test_hindi_tts.py** (6 connections) — `scripts/test_hindi_tts.py`
+- **speak_stream()** (5 connections) — `app/services/voice.py`
+- **get_player()** (4 connections) — `app/services/voice.py`
+- **split_sentences()** (3 connections) — `app/services/voice.py`
+- **.__init__()** (2 connections) — `app/services/voice.py`
+- **main()** (2 connections) — `scripts/test_hindi_tts.py`
+- **Feed streamed tokens; get back speakable sentences as early as possible.** (1 connections) — `app/services/voice.py`
+- **Speak a complete text. All sentences synthesise in parallel, play in order.** (1 connections) — `app/services/voice.py`
+- **Speak an async generator of text chunks, sentence by sentence, pipelined.** (1 connections) — `app/services/voice.py`
+- **.feed()** (1 connections) — `app/services/voice.py`
+- **.flush()** (1 connections) — `app/services/voice.py`
+- **.__init__()** (1 connections) — `app/services/voice.py`
+- **Test language-adaptive TTS - plays English then Hindi to verify both engines…** (1 connections) — `scripts/test_hindi_tts.py`
 
 ## Relationships
 
-- [voice](voice.md) (11 shared connections)
-- [llm + llm-personality](llm_+_llm-personality.md) (2 shared connections)
-- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (2 shared connections)
-- [hinglish_normalizer](hinglish_normalizer.md) (1 shared connections)
-- [voice + tools](voice_+_tools.md) (1 shared connections)
-- [voice + voice](voice_+_voice.md) (1 shared connections)
+- [voice](voice.md) (9 shared connections)
+- [voice + voice](voice_+_voice.md) (2 shared connections)
+- [tools](tools.md) (2 shared connections)
 - [voice_agent](voice_agent.md) (1 shared connections)
+- [voice + voice_agent](voice_+_voice_agent.md) (1 shared connections)
+- [rag_memory + mysql_db](rag_memory_+_mysql_db.md) (1 shared connections)
+- [benchmark + server](benchmark_+_server.md) (1 shared connections)
+- [chat + llm](chat_+_llm.md) (1 shared connections)
 
 ## Source Files
 
-- `app/services/hinglish_normalizer.py`
 - `app/services/voice.py`
-- `docs/KNOWN_ISSUES.md`
-- `docs/features/voice.md`
+- `scripts/test_hindi_tts.py`
 
 ## Audit Trail
 
-- EXTRACTED: 33 (75%)
-- INFERRED: 11 (25%)
+- EXTRACTED: 30 (91%)
+- INFERRED: 3 (9%)
 - AMBIGUOUS: 0 (0%)
 
 ---

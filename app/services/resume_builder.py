@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 import contextvars
+import hashlib
 import html as _html
 import json
 import os
@@ -276,6 +277,47 @@ def _save_state(state: dict) -> None:
             json.dump(state, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print(f"[resume] could not save state: {e}")
+
+
+UNDO_PATH = os.path.join(_BASE_DIR, "app", "memory", "resume_undo.json")
+_UNDO_KEYS = ("content", "design", "photo", "target_pages", "render_scale")
+
+
+def _state_rev(st: dict) -> str:
+    """Fingerprint of what the editor shows; its client-side undo history is only valid for this exact state."""
+    blob = json.dumps([st.get(k) for k in ("content", "design", "photo")], sort_keys=True, ensure_ascii=False, default=str)
+    return hashlib.sha1(blob.encode("utf-8")).hexdigest()[:16]
+
+
+def _undo_snap(st: dict) -> dict:
+    return json.loads(json.dumps({k: st.get(k) for k in _UNDO_KEYS}, default=str))
+
+
+def _undo_push(snap: dict) -> str:
+    """Store a whole editor state (before a structural change); returns its id for the editor's history."""
+    try:
+        with open(UNDO_PATH, "r", encoding="utf-8") as f:
+            snaps = json.load(f).get("snaps") or []
+    except Exception:
+        snaps = []
+    sid = f"u{int(time.time() * 1000):x}{len(snaps) % 100}"
+    snaps = (snaps + [{"id": sid, **snap}])[-40:]
+    try:
+        os.makedirs(os.path.dirname(UNDO_PATH), exist_ok=True)
+        with open(UNDO_PATH, "w", encoding="utf-8") as f:
+            json.dump({"snaps": snaps}, f, ensure_ascii=False)
+    except Exception as e:
+        print(f"[resume] could not save undo snapshot: {e}")
+        return ""
+    return sid
+
+
+def _undo_get(sid: str) -> dict | None:
+    try:
+        with open(UNDO_PATH, "r", encoding="utf-8") as f:
+            return next((x for x in json.load(f).get("snaps") or [] if x.get("id") == sid), None)
+    except Exception:
+        return None
 
 
 def _parse_json(raw: str) -> dict:
@@ -884,25 +926,27 @@ def _closest_preset(spec: dict) -> str:
     return best
 
 
+_DESIGN_CHOICES = {          # every enum key of the design vocabulary + its allowed values (also used by the editor)
+    "layout": {"sidebar_left", "sidebar_right", "single_column", "two_column"},
+    "header": {"diagonal_banner", "full_band", "centered", "left_plain", "sidebar_name", "sidebar_photo"},
+    "photo": {"square", "circle", "rounded", "none"},
+    "font": set(_FONTS), "name_case": {"upper", "title"},
+    "heading_style": {"underline", "bar_left", "boxed", "caps_line", "plain", "square_icon", "dot"},
+    "skills_style": {"venn", "bars", "dots", "chips", "circles", "list"},
+    "competency_style": {"icon_grid", "list"},
+    "header_shape": {"flat", "wave", "curve", "diagonal"},
+    "footer_shape": {"none", "wave", "curve", "bar"},
+    "photo_position": {"left", "right", "center"},
+    "name_align": {"left", "center"},
+    "language_style": {"bars", "dots", "squares", "text"},
+    "decor": {"none", "circles", "dots"},
+    "header_accent": {"none", "left_bar"},
+}
+
+
 def _merge_design(base: dict, over: dict) -> dict:
     d = json.loads(json.dumps(base))
-    allowed = {
-        "layout": {"sidebar_left", "sidebar_right", "single_column", "two_column"},
-        "header": {"diagonal_banner", "full_band", "centered", "left_plain", "sidebar_name", "sidebar_photo"},
-        "photo": {"square", "circle", "rounded", "none"},
-        "font": set(_FONTS), "name_case": {"upper", "title"},
-        "heading_style": {"underline", "bar_left", "boxed", "caps_line", "plain", "square_icon", "dot"},
-        "skills_style": {"venn", "bars", "dots", "chips", "circles", "list"},
-        "competency_style": {"icon_grid", "list"},
-        "header_shape": {"flat", "wave", "curve", "diagonal"},
-        "footer_shape": {"none", "wave", "curve", "bar"},
-        "photo_position": {"left", "right", "center"},
-        "name_align": {"left", "center"},
-        "language_style": {"bars", "dots", "squares", "text"},
-        "decor": {"none", "circles", "dots"},
-        "header_accent": {"none", "left_bar"},
-    }
-    for k, ok in allowed.items():
+    for k, ok in _DESIGN_CHOICES.items():
         v = str(over.get(k) or "").strip().lower()
         if v in ok:
             d[k] = v
@@ -968,6 +1012,10 @@ def _apply_color(design: dict, color: str) -> dict:
         cols["sidebar_bg"] = _mix(c, "#000000", 0.55)
     cols["skill_colors"] = [_mix(c, "#ffffff", 0.35), dark, _mix(c, "#ffffff", 0.6)]
     cols["header_text"] = _readable_on(c)
+    fvars = (design.get("free") or {}).get("vars")
+    if isinstance(fvars, dict):                    # a new main colour beats the editor's palette overrides
+        for v in ("--primary", "--on-primary", "--accent", "--heading", "--side", "--tint", "--track"):
+            fvars.pop(v, None)
     return design
 
 
@@ -1189,6 +1237,33 @@ def _normalise_content(c: dict) -> dict:
     hint = c.get("layout_hint") if isinstance(c.get("layout_hint"), dict) else {}
     out["layout_hint"] = {side: [k for k in (hint.get(side) or []) if k in SECTION_KEYS] for side in ("sidebar", "main")}
     out["section_order"] = [k for k in (c.get("section_order") or []) if k in SECTION_KEYS]
+    out["custom_sections"] = _custom_sections(c.get("custom_sections"))
+    return out
+
+
+_CUSTOM_STYLES = ("bullets", "text", "chips", "plain")
+
+
+def _custom_sections(v) -> list[dict]:
+    """User-made sections from the editor: {id: custom_N, title, style, items}. Kept even with no items."""
+    out, used = [], set()
+    for x in (v if isinstance(v, list) else [])[:12]:
+        if not isinstance(x, dict):
+            continue
+        cid = str(x.get("id") or "")
+        cid = cid if re.fullmatch(r"custom_\d{1,4}", cid) and cid not in used else ""
+        out.append({"id": cid, "title": str(x.get("title") or "").strip()[:60] or "New Section",
+                    "style": x.get("style") if x.get("style") in _CUSTOM_STYLES else "bullets",
+                    "items": [str(i).strip() for i in (x.get("items") or []) if str(i or "").strip()][:30]
+                    if isinstance(x.get("items"), list) else _str_list(x.get("items"), 30)})
+        used.add(cid)
+    n = 1
+    for x in out:
+        if not x["id"]:
+            while f"custom_{n}" in used:
+                n += 1
+            x["id"] = f"custom_{n}"
+            used.add(x["id"])
     return out
 
 
@@ -1448,6 +1523,8 @@ def _edit_content(old: dict, instruction: str) -> dict:
     data = _llm_json(_EDIT_SYSTEM, user)
     data.pop("design_request", None)
     merged = _drop_invented(_normalise_content(data), json.dumps(old, ensure_ascii=False) + "\n" + instruction)
+    if "custom_sections" not in data and old.get("custom_sections"):     # model dropped the editor's own sections
+        merged["custom_sections"] = old["custom_sections"]
     return merged if (merged.get("name") or merged.get("experience")) else old
 
 
@@ -1457,7 +1534,7 @@ def _title(design: dict, key: str) -> str:
 
 
 def _sec(design: dict, key: str, inner: str, cls: str = "") -> str:
-    return f'<section class="sec sec-{key} {cls}"><h2>{_e(_title(design, key))}</h2>{inner}</section>'
+    return f'<section class="sec sec-{key} {cls}"><h2>{_f("section_titles." + key, _title(design, key), "section title")}</h2>{inner}</section>'
 
 
 def _venn(skills: list[dict], colors: list[str]) -> str:
@@ -1490,13 +1567,18 @@ def _ring(level: int, color: str, track: str) -> str:
 
 
 # ── Editor mode: every text value can be tagged with its JSON path (contenteditable in /resume/editor) ──
+# False = plain PDF render, True = editor, "mark" = PDF render of a design with per-element editor styles
+# (keeps the data-f / data-item anchors those styles are keyed on, but no editor-only placeholders).
 _EDIT = contextvars.ContextVar("resume_edit_mode", default=False)
 
 
 def _f(path: str, value, ph: str = "") -> str:
     """Escaped text; in editor mode an editable span carrying the content JSON path it maps back to."""
-    if not _EDIT.get():
+    mode = _EDIT.get()
+    if not mode:
         return _e(value)
+    if mode == "mark":      # free-design PDF render: same DOM anchors as the editor, nothing editable
+        return f'<span data-f="{path}">{_e(value)}</span>'
     return (f'<span data-f="{path}" data-ph="{_e(ph or path.split(".")[-1])}" contenteditable="true" '
             f'spellcheck="true">{_e(value)}</span>')
 
@@ -1514,7 +1596,7 @@ def _skills_html(c: dict, d: dict, side: bool) -> str:
     skills, extra = c["skills"], c["additional_skills"]
     if not skills and not extra:
         return ""
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     style = d["skills_style"]
     cols = d["colors"]
     fg = "var(--side-accent)" if side else "var(--primary)"
@@ -1529,7 +1611,7 @@ def _skills_html(c: dict, d: dict, side: bool) -> str:
         rest = [(f"skills.{i}.name", skills[i]["name"], "skill", f"skills.{i}") for i in range(3, len(skills))] + extra_items
         if rest:
             sep = " <span class=dot>•</span> "
-            listing = sep.join(f'<span{_it(item)}>{_f(p, x, ph)}</span>' if edit else _e(x) for p, x, ph, item in rest)
+            listing = sep.join(f'<span{_it(item)}>{_f(p, x, ph)}</span>' if edit else _f(p, x, ph) for p, x, ph, item in rest)
             parts.append(f'<div class="addl"><div class="addl-h">Additional Skills:</div><div class="addl-list">{listing}</div></div>')
         return "".join(parts)
     if style == "bars":
@@ -1581,7 +1663,7 @@ def _competencies_html(c: dict, d: dict, side: bool) -> str:
     items = c["competencies"]
     if not items:
         return ""
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     if d["competency_style"] == "list" or side:
         out = []
         for i, x in enumerate(items):
@@ -1598,7 +1680,7 @@ def _competencies_html(c: dict, d: dict, side: bool) -> str:
 def _experience_html(c: dict, d: dict, side: bool) -> str:
     if not c["experience"]:
         return ""
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     rows = []
     for i, x in enumerate(c["experience"]):
         p = f"experience.{i}"
@@ -1618,7 +1700,7 @@ def _experience_html(c: dict, d: dict, side: bool) -> str:
 
 
 def _projects_html(c: dict, d: dict, side: bool) -> str:
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     rows, rich = [], any(x["bullets"] or x["tech"] for x in c["projects"])
     for i, x in enumerate(c["projects"]):
         p = f"projects.{i}"
@@ -1666,6 +1748,9 @@ def _effective_design(c: dict, d: dict) -> dict:
             d[name] = sorted(lst, key=lambda k: (order.index(k), 0) if k in order else (len(order), lst.index(k)))
     if user_titles:
         d["section_titles"] = {**(d.get("section_titles") or {}), **user_titles}
+    for cs in c.get("custom_sections") or []:          # editor-made sections without a slot go to the main column
+        if not any(cs["id"] in lst for lst in lists):
+            d["main_sections"].append(cs["id"])
     if c.get("layout_hint"):
         d["pinned"] = list(dict.fromkeys((d.get("pinned") or []) + (c["layout_hint"].get("sidebar") or []) + (c["layout_hint"].get("main") or [])))
         if swapped and "experience" in d["pinned"]:
@@ -1674,7 +1759,7 @@ def _effective_design(c: dict, d: dict) -> dict:
 
 
 def _education_html(c: dict, d: dict, side: bool) -> str:
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     out = []
     for i, x in enumerate(c["education"]):
         p = f"education.{i}"
@@ -1691,7 +1776,7 @@ def _education_html(c: dict, d: dict, side: bool) -> str:
 
 def _contact_html(c: dict, d: dict, side: bool) -> str:
     ct = c["contact"]
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     col = "var(--side-heading)" if side else "var(--heading)"
     rows = [(k, ic) for k, ic in (("phone", "phone"), ("email", "mail"), ("location", "pin"),
                                   ("linkedin", "linkedin"), ("website", "link")) if ct.get(k) or edit]
@@ -1712,8 +1797,34 @@ def _list_html(key: str, items: list[str], icon: str | None, side: bool) -> str:
     return '<ul class="bul">' + "".join(f'<li{_it(f"{key}.{i}")}>{_f(f"{key}.{i}", x)}</li>' for i, x in enumerate(items)) + "</ul>"
 
 
+def _custom_section_html(key: str, c: dict) -> str:
+    edit = _EDIT.get() is True
+    idx = next((i for i, x in enumerate(c.get("custom_sections") or []) if x.get("id") == key), None)
+    if idx is None:
+        return ""
+    cs, p = c["custom_sections"][idx], f"custom_sections.{idx}"
+    items = cs["items"] or ([""] if edit else [])      # editor: one empty line to type into
+    if not items:
+        return ""
+    paths = [(f"{p}.items.{i}", x) for i, x in enumerate(items)]
+    if cs["style"] == "text":
+        inner = "".join(f'<p{_it(q)}>{_f(q, x, "text")}</p>' for q, x in paths)
+    elif cs["style"] == "chips":
+        inner = '<div class="chips">' + "".join(f'<span{_it(q)}>{_f(q, x, "item")}</span>' for q, x in paths) + "</div>"
+    else:
+        plain = ' style="list-style:none;padding-left:0"' if cs["style"] == "plain" else ""
+        inner = f'<ul class="bul"{plain}>' + "".join(f'<li{_it(q)}>{_f(q, x, "item")}</li>' for q, x in paths) + "</ul>"
+    return f'<section class="sec sec-{key} sec-custom"><h2>{_f(p + ".title", cs["title"], "section title")}</h2>{inner}</section>'
+
+
 def _section_html(key: str, c: dict, d: dict, side: bool) -> str:
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
+    if key in (d.get("hidden_sections") or []):
+        return ""
+    if key.startswith("custom_"):
+        return _custom_section_html(key, c)
+    if key not in SECTION_KEYS:
+        return ""
     if key == "profile":
         inner = "".join(f'<p{_it(f"profile.{i}")}>{_f(f"profile.{i}", p, "profile paragraph")}</p>' for i, p in enumerate(c["profile"]))
     elif key == "highlights":
@@ -1760,13 +1871,13 @@ def _photo_html(photo_uri: str, name: str, shape: str, cls: str) -> str:
 
 
 def _name_block(c: dict, d: dict, size_pt: float) -> str:
-    edit = _EDIT.get()
+    edit = _EDIT.get() is True
     up = " up" if d["name_case"] == "upper" else ""          # CSS uppercase: the stored text keeps its real case
     name = c["name"] or ("" if edit else "Your Name")
     title = c["title"]
     title_html = _f("title", title, "headline / job title")
     if not edit and len(title) > 30 and " & " in title:      # "CHIEF BRANCH MANAGER &<br>MARKETING PROFESSIONAL"
-        title_html = _e(title).replace(" &amp; ", " &amp;<br>", 1)
+        title_html = title_html.replace(" &amp; ", " &amp;<br>", 1)
     title_div = f'<div class="ttl{up}">{title_html}</div>' if (title or edit) else ""
     return f'<div class="nm{up}" style="font-size:{size_pt:.1f}pt">{_f("name", name, "Your Name")}</div>{title_div}'
 
@@ -2112,9 +2223,336 @@ def _placement(d: dict) -> tuple[list[str], list[str]]:
     return side_secs, main_secs
 
 
-def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: bool = False) -> str:
-    token = _EDIT.set(edit)
+# ── Free design layer (editor "Design" mode) ──────────────────────────────────────────────────────
+# design["free"] = {styles: {element key: {css prop: value}}, groups: {css selector: {...}}, vars: {--primary: …},
+#                   fonts: {head, body}, text_scale, shapes: [line / box / text / image / icon …]}
+# Element keys ("f:experience.0.role", "s:skills/h2:0", "l:photo") are resolved in the page by _FREE_RT_JS, which
+# also draws the shapes (mm coordinates on the page), so the editor and the PDF share one renderer.
+# Designs without "free" render exactly as before.
+_FREE_FONTS = [   # (name, category, Google Fonts spec or "" for a system font)
+    ("Roboto", "sans", "Roboto:wght@300;400;500;700;900"), ("Open Sans", "sans", "Open+Sans:wght@400;600;700"),
+    ("Lato", "sans", "Lato:wght@400;700;900"), ("Montserrat", "sans", "Montserrat:wght@400;600;700;800"),
+    ("Poppins", "sans", "Poppins:wght@300;400;500;600;700"), ("Inter", "sans", "Inter:wght@400;500;600;700"),
+    ("Raleway", "sans", "Raleway:wght@400;600;700"), ("Nunito", "sans", "Nunito:wght@400;600;700"),
+    ("Work Sans", "sans", "Work+Sans:wght@400;500;700"), ("Source Sans 3", "sans", "Source+Sans+3:wght@400;600;700"),
+    ("Rubik", "sans", "Rubik:wght@400;500;700"), ("Manrope", "sans", "Manrope:wght@400;600;800"),
+    ("DM Sans", "sans", "DM+Sans:wght@400;500;700"), ("Josefin Sans", "sans", "Josefin+Sans:wght@400;600;700"),
+    ("Quicksand", "sans", "Quicksand:wght@400;600;700"), ("Ubuntu", "sans", "Ubuntu:wght@400;500;700"),
+    ("Oswald", "sans", "Oswald:wght@400;500;700"), ("Bebas Neue", "sans", "Bebas+Neue"),
+    ("Merriweather", "serif", "Merriweather:wght@400;700"), ("Playfair Display", "serif", "Playfair+Display:wght@400;700"),
+    ("Lora", "serif", "Lora:wght@400;600;700"), ("Cormorant Garamond", "serif", "Cormorant+Garamond:wght@400;600;700"),
+    ("EB Garamond", "serif", "EB+Garamond:wght@400;600;700"), ("PT Serif", "serif", "PT+Serif:wght@400;700"),
+    ("Libre Baskerville", "serif", "Libre+Baskerville:wght@400;700"), ("Crimson Text", "serif", "Crimson+Text:wght@400;600;700"),
+    ("JetBrains Mono", "mono", "JetBrains+Mono:wght@400;700"), ("Dancing Script", "script", "Dancing+Script:wght@400;700"),
+    ("Great Vibes", "script", "Great+Vibes"), ("Pacifico", "script", "Pacifico"),
+    ("Segoe UI", "sans", ""), ("Arial", "sans", ""), ("Calibri", "sans", ""), ("Verdana", "sans", ""),
+    ("Tahoma", "sans", ""), ("Trebuchet MS", "sans", ""), ("Georgia", "serif", ""), ("Cambria", "serif", ""),
+    ("Times New Roman", "serif", ""), ("Garamond", "serif", ""), ("Courier New", "mono", ""),
+]
+_FREE_PROPS = {
+    "color", "background-color", "font-family", "font-size", "font-weight", "font-style", "text-decoration",
+    "text-align", "text-transform", "letter-spacing", "line-height", "opacity", "border-radius", "border",
+    "border-width", "border-style", "border-color", "translate", "rotate", "scale", "width", "height", "display",
+    "clip-path", "padding", "margin-top", "margin-bottom", "z-index", "box-shadow", "background-size",
+    "background-position", "filter", "visibility", "max-width", "min-height", "text-shadow",
+}
+_SHAPE_TYPES = {"line", "rect", "ellipse", "triangle", "diamond", "hexagon", "pentagon", "star", "wave", "curve",
+                "text", "image", "icon"}
+_SHAPE_NUM = {"x", "y", "w", "h", "x1", "y1", "x2", "y2", "mx", "my", "rot", "sw", "opacity", "radius", "size", "lh",
+              "pad", "zoom", "px", "py", "ls", "weight"}
+_SHAPE_STR = {"id", "type", "fill", "stroke", "dash", "arrow", "z", "text", "font", "ff", "color", "align", "shape", "icon",
+              "path"}
+_SHAPE_BOOL = {"bold", "italic", "underline", "upper", "fx", "fy"}
+
+
+def _css_val(v) -> str:
+    v = str(v if v is not None else "").strip()[:240]
+    if not v or re.search(r"[{}<>;\\]|url\s*\(|expression|@import|javascript:", v, re.I):
+        return ""
+    return v
+
+
+def _clean_free(f) -> dict:
+    """Whitelist the editor's free-design JSON (it ends up in CSS and in the page script)."""
+    if not isinstance(f, dict):
+        return {}
+    out: dict = {}
+    for name, key_ok in (("styles", r"[\w\-.:/ ]{1,300}"), ("groups", r"[\w\-.\[\]=\"'^$*>:#() ,]{1,300}")):
+        got = {}
+        for k, props in list((f.get(name) or {}).items())[:500]:
+            if not isinstance(props, dict) or not re.fullmatch(key_ok, str(k)):
+                continue
+            p = {n: v for n, v in ((str(n), _css_val(v)) for n, v in props.items()) if n in _FREE_PROPS and v}
+            if p:
+                got[str(k)] = p
+        if got:
+            out[name] = got
+    fv = {k: _css_val(v) for k, v in (f.get("vars") or {}).items() if re.fullmatch(r"--[a-z][a-z0-9-]{0,30}", str(k))}
+    if any(fv.values()):
+        out["vars"] = {k: v for k, v in fv.items() if v}
+    names = {n for n, _, _ in _FREE_FONTS}
+    fonts = {k: v for k, v in (f.get("fonts") or {}).items() if k in ("head", "body") and v in names}
+    if fonts:
+        out["fonts"] = fonts
     try:
+        ts = round(max(0.6, min(1.6, float(f.get("text_scale") or 1))), 3)
+    except Exception:
+        ts = 1.0
+    if ts != 1.0:
+        out["text_scale"] = ts
+    shapes = []
+    for s in (f.get("shapes") or [])[:200]:
+        if not isinstance(s, dict) or s.get("type") not in _SHAPE_TYPES:
+            continue
+        t = {}
+        for k, v in s.items():
+            if k in _SHAPE_NUM:
+                try:
+                    t[k] = round(max(-2000.0, min(5000.0, float(v))), 4)
+                except Exception:
+                    pass
+            elif k in _SHAPE_BOOL:
+                t[k] = bool(v)
+            elif k in _SHAPE_STR and v is not None:
+                t[k] = str(v)[:4000] if k == "text" else (str(v)[:400] if k == "path" else _css_val(v)[:200 if k == "ff" else 80])
+        if t.get("type") == "image" and not (t.get("path") and os.path.isfile(t["path"])
+                                             and t["path"].lower().endswith(_IMG_EXTS)):
+            continue
+        if t.get("font") not in names:
+            t.pop("font", None)
+        t["id"] = re.sub(r"[^\w-]", "", t.get("id") or "") or f"s{len(shapes) + 1}"
+        shapes.append(t)
+    if shapes:
+        out["shapes"] = shapes
+    return out
+
+
+def _free_of(d: dict) -> dict:
+    f = d.get("free")
+    return f if isinstance(f, dict) else {}
+
+
+def _free_html(d: dict, edit: bool) -> str:
+    """The free-design layer: font links, a style element, the shapes layer and the runtime script."""
+    f = _free_of(d)
+    if not edit and not f:
+        return ""
+    shapes = []
+    for s in f.get("shapes") or []:
+        s = dict(s)
+        if s.get("type") == "image":
+            s["src"] = _data_uri(s.get("path") or "") if os.path.isfile(s.get("path") or "") else ""
+        shapes.append(s)
+    used = {f.get("fonts", {}).get("head"), f.get("fonts", {}).get("body")} | {s.get("font") for s in shapes}
+    for props in list((f.get("styles") or {}).values()) + list((f.get("groups") or {}).values()):
+        used.add(props.get("font-family"))
+    specs = [g for n, _, g in _FREE_FONTS if g and n in used]
+    links = "".join(f'<link href="https://fonts.googleapis.com/css2?family={g}&display=swap" rel="stylesheet">' for g in specs)
+    icon_names = list(_ICONS) if edit else sorted({s.get("icon") or "star" for s in shapes if s.get("type") == "icon"})
+    data = {"styles": f.get("styles") or {}, "groups": f.get("groups") or {}, "vars": f.get("vars") or {},
+            "fonts": f.get("fonts") or {}, "text_scale": f.get("text_scale") or 1, "shapes": shapes,
+            "fontcat": {n: cat for n, cat, _ in _FREE_FONTS},
+            "icons": {n: _icon(n, "currentColor", "100%") for n in icon_names},
+            "waves": {k: list(v) for k, v in _SHAPES.items()}}
+    blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+    return (f'{links}<style id="rb-free-css"></style><div id="rb-free"></div>'
+            f'<script>window.__RBF__ = {blob};</script><script>{_FREE_RT_JS}</script>')
+
+
+_FREE_RT_JS = r"""
+(function(){
+const D = window.__RBF__ = window.__RBF__ || {};
+const MM = 96 / 25.4;
+const FALL = {serif: 'Georgia, serif', mono: 'Consolas, monospace', script: 'cursive', sans: "'Segoe UI', Arial, sans-serif"};
+function stack(n){ return n ? "'" + String(n).replace(/'/g, '') + "', " + (FALL[(D.fontcat || {})[n]] || FALL.sans) : ''; }
+const LANDMARKS = [['photo', '.hd-avatar,.hd-photo'], ['name', '.nm'], ['headline', '.ttl'], ['sidetop', '.side-top'],
+  ['maintop', '.main-top'], ['header', 'header'], ['sidebg', '.side-bg'], ['footer', '.rb-foot'], ['decor', '.rb-decor'],
+  ['aside', 'aside'], ['main', 'main'], ['bottom', '.bottom'], ['cols', '.cols']];
+function skip(el){
+  return !el || el.nodeType !== 1 || (el.id && el.id.indexOf('rb-') === 0) || el.classList.contains('edit-only') ||
+    el.classList.contains('rbs') || /^(SCRIPT|STYLE|LINK|BR)$/.test(el.tagName);
+}
+function sig(el){
+  const cls = Array.from(el.classList).filter(c => c.indexOf('rb') !== 0 && c !== 'up').sort();
+  return el.tagName.toLowerCase() + (cls.length ? '.' + cls.join('.') : '');
+}
+function anchorOf(el){
+  if (el.hasAttribute('data-f')) return 'f:' + el.getAttribute('data-f');
+  if (el.hasAttribute('data-item')) return 'i:' + el.getAttribute('data-item');
+  if (el.tagName === 'SECTION') { const m = el.className.match(/\bsec-(\w+)/); if (m) return 's:' + m[1]; }
+  for (const [n, sel] of LANDMARKS) if (el.matches(sel)) return 'l:' + n;
+  if (el === document.body) return 'l:body';
+  return null;
+}
+function keyOf(el){
+  const steps = [];
+  let cur = el;
+  while (cur && cur.nodeType === 1) {
+    const a = anchorOf(cur);
+    if (a) return steps.length ? a + '/' + steps.reverse().join('/') : a;
+    const p = cur.parentElement;
+    if (!p) return null;
+    const s = sig(cur);
+    let n = 0;
+    for (const sib of p.children) { if (sib === cur) break; if (!skip(sib) && sig(sib) === s) n++; }
+    steps.push(s + ':' + n);
+    cur = p;
+  }
+  return null;
+}
+function anchorFind(a){
+  const t = a.slice(0, 1), v = a.slice(2);
+  const q = s => { try { return document.querySelector(s); } catch (e) { return null; } };
+  if (t === 'f') return q('[data-f="' + CSS.escape(v) + '"]');
+  if (t === 'i') return q('[data-item="' + CSS.escape(v) + '"]');
+  if (t === 's') return q('section.sec-' + CSS.escape(v));
+  if (v === 'body') return document.body;
+  const lm = LANDMARKS.find(x => x[0] === v);
+  return lm ? q(lm[1]) : null;
+}
+function find(key){
+  const parts = String(key).split('/');
+  let el = anchorFind(parts[0]);
+  for (let i = 1; el && i < parts.length; i++) {
+    const j = parts[i].lastIndexOf(':'), s = parts[i].slice(0, j), n = +parts[i].slice(j + 1);
+    let k = 0, hit = null;
+    for (const ch of el.children) { if (skip(ch) || sig(ch) !== s) continue; if (k++ === n) { hit = ch; break; } }
+    el = hit;
+  }
+  return el;
+}
+function val(p, v){ return p === 'font-family' ? stack(v) : v; }
+const BOXY = ['translate', 'rotate', 'scale', 'width', 'height'];
+let touched = [];
+function applyStyles(){
+  touched.forEach(el => { if (el.__rbo === null) el.removeAttribute('style'); else el.setAttribute('style', el.__rbo); });
+  touched = [];
+  for (const [k, props] of Object.entries(D.styles || {})) {
+    const el = find(k);
+    if (!el) continue;
+    if (!('__rbo' in el)) el.__rbo = el.getAttribute('style');
+    touched.push(el);
+    for (const [p, v] of Object.entries(props)) if (v !== '' && v != null) el.style.setProperty(p, val(p, v), 'important');
+    if (!props.display && BOXY.some(p => props[p]) && getComputedStyle(el).display === 'inline')
+      el.style.setProperty('display', 'inline-block', 'important');   // transforms don't apply to inline boxes
+  }
+}
+function buildCss(){
+  let out = '';
+  const vars = Object.entries(D.vars || {}).filter(x => x[1]);
+  if (vars.length) out += ':root{' + vars.map(([k, v]) => k + ':' + v + ' !important').join(';') + '}';
+  const f = D.fonts || {};
+  if (f.body) out += 'html body{font-family:' + stack(f.body) + '}';
+  if (f.head) out += 'html body h2,html body .nm,html body .ttl,html body .comp-t,html body .job-role,html body .addl-h,html body .sub-h,html body .venn{font-family:' + stack(f.head) + '}';
+  for (const [sel, props] of Object.entries(D.groups || {})) {
+    const decl = Object.entries(props).filter(x => x[1] !== '' && x[1] != null).map(([p, v]) => p + ':' + val(p, v) + ' !important');
+    if (BOXY.some(p => props[p]) && !props.display) decl.push('display:inline-block');
+    if (decl.length) out += sel + '{' + decl.join(';') + '}';
+  }
+  if (D.shapes && D.shapes.length) out += 'body{position:relative}';
+  out += '#rb-free{position:absolute;left:0;top:0;width:210mm;height:0;pointer-events:none}' +
+         '.rbs{position:absolute;box-sizing:border-box}.rbs-in{width:100%;height:100%;box-sizing:border-box;overflow:hidden}' +
+         '.rbs-txt{white-space:pre-wrap;overflow-wrap:break-word;box-sizing:border-box}';
+  const st = document.getElementById('rb-free-css');
+  if (st) st.textContent = out;
+}
+const POLY = {triangle: '50,0 100,100 0,100', diamond: '50,0 100,50 50,100 0,50',
+  hexagon: '25,0 75,0 100,50 75,100 25,100 0,50', pentagon: '50,0 100,38 82,100 18,100 0,38',
+  star: '50,0 61,35 98,35 68,57 79,91 50,70 21,91 32,57 2,35 39,35'};
+const CLIP = {circle: 'circle(50% at 50% 50%)', ellipse: 'ellipse(50% 50% at 50% 50%)'};
+for (const [k, v] of Object.entries(POLY)) CLIP[k] = 'polygon(' + v.split(' ').map(p => p.split(',').map(n => n + '%').join(' ')).join(',') + ')';
+function a(v){ return String(v == null ? '' : v).replace(/[<>"&]/g, ''); }
+function dashOf(s, w){ return s.dash === 'dashed' ? (w * 4) + ' ' + (w * 2.5) : s.dash === 'dotted' ? '0.01 ' + (w * 2.2) : ''; }
+function build(s){
+  const w = document.createElement('div');
+  w.className = 'rbs rbs-' + s.type;
+  w.dataset.sid = s.id;
+  const st = w.style;
+  st.zIndex = s.z === 'back' ? 0 : 5;
+  st.opacity = s.opacity == null ? 1 : s.opacity;
+  const stroke = s.stroke || 'none', fill = s.fill || 'none';
+  if (s.type === 'line') {
+    const sw = Math.max(0.05, (s.sw == null ? 1.5 : s.sw) * 0.3528);
+    const mx = s.mx == null ? (s.x1 + s.x2) / 2 : s.mx, my = s.my == null ? (s.y1 + s.y2) / 2 : s.my;
+    const qx = 2 * mx - (s.x1 + s.x2) / 2, qy = 2 * my - (s.y1 + s.y2) / 2, pad = sw * 5 + 2;
+    const x0 = Math.min(s.x1, s.x2, qx) - pad, y0 = Math.min(s.y1, s.y2, qy) - pad;
+    const W = Math.max(s.x1, s.x2, qx) + pad - x0, H = Math.max(s.y1, s.y2, qy) + pad - y0;
+    Object.assign(st, {left: x0 + 'mm', top: y0 + 'mm', width: W + 'mm', height: H + 'mm'});
+    const d = 'M' + s.x1 + ' ' + s.y1 + ' Q' + qx + ' ' + qy + ' ' + s.x2 + ' ' + s.y2;
+    const col = a(s.stroke || '#111827'), id = 'ah-' + a(s.id), ar = s.arrow || 'none';
+    const mk = ar === 'none' ? '' : '<defs><marker id="' + id + '" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="4" markerHeight="4" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="' + col + '"/></marker></defs>';
+    const ends = (ar === 'end' || ar === 'both' ? ' marker-end="url(#' + id + ')"' : '') + (ar === 'start' || ar === 'both' ? ' marker-start="url(#' + id + ')"' : '');
+    w.innerHTML = '<svg viewBox="' + x0 + ' ' + y0 + ' ' + W + ' ' + H + '" width="100%" height="100%" style="display:block;overflow:visible">' + mk +
+      '<path class="rbs-hit" d="' + d + '" fill="none" stroke="transparent" stroke-width="' + Math.max(sw, 3.5) + '"/>' +
+      '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-dasharray="' + dashOf(s, sw) + '"' + ends + '/></svg>';
+    return w;
+  }
+  Object.assign(st, {left: (s.x || 0) + 'mm', top: (s.y || 0) + 'mm', width: (s.w || 30) + 'mm'});
+  if (s.type !== 'text') st.height = (s.h || 20) + 'mm';
+  if (s.rot) st.rotate = s.rot + 'deg';
+  if ((s.fx || s.fy) && s.type !== 'text') st.scale = (s.fx ? -1 : 1) + ' ' + (s.fy ? -1 : 1);
+  const swpt = s.sw == null ? 0 : s.sw;
+  const border = swpt > 0 && stroke !== 'none' ? swpt + 'pt ' + (s.dash === 'dashed' ? 'dashed' : s.dash === 'dotted' ? 'dotted' : 'solid') + ' ' + a(stroke) : 'none';
+  const inner = document.createElement('div');
+  inner.className = 'rbs-in';
+  if (s.type === 'rect' || s.type === 'ellipse') {
+    Object.assign(inner.style, {background: fill === 'none' ? 'transparent' : fill, border: border,
+      borderRadius: s.type === 'ellipse' ? '50%' : (s.radius || 0) + 'mm'});
+  } else if (POLY[s.type] || s.type === 'wave' || s.type === 'curve') {
+    inner.style.overflow = 'visible';
+    const f = fill === 'none' ? 'none' : a(fill), k = a(stroke), px = swpt * 1.333;
+    const common = ' stroke="' + (swpt > 0 ? k : 'none') + '" stroke-width="' + px + '" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-dasharray="' + dashOf(s, px) + '"';
+    if (POLY[s.type]) {
+      inner.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%" style="display:block;overflow:visible"><polygon points="' + POLY[s.type] + '" fill="' + f + '"' + common + '/></svg>';
+    } else {
+      const p = (D.waves || {})[s.type === 'wave' ? 'wave' : 'curve'] || ['', ''];
+      inner.innerHTML = '<svg viewBox="0 0 1000 300" preserveAspectRatio="none" width="100%" height="100%" style="display:block;overflow:visible"><path d="' + p[1] + '" fill="' + f + '" fill-opacity="0.32"/><path d="' + p[0] + '" fill="' + f + '"' + common + '/></svg>';
+    }
+  } else if (s.type === 'text') {
+    inner.className = 'rbs-in rbs-txt';
+    inner.textContent = s.text == null ? 'Your text' : s.text;
+    const wt = +s.weight || 0;
+    Object.assign(inner.style, {height: 'auto', overflow: 'visible', fontFamily: stack(s.font) || s.ff || 'inherit', fontSize: (s.size || 11) + 'pt',
+      color: s.color || '#111827', fontWeight: s.bold ? String(wt >= 600 ? wt : 700) : String(wt && wt < 600 ? wt : 400),
+      fontStyle: s.italic ? 'italic' : 'normal',
+      textDecoration: s.underline ? 'underline' : 'none', textTransform: s.upper ? 'uppercase' : 'none',
+      textAlign: s.align || 'left', lineHeight: String(s.lh || 1.3), letterSpacing: (s.ls || 0) + 'px',
+      background: fill === 'none' ? 'transparent' : fill, padding: (s.pad == null ? 1 : s.pad) + 'mm', border: border,
+      borderRadius: (s.radius || 0) + 'mm'});
+  } else if (s.type === 'image') {
+    const shp = s.shape || 'square';
+    Object.assign(inner.style, {border: border, borderRadius: shp === 'circle' ? '50%' : shp === 'rounded' ? (s.radius || 4) + 'mm' : '0',
+      clipPath: (shp !== 'circle' && CLIP[shp]) || 'none', backgroundImage: s.src ? 'url("' + s.src + '")' : 'none',
+      backgroundColor: s.src ? 'transparent' : '#e5e7eb', backgroundRepeat: 'no-repeat',
+      backgroundSize: (s.zoom && s.zoom !== 100) ? s.zoom + '%' : 'cover',
+      backgroundPosition: (s.px == null ? 50 : s.px) + '% ' + (s.py == null ? 50 : s.py) + '%'});
+  } else if (s.type === 'icon') {
+    inner.innerHTML = (D.icons || {})[s.icon || 'star'] || (D.icons || {}).star || '';
+    Object.assign(inner.style, {color: s.color || s.stroke || '#111827', overflow: 'visible'});
+  }
+  w.appendChild(inner);
+  return w;
+}
+function renderShapes(){
+  const layer = document.getElementById('rb-free');
+  if (!layer) return;
+  layer.innerHTML = '';
+  for (const s of D.shapes || []) { try { layer.appendChild(build(s)); } catch (e) {} }
+}
+function refresh(){ buildCss(); applyStyles(); renderShapes(); }
+window.RBF = {D, MM, stack, keyOf, find, sig, skip, refresh, buildCss, applyStyles, renderShapes, CLIP, POLY};
+refresh();
+})();
+"""
+
+
+def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: bool = False) -> str:
+    free = _free_of(d)
+    token = _EDIT.set(True if edit else ("mark" if (free.get("styles") or free.get("groups")) else False))
+    try:
+        if d.get("replica"):                 # exact copy of an uploaded design (app/services/resume_replica)
+            from app.services.resume_replica.exact_render import render_replica_html
+            return render_replica_html(c, d, photo_uri, scale)
         return _render_html_inner(c, d, photo_uri, scale)
     finally:
         _EDIT.reset(token)
@@ -2122,6 +2560,7 @@ def _render_html(c: dict, d: dict, photo_uri: str, scale: float = 1.0, edit: boo
 
 def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
     d = _effective_design(c, d)
+    scale *= float(_free_of(d).get("text_scale") or 1)       # editor's global text size
     _, _, gfont = _FONTS.get(d["font"], _FONTS["sans"])
     lay = d["layout"]
     side_secs, main_secs = _placement(d)
@@ -2146,7 +2585,7 @@ def _render_html_inner(c: dict, d: dict, photo_uri: str, scale: float) -> str:
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{_e(c["name"] or "Resume")} — Resume</title>'
             f'<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family={gfont}&display=swap" rel="stylesheet">'
             f'<style>{_css(d, scale)}{_css_extra(d, scale)}</style></head><body class="lay-{lay}">'
-            f'{_decor_html(d)}{_footer_html(d)}{_header_html(c, d, photo_uri)}{body}</body></html>')
+            f'{_decor_html(d)}{_footer_html(d)}{_header_html(c, d, photo_uri)}{body}{_free_html(d, _EDIT.get() is True)}</body></html>')
 
 
 def _data_uri(path: str) -> str:
@@ -2212,6 +2651,10 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
     wd = _effective_design(c, d)         # working copy: sections may be moved between columns to fit
     if wd["layout"] != "single_column":
         wd["sidebar_sections"], wd["main_sections"] = _placement(wd)
+    if _free_of(wd).get("shapes"):       # shapes sit at fixed page positions: keep the columns as the editor shows them
+        wd["pinned"] = list(dict.fromkeys(wd["sidebar_sections"] + wd["main_sections"]))
+    if wd.get("replica"):                # exact copy: the reference decides the columns and the type sizes
+        wd["pinned"] = list(dict.fromkeys(wd["sidebar_sections"] + wd["main_sections"]))
     moved: set[str] = set()              # never move a section back (stops ping-pong)
     pdf_opts = dict(format="A4", print_background=True, margin={"top": "0", "bottom": "0", "left": "0", "right": "0"})
     with sync_playwright() as pw:
@@ -2221,6 +2664,8 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
             page.emulate_media(media="print")
             scale, html, pdf_bytes, moves = start_scale, "", b"", 0
             min_scale = 0.74 if target_pages else 0.79   # a page target allows slightly smaller type
+            if wd.get("replica"):                         # exact copy: sizes stay as measured (a page target: ≤ 15 %)
+                min_scale = 0.70 if target_pages else 1.0
             best = None                          # (score, pdf_bytes, html) — a later attempt can be worse
             balanced = False
             for _ in range(14):
@@ -2232,6 +2677,11 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
                     pass
                 try:
                     page.evaluate("document.fonts.ready.then(() => true)")
+                except Exception:
+                    pass
+                try:                                       # exact copies lay out (fit, page breaks) after fonts load
+                    page.wait_for_function("!document.body.classList.contains('replica') || "
+                                           "document.body.dataset.ready === '1'", timeout=10000)
                 except Exception:
                     pass
                 pdf_bytes = page.pdf(**pdf_opts)
@@ -2251,7 +2701,7 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
                 else:
                     score = (2, scale) if pages == 1 else ((1, fill >= 0.2, -imbalance, fill) if pages == 2 else (0, -pages))
                 if best is None or score > best[0]:
-                    best = (score, pdf_bytes, html)
+                    best = (score, pdf_bytes, html, scale)
                 if pages == 1 or (target_pages and pages <= target_pages):
                     break
                 # 0) equal columns: measure every section once and even the columns out in one pass
@@ -2306,7 +2756,7 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
     else:
         long_col = list(wd["main_sections"] if cols_h[1] >= cols_h[0] else wd["sidebar_sections"])
     if best:
-        pdf_bytes, html = best[1], best[2]
+        pdf_bytes, html, scale = best[1], best[2], best[3]
     with open(pdf_path, "wb") as f:
         f.write(pdf_bytes)
     with open(html_path, "w", encoding="utf-8") as f:
@@ -2326,7 +2776,8 @@ def _render_files(c: dict, d: dict, photo_path: str, stem: str, target_pages: in
     except Exception as e:
         print(f"[resume] preview failed: {e}")
         n_pages = 0
-    return {"pdf": pdf_path, "html": html_path, "pngs": pngs, "pages": n_pages, "long_column": long_col}
+    return {"pdf": pdf_path, "html": html_path, "pngs": pngs, "pages": n_pages, "long_column": long_col,
+            "scale": round(float(scale), 4)}
 
 
 # ── Strict page target ("single page resume", "2 pages") ─────────────────────────────────────────
@@ -2364,7 +2815,7 @@ def _condense_content(content: dict, target: int, pages: int, long_keys: list | 
         print(f"[resume] condense failed: {e}")
         return content
     out = _drop_invented(_normalise_content(data), json.dumps(content, ensure_ascii=False))
-    for k in ("section_titles", "layout_hint"):
+    for k in ("section_titles", "layout_hint", "custom_sections"):
         out[k] = content.get(k) or out.get(k)
     for k in SECTION_KEYS:                       # columns that weren't overflowing stay untouched
         if k not in keys and k in content:
@@ -2470,6 +2921,7 @@ _ADDABLE = ["profile", "highlights", "skills", "competencies", "experience", "ed
 _EDITOR_CSS = """
 <style id="rb-editor-css">
 html{background:#2f333b!important}
+html.rb-pan{padding-right:322px}
 body{position:relative;margin:76px auto 60px!important;box-shadow:0 8px 44px rgba(0,0,0,.5);min-height:297mm}
 .side-bg,.rb-foot,.rb-decor{position:absolute!important}
 body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:40;
@@ -2492,100 +2944,1048 @@ body::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:40;
 #rb-bar button:hover,#rb-bar label.btn:hover{background:#334155}
 #rb-bar button.primary{background:#0891b2;border-color:#06b6d4;color:#fff;font-weight:600}
 #rb-bar button.primary:hover{background:#06b6d4}
+#rb-bar .seg{display:inline-flex;border:1px solid #334155;border-radius:6px;overflow:hidden}
+#rb-bar .seg button{border:0;border-radius:0}
+#rb-bar .seg button.on,#rb-bar button.on{background:#0891b2;color:#fff}
 #rb-status{margin-left:auto;color:#a5f3fc;max-width:420px}
 #rb-status a{color:#fde68a}
 #rb-hint{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:1000;background:#0b1220e6;color:#cbd5e1;
  font:12px 'Segoe UI',Arial;padding:6px 12px;border-radius:20px}
-#rb-ctl{position:absolute;display:none;z-index:1001;gap:3px;background:#0b1220;border-radius:6px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
-#rb-ctl button{background:#1e293b;color:#fff;border:0;border-radius:4px;width:24px;height:22px;cursor:pointer;font:13px Arial;line-height:22px;padding:0}
-#rb-ctl button:hover{background:#0891b2} #rb-ctl button[data-a=del]:hover{background:#dc2626}
-@media print{#rb-bar,#rb-ctl,#rb-hint,.edit-only{display:none!important}}
+#rb-ctl,#rb-sctl{position:absolute;display:none;z-index:1001;gap:3px;background:#0b1220;border-radius:6px;padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#rb-sctl{flex-direction:column}
+#rb-ctl button,#rb-sctl button{background:#1e293b;color:#fff;border:0;border-radius:4px;width:24px;height:22px;cursor:pointer;font:13px Arial;line-height:22px;padding:0}
+#rb-ctl button:hover,#rb-sctl button:hover{background:#0891b2} #rb-ctl button[data-a=del]:hover,#rb-sctl button[data-a=hide]:hover{background:#dc2626}
+#rb-panel{position:fixed;right:0;bottom:0;width:312px;z-index:1001;background:#0f172a;color:#e2e8f0;font:12px 'Segoe UI',Arial,sans-serif;
+ overflow:auto;box-shadow:-4px 0 18px rgba(0,0,0,.45);display:none}
+html.rb-pan #rb-panel{display:block}
+#rb-panel .tabs{display:flex;position:sticky;top:0;background:#0b1220;z-index:2;border-bottom:1px solid #1e293b}
+#rb-panel .tabs button{flex:1;background:none;border:0;border-bottom:2px solid transparent;border-radius:0;color:#94a3b8;padding:9px 4px;font-weight:600}
+#rb-panel .tabs button.on{border-bottom-color:#06b6d4;color:#fff;background:none}
+#rb-panel .grp{padding:8px 12px;border-bottom:1px solid #1e293b}
+#rb-panel h4{margin:2px 0 8px;font-size:10.5px;letter-spacing:.8px;text-transform:uppercase;color:#67e8f9}
+#rb-panel .pr{display:flex;align-items:center;gap:8px;margin:5px 0}
+#rb-panel .pr>label{width:82px;flex:none;color:#94a3b8}
+#rb-panel .pr>div{flex:1;display:flex;gap:4px;align-items:center;flex-wrap:wrap;min-width:0}
+#rb-panel input[type=number],#rb-panel select,#rb-panel input[type=text],#rb-panel textarea{background:#111a2e;color:#e5e7eb;border:1px solid #334155;border-radius:5px;padding:4px 6px;font:inherit;min-width:0}
+#rb-panel input[type=number]{width:62px}
+#rb-panel select{max-width:178px}
+#rb-panel textarea{width:100%;min-height:54px;resize:vertical}
+#rb-panel input[type=color]{width:30px;height:24px;padding:1px;border:1px solid #334155;border-radius:4px;background:#111a2e;cursor:pointer}
+#rb-panel input[type=range]{flex:1;min-width:70px;accent-color:#06b6d4}
+#rb-panel button{background:#1e293b;color:#e5e7eb;border:1px solid #334155;border-radius:5px;padding:4px 8px;font:inherit;cursor:pointer}
+#rb-panel button:hover{background:#334155}
+#rb-panel button.on{background:#0891b2;border-color:#06b6d4;color:#fff}
+#rb-panel button.danger:hover{background:#dc2626}
+#rb-panel .muted{color:#64748b;font-size:11px;line-height:1.5;margin:4px 0}
+#rb-panel .sec-row{display:flex;align-items:center;gap:3px;padding:2px 0}
+#rb-panel .sec-row span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#rb-panel .sec-row button{padding:2px 6px}
+#rb-panel .val{min-width:34px;color:#94a3b8;text-align:right}
+body.rb-design{user-select:none;-webkit-user-select:none}
+body.rb-design [data-f]{cursor:default}
+body.rb-design [data-f]:hover,body.rb-design [data-f]:focus{background:none;box-shadow:none}
+.rb-hov{outline:1px dashed rgba(6,182,212,.95)!important;outline-offset:1px}
+#rb-selbox{position:absolute;z-index:1500;border:1.5px solid #06b6d4;pointer-events:none;box-shadow:0 0 0 1px rgba(255,255,255,.7);display:none}
+#rb-selbox .rb-h{position:absolute;width:10px;height:10px;background:#fff;border:1.5px solid #0891b2;border-radius:2px;pointer-events:auto}
+#rb-selbox .rb-h[data-h=se]{right:-6px;bottom:-6px;cursor:nwse-resize}
+#rb-selbox .rb-h[data-h=e]{right:-6px;top:calc(50% - 5px);cursor:ew-resize}
+#rb-selbox .rb-h[data-h=s]{bottom:-6px;left:calc(50% - 5px);cursor:ns-resize}
+#rb-selbox .rb-h[data-h=rot]{top:-28px;left:calc(50% - 6px);width:12px;height:12px;border-radius:50%;cursor:grab}
+#rb-selbox .rb-h[data-h=move]{left:-7px;top:-7px;width:12px;height:12px;cursor:move;background:#0891b2;border-color:#fff}
+#rb-selbox .rb-tag{position:absolute;left:10px;top:-21px;background:#0891b2;color:#fff;font:10px 'Segoe UI',Arial;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.rb-pt{position:absolute;z-index:1501;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:#fff;border:2px solid #0891b2;cursor:move;display:none}
+.rb-pt.mid{background:#fde68a;border-color:#d97706}
+body:not(.rb-design) #rb-free .rbs{pointer-events:none}
+body.rb-design #rb-free .rbs:not(.rbs-line){pointer-events:auto;cursor:move}
+body.rb-design #rb-free .rbs-line path{pointer-events:stroke;cursor:move}
+body.rb-design #rb-free .rbs-txt[contenteditable=true]{cursor:text;user-select:text;-webkit-user-select:text;outline:2px solid #06b6d4}
+@media print{#rb-bar,#rb-ctl,#rb-sctl,#rb-hint,#rb-panel,#rb-selbox,.rb-pt,.edit-only{display:none!important}}
 </style>
 """
 
-_EDITOR_JS = """
+# The page always starts below the toolbar, whatever height the toolbar wraps to (narrow windows).
+_EDITOR_FIT_JS = r"""<script>(function(){function fit(){const bar=document.getElementById('rb-bar');if(!bar)return;
+const h=bar.getBoundingClientRect().height;document.body.style.setProperty('margin-top',(h+18)+'px','important');}
+fit();window.addEventListener('resize',fit);setTimeout(fit,400);})();</script>"""
+
+_EDITOR_JS = r"""
 <script>
 (function(){
-  const RB = window.__RB__;
-  let dirty = false, hot = null;
+  const RB = window.__RB__, F = window.RBF, FD = F.D, MM = F.MM;
+  ['styles', 'groups', 'vars', 'fonts'].forEach(k => { if (!FD[k] || typeof FD[k] !== 'object' || Array.isArray(FD[k])) FD[k] = {}; });
+  if (!Array.isArray(FD.shapes)) FD.shapes = [];
+  let dirty = false, hot = null, mode = 'text', sel = null, scope = 'one', tab = 'sel', drag = null, editingShape = false;
+  let rev = RB.rev || '', busy = false;
+  const hist = [], fut = [], srcOf = {}, typing = {el: null, t: 0};
   const $ = s => document.querySelector(s);
   const status = (h) => { $('#rb-status').innerHTML = h; };
-  try { const y = sessionStorage.getItem('rbScroll'); if (y) { window.scrollTo(0, +y); sessionStorage.removeItem('rbScroll'); } } catch(e) {}
+  const ss = {get(k){ try { return sessionStorage.getItem(k); } catch(e) { return null; } },
+              set(k, v){ try { sessionStorage.setItem(k, v); } catch(e) {} },
+              del(k){ try { sessionStorage.removeItem(k); } catch(e) {} }};
+  const orig = new Map();
+  document.querySelectorAll('[data-f]').forEach(el => orig.set(el, el.textContent));
 
+  // ── text content ────────────────────────────────────────────────────────────────────────────
   function collect(){
     const c = JSON.parse(JSON.stringify(RB.content));
     document.querySelectorAll('[data-f]').forEach(el => {
+      if (el.dataset.f.indexOf('section_titles.') === 0 && el.textContent === orig.get(el)) return;   // untouched heading
       const path = el.dataset.f.split('.');
       let o = c;
       for (let i = 0; i < path.length - 1; i++) {
-        const k = /^\\d+$/.test(path[i]) ? +path[i] : path[i];
+        const k = /^\d+$/.test(path[i]) ? +path[i] : path[i];
         if (o[k] === undefined || o[k] === null) return;
         o = o[k];
       }
       const last = path[path.length - 1];
-      o[/^\\d+$/.test(last) ? +last : last] = el.textContent.replace(/\\s+/g, ' ').trim();
+      o[/^\d+$/.test(last) ? +last : last] = el.textContent.replace(/\s+/g, ' ').trim();
     });
     return c;
   }
-
+  function freeOut(){
+    return {styles: FD.styles, groups: FD.groups, vars: FD.vars, fonts: FD.fonts, text_scale: FD.text_scale || 1,
+            shapes: FD.shapes.map(s => { const t = Object.assign({}, s); delete t.src; return t; })};
+  }
+  function keepView(){
+    ss.set('rbScroll', String(window.scrollY)); ss.set('rbMode', mode); ss.set('rbTab', tab);
+    ss.set('rbPan', document.documentElement.classList.contains('rb-pan') ? '1' : '');
+    if (sel) ss.set('rbSel', JSON.stringify({kind: sel.kind, key: sel.key, id: sel.id}));
+    persistHist();
+  }
   async function send(extra, reload){
     status('⏳ Working…');
     try {
       const r = await fetch('/resume/save', {method:'POST', headers:{'Content-Type':'application/json'},
-                                             body: JSON.stringify(Object.assign({content: collect()}, extra))});
+                                             body: JSON.stringify(Object.assign({content: collect(), free: freeOut()}, extra))});
       const j = await r.json();
       if (!j.ok) { status('⚠️ ' + (j.message || 'Failed')); return j; }
       dirty = false;
-      if (reload) { try { sessionStorage.setItem('rbScroll', String(window.scrollY)); } catch(e) {} location.reload(); return j; }
+      if (j.rev) rev = j.rev;
+      if (j.snap && !extra.restore_snap) { hist.push({srv: j.snap}); fut.length = 0; }   // one Ctrl+Z step
+      if (reload) { keepView(); location.reload(); return j; }
       status(j.message_html || j.message || 'Saved');
       return j;
     } catch (e) { status('⚠️ ' + e); }
   }
+  let saveT = null;
+  function saveFree(){
+    clearTimeout(saveT);
+    status('✏️ Design changed…');
+    saveT = setTimeout(() => send({}, false).then(j => {
+      if (j && j.ok) status('✅ Design saved — press <b>Save &amp; export PDF</b> to update the PDF');
+    }), 700);
+  }
 
   document.querySelectorAll('[data-f]').forEach(el => {
+    el.addEventListener('beforeinput', e => {
+      if (e.inputType === 'historyUndo' || e.inputType === 'historyRedo') { e.preventDefault(); e.inputType === 'historyUndo' ? undo() : redo(); return; }
+      const now = Date.now();
+      if (el !== typing.el || now - typing.t > 1200) snap();
+      typing.el = el; typing.t = now;
+    });
+    el.addEventListener('focusout', () => { typing.el = null; });
     el.addEventListener('input', () => { dirty = true; status('✏️ Unsaved changes — press <b>Save &amp; export PDF</b> (Ctrl+S)'); });
     el.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
     el.addEventListener('paste', e => { e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text/plain')); });
   });
 
-  // hover controls for list items: add after / move up / delete
-  const ctl = $('#rb-ctl');
+  // positions relative to <body> (it is position:relative, so absolute children use its box)
+  function brect(el){ const r = el.getBoundingClientRect(), b = document.body.getBoundingClientRect();
+                      return {x: r.left - b.left, y: r.top - b.top, w: r.width, h: r.height}; }
+  function pmm(e){ const b = document.body.getBoundingClientRect(); return {x: (e.clientX - b.left) / MM, y: (e.clientY - b.top) / MM}; }
+  const editorUi = t => t && t.closest && t.closest('#rb-bar,#rb-panel,#rb-hint,#rb-ctl,#rb-sctl,#rb-selbox,.rb-pt');
+
+  // text mode: hover controls for list items (add after / move up / delete) and whole sections
+  const ctl = $('#rb-ctl'), sctl = $('#rb-sctl');
+  let hotSec = null;
   document.addEventListener('mouseover', e => {
-    if (ctl.contains(e.target)) return;
+    if (mode !== 'text' || ctl.contains(e.target) || sctl.contains(e.target)) return;
+    const sec = e.target.closest('section.sec');
+    if (sec) {
+      hotSec = sec;
+      const r = brect(sec);
+      sctl.style.display = 'flex';
+      sctl.style.top = r.y + 'px';
+      sctl.style.left = (r.x - 34) + 'px';
+    }
     const it = e.target.closest('[data-item]');
     if (!it) return;
     if (hot) hot.classList.remove('rb-hot');
     hot = it; it.classList.add('rb-hot');
-    const r = it.getBoundingClientRect();
+    const r = brect(it);
     ctl.style.display = 'flex';
-    ctl.style.top = (window.scrollY + r.top - 26) + 'px';
-    ctl.style.left = (window.scrollX + r.right - 84) + 'px';
+    ctl.style.top = (r.y - 26) + 'px';
+    ctl.style.left = (r.x + r.w - ctl.offsetWidth) + 'px';
   });
   ctl.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !hot) return;
     send({op: {action: b.dataset.a, path: hot.dataset.item}}, true);
   });
+  sctl.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !hotSec) return;
+    const m = hotSec.className.match(/\bsec-(\w+)/);
+    if (m) send({sec_op: {action: b.dataset.a, key: m[1]}}, true);
+  });
 
+  // ── toolbar ─────────────────────────────────────────────────────────────────────────────────
   $('#rb-save').onclick = async () => { const j = await send({export: true}, false);
-    if (j && j.reload) { try { sessionStorage.setItem('rbScroll', String(window.scrollY)); } catch(e) {} setTimeout(() => location.reload(), 1500); } };
+    if (j && j.reload) { keepView(); setTimeout(() => location.reload(), 1500); } };
   $('#rb-pages').onchange = e => send({target_pages: e.target.value}, false);
-  document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); send({export: true}, false); } });
   $('#rb-tpl').onchange = e => { if (e.target.value) send({template: e.target.value}, true); };
-  $('#rb-color').onchange = e => send({color: e.target.value}, true);
-  $('#rb-add').onchange = e => { if (e.target.value) send({add_section: e.target.value}, true); };
+  $('#rb-color').onchange = e => {
+    ['--primary', '--on-primary', '--accent', '--heading', '--side', '--tint', '--track'].forEach(v => delete FD.vars[v]);
+    send({color: e.target.value}, true);
+  };
+  $('#rb-add').onchange = e => {
+    const v = e.target.value;
+    if (!v) return;
+    if (v === '__custom') {
+      const t = prompt('Title of the new section (e.g. Volunteering, Publications, Hobbies):', '');
+      e.target.value = '';
+      if (t && t.trim()) send({add_custom: {title: t.trim(), style: 'bullets', column: 'main'}}, true);
+      return;
+    }
+    send({add_section: v}, true);
+  };
   $('#rb-nophoto').onclick = () => send({remove_photo: true}, true);
+  async function upload(f){
+    const fd = new FormData(); fd.append('file', f);
+    const j = await (await fetch('/upload', {method:'POST', body: fd})).json();
+    return j.status === 'success' ? j.path : null;
+  }
   $('#rb-photo').onchange = async e => {
     const f = e.target.files[0]; if (!f) return;
     status('⏳ Uploading photo…');
-    const fd = new FormData(); fd.append('file', f);
-    const j = await (await fetch('/upload', {method:'POST', body: fd})).json();
-    if (j.status !== 'success') { status('⚠️ Upload failed'); return; }
-    send({photo: j.path}, true);
+    const p = await upload(f);
+    if (!p) { status('⚠️ Upload failed'); return; }
+    send({photo: p}, true);
   };
   const ai = () => { const v = $('#rb-ai').value.trim(); if (v) send({instruction: v}, true); };
   $('#rb-ai-go').onclick = ai;
   $('#rb-ai').addEventListener('keydown', e => { if (e.key === 'Enter') ai(); });
   window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+  // ── undo / redo: one history for typing, design changes and structural changes ──────────────
+  // A local step is a snapshot of every text field + the free design; a structural step ({srv: id}) is a
+  // whole-state snapshot kept by the server (item / section ops, template, colour, photo, AI edit, page fit).
+  const fdOf = () => ({styles: FD.styles, groups: FD.groups, vars: FD.vars, fonts: FD.fonts, text_scale: FD.text_scale || 1, shapes: FD.shapes});
+  const texts = () => Array.from(document.querySelectorAll('[data-f]'), el => [el.dataset.f, el.textContent]);
+  const snapshot = () => JSON.stringify({t: texts(), f: fdOf()});
+  function snap(){ hist.push(snapshot()); if (hist.length > 80) hist.shift(); fut.length = 0; }
+  function setTexts(t){
+    const els = Array.from(document.querySelectorAll('[data-f]'));
+    const same = els.length === t.length && els.every((el, i) => el.dataset.f === t[i][0]);
+    const byKey = same ? null : new Map(t);
+    let changed = false;
+    els.forEach((el, i) => {
+      const v = same ? t[i][1] : byKey.get(el.dataset.f);
+      if (v == null || el.textContent === v) return;
+      el.textContent = v; changed = true;
+    });
+    if (!changed) return;
+    dirty = true;
+    const a = document.activeElement;
+    if (a && a.closest && a.closest('[data-f]')) {           // keep the caret in the field being typed in
+      const r = document.createRange(); r.selectNodeContents(a); r.collapse(false);
+      const g = document.getSelection(); g.removeAllRanges(); g.addRange(r);
+    }
+    if (window.__rbLayout) window.__rbLayout();
+  }
+  function restore(js){
+    const o = JSON.parse(js), f = o.f || o;
+    (f.shapes || []).forEach(x => { if (x.type === 'image' && !x.src && x.path && srcOf[x.path]) x.src = srcOf[x.path]; });
+    const fdChanged = JSON.stringify(f) !== JSON.stringify(fdOf());
+    Object.assign(FD, f);
+    document.documentElement.style.setProperty('--s', String(FD.text_scale || 1));
+    F.refresh();
+    if (o.t) setTexts(o.t);
+    if (sel && sel.kind === 'shape' && !shapeById(sel.id)) sel = null;
+    if (sel && sel.kind === 'el') sel.el = F.find(sel.key) || sel.el;
+    updateSel(); renderPanel();
+    if (fdChanged) saveFree();
+    else if (dirty) status('✏️ Unsaved changes — press <b>Save &amp; export PDF</b> (Ctrl+S)');
+  }
+  async function step(from, to, undoing){
+    if (busy) return;
+    if (drag) return;
+    const h = from.pop();
+    typing.el = null;
+    if (h === undefined) return status(undoing ? 'Nothing to undo' : 'Nothing to redo');
+    if (typeof h === 'string') { to.push(snapshot()); restore(h); return; }
+    busy = true;
+    status(undoing ? '⏳ Undoing…' : '⏳ Redoing…');
+    const j = await send({restore_snap: h.srv}, false);
+    busy = false;
+    if (j && j.ok && j.snap) { to.push({srv: j.snap}); keepView(); location.reload(); }
+  }
+  function undo(){ return step(hist, fut, true); }
+  function redo(){ return step(fut, hist, false); }
+  function persistHist(){
+    const strip = h => {
+      if (typeof h !== 'string') return h;
+      const o = JSON.parse(h);
+      ((o.f || {}).shapes || []).forEach(x => { if (x.src && x.path) srcOf[x.path] = x.src; delete x.src; });
+      return JSON.stringify(o);
+    };
+    try { ss.set('rbHist', JSON.stringify({rev: rev, hist: hist.slice(-60).map(strip), fut: fut.slice(-60).map(strip)})); } catch (e) {}
+  }
+  try {                                                       // the history survives the editor's own reloads
+    const o = JSON.parse(ss.get('rbHist') || 'null');
+    ss.del('rbHist');
+    if (o && o.rev && o.rev === RB.rev) { hist.push(...(o.hist || [])); fut.push(...(o.fut || [])); }
+  } catch (e) {}
+  FD.shapes.forEach(x => { if (x.src && x.path) srcOf[x.path] = x.src; });
+  window.addEventListener('pagehide', persistHist);
+  $('#rb-undo').onclick = undo;
+  $('#rb-redo').onclick = redo;
+
+  // ── modes & panel ───────────────────────────────────────────────────────────────────────────
+  const panel = $('#rb-panel'), selbox = $('#rb-selbox');
+  function layoutChrome(){
+    const h = $('#rb-bar').offsetHeight;
+    document.body.style.setProperty('margin-top', (h + 18) + 'px', 'important');
+    panel.style.top = h + 'px';
+  }
+  function setPanel(open){
+    document.documentElement.classList.toggle('rb-pan', open);
+    $('#rb-panel-btn').classList.toggle('on', open);
+    if (open) renderPanel();
+    setTimeout(updateSel, 0);
+  }
+  function setMode(m){
+    mode = m;
+    document.body.classList.toggle('rb-design', m === 'design');
+    $('#rb-mode-text').classList.toggle('on', m === 'text');
+    $('#rb-mode-design').classList.toggle('on', m === 'design');
+    document.querySelectorAll('[data-f]').forEach(el => el.setAttribute('contenteditable', m === 'text' ? 'true' : 'false'));
+    ctl.style.display = 'none'; sctl.style.display = 'none';
+    if (hot) hot.classList.remove('rb-hot');
+    if (m === 'text') select(null);
+    else setPanel(true);
+    $('#rb-hint').innerHTML = m === 'text'
+      ? 'Click text to type · hover an item for ＋ ⧉ ↑ ✕ · hover a section for ↑ ↓ ⇄ ✕ · Ctrl+Z undo · Ctrl+D duplicates the item · red line = page break · Ctrl+S saves'
+      : 'Click anything to select · drag to move · handles resize / rotate · Del hides · arrows nudge · Ctrl+Z undo · Ctrl+D duplicate · double-click text to edit';
+  }
+  $('#rb-mode-text').onclick = () => setMode('text');
+  $('#rb-mode-design').onclick = () => setMode('design');
+  $('#rb-panel-btn').onclick = () => setPanel(!document.documentElement.classList.contains('rb-pan'));
+
+  // ── selection ───────────────────────────────────────────────────────────────────────────────
+  const shapeById = id => FD.shapes.find(s => s.id === id);
+  const curShape = () => sel && sel.kind === 'shape' ? shapeById(sel.id) : null;
+  const shapeEl = id => document.querySelector('#rb-free .rbs[data-sid="' + id + '"]');
+  function select(target, keepTab){
+    if (!target) sel = null;
+    else if (target.kind === 'shape') sel = {kind: 'shape', id: target.id};
+    else {
+      const key = F.keyOf(target);
+      sel = key ? {kind: 'el', el: target, key: key} : null;
+    }
+    scope = 'one';
+    updateSel();
+    if (tab !== 'sel' && sel && !keepTab) tab = 'sel';
+    renderPanel();
+  }
+  const pts = {p1: $('#rb-pt-p1'), p2: $('#rb-pt-p2'), mid: $('#rb-pt-mid')};
+  function updateSel(){
+    Object.values(pts).forEach(p => p.style.display = 'none');
+    if (!sel) { selbox.style.display = 'none'; return; }
+    let el = sel.kind === 'shape' ? shapeEl(sel.id) : sel.el;
+    if (sel.kind === 'el' && (!el || !el.isConnected)) { el = sel.el = F.find(sel.key); }
+    if (!el) { selbox.style.display = 'none'; return; }
+    const s = curShape();
+    if (s && s.type === 'line') {
+      selbox.style.display = 'none';
+      const mx = s.mx == null ? (s.x1 + s.x2) / 2 : s.mx, my = s.my == null ? (s.y1 + s.y2) / 2 : s.my;
+      [['p1', s.x1, s.y1], ['p2', s.x2, s.y2], ['mid', mx, my]].forEach(([k, x, y]) => {
+        Object.assign(pts[k].style, {display: 'block', left: (x * MM) + 'px', top: (y * MM) + 'px'});
+      });
+      return;
+    }
+    const r = brect(el);
+    Object.assign(selbox.style, {display: 'block', left: (r.x - 2) + 'px', top: (r.y - 2) + 'px', width: (r.w + 4) + 'px', height: (r.h + 4) + 'px'});
+    selbox.querySelector('.rb-tag').textContent = s ? s.type : friendly(sel.key);
+  }
+  function friendly(k){
+    return String(k).replace(/^l:/, '').replace(/^s:(\w+)/, '$1 section').replace(/^[fi]:/, '').replace(/section_titles\.(\w+)/, '$1 heading')
+      .replace(/\.(\d+)/g, (m, n) => ' #' + (+n + 1)).replace(/\//g, ' › ').replace(/:\d+/g, '').replace(/\./g, ' ');
+  }
+  window.addEventListener('resize', () => { layoutChrome(); updateSel(); });
+
+  function newId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function cssColor(v, fb){
+    const c = document.createElement('canvas').getContext('2d');
+    c.fillStyle = fb || '#000000';
+    try { c.fillStyle = String(v || '').trim() || fb || '#000000'; } catch (e) {}
+    const out = c.fillStyle;
+    if (out[0] === '#') return out;
+    const m = out.match(/[\d.]+/g);
+    if (!m) return fb || '#000000';
+    if (m.length > 3 && +m[3] === 0) return fb || '#ffffff';
+    return '#' + m.slice(0, 3).map(x => (Math.round(+x)).toString(16).padStart(2, '0')).join('');
+  }
+  const rootVar = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+  // ── element style buckets ─────────────────────────────────────────────────────────────────
+  const NOCLS = /^(rb|sec-|pos-|acc-|al-|ph-|lay-)/;
+  function groupSel(el){
+    const f = el.getAttribute('data-f');
+    if (f !== null) {
+      if (/^section_titles\.|^custom_sections\.\d+\.title$/.test(f)) return '[data-f^="section_titles."],[data-f^="custom_sections."][data-f$=".title"]';
+      const segs = f.split('.'), words = segs.filter(s => !/^\d+$/.test(s));
+      if (words.length === 1 && segs.length === 1) return '[data-f="' + f + '"]';
+      let q = '[data-f^="' + words[0] + '."]';
+      const lastNum = /^\d+$/.test(segs[segs.length - 1]);
+      for (let i = 1; i < words.length; i++)
+        q += (i === words.length - 1 && !lastNum) ? '[data-f$=".' + words[i] + '"]' : '[data-f*=".' + words[i] + '."]';
+      return q;
+    }
+    const pick = e => Array.from(e.classList).filter(c => !NOCLS.test(c) && c !== 'up').map(c => '.' + CSS.escape(c)).join('');
+    const tag = el.tagName.toLowerCase(), own = pick(el);
+    if (own) return tag + own;
+    const p = el.parentElement;
+    if (!p || p === document.body) return tag;
+    return p.tagName.toLowerCase() + pick(p) + ' > ' + tag;
+  }
+  function bucket(own){
+    if (!sel || sel.kind !== 'el') return null;
+    if (scope === 'all' && !own) { const g = groupSel(sel.el); return FD.groups[g] = FD.groups[g] || {}; }
+    return FD.styles[sel.key] = FD.styles[sel.key] || {};
+  }
+  function getProp(p, own){
+    if (!sel || sel.kind !== 'el') return undefined;
+    const b = (scope === 'all' && !own) ? FD.groups[groupSel(sel.el)] : FD.styles[sel.key];
+    return b ? b[p] : undefined;
+  }
+  function tidy(){ for (const m of [FD.styles, FD.groups]) for (const k in m) if (!Object.keys(m[k]).length) delete m[k]; }
+  function setProp(p, v, own){
+    const b = bucket(own); if (!b) return;
+    if (v === '' || v == null) delete b[p]; else b[p] = v;
+    tidy(); F.buildCss(); F.applyStyles(); updateSel();
+  }
+  function trOf(){ const m = String(getProp('translate', true) || '').match(/(-?[\d.]+)mm\s+(-?[\d.]+)mm/); return m ? [+m[1], +m[2]] : [0, 0]; }
+  function setTr(x, y){ setProp('translate', (Math.abs(x) > 0.01 || Math.abs(y) > 0.01) ? x.toFixed(2) + 'mm ' + y.toFixed(2) + 'mm' : '', true); }
+
+  // ── insert shapes ───────────────────────────────────────────────────────────────────────────
+  function viewCenter(){
+    const b = document.body.getBoundingClientRect();
+    const x = (Math.min(window.innerWidth - (document.documentElement.classList.contains('rb-pan') ? 322 : 0), b.right) + Math.max(0, b.left)) / 2;
+    return {x: Math.max(20, Math.min(190, (x - b.left) / MM)), y: Math.max(15, (window.innerHeight / 2 - b.top) / MM)};
+  }
+  function addShape(kind, extra, edit){
+    const c = viewCenter(), pri = cssColor(rootVar('--primary'), '#1f3a68'), txt = cssColor(rootVar('--text'), '#111827');
+    let s;
+    if (kind === 'line' || kind === 'bend' || kind === 'arrow') {
+      s = {type: 'line', x1: c.x - 30, y1: c.y, x2: c.x + 30, y2: c.y, stroke: pri, sw: 1.5};
+      if (kind === 'bend') { s.mx = c.x; s.my = c.y - 14; }
+      if (kind === 'arrow') s.arrow = 'end';
+    } else if (kind === 'text') {
+      s = {type: 'text', x: c.x - 30, y: c.y - 5, w: 60, text: 'Your text', size: 11, color: txt};
+    } else if (kind === 'wave' || kind === 'curve') {
+      s = {type: kind, x: 0, y: c.y - 15, w: 210, h: 30, fill: pri};
+    } else if (kind === 'icon') {
+      s = {type: 'icon', x: c.x - 5, y: c.y - 5, w: 10, h: 10, icon: 'star', color: pri};
+    } else if (kind === 'image') {
+      s = {type: 'image', x: c.x - 18, y: c.y - 18, w: 36, h: 36, shape: 'circle'};
+    } else {
+      const sq = {ellipse: 1, triangle: 1, diamond: 1, hexagon: 1, pentagon: 1, star: 1}[kind];
+      s = {type: kind === 'rounded' ? 'rect' : kind, x: c.x - (sq ? 13 : 25), y: c.y - 13, w: sq ? 26 : 50, h: 26,
+           fill: cssColor(rootVar('--tint'), '#e0f2fe'), stroke: pri, sw: kind === 'rect' || kind === 'rounded' ? 1 : 0};
+      if (kind === 'rounded') s.radius = 4;
+      if (sq && kind !== 'ellipse') { s.fill = pri; s.sw = 0; }
+    }
+    if (extra) {
+      Object.assign(s, extra);
+      if (extra.x == null && s.type !== 'line' && s.w) s.x = Math.max(0, c.x - s.w / 2);
+    }
+    s.id = newId();
+    if (s.src && s.path) srcOf[s.path] = s.src;
+    snap();
+    FD.shapes.push(s);
+    F.buildCss(); F.renderShapes();
+    if (mode !== 'design') setMode('design');
+    select({kind: 'shape', id: s.id});
+    saveFree();
+    if (edit && s.type === 'text') editShapeText(s.id);
+    return s;
+  }
+  // the exact look of a piece of resume text (family, size, weight, colour, leading, tracking, case)
+  function textStyle(el){
+    const cs = getComputedStyle(el), fs = parseFloat(cs.fontSize) || 14.67, wt = parseInt(cs.fontWeight, 10) || 400;
+    const lh = cs.lineHeight === 'normal' ? 1.2 : (parseFloat(cs.lineHeight) || fs * 1.2) / fs;
+    const al = {start: 'left', end: 'right', left: 'left', right: 'right', center: 'center', justify: 'justify'}[cs.textAlign] || 'left';
+    return {ff: cs.fontFamily, size: Math.round(fs * 7500) / 10000, color: cssColor(cs.color, '#111827'), weight: wt, bold: wt >= 600,
+            italic: cs.fontStyle === 'italic', upper: cs.textTransform === 'uppercase', align: al, pad: 0,
+            lh: Math.round(lh * 10000) / 10000, ls: cs.letterSpacing === 'normal' ? 0 : Math.round(parseFloat(cs.letterSpacing) * 10000) / 10000};
+  }
+  // the resume's body text = the style that carries the most characters (headings and the name excluded)
+  function bodyText(){
+    const votes = new Map();
+    document.querySelectorAll('[data-f]').forEach(el => {
+      const f = el.dataset.f, n = el.textContent.trim().length;
+      if (!n || el.closest('#rb-free') || /^(section_titles\.|name$|title$)/.test(f) || /^custom_sections\.\d+\.title$/.test(f)) return;
+      const cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') return;
+      const key = [cs.fontFamily, cs.fontSize, cs.fontWeight, cs.fontStyle, cs.color, cs.textTransform, cs.letterSpacing].join('|');
+      const v = votes.get(key) || {n: 0, el: el};
+      v.n += n; votes.set(key, v);
+    });
+    let best = null;
+    votes.forEach(v => { if (!best || v.n > best.n) best = v; });
+    return best ? best.el : null;
+  }
+  function addTextBox(){
+    const el = bodyText(), st = el ? textStyle(el) : {};
+    let w = 60;
+    if (el) {
+      const box = el.closest('[data-item]') || el.parentElement;
+      const bw = box ? brect(box).w / MM : 0;
+      if (bw > 20) w = Math.round(Math.min(bw, 120) * 10) / 10;
+    }
+    addShape('text', Object.assign(st, {text: 'Your text', w: w}), true);
+  }
+  // Ctrl+D: a shape → its copy; a resume item (bullet, entry, skill…) → a real duplicate item in the content;
+  // any other text / the photo / a coloured box → an identical free copy placed 4 mm lower-right
+  function duplicate(field){
+    if (mode === 'design' && curShape()) { dupShape(); return; }
+    const el = field || (mode === 'design' && sel && sel.kind === 'el' ? sel.el : null) || (mode === 'text' ? hot : null);
+    if (!el || !el.isConnected) return status('Select something first (🎨 Design: click it · ✍️ Text: click into an item), then Ctrl+D');
+    const it = el.closest('[data-item]');
+    if (it) { status('⏳ Duplicating…'); send({op: {action: 'dup', path: it.dataset.item}}, true); return; }
+    copyAsShape(el);
+  }
+  function copyAsShape(el){
+    if (el.querySelector('[data-item],section') || el.matches('section,main,aside,header,body,html'))
+      return status('That holds whole sections — select one item, text line, the photo or a shape to duplicate');
+    const r = brect(el), cs = getComputedStyle(el), x = r.x / MM + 4, y = r.y / MM + 4, w = r.w / MM, h = r.h / MM;
+    const photo = el.closest('.hd-avatar,.hd-photo') || (sel && sel.kind === 'el' && sel.key === 'l:photo' ? el : null);
+    if (photo && RB.photo) {
+      const img = photo.tagName === 'IMG' ? photo : photo.querySelector('img');
+      const bgm = getComputedStyle(photo).backgroundImage.match(/url\(["']?(.*?)["']?\)/);
+      const src = img ? img.src : bgm ? bgm[1] : '';
+      const pr = brect(photo), round = parseFloat(getComputedStyle(photo).borderTopLeftRadius) >= Math.min(pr.w, pr.h) * 0.4;
+      if (src) { addShape('image', {path: RB.photo, src: src, x: pr.x / MM + 4, y: pr.y / MM + 4, w: pr.w / MM, h: pr.h / MM, shape: round ? 'circle' : 'square'}); return; }
+    }
+    const txt = (el.innerText || '').trim();
+    if (txt && txt.length <= 800) {
+      const s = addShape('text', Object.assign(textStyle(el), {text: txt, x: x, y: y, w: Math.round((w + 0.6) * 100) / 100}));
+      // line boxes differ (inline run vs block): measure both texts and put the copy's glyphs exactly 4 mm off
+      const inner = shapeEl(s.id) && shapeEl(s.id).querySelector('.rbs-txt');
+      const g = n => { const rg = document.createRange(); rg.selectNodeContents(n); return rg.getBoundingClientRect(); };
+      if (inner) {
+        const a = g(el), c = g(inner);
+        s.x = Math.round((x + (a.left - c.left) / MM + 4) * 100) / 100;
+        s.y = Math.round((y + (a.top - c.top) / MM + 4) * 100) / 100;
+        F.renderShapes(); updateSel(); renderPanel();
+      }
+      return;
+    }
+    const bg = cs.backgroundColor, hasBg = bg && bg !== 'transparent' && !/rgba\([^)]*,\s*0\)$/.test(bg), bw = parseFloat(cs.borderTopWidth) || 0;
+    if (hasBg || bw > 0) {
+      addShape('rect', {x: x, y: y, w: w, h: h, fill: hasBg ? cssColor(bg) : 'none', stroke: bw ? cssColor(cs.borderTopColor) : 'none',
+                        sw: Math.round(bw * 75) / 100, radius: Math.round((parseFloat(cs.borderTopLeftRadius) || 0) / MM * 100) / 100});
+      return;
+    }
+    status('Nothing to copy here — select a text line, an item, the photo or a shape, then Ctrl+D');
+  }
+  $('#rb-insert').onchange = e => {
+    const v = e.target.value; e.target.value = '';
+    if (v === 'image') $('#rb-img-file').click();
+    else if (v === 'text') addTextBox();
+    else if (v) addShape(v);
+  };
+  $('#rb-addtext').onclick = addTextBox;
+  async function imageFile(f, replace){
+    status('⏳ Uploading image…');
+    const p = await upload(f);
+    if (!p) return status('⚠️ Upload failed');
+    const src = await new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
+    if (replace) { snap(); Object.assign(replace, {path: p, src: src}); F.renderShapes(); updateSel(); saveFree(); }
+    else addShape('image', {path: p, src: src});
+  }
+  $('#rb-img-file').onchange = e => { const f = e.target.files[0]; e.target.value = ''; if (f) imageFile(f, null); };
+  $('#rb-img-repl').onchange = e => { const f = e.target.files[0]; e.target.value = ''; const s = curShape(); if (f && s) imageFile(f, s); };
+
+  // ── pointer: select, move, resize, rotate, bend ────────────────────────────────────────────
+  document.addEventListener('click', e => {
+    if (mode === 'design' && !editorUi(e.target) && !editingShape) { e.preventDefault(); }
+  }, true);
+  document.addEventListener('pointerdown', e => {
+    if (mode !== 'design' || e.button !== 0 || editingShape && e.target.closest('[contenteditable=true]')) return;
+    const h = e.target.closest('.rb-h, .rb-pt');
+    if (h) { startDrag(e, h.dataset.h); return; }
+    if (editorUi(e.target)) return;
+    const sh = e.target.closest('#rb-free .rbs');
+    if (sh) { select({kind: 'shape', id: sh.dataset.sid}); startDrag(e, 'move'); return; }
+    let el = e.target;
+    if (el === document.documentElement) { select(null); return; }
+    if (el.closest && el.closest('svg') && el.tagName.toLowerCase() !== 'svg') el = el.closest('svg');
+    if (!sel || sel.kind !== 'el' || sel.el !== el) select(el);
+    if (sel) startDrag(e, 'move');
+  });
+  function startDrag(e, how){
+    if (!sel) return;
+    const d = {how: how, sx: e.clientX, sy: e.clientY, moved: false, shift: e.shiftKey};
+    const s = curShape();
+    if (s) { d.s0 = Object.assign({}, s); delete d.s0.src; }
+    else {
+      d.t0 = trOf();
+      const r = sel.el.getBoundingClientRect();
+      d.w0 = r.width / MM; d.h0 = r.height / MM;
+      d.photo = sel.key === 'l:photo';
+    }
+    const el = s ? shapeEl(s.id) : sel.el;
+    if (el) { const r = el.getBoundingClientRect(); d.cx = r.left + r.width / 2; d.cy = r.top + r.height / 2; }
+    drag = d;
+    e.preventDefault();
+  }
+  let hov = null;
+  window.addEventListener('pointermove', e => {
+    if (!drag) {
+      if (mode !== 'design') return;
+      const t = editorUi(e.target) ? null : (e.target.closest('#rb-free .rbs') || e.target);
+      if (hov && hov !== t) hov.classList.remove('rb-hov');
+      hov = (t && t !== document.documentElement && t !== document.body && t.classList) ? t : null;
+      if (hov) hov.classList.add('rb-hov');
+      return;
+    }
+    if (!drag.moved) {
+      if (Math.abs(e.clientX - drag.sx) + Math.abs(e.clientY - drag.sy) < 3) return;
+      drag.moved = true; snap();
+    }
+    const dx = (e.clientX - drag.sx) / MM, dy = (e.clientY - drag.sy) / MM, d = drag, s = curShape();
+    const ang = () => { let a = Math.atan2(e.clientY - d.cy, e.clientX - d.cx) * 180 / Math.PI + 90;
+                        if (e.shiftKey) a = Math.round(a / 15) * 15; return Math.round(((a + 540) % 360 - 180) * 10) / 10; };
+    if (s) {
+      const o = d.s0;
+      if (d.how === 'move') {
+        if (s.type === 'line') {
+          Object.assign(s, {x1: o.x1 + dx, y1: o.y1 + dy, x2: o.x2 + dx, y2: o.y2 + dy});
+          if (o.mx != null) { s.mx = o.mx + dx; s.my = o.my + dy; }
+        } else { s.x = o.x + dx; s.y = o.y + dy; }
+      } else if (d.how === 'p1' || d.how === 'p2') {
+        const n = d.how === 'p1' ? '1' : '2';
+        s['x' + n] = o['x' + n] + dx; s['y' + n] = o['y' + n] + dy;
+        if (e.shiftKey) {               // snap to horizontal / vertical
+          const m = n === '1' ? '2' : '1';
+          if (Math.abs(s['x' + n] - s['x' + m]) < Math.abs(s['y' + n] - s['y' + m])) s['x' + n] = s['x' + m]; else s['y' + n] = s['y' + m];
+        }
+        if (o.mx != null) { s.mx = o.mx + dx / 2; s.my = o.my + dy / 2; }
+      } else if (d.how === 'mid') {
+        s.mx = (o.mx == null ? (o.x1 + o.x2) / 2 : o.mx) + dx;
+        s.my = (o.my == null ? (o.y1 + o.y2) / 2 : o.my) + dy;
+      } else if (d.how === 'rot') {
+        s.rot = ang();
+      } else {
+        let w = o.w || 30, h = o.h || 20;
+        if (d.how !== 's') w = Math.max(2, (o.w || 30) + dx);
+        if (d.how !== 'e') h = Math.max(2, (o.h || 20) + dy);
+        if (e.shiftKey && d.how === 'se') h = w * (o.h || 20) / (o.w || 30);
+        s.w = w; if (s.type !== 'text') s.h = h;
+      }
+      F.renderShapes();
+    } else {
+      if (d.how === 'move') setTr(d.t0[0] + dx, d.t0[1] + dy);
+      else if (d.how === 'rot') setProp('rotate', ang() ? ang() + 'deg' : '', true);
+      else {
+        let w = d.w0, h = d.h0;
+        if (d.how !== 's') w = Math.max(2, d.w0 + dx);
+        if (d.how !== 'e') h = Math.max(2, d.h0 + dy);
+        if ((d.photo !== e.shiftKey) && d.how === 'se') h = w * d.h0 / d.w0;     // photo keeps its ratio (Shift frees it)
+        const b = bucket(true);
+        if (d.how !== 's') b.width = w.toFixed(2) + 'mm';
+        if (d.how !== 'e') b.height = h.toFixed(2) + 'mm';
+        if (d.photo && d.how === 'se') b['max-width'] = 'none';
+        F.applyStyles();
+      }
+    }
+    updateSel();
+  });
+  window.addEventListener('pointerup', () => {
+    if (drag && drag.moved) { saveFree(); renderPanel(); }
+    drag = null;
+  });
+
+  // double-click: edit a text box, or jump to typing in resume text
+  document.addEventListener('dblclick', e => {
+    if (mode !== 'design' || editorUi(e.target)) return;
+    const sh = e.target.closest('#rb-free .rbs-text');
+    if (sh) { editShapeText(sh.dataset.sid); return; }
+    const f = e.target.closest('[data-f]');
+    if (f) { setMode('text'); f.focus(); }
+  });
+
+  function editShapeText(sid){
+    const s = shapeById(sid), sh = shapeEl(sid), inner = sh && sh.querySelector('.rbs-txt');
+    if (!s || !inner) return;
+    const before = snapshot();
+    editingShape = true;
+    inner.setAttribute('contenteditable', 'true');
+    inner.focus();
+    document.getSelection().selectAllChildren(inner);
+    inner.addEventListener('blur', () => {
+      editingShape = false;
+      const t = inner.innerText.replace(/\n$/, '');
+      if (t !== s.text) { hist.push(before); fut.length = 0; s.text = t; }
+      F.renderShapes(); updateSel(); renderPanel(); saveFree();
+    }, {once: true});
+  }
+
+  // keyboard
+  document.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase(), ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && k === 's') { e.preventDefault(); send({export: true}, false); return; }
+    const t = e.target, field = t && t.closest ? t.closest('[data-f]') : null;
+    const ui = t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName));
+    if (ctrl && !e.altKey && (field || !ui)) {               // resume text fields share the editor's history
+      if (k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+      if (k === 'y') { e.preventDefault(); redo(); return; }
+      if (k === 'd') { e.preventDefault(); duplicate(field); return; }
+    }
+    if (ui) return;
+    if (mode !== 'design' || !sel) return;
+    const s = curShape();
+    if (k === 'escape') { select(null); return; }
+    if (k === 'delete' || k === 'backspace') { e.preventDefault(); removeSel(); return; }
+    const step = e.shiftKey ? 5 : 0.5;
+    const mv = {arrowleft: [-step, 0], arrowright: [step, 0], arrowup: [0, -step], arrowdown: [0, step]}[k];
+    if (!mv) return;
+    e.preventDefault();
+    snap();
+    if (s) {
+      if (s.type === 'line') { s.x1 += mv[0]; s.x2 += mv[0]; s.y1 += mv[1]; s.y2 += mv[1]; if (s.mx != null) { s.mx += mv[0]; s.my += mv[1]; } }
+      else { s.x += mv[0]; s.y += mv[1]; }
+      F.renderShapes(); updateSel();
+    } else { const t0 = trOf(); setTr(t0[0] + mv[0], t0[1] + mv[1]); }
+    saveFree(); renderPanel();
+  });
+  function removeSel(){
+    if (!sel) return;
+    snap();
+    if (sel.kind === 'shape') FD.shapes = FD.shapes.filter(x => x.id !== sel.id), F.renderShapes();
+    else setProp('display', 'none', true);
+    select(null); saveFree();
+  }
+  function dupShape(){
+    const s = curShape(); if (!s) return;
+    snap();
+    const c = JSON.parse(JSON.stringify(s));
+    c.id = newId();
+    if (c.type === 'line') { ['x1', 'x2', 'mx'].forEach(k => { if (c[k] != null) c[k] += 5; }); ['y1', 'y2', 'my'].forEach(k => { if (c[k] != null) c[k] += 5; }); }
+    else { c.x += 5; c.y += 5; }
+    FD.shapes.push(c); F.renderShapes(); select({kind: 'shape', id: c.id}); saveFree();
+  }
+
+  // ── panel ───────────────────────────────────────────────────────────────────────────────────
+  const esc = v => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const row = (label, html) => '<div class="pr"><label>' + label + '</label><div>' + html + '</div></div>';
+  const grp = (title, html) => '<div class="grp">' + (title ? '<h4>' + title + '</h4>' : '') + html + '</div>';
+  const opt = (v, label, cur) => '<option value="' + esc(v) + '"' + (String(cur) === String(v) ? ' selected' : '') + '>' + esc(label) + '</option>';
+  const nice = v => String(v).replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+  const num = (attr, v, step, min, max) => '<input type="number" ' + attr + ' value="' + esc(v) + '" step="' + (step || 1) + '"' + (min != null ? ' min="' + min + '"' : '') + (max != null ? ' max="' + max + '"' : '') + '>';
+  const rng = (attr, v, min, max, step) => '<input type="range" ' + attr + ' value="' + esc(v) + '" min="' + min + '" max="' + max + '" step="' + step + '">';
+  const col = (attr, v) => '<input type="color" ' + attr + ' value="' + esc(cssColor(v, '#000000')) + '">';
+  const btn = (attr, label, on, title) => '<button ' + attr + (on ? ' class="on"' : '') + (title ? ' title="' + esc(title) + '"' : '') + '>' + label + '</button>';
+  const fontSel = (attr, cur) => '<select ' + attr + '>' + opt('', 'Default', cur || '') + RB.fonts.map(f => opt(f[0], f[0], cur || '')).join('') + '</select>';
+  const r1 = v => Math.round(v * 10) / 10;
+  function loadFont(n){
+    const f = RB.fonts.find(x => x[0] === n);
+    if (!f || !f[2] || document.querySelector('link[data-font="' + CSS.escape(n) + '"]')) return;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet'; l.dataset.font = n;
+    l.href = 'https://fonts.googleapis.com/css2?family=' + f[2] + '&display=swap';
+    document.head.appendChild(l);
+  }
+
+  function renderPanel(){
+    if (!document.documentElement.classList.contains('rb-pan')) return;
+    const tabs = '<div class="tabs">' + [['sel', 'Selected'], ['page', 'Page & colours'], ['secs', 'Sections']]
+      .map(([k, l]) => btn('data-tab="' + k + '"', l, tab === k)).join('') + '</div>';
+    let body = '';
+    try { body = tab === 'page' ? pagePanel() : tab === 'secs' ? secPanel() : (sel ? (sel.kind === 'shape' ? shapePanel() : elPanel()) : emptyPanel()); }
+    catch (err) { body = grp('', '<p class="muted">Panel error: ' + esc(err) + '</p>'); }
+    panel.innerHTML = tabs + body;
+  }
+  function emptyPanel(){
+    return grp('Design mode', '<p class="muted">Switch to <b>🎨 Design</b>, then click anything on the resume: a heading, a line of text, the photo, ' +
+      'the header band, a column, an icon. Drag it to move it, pull the handles to resize or rotate, and style it here ' +
+      '(font, size, colour, background, border, shape…).<br><br>Use <b>＋ Insert</b> to add lines, curved lines, arrows, shapes, text boxes, icons or images. ' +
+      'Drag a line\'s yellow dot to bend it.<br><br><b>Page &amp; colours</b> changes the whole palette, fonts, text size and layout. ' +
+      '<b>Sections</b> lets you reorder, move, hide, rename or add sections.</p>');
+  }
+  function elPanel(){
+    const el = sel.el, cs = getComputedStyle(el), n = document.querySelectorAll(groupSel(el)).length;
+    const g = p => getProp(p);
+    const fs = parseFloat(g('font-size')) || r1(parseFloat(cs.fontSize) * 0.75);
+    const fw = g('font-weight') || cs.fontWeight, it = g('font-style') || cs.fontStyle, td = g('text-decoration') || cs.textDecorationLine, tt = g('text-transform') || cs.textTransform;
+    const al = g('text-align') || cs.textAlign;
+    const tr = trOf(), rot = parseFloat(getProp('rotate', true)) || 0;
+    const isPhoto = sel.key === 'l:photo';
+    let h = grp('Selected: ' + esc(friendly(sel.key)),
+      row('Apply to', btn('data-act="scope" data-v="one"', 'This one', scope === 'one') + btn('data-act="scope" data-v="all"', 'All like this (' + n + ')', scope === 'all')) +
+      '<div class="pr"><div>' + btn('data-act="parent"', '⬆ Parent', 0, 'Select the box around this') + btn('data-act="dupel"', '⧉ Duplicate', 0, 'Duplicate (Ctrl+D)') +
+      btn('data-act="hide" class="danger"', '🙈 Hide', 0, 'Hide (Del)') +
+      btn('data-act="reset"', '↺ Reset', 0, 'Remove all custom styling of this') + '</div></div>');
+    h += grp('Text',
+      row('Font', fontSel('data-prop="font-family"', g('font-family'))) +
+      row('Size (pt)', num('data-prop="font-size" data-unit="pt"', fs, 0.5, 3, 120)) +
+      row('Colour', col('data-prop="color"', g('color') || cs.color) + btn('data-act="clr" data-p="color"', '↺', 0, 'Back to the design colour')) +
+      row('Style', btn('data-act="tog" data-p="font-weight" data-on="700" data-off="400"', '<b>B</b>', +fw >= 600) +
+        btn('data-act="tog" data-p="font-style" data-on="italic" data-off="normal"', '<i>I</i>', it === 'italic') +
+        btn('data-act="tog" data-p="text-decoration" data-on="underline" data-off="none"', '<u>U</u>', /underline/.test(td)) +
+        btn('data-act="tog" data-p="text-transform" data-on="uppercase" data-off="none"', 'AA', tt === 'uppercase')) +
+      row('Align', ['left', 'center', 'right', 'justify'].map(a => btn('data-act="set" data-p="text-align" data-v="' + a + '"', {left: '⯇', center: '≡', right: '⯈', justify: '☰'}[a], al === a || (a === 'left' && al === 'start'), a)).join('')) +
+      row('Spacing', rng('data-prop="letter-spacing" data-unit="px"', parseFloat(g('letter-spacing')) || 0, -1, 10, 0.1)) +
+      row('Line height', rng('data-prop="line-height"', parseFloat(g('line-height')) || 1.4, 0.8, 2.6, 0.05)));
+    h += grp('Box',
+      row('Background', col('data-prop="background-color"', g('background-color') || cs.backgroundColor) + btn('data-act="clr" data-p="background-color"', '↺')) +
+      row('Border', num('data-prop="border-width" data-unit="px"', parseFloat(g('border-width')) || 0, 0.5, 0, 30) +
+        '<select data-prop="border-style">' + ['solid', 'dashed', 'dotted', 'double'].map(v => opt(v, v, g('border-style') || 'solid')).join('') + '</select>' +
+        col('data-prop="border-color"', g('border-color') || cs.borderTopColor)) +
+      row('Corners (mm)', num('data-prop="border-radius" data-unit="mm"', parseFloat(g('border-radius')) || 0, 0.5, 0, 200)) +
+      row('Padding (mm)', num('data-prop="padding" data-unit="mm"', g('padding') == null ? '' : parseFloat(g('padding')), 0.5, 0, 60)) +
+      row('Opacity', rng('data-prop="opacity"', g('opacity') == null ? 1 : g('opacity'), 0, 1, 0.05)) +
+      row('Shadow', btn('data-act="tog" data-p="box-shadow" data-on="0 1.5mm 4mm rgba(0,0,0,.28)" data-off=""', 'Drop shadow', !!g('box-shadow'))));
+    const W = getProp('width', true), H = getProp('height', true);
+    h += grp('Position & size',
+      row('Move (mm)', 'X ' + num('data-tr="x"', r1(tr[0]), 0.5) + ' Y ' + num('data-tr="y"', r1(tr[1]), 0.5)) +
+      row('Rotate (°)', num('data-own="rotate" data-unit="deg"', rot, 1, -360, 360)) +
+      row('Size (mm)', 'W ' + num('data-own="width" data-unit="mm"', W ? parseFloat(W) : '', 0.5, 1, 400) + ' H ' + num('data-own="height" data-unit="mm"', H ? parseFloat(H) : '', 0.5, 1, 600)) +
+      row('Layer', btn('data-act="front"', 'Bring to front', getProp('z-index', true) === '30') + btn('data-act="moveReset"', 'Reset position')));
+    if (isPhoto || /url\(/.test(cs.backgroundImage)) {
+      const bs = parseFloat(getProp('background-size', true)) || 100;
+      const bp = String(getProp('background-position', true) || '50% 20%').match(/-?[\d.]+/g) || [50, 20];
+      h += grp('Picture',
+        row('Shape', '<select data-photo="shape">' + ['circle', 'square', 'rounded', 'ellipse', 'hexagon', 'diamond', 'pentagon', 'triangle', 'star']
+          .map(v => opt(v, nice(v), photoShape())).join('') + '</select>') +
+        row('Size (mm)', num('data-photo="size"', r1(el.getBoundingClientRect().width / MM), 1, 8, 200)) +
+        row('Zoom', rng('data-own="background-size" data-unit="%"', bs, 100, 300, 5)) +
+        row('Pan', 'X ' + rng('data-bp="x"', bp[0], 0, 100, 1) + ' Y ' + rng('data-bp="y"', bp[1], 0, 100, 1)) +
+        row('Black & white', btn('data-act="tog" data-p="filter" data-on="grayscale(1)" data-off="" data-own="1"', 'B/W', getProp('filter', true) === 'grayscale(1)')));
+    }
+    return h;
+  }
+  function photoShape(){
+    const cp = String(getProp('clip-path', true) || ''), r = String(getProp('border-radius', true) || '');
+    for (const k of ['hexagon', 'diamond', 'pentagon', 'triangle', 'star']) if (cp && cp === F.CLIP[k]) return k;
+    if (r === '0' || r === '0mm') return 'square';
+    if (r === '14%') return 'rounded';
+    if (r === '50%' && getProp('width', true) && getProp('height', true) && getProp('width', true) !== getProp('height', true)) return 'ellipse';
+    return r === '50%' ? 'circle' : (RB.design.photo || 'circle');
+  }
+  function shapePanel(){
+    const s = curShape(), t = s.type, line = t === 'line', box = !line;
+    const sp = (k, v, step, min, max) => num('data-sp="' + k + '"', v == null ? '' : r1(v), step, min, max);
+    let h = grp('Shape: ' + nice(t === 'curve' ? 'curve band' : t),
+      '<div class="pr"><div>' + btn('data-act="dup"', '⧉ Duplicate') + btn('data-act="del" class="danger"', '🗑 Delete') +
+      btn('data-act="z"', s.z === 'back' ? 'Behind text' : 'In front', s.z === 'back', 'Toggle in front of / behind the resume text') + '</div></div>');
+    let st = '';
+    if (t !== 'icon' && t !== 'line') st += row('Fill', col('data-sp="fill"', s.fill && s.fill !== 'none' ? s.fill : '#ffffff') + btn('data-act="none" data-p="fill"', 'None', !s.fill || s.fill === 'none'));
+    if (t !== 'icon') st += row(line ? 'Colour' : 'Outline', col('data-sp="stroke"', s.stroke && s.stroke !== 'none' ? s.stroke : '#111827')) +
+      row('Thickness (pt)', sp('sw', s.sw == null ? (line ? 1.5 : 0) : s.sw, 0.25, 0, 40) +
+        '<select data-sp="dash">' + ['solid', 'dashed', 'dotted'].map(v => opt(v, v, s.dash || 'solid')).join('') + '</select>');
+    if (t === 'icon') st += row('Icon', '<select data-sp="icon">' + Object.keys(F.D.icons || {}).map(k => opt(k, k, s.icon || 'star')).join('') + '</select>') +
+      row('Colour', col('data-sp="color"', s.color || '#111827'));
+    if (line) st += row('Arrows', '<select data-sp="arrow">' + [['none', 'None'], ['end', 'End'], ['start', 'Start'], ['both', 'Both']].map(v => opt(v[0], v[1], s.arrow || 'none')).join('') + '</select>') +
+      row('Bend', btn('data-act="straight"', 'Straighten', s.mx == null) + '<span class="muted">drag the yellow dot</span>');
+    if (t === 'rect' || t === 'text' || (t === 'image' && s.shape === 'rounded')) st += row('Corners (mm)', sp('radius', s.radius || 0, 0.5, 0, 100));
+    st += row('Opacity', rng('data-sp="opacity"', s.opacity == null ? 1 : s.opacity, 0, 1, 0.05));
+    let h2 = grp('Style', st);
+    if (t === 'text') h2 += grp('Text', '<textarea data-sp="text">' + esc(s.text == null ? 'Your text' : s.text) + '</textarea>' +
+      row('Font', fontSel('data-sp="font"', s.font)) + row('Size (pt)', sp('size', s.size || 11, 0.5, 3, 160)) +
+      row('Colour', col('data-sp="color"', s.color || '#111827')) +
+      row('Style', ['bold', 'italic', 'underline', 'upper'].map(k => btn('data-act="stog" data-p="' + k + '"', {bold: '<b>B</b>', italic: '<i>I</i>', underline: '<u>U</u>', upper: 'AA'}[k], !!s[k])).join('')) +
+      row('Align', ['left', 'center', 'right', 'justify'].map(a => btn('data-act="sset" data-p="align" data-v="' + a + '"', {left: '⯇', center: '≡', right: '⯈', justify: '☰'}[a], (s.align || 'left') === a)).join('')) +
+      row('Line height', rng('data-sp="lh"', s.lh || 1.3, 0.8, 3, 0.05)) + row('Spacing', rng('data-sp="ls"', s.ls || 0, -1, 12, 0.1)) +
+      row('Padding (mm)', sp('pad', s.pad == null ? 1 : s.pad, 0.5, 0, 30)));
+    if (t === 'image') h2 += grp('Picture', row('Shape', '<select data-sp="shape">' + ['square', 'rounded', 'circle', 'ellipse', 'hexagon', 'diamond', 'pentagon', 'triangle', 'star']
+        .map(v => opt(v, nice(v), s.shape || 'square')).join('') + '</select>') +
+      row('Zoom', rng('data-sp="zoom"', s.zoom || 100, 100, 300, 5)) +
+      row('Pan', 'X ' + rng('data-sp="px"', s.px == null ? 50 : s.px, 0, 100, 1) + ' Y ' + rng('data-sp="py"', s.py == null ? 50 : s.py, 0, 100, 1)) +
+      row('', '<label class="btn" style="cursor:pointer;border:1px solid #334155;border-radius:5px;padding:4px 8px" for="rb-img-repl">🖼 Replace image</label>'));
+    let pos;
+    if (line) pos = row('Start (mm)', 'X ' + sp('x1', s.x1, 0.5) + ' Y ' + sp('y1', s.y1, 0.5)) + row('End (mm)', 'X ' + sp('x2', s.x2, 0.5) + ' Y ' + sp('y2', s.y2, 0.5));
+    else pos = row('Position (mm)', 'X ' + sp('x', s.x, 0.5) + ' Y ' + sp('y', s.y, 0.5)) +
+      row('Size (mm)', 'W ' + sp('w', s.w, 0.5, 1) + (t === 'text' ? '' : ' H ' + sp('h', s.h, 0.5, 1))) +
+      row('Rotate (°)', sp('rot', s.rot || 0, 1, -360, 360)) +
+      (t !== 'text' ? row('Flip', btn('data-act="stog" data-p="fx"', '⇋ Horizontal', !!s.fx) + btn('data-act="stog" data-p="fy"', '⇵ Vertical', !!s.fy)) : '');
+    return h + h2 + grp('Position', pos);
+  }
+  const PALETTE = [['--primary', 'Main / bands'], ['--on-primary', 'Text on bands'], ['--accent', 'Accent'], ['--heading', 'Headings'],
+    ['--text', 'Body text'], ['--muted', 'Muted text'], ['--page', 'Page background'], ['--side', 'Sidebar background'],
+    ['--side-text', 'Sidebar text'], ['--side-heading', 'Sidebar headings'], ['--side-accent', 'Sidebar accent'],
+    ['--rule', 'Lines & rules'], ['--tint', 'Chips / tint'], ['--track', 'Bar track']];
+  function pagePanel(){
+    const D = RB.design, C = RB.choices;
+    let h = grp('Colours', PALETTE.map(([v, l]) => row(l, col('data-var="' + v + '"', rootVar(v)) + (FD.vars[v] ? btn('data-act="unvar" data-v="' + v + '"', '↺', 0, 'Back to the design colour') : ''))).join('') +
+      '<p class="muted">Header waves, footer and the Venn circles follow the main colour picker in the top bar.</p>');
+    h += grp('Fonts & text size', row('Headings', fontSel('data-font="head"', FD.fonts.head)) + row('Body text', fontSel('data-font="body"', FD.fonts.body)) +
+      row('Font pairing', dsel('font')) +
+      row('Text size', rng('data-ts="1"', Math.round((FD.text_scale || 1) * 100), 60, 160, 1) + '<span class="val" id="rb-ts-v">' + Math.round((FD.text_scale || 1) * 100) + '%</span>'));
+    h += grp('Layout', row('Layout', dsel('layout')) +
+      (D.layout !== 'single_column' ? row('Column width', rng('data-dset="sidebar_width"', D.sidebar_width || 32, 18, 60, 1)) : '') +
+      row('Header', dsel('header')) + row('Header shape', dsel('header_shape')) + row('Footer', dsel('footer_shape')) +
+      row('Decoration', dsel('decor')) + row('Headings', dsel('heading_style')) + row('Skills', dsel('skills_style')) +
+      row('Languages', dsel('language_style')) + row('Competencies', dsel('competency_style')) +
+      row('Photo', dsel('photo')) + row('Photo place', dsel('photo_position')) + row('Name case', dsel('name_case')) +
+      row('Name align', dsel('name_align')) +
+      row('Extras', ['timeline', 'photo_ring', 'column_divider', 'item_rules'].map(k =>
+        '<label style="display:inline-flex;gap:3px;align-items:center;margin-right:6px"><input type="checkbox" data-dset="' + k + '"' + (D[k] ? ' checked' : '') + '>' + nice(k) + '</label>').join('')));
+    const hidden = Object.entries(FD.styles).filter(([k, p]) => p.display === 'none');
+    h += grp('Hidden elements', hidden.length ? hidden.map(([k]) => '<div class="sec-row"><span title="' + esc(k) + '">' + esc(friendly(k)) + '</span>' + btn('data-act="unhide" data-k="' + esc(k) + '"', 'Show') + '</div>').join('')
+      : '<p class="muted">Nothing hidden. Select something in Design mode and press 🙈 Hide (or Del).</p>');
+    h += grp('', btn('data-act="resetall" class="danger"', '↺ Reset all free design', 0, 'Removes every custom style, colour, font and shape'));
+    return h;
+    function dsel(k){ return '<select data-dset="' + k + '">' + (C[k] || []).map(v => opt(v, nice(v), D[k])).join('') + '</select>'; }
+  }
+  function secPanel(){
+    const S = RB.sections, single = RB.design.layout === 'single_column';
+    const cols = [['sidebar', single ? '' : 'Side column'], ['main', single ? 'Sections' : 'Main column'], ['bottom', 'Bottom strip']];
+    let h = '';
+    for (const [c, label] of cols) {
+      if (!S[c] || !S[c].length || !label) continue;
+      h += grp(label, S[c].map(([k, t]) => '<div class="sec-row"><span title="' + esc(k) + '">' + esc(t) + '</span>' +
+        btn('data-sec="up" data-k="' + k + '"', '↑', 0, 'Move up') + btn('data-sec="down" data-k="' + k + '"', '↓', 0, 'Move down') +
+        (single ? '' : btn('data-sec="move" data-k="' + k + '"', '⇄', 0, 'Move to the other column')) +
+        btn('data-sec="hide" data-k="' + k + '"', '🙈', 0, 'Hide this section') +
+        (k.indexOf('custom_') === 0 ? btn('data-sec="delete_custom" data-k="' + k + '" class="danger"', '🗑', 0, 'Delete this section') : '') + '</div>').join(''));
+    }
+    if (S.hidden && S.hidden.length) h += grp('Hidden sections', S.hidden.map(([k, t]) => '<div class="sec-row"><span>' + esc(t) + '</span>' + btn('data-sec="show" data-k="' + k + '"', 'Show') + '</div>').join(''));
+    h += grp('Add your own section', row('Title', '<input type="text" id="rb-cs-title" placeholder="e.g. Volunteering">') +
+      row('Style', '<select id="rb-cs-style">' + [['bullets', 'Bullet list'], ['text', 'Paragraphs'], ['chips', 'Tags'], ['plain', 'Plain list']].map(v => opt(v[0], v[1], 'bullets')).join('') + '</select>') +
+      (single ? '' : row('Column', '<select id="rb-cs-col">' + opt('main', 'Main', 'main') + opt('sidebar', 'Side', 'main') + '</select>')) +
+      '<div class="pr"><div>' + btn('data-act="addcustom"', '＋ Add section') + '</div></div>' +
+      (RB.addable.length ? row('Built-in', '<select id="rb-bi">' + RB.addable.map(v => opt(v[0], v[1], '')).join('') + '</select>' + btn('data-act="addbuiltin"', 'Add')) : '') +
+      '<p class="muted">Rename any section by clicking its heading in ✍️ Text mode.</p>');
+    return h;
+  }
+
+  // panel events
+  let tx = false;
+  const begin = () => { if (!tx) { snap(); tx = true; } };
+  const end = () => { if (tx) { tx = false; saveFree(); } };
+  function ctlValue(t){
+    if (t.type === 'checkbox') return t.checked;
+    if (t.type === 'number' || t.type === 'range') return t.value === '' ? null : +t.value;
+    return t.value;
+  }
+  function applyCtl(t){
+    const k = t.dataset;
+    if (k.prop || k.own) {
+      const p = k.prop || k.own, v = t.value === '' ? '' : t.value + (k.unit || '');
+      if (p === 'font-family') loadFont(t.value);
+      setProp(p, v, !!k.own);
+    } else if (k.tr) {
+      const c = trOf(), v = +t.value || 0;
+      setTr(k.tr === 'x' ? v : c[0], k.tr === 'y' ? v : c[1]);
+    } else if (k.bp) {
+      const cur = String(getProp('background-position', true) || '50% 20%').match(/-?[\d.]+/g) || [50, 20];
+      cur[k.bp === 'x' ? 0 : 1] = t.value;
+      setProp('background-position', cur[0] + '% ' + cur[1] + '%', true);
+    } else if (k.photo) {
+      if (k.photo === 'size') { const v = (+t.value || 30).toFixed(1) + 'mm'; const b = bucket(true); b.width = v; b.height = v; b['max-width'] = 'none'; F.applyStyles(); updateSel(); return; }
+      const sh = t.value, b = bucket(true);
+      b['border-radius'] = {square: '0', rounded: '14%'}[sh] || (sh === 'circle' || sh === 'ellipse' ? '50%' : '0');
+      if (F.CLIP[sh] && sh !== 'circle' && sh !== 'ellipse') b['clip-path'] = F.CLIP[sh]; else delete b['clip-path'];
+      if (sh === 'ellipse') { const r = sel.el.getBoundingClientRect(); b.width = r1(r.width / MM) + 'mm'; b.height = r1(r.width / MM * 1.3) + 'mm'; b['max-width'] = 'none'; }
+      F.applyStyles(); updateSel();
+    } else if (k.sp) {
+      const s = curShape(); if (!s) return;
+      const v = ctlValue(t);
+      if (v === null || v === '') delete s[k.sp]; else s[k.sp] = v;
+      if (k.sp === 'font') loadFont(v);
+      F.renderShapes(); updateSel();
+    } else if (k.var) {
+      FD.vars[k.var] = t.value; F.buildCss();
+    } else if (k.font) {
+      if (t.value) { FD.fonts[k.font] = t.value; loadFont(t.value); } else delete FD.fonts[k.font];
+      F.buildCss(); updateSel();
+    } else if (k.ts) {
+      FD.text_scale = (+t.value || 100) / 100;
+      document.documentElement.style.setProperty('--s', FD.text_scale.toFixed(3));
+      const lab = $('#rb-ts-v'); if (lab) lab.textContent = t.value + '%';
+      updateSel();
+    }
+  }
+  panel.addEventListener('input', e => {
+    const t = e.target;
+    if (!t.dataset) return;
+    if (t.dataset.dset) { if (t.dataset.dset === 'sidebar_width') document.documentElement.style.setProperty('--sw', t.value + '%'); return; }
+    if (t.type === 'text' || t.tagName === 'TEXTAREA' && !t.dataset.sp) return;
+    begin(); applyCtl(t);
+  });
+  panel.addEventListener('change', e => {
+    const t = e.target;
+    if (!t.dataset) return;
+    if (t.dataset.dset) {
+      const v = t.type === 'checkbox' ? t.checked : t.dataset.dset === 'sidebar_width' ? +t.value : t.value;
+      send({design_set: {[t.dataset.dset]: v}}, true);
+      return;
+    }
+    if (!(t.dataset.prop || t.dataset.own || t.dataset.tr || t.dataset.bp || t.dataset.photo || t.dataset.sp || t.dataset.var || t.dataset.font || t.dataset.ts)) return;
+    begin(); applyCtl(t); end();
+    if (t.tagName === 'SELECT' || t.dataset.photo) renderPanel();
+  });
+  panel.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const d = b.dataset;
+    if (d.tab) { tab = d.tab; renderPanel(); return; }
+    if (d.sec) {
+      if (d.sec === 'delete_custom' && !confirm('Delete this section and its text?')) return;
+      send({sec_op: {action: d.sec, key: d.k}}, true); return;
+    }
+    const a = d.act, s = curShape();
+    if (!a) return;
+    if (a === 'addcustom') {
+      const t = ($('#rb-cs-title') || {}).value || '';
+      if (!t.trim()) { status('⚠️ Type a title for the new section'); return; }
+      send({add_custom: {title: t.trim(), style: ($('#rb-cs-style') || {}).value || 'bullets', column: ($('#rb-cs-col') || {}).value || 'main'}}, true);
+      return;
+    }
+    if (a === 'addbuiltin') { const v = ($('#rb-bi') || {}).value; if (v) send({add_section: v}, true); return; }
+    if (a === 'scope') { scope = d.v; renderPanel(); return; }
+    if (a === 'parent') { const p = sel && sel.el && sel.el.parentElement; if (p && p !== document.documentElement) select(p); return; }
+    if (a === 'dupel') { duplicate(null); return; }
+    snap();
+    if (a === 'hide') removeSel();
+    else if (a === 'reset') { if (scope === 'all') delete FD.groups[groupSel(sel.el)]; else delete FD.styles[sel.key]; F.buildCss(); F.applyStyles(); }
+    else if (a === 'clr') setProp(d.p, '');
+    else if (a === 'tog') { const own = !!d.own, on = getProp(d.p, own) === d.on || (!getProp(d.p, own) && b.classList.contains('on')); setProp(d.p, on ? d.off : d.on, own); }
+    else if (a === 'set') setProp(d.p, d.v);
+    else if (a === 'front') { const on = getProp('z-index', true) === '30'; setProp('z-index', on ? '' : '30', true); setProp('position', '', true); if (!on) { const b2 = bucket(true); if (getComputedStyle(sel.el).position === 'static') b2.position = 'relative'; F.applyStyles(); } }
+    else if (a === 'moveReset') { ['translate', 'rotate', 'width', 'height', 'max-width'].forEach(p => setProp(p, '', true)); }
+    else if (a === 'unhide') { if (FD.styles[d.k]) { delete FD.styles[d.k].display; tidy(); F.applyStyles(); } }
+    else if (a === 'resetall') { if (!confirm('Remove every custom style, colour, font and shape?')) return;
+      Object.assign(FD, {styles: {}, groups: {}, vars: {}, fonts: {}, text_scale: 1, shapes: []});
+      document.documentElement.style.removeProperty('--s'); F.refresh(); select(null); }
+    else if (a === 'unvar') { delete FD.vars[d.v]; F.buildCss(); }
+    else if (a === 'dup') { hist.pop(); dupShape(); return; }
+    else if (a === 'del') { hist.pop(); removeSel(); return; }
+    else if (a === 'z' && s) { if (s.z === 'back') delete s.z; else s.z = 'back'; F.renderShapes(); }
+    else if (a === 'none' && s) { s[d.p] = 'none'; F.renderShapes(); }
+    else if (a === 'straight' && s) { delete s.mx; delete s.my; F.renderShapes(); }
+    else if (a === 'stog' && s) { s[d.p] = !s[d.p]; F.renderShapes(); }
+    else if (a === 'sset' && s) { s[d.p] = d.v; F.renderShapes(); }
+    updateSel(); renderPanel(); saveFree();
+  });
+
+  // ── start ───────────────────────────────────────────────────────────────────────────────────
+  layoutChrome();
+  const y = ss.get('rbScroll');
+  if (y) { window.scrollTo(0, +y); ss.del('rbScroll'); }
+  tab = ss.get('rbTab') || 'sel';
+  const m0 = ss.get('rbMode'), pan0 = ss.get('rbPan'), sel0 = ss.get('rbSel');
+  ['rbMode', 'rbTab', 'rbPan', 'rbSel'].forEach(k => ss.del(k));
+  setMode(m0 === 'design' ? 'design' : 'text');
+  if (pan0) setPanel(true);
+  if (sel0 && mode === 'design') {
+    try { const o = JSON.parse(sel0);
+      if (o.kind === 'shape' && shapeById(o.id)) select({kind: 'shape', id: o.id}, true);
+      else if (o.kind === 'el') { const el = F.find(o.key); if (el) select(el, true); }
+    } catch (e) {}
+  }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { layoutChrome(); updateSel(); });
 })();
 </script>
 """
@@ -2593,7 +3993,8 @@ _EDITOR_JS = """
 
 def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
     tpl = "".join(f'<option value="{k}" title="{_e(v)}">{k.title()}</option>' for k, v in PRESET_BLURBS.items())
-    empty = [k for k in _ADDABLE if not content.get(k)]
+    hidden = set(design.get("hidden_sections") or [])
+    empty = [k for k in _ADDABLE if not content.get(k) or k in hidden]
     add = "".join(f'<option value="{k}">{_e(DEFAULT_TITLES[k])}</option>' for k in empty)
     tp = state.get("target_pages")
     pages_opts = "".join(f'<option value="{v}"{" selected" if str(tp or "") == v else ""}>{lbl}</option>'
@@ -2601,10 +4002,23 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
     pdf = state.get("last_pdf") or ""
     last = (f'Last PDF: <a href="{MEDIA_URL}/{_e(os.path.basename(pdf))}" target="_blank">open</a>'
             if pdf and os.path.exists(pdf) else "Click any text to edit it")
+    shapes = [("line", "／ Line"), ("bend", "⌒ Curved line"), ("arrow", "→ Arrow"), ("rect", "▭ Rectangle"),
+              ("rounded", "▢ Rounded box"), ("ellipse", "◯ Circle / ellipse"), ("triangle", "△ Triangle"),
+              ("diamond", "◇ Diamond"), ("hexagon", "⬡ Hexagon"), ("pentagon", "⬠ Pentagon"), ("star", "☆ Star"),
+              ("wave", "〰 Wave band"), ("curve", "◠ Curve band"), ("text", "T  Text box"), ("icon", "★ Icon"),
+              ("image", "🖼 Image…")]
+    ins = "".join(f'<option value="{k}">{_e(v)}</option>' for k, v in shapes)
     return (f'<div id="rb-bar"><b>✏️ Resume editor</b>'
+            f'<span class="seg"><button id="rb-mode-text" class="on" title="Type into the resume">✍️ Text</button>'
+            f'<button id="rb-mode-design" title="Select, move, resize, rotate and restyle anything">🎨 Design</button></span>'
+            f'<select id="rb-insert" title="Add a line, shape, text box, icon or image"><option value="">＋ Insert…</option>{ins}</select>'
+            f'<button id="rb-addtext" title="Add a text box in the same font, size and colour as the resume text">＋ Text box</button>'
+            f'<button id="rb-undo" title="Undo (Ctrl+Z)">↶</button><button id="rb-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">↷</button>'
+            f'<button id="rb-panel-btn" title="Style panel: selection, colours, fonts, layout, sections">🎛 Panel</button>'
             f'<select id="rb-tpl" title="Switch format"><option value="">Template…</option>{tpl}</select>'
             f'<input type="color" id="rb-color" value="{_e(design["colors"]["primary"])}" title="Main colour">'
-            f'<select id="rb-add" title="Add a section"><option value="">＋ Add section…</option>{add}</select>'
+            f'<select id="rb-add" title="Add a section"><option value="">＋ Add section…</option>{add}'
+            f'<option value="__custom">✚ Your own section…</option></select>'
             f'<label class="btn" title="Upload a photo">📷 Photo<input type="file" id="rb-photo" accept="image/*" hidden></label>'
             f'<button id="rb-nophoto" title="Remove the photo block">No photo</button>'
             f'<input type="text" id="rb-ai" placeholder="Ask AI, e.g. make bullets punchier">'
@@ -2612,9 +4026,44 @@ def _editor_toolbar(content: dict, design: dict, state: dict) -> str:
             f'<select id="rb-pages" title="Strict page limit for the PDF">{pages_opts}</select>'
             f'<button id="rb-save" class="primary">💾 Save &amp; export PDF</button>'
             f'<span id="rb-status">{last}</span></div>'
+            f'<input type="file" id="rb-img-file" accept="image/*" hidden><input type="file" id="rb-img-repl" accept="image/*" hidden>'
             f'<div id="rb-ctl"><button data-a="add" title="Add an item below">＋</button>'
+            f'<button data-a="dup" title="Duplicate this item (Ctrl+D)">⧉</button>'
             f'<button data-a="up" title="Move up">↑</button><button data-a="del" title="Delete">✕</button></div>'
-            f'<div id="rb-hint">Click text to type · hover an item for ＋ ↑ ✕ · red line = page break · Ctrl+S saves</div>')
+            f'<div id="rb-sctl"><button data-a="up" title="Move section up">↑</button><button data-a="down" title="Move section down">↓</button>'
+            f'<button data-a="move" title="Move to the other column">⇄</button><button data-a="hide" title="Hide section">✕</button></div>'
+            f'<div id="rb-selbox"><span class="rb-tag"></span><i class="rb-h" data-h="move" title="Drag to move"></i>'
+            f'<i class="rb-h" data-h="rot" title="Drag to rotate (Shift snaps)"></i><i class="rb-h" data-h="e"></i>'
+            f'<i class="rb-h" data-h="s"></i><i class="rb-h" data-h="se" title="Resize (Shift keeps/frees the ratio)"></i></div>'
+            f'<i class="rb-pt" id="rb-pt-p1" data-h="p1"></i><i class="rb-pt" id="rb-pt-p2" data-h="p2"></i>'
+            f'<i class="rb-pt mid" id="rb-pt-mid" data-h="mid" title="Drag to bend"></i>'
+            f'<div id="rb-panel"></div>'
+            f'<div id="rb-hint">Click text to type · hover an item for ＋ ⧉ ↑ ✕ · Ctrl+Z undo · Ctrl+D duplicate · Ctrl+S saves</div>')
+
+
+def _editor_meta(content: dict, design: dict) -> dict:
+    """What the editor's panel needs: design choices, the section columns as rendered, fonts."""
+    wd = _effective_design(content, design)
+    side, main = _placement(wd)
+    hidden = list(design.get("hidden_sections") or [])
+    custom = {x["id"]: x["title"] for x in content.get("custom_sections") or []}
+    token = _EDIT.set(True)
+    try:
+        def shown(keys, is_side):
+            return [[k, custom.get(k) or _title(wd, k)] for k in keys
+                    if k not in hidden and (k in custom or (k in SECTION_KEYS and _section_html(k, content, wd, is_side)))]
+        sections = {"sidebar": shown(side, True), "main": shown(main, False),
+                    "bottom": shown(wd.get("bottom_sections") or [], False),
+                    "hidden": [[k, custom.get(k) or (_title(wd, k) if k in SECTION_KEYS else k)] for k in hidden]}
+    finally:
+        _EDIT.reset(token)
+    keys = ("layout", "header", "header_shape", "footer_shape", "decor", "heading_style", "skills_style", "language_style",
+            "competency_style", "photo", "photo_position", "name_case", "name_align", "font", "sidebar_width", "timeline",
+            "photo_ring", "column_divider", "item_rules")
+    return {"design": {k: design.get(k) for k in keys}, "sections": sections,
+            "choices": {k: sorted(v) for k, v in _DESIGN_CHOICES.items()},
+            "fonts": [[n, cat, g] for n, cat, g in _FREE_FONTS],
+            "addable": [[k, DEFAULT_TITLES[k]] for k in _ADDABLE if not content.get(k) or k in hidden]}
 
 
 def editor_page() -> str:
@@ -2628,11 +4077,12 @@ def editor_page() -> str:
                     "<p>Ask Jarvis to create one first, e.g. <i>“make my resume like this”</i> with a design image and your details.</p>")
         photo = st.get("photo") or ""
         photo_uri = _data_uri(photo) if photo and os.path.exists(photo) else ""
-        html = _render_html(content, design, photo_uri, 1.0, edit=True)
-        data = json.dumps({"content": content}, ensure_ascii=False).replace("</", "<\\/")
+        html = _render_html(content, design, photo_uri, float(st.get("render_scale") or 1.0), edit=True)
+        data = json.dumps({"content": content, "rev": _state_rev(st), "photo": photo if photo_uri else "",
+                           **_editor_meta(content, design)}, ensure_ascii=False).replace("</", "<\\/")
         html = html.replace("</head>", _EDITOR_CSS + "</head>", 1)
         html = html.replace("</body>", _editor_toolbar(content, design, st) +
-                            f"<script>window.__RB__ = {data};</script>" + _EDITOR_JS + "</body>", 1)
+                            f"<script>window.__RB__ = {data};</script>" + _EDITOR_JS + _EDITOR_FIT_JS + "</body>", 1)
         return html
     except Exception as e:
         import traceback
@@ -2656,10 +4106,78 @@ def _apply_op(content: dict, action: str, path: str) -> None:
         lst.pop(idx)
     elif action == "add":
         lst.insert(idx + 1, json.loads(json.dumps(_ITEM_TEMPLATES.get(key, "New item"))))
+    elif action == "dup" and key != "custom_sections":       # a whole custom section carries an id; items don't
+        lst.insert(idx + 1, json.loads(json.dumps(lst[idx])))
     elif action == "up" and idx > 0:
         lst[idx - 1], lst[idx] = lst[idx], lst[idx - 1]
     elif action == "down" and idx < len(lst) - 1:
         lst[idx + 1], lst[idx] = lst[idx], lst[idx + 1]
+
+
+def _section_op(c: dict, d: dict, action: str, key: str) -> str:
+    """Editor section controls: up / down / move (other column) / hide / show / delete_custom."""
+    key = str(key or "")
+    if not (key in SECTION_KEYS or re.fullmatch(r"custom_\d{1,4}", key)):
+        return "Unknown section."
+    wd = _effective_design(c, d)
+    side, main = _placement(wd)
+    if wd["layout"] == "single_column":
+        side, main = [], side + main
+    lists = {"side": side, "main": main, "bottom": list(wd.get("bottom_sections") or [])}
+    hidden = [k for k in (d.get("hidden_sections") or []) if k != key]
+    note = "Section updated."
+    if action == "hide":
+        hidden.append(key)
+        note = "Section hidden (Sections tab → Show brings it back)."
+    elif action == "show":
+        note = "Section shown."
+    elif action == "delete_custom":
+        c["custom_sections"] = [x for x in c.get("custom_sections") or [] if x["id"] != key]
+        for lst in lists.values():
+            if key in lst:
+                lst.remove(key)
+        note = "Section deleted."
+    else:
+        name = next((n for n, lst in lists.items() if key in lst), None)
+        if not name:
+            return "Section not found."
+        lst = lists[name]
+        if action in ("up", "down"):
+            vis = [k for k in lst if k not in hidden and (k.startswith("custom_") or _section_html(k, c, wd, name == "side"))]
+            i = vis.index(key) if key in vis else -1
+            j = i - 1 if action == "up" else i + 1
+            if i < 0 or not 0 <= j < len(vis):
+                return "Already at the " + ("top." if action == "up" else "bottom.")
+            a, b = lst.index(key), lst.index(vis[j])
+            lst[a], lst[b] = lst[b], lst[a]
+        elif action == "move":
+            if wd["layout"] == "single_column":
+                return "This layout has one column — switch the layout in Page & colours first."
+            dst = "main" if name in ("side", "bottom") else "side"
+            lst.remove(key)
+            lists[dst].append(key)
+            note = "Moved to the " + ("main" if dst == "main" else "side") + " column."
+    d["sidebar_sections"], d["main_sections"], d["bottom_sections"] = lists["side"], lists["main"], lists["bottom"]
+    d["hidden_sections"] = hidden
+    d["pinned"] = list(dict.fromkeys(lists["side"] + lists["main"]))      # the user arranged it: the fit loop keeps it
+    return note
+
+
+def _design_set(d: dict, changes: dict) -> dict:
+    """Editor 'Page & colours' layout controls → validated design keys."""
+    for k, v in (changes or {}).items():
+        if k in _DESIGN_CHOICES and str(v) in _DESIGN_CHOICES[k]:
+            d[k] = str(v)
+        elif k in ("timeline", "photo_ring", "column_divider", "item_rules"):
+            d[k] = bool(v)
+        elif k == "sidebar_width":
+            try:
+                d[k] = max(18, min(60, int(float(v))))
+            except Exception:
+                pass
+    if d.get("layout") != "single_column" and not d.get("sidebar_sections"):
+        d["sidebar_sections"] = [k for k in ("contact", "skills", "education", "languages")]
+    return _sanitize_design(d)
 
 
 def editor_save(payload: dict) -> dict:
@@ -2672,19 +4190,53 @@ def editor_save(payload: dict) -> dict:
         content = _normalise_content(json.loads(json.dumps(raw)))
         design = st["design"]
         note = "Saved."
+        if "free" in payload:                         # Design mode: styles, shapes, palette, fonts (always sent)
+            free = _clean_free(payload.get("free"))
+            if free:
+                design["free"] = free
+            else:
+                design.pop("free", None)
+
+        if payload.get("restore_snap"):               # editor undo / redo of a structural change
+            snap = _undo_get(str(payload["restore_snap"]))
+            if not snap:
+                return {"ok": False, "message": "That step is too old to undo."}
+            st.update({"content": content, "design": design})
+            here = _undo_push(_undo_snap(st))
+            st.update({k: snap.get(k) for k in _UNDO_KEYS})
+            st["updated"] = time.time()
+            _save_state(st)
+            return {"ok": True, "reload": True, "snap": here, "rev": _state_rev(st), "message": "Restored."}
+        before = _undo_snap({**st, "content": content, "design": design})
 
         op = payload.get("op") or {}
-        if isinstance(op, dict) and op.get("action") in ("add", "del", "up", "down"):
+        if isinstance(op, dict) and op.get("action") in ("add", "del", "up", "down", "dup"):
             _apply_op(content, op["action"], op.get("path", ""))
             content = _normalise_content(content)
         sec = str(payload.get("add_section") or "")
-        if sec in _ITEM_TEMPLATES and not content.get(sec):
-            content[sec] = [json.loads(json.dumps(_ITEM_TEMPLATES[sec]))]
-            content = _normalise_content(content)
+        if sec in _ITEM_TEMPLATES:
+            design["hidden_sections"] = [k for k in design.get("hidden_sections") or [] if k != sec]
+            if not content.get(sec):
+                content[sec] = [json.loads(json.dumps(_ITEM_TEMPLATES[sec]))]
+                content = _normalise_content(content)
+        custom = payload.get("add_custom")
+        if isinstance(custom, dict) and str(custom.get("title") or "").strip():
+            content["custom_sections"] = _custom_sections((content.get("custom_sections") or []) + [
+                {"title": str(custom["title"]), "style": custom.get("style"), "items": []}])
+            new_id = content["custom_sections"][-1]["id"]
+            col = "sidebar_sections" if custom.get("column") == "sidebar" and design.get("layout") != "single_column" else "main_sections"
+            design.setdefault(col, []).append(new_id)
+            note = "Section added — click its first line to type."
+        if isinstance(payload.get("sec_op"), dict):
+            note = _section_op(content, design, str(payload["sec_op"].get("action") or ""), payload["sec_op"].get("key"))
         tpl = str(payload.get("template") or "").lower()
         if tpl in PRESETS:
-            design = _sanitize_design(json.loads(json.dumps(PRESETS[tpl])) | {"source": tpl})
+            keep = {k: design[k] for k in ("free", "hidden_sections") if design.get(k)}
+            design = _sanitize_design(json.loads(json.dumps(PRESETS[tpl])) | {"source": tpl}) | keep
             note = f"Switched to the {tpl} format."
+        if isinstance(payload.get("design_set"), dict):
+            design = _design_set(design, payload["design_set"])
+            note = "Layout updated."
         if payload.get("color"):
             design = _sanitize_design(_apply_color(design, str(payload["color"])))
         if payload.get("photo") and os.path.exists(str(payload["photo"])):
@@ -2704,21 +4256,29 @@ def editor_save(payload: dict) -> dict:
 
         st.update({"content": content, "design": design, "awaiting_details": False, "updated": time.time()})
         _save_state(st)
+
+        def undo_id() -> str:                      # a structural change becomes one step of the editor's Ctrl+Z
+            return _undo_push(before) if _undo_snap(st) != before else ""
+        if "target_pages" in payload:
+            payload["export"] = True               # fit to the new target now, so the editor shows the result
         if not payload.get("export"):
-            return {"ok": True, "reload": True, "message": note}
+            return {"ok": True, "reload": True, "message": note, "snap": undo_id(), "rev": _state_rev(st)}
 
         slug = re.sub(r"[^a-z0-9]+", "_", (content.get("name") or "resume").lower()).strip("_")[:30] or "resume"
         photo = st.get("photo") if st.get("photo") and os.path.exists(st["photo"]) else ""
         target = st.get("target_pages")
+        old_scale = float(st.get("render_scale") or 1.0)
         files, fitted, fit_note = _fit_render(content, design, photo, f"resume_{slug}_{int(time.time())}", target)
         if fitted is not content:
             st["content"] = fitted
         st["last_pdf"] = files["pdf"]
+        st["render_scale"] = files.get("scale", 1.0)
         _save_state(st)
         pdf_url = f"{MEDIA_URL}/{os.path.basename(files['pdf'])}"
-        return {"ok": True, "reload": False, "pdf_url": pdf_url,
+        return {"ok": True, "reload": False, "pdf_url": pdf_url, "snap": undo_id(), "rev": _state_rev(st),
                 "png_urls": [f"{MEDIA_URL}/{os.path.basename(p)}" for p in files["pngs"]],
-                "reload": bool(fit_note),            # fitting changed the text -> show it in the editor
+                # fitting changed the text or the type size -> reload so the editor shows exactly the PDF
+                "reload": bool(fit_note) or "target_pages" in payload or abs(files.get("scale", 1.0) - old_scale) > 1e-3,
                 "message": f"PDF exported ({files['pages']} page(s)).",
                 "message_html": f'✅ PDF exported ({files["pages"]} page(s)){" — " + _e(fit_note) if fit_note else ""} — <a href="{pdf_url}" target="_blank">open PDF</a>'}
     except Exception as e:
@@ -2896,10 +4456,32 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         if (template or "").lower() not in ("",) and template.lower() not in PRESETS:
             template = ""
 
-        # 1) Design
-        if image_path:
-            yield "🎨 Studying the design of your reference resume (layout, colours, header, sections)…\n\n"
-        design, design_note = _resolve_design(image_path, template, color, state.get("design"))
+        # 1) Design — an uploaded design is copied exactly (resume_replica); the old analysis is only a fallback
+        design, design_note, replica_err = None, "", ""
+        tpl_req = (template or "").lower() in PRESETS
+        if image_path and not tpl_req:
+            from app.services.resume_replica.integrate import (analyse_with_progress, replica_design, replica_enabled,
+                                                               replica_note)
+            if replica_enabled():
+                yield "🎨 Measuring your reference design so I can copy it exactly (first time ~1–2 min)…\n\n"
+                try:
+                    spec = yield from analyse_with_progress(image_path)
+                    if spec:
+                        design, design_note = replica_design(spec, state.get("design")), replica_note(spec)
+                    else:
+                        replica_err = "it didn't look like a resume page"
+                except Exception as e:
+                    replica_err = str(e)[:160]
+        if design is None:
+            if image_path:
+                yield "🎨 Studying the design of your reference resume (layout, colours, header, sections)…\n\n"
+            design, design_note = _resolve_design(image_path, template, color, state.get("design"))
+            if replica_err:
+                design_note = (f"⚠️ I couldn't make an exact copy of this design ({replica_err}), so I matched it as "
+                               f"closely as the built-in formats allow. {design_note}")
+        if design.get("replica") and color:
+            design_note += (" (Colour requests don't apply to an exact copy — it keeps the reference's colours. "
+                            "Say *use the modern template* for a format I can recolour.)")
 
         # 2) Content
         content = None
@@ -2947,7 +4529,8 @@ def create_resume(details: str = "", image_path: str = "", photo_path: str = "",
         files, content, fit_note = _fit_render(content, design, photo, stem, target)
 
         state.update({"design": design, "content": content, "awaiting_details": False, "photo": photo, "target_pages": target,
-                      "ref_image": ref_for_photo, "reuse_photo": False, "last_pdf": files["pdf"], "updated": time.time()})
+                      "ref_image": ref_for_photo, "reuse_photo": False, "last_pdf": files["pdf"], "updated": time.time(),
+                      "render_scale": files.get("scale", 1.0)})
         _save_state(state)
         if open_file:
             try:

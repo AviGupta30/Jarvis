@@ -45,6 +45,7 @@ app/memory/youtube_session.json
 app/memory/enhancer_button.json
 app/memory/enhancer_button.log
 app/memory/resume_state.json
+app/memory/resume_undo.json
 app/data/
 
 NUL.pptx

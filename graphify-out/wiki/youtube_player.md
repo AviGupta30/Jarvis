@@ -1,6 +1,6 @@
 # youtube_player
 
-> 62 nodes · cohesion 0.07
+> 68 nodes · cohesion 0.07
 
 ## Key Concepts
 
@@ -17,33 +17,34 @@
 - **_page_focused()** (9 connections) — `app/services/youtube_player.py`
 - **uia_local.py** (8 connections) — `app/services/uia_local.py`
 - **_focus_address_bar()** (8 connections) — `app/services/youtube_player.py`
-- **page_videos()** (8 connections) — `app/services/youtube_player.py`
+- **parse_player_command()** (8 connections) — `app/services/youtube_player.py`
 - **element_from_handle()** (7 connections) — `app/services/uia_local.py`
 - **_address_bar_focused()** (7 connections) — `app/services/youtube_player.py`
 - **_fallback()** (7 connections) — `app/services/youtube_player.py`
 - **_address_bar_value()** (6 connections) — `app/services/youtube_player.py`
 - **current_video_info()** (6 connections) — `app/services/youtube_player.py`
+- **ctypes** (6 connections)
 - **_focused_is_toolbar()** (5 connections) — `app/services/youtube_player.py`
 - **_in_page()** (5 connections) — `app/services/youtube_player.py`
 - **_js()** (5 connections) — `app/services/youtube_player.py`
 - **_js_str()** (5 connections) — `app/services/youtube_player.py`
 - **pause_quietly()** (5 connections) — `app/services/youtube_player.py`
-- **_clip_set()** (4 connections) — `app/services/youtube_player.py`
-- *... and 37 more nodes in this community*
+- *... and 43 more nodes in this community*
 
 ## Relationships
 
-- [youtube_control](youtube_control.md) (38 shared connections)
-- [youtube_control + youtube_player](youtube_control_+_youtube_player.md) (6 shared connections)
+- [youtube_control](youtube_control.md) (41 shared connections)
+- [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (6 shared connections)
 - [uia_local](uia_local.md) (5 shared connections)
-- [spotify_service + media_sessions](spotify_service_+_media_sessions.md) (4 shared connections)
-- [smart_navigator + rag_memory](smart_navigator_+_rag_memory.md) (3 shared connections)
-- [window_layout](window_layout.md) (3 shared connections)
-- [safe_executor + ui_inspector](safe_executor_+_ui_inspector.md) (2 shared connections)
-- [whatsapp_call + dump_wa_ui](whatsapp_call_+_dump_wa_ui.md) (2 shared connections)
-- [chat + KNOWN_ISSUES](chat_+_KNOWN_ISSUES.md) (2 shared connections)
-- [server + test_concurrency](server_+_test_concurrency.md) (1 shared connections)
+- [window_layout](window_layout.md) (4 shared connections)
+- [benchmark + server](benchmark_+_server.md) (2 shared connections)
+- [whatsapp + dump_wa_ui](whatsapp_+_dump_wa_ui.md) (2 shared connections)
+- [assignment_assembler + smart_navigator](assignment_assembler_+_smart_navigator.md) (1 shared connections)
+- [nlp_extractor + download_kokoro](nlp_extractor_+_download_kokoro.md) (1 shared connections)
 - [voice_agent](voice_agent.md) (1 shared connections)
+- [chat + chat-routing](chat_+_chat-routing.md) (1 shared connections)
+- [prompt_enhancer_button](prompt_enhancer_button.md) (1 shared connections)
+- [screen_vision + screen_reader](screen_vision_+_screen_reader.md) (1 shared connections)
 
 ## Source Files
 
@@ -52,8 +53,8 @@
 
 ## Audit Trail
 
-- EXTRACTED: 192 (92%)
-- INFERRED: 17 (8%)
+- EXTRACTED: 202 (93%)
+- INFERRED: 16 (7%)
 - AMBIGUOUS: 0 (0%)
 
 ---
